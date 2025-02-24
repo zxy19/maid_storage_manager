@@ -1,0 +1,13 @@
+{
+  "type": "maid_storage_manager:list_clear",
+  "ingredients": [
+    {
+      "item": "maid_storage_manager:request_list",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "maid_storage_manager:request_list",
+    "count": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "studio.fantasyit.maid_storage_manager.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "maid_storage_manager.refmap.json",
+  "mixins": [
+    "ContainerOpenersCounterPatch",
+    "MaidCheckPickupItem"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

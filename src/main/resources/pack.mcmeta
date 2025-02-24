@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "maid_storage_manager resources",
+    "pack_format": 15,
+    "forge:server_data_pack_format": 12
+  }
+}
