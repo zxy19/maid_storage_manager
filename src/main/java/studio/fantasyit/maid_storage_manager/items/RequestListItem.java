@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class RequestListItem extends Item implements MenuProvider {
     public static final String TAG_ITEMS_DONE = "done";
@@ -102,6 +104,15 @@ public class RequestListItem extends Item implements MenuProvider {
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
         target.setTag(tag);
+    }
+
+    public static boolean matchNbt(ItemStack mainHandItem) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return false;
+        if (!mainHandItem.hasTag())
+            return false;
+        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
+        return tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
     }
 
     @Override
@@ -251,7 +262,7 @@ public class RequestListItem extends Item implements MenuProvider {
 
     /**
      * 更新收集到的物品，从收集到的中自动取出并自动标记需求的
-     * 返回成功取出并标记的物品
+     * 返回剩下的物品
      *
      * @param stack
      * @param collected
@@ -307,20 +318,17 @@ public class RequestListItem extends Item implements MenuProvider {
         }
         tag.put(TAG_ITEMS, list);
         stack.setTag(tag);
-        return collected.copyWithCount(available - rest);
+        return collected.copyWithCount(nonCalc + rest);
     }
 
-    public static ItemStack updateStoredItems(ItemStack stack, ItemStack toStore, int maxStore) {
+    public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return ItemStack.EMPTY;
+            return toStore.getCount();
         if (!stack.hasTag())
-            return ItemStack.EMPTY;
-        //如果最大收集量要比物品栈数量小，那么有一部分不算入计算
-        int nonCalc = Math.max(0, toStore.getCount() - maxStore);
+            return toStore.getCount();
 
         //从剩余的数量中进行计算
-        int rest = toStore.getCount() - nonCalc;
-        int available = toStore.getCount();
+        int rest = toStore.getCount();
 
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
@@ -337,7 +345,8 @@ public class RequestListItem extends Item implements MenuProvider {
                     maxToStore = Math.min(maxToStore, rest);
                     if (maxToStore > 0) {
                         rest -= maxToStore;
-                        tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
+                        if (!simulate)
+                            tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
                         list.set(i, tmp);
                     }
                 }
@@ -347,7 +356,34 @@ public class RequestListItem extends Item implements MenuProvider {
         }
         tag.put(TAG_ITEMS, list);
         stack.setTag(tag);
-        return toStore.copyWithCount(available - rest);
+        return rest;
+    }
+
+    public static void updateCollectedNotStored(ItemStack stack, IItemHandler tmpStorage) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return;
+        if (!stack.hasTag())
+            return;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag tmp = list.getCompound(i);
+            ItemStack target = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
+            int requested = tmp.getInt(TAG_ITEMS_REQUESTED);
+            int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
+            int stored = tmp.getInt(TAG_ITEMS_STORED);
+            if (stored >= collected)
+                continue;
+            int count = 0;
+            for (int j = 0; j < tmpStorage.getSlots(); j++) {
+                ItemStack itemStack = tmpStorage.getStackInSlot(j);
+                if (ItemStack.isSameItem(itemStack, target)) {
+                    if (!tag.getBoolean(TAG_MATCH_TAG) || ItemStack.isSameItemSameTags(itemStack, target))
+                        count += itemStack.getCount();
+                }
+            }
+            tmp.putInt(TAG_ITEMS_COLLECTED, stored + Math.min(requested - stored, count));
+        }
     }
 
     public static void markAllDone(ItemStack stack) {

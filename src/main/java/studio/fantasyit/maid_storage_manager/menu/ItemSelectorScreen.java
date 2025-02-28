@@ -19,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
+import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
+import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
@@ -40,7 +43,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
     }
 
     protected List<Component> getTooltipForResult(int slot) {
-        ItemSelectorMenu.FilterContainer filteredItems = this.getMenu().filteredItems;
+        FilterContainer filteredItems = this.getMenu().filteredItems;
         List<Component> tooltip = this.getTooltipFromContainerItem(filteredItems.getItem(slot));
         Integer collected = filteredItems.collected[slot].getValue();
         Integer requested = filteredItems.count[slot].getValue();
@@ -65,9 +68,9 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
                 background,
                 (widget) -> {
                     if (this.getMenu().matchTag) {
-                        return new Pair<>(176, widget.isHovered() ? 16 : 0);
+                        return new Pair<>(208, widget.isHovered() ? 16 : 0);
                     } else {
-                        return new Pair<>(192, widget.isHovered() ? 16 : 0);
+                        return new Pair<>(224, widget.isHovered() ? 16 : 0);
                     }
                 },
                 () -> this.getMenu().matchTag ?
@@ -124,7 +127,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
             int inGuiY = y - this.getGuiTop();
             for (Slot slot : this.getMenu().slots) {
                 if (slot.x <= inGuiX && slot.x + 30 >= inGuiX && slot.y <= inGuiY && slot.y + 16 >= inGuiY) {
-                    if (slot instanceof ItemSelectorMenu.FilterSlot filterSlot) {
+                    if (slot instanceof FilterSlot filterSlot) {
                         if (!filterSlot.getItem().isEmpty())
                             graphics.renderTooltip(this.font,
                                     getTooltipForResult(filterSlot.getContainerSlot()),
@@ -163,9 +166,9 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
         graphics.pose().translate(0, 0, 1000);
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
-        ItemSelectorMenu.FilterContainer filters = this.getMenu().filteredItems;
+        FilterContainer filters = this.getMenu().filteredItems;
         for (Slot slot : this.getMenu().slots) {
-            if (slot instanceof ItemSelectorMenu.FilterSlot filterSlot) {
+            if (slot instanceof FilterSlot filterSlot) {
                 if (filterSlot.hasItem()) {
                     MutableInt count = filters.count[filterSlot.getContainerSlot()];
                     MutableInt done = filters.done[filterSlot.getContainerSlot()];
@@ -222,7 +225,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
     @Override
     public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
         @Nullable Slot slot = this.getSlotUnderMouse();
-        if (slot instanceof ItemSelectorMenu.FilterSlot filterSlot) {
+        if (slot instanceof FilterSlot filterSlot) {
             MutableInt count = this.getMenu().filteredItems.count[filterSlot.getContainerSlot()];
             int dv = (int) (Math.abs(p_94688_) / p_94688_);
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
@@ -240,91 +243,5 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
             );
         }
         return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
-    }
-
-    @FunctionalInterface
-    public interface UVSupplier {
-        Pair<Integer, Integer> get(ButtonWidget buttonWidget);
-    }
-
-    public static class ButtonWidget extends AbstractWidget {
-        private final Runnable callback;
-        private final ResourceLocation image;
-        private final UVSupplier uvSupplier;
-        private final int x, y;
-        private final Supplier<Component> tooltipSupplier;
-        private final AbstractContainerScreen<?> screen;
-
-
-        public ButtonWidget(int x,
-                            int y,
-                            int w,
-                            int h,
-                            ResourceLocation image,
-                            UVSupplier uvSupplier,
-                            Supplier<Component> tooltipSupplier,
-                            Runnable callback,
-                            AbstractContainerScreen<?> screen) {
-            super(x, y, w, h, tooltipSupplier.get());
-            this.x = x;
-            this.y = y;
-            this.uvSupplier = uvSupplier;
-            this.tooltipSupplier = tooltipSupplier;
-            this.callback = callback;
-            this.image = image;
-            this.active = true;
-            this.screen = screen;
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics guiGraphics, int x, int y, float p) {
-            Pair<Integer, Integer> uv = uvSupplier.get(this);
-            guiGraphics.blit(this.image,
-                    getX(),
-                    getY(),
-                    0,
-                    uv.getA(),
-                    uv.getB(),
-                    this.width,
-                    this.height,
-                    256,
-                    256);
-        }
-
-        @Override
-        protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
-            p_259858_.add(NarratedElementType.HINT, Component.translatable("narration.button", this.tooltipSupplier.get()));
-        }
-
-        @Override
-        protected boolean isValidClickButton(int p_93652_) {
-            return true;
-        }
-
-        @Override
-        public int getX() {
-            return super.getX() + screen.getGuiLeft();
-        }
-
-        @Override
-        public int getY() {
-            return super.getY() + screen.getGuiTop();
-        }
-
-        @Override
-        public void onClick(double p_93634_, double p_93635_) {
-            super.onClick(p_93634_, p_93635_);
-            callback.run();
-        }
-
-        @Nullable
-        @Override
-        public Tooltip getTooltip() {
-            return Tooltip.create(tooltipSupplier.get());
-        }
-
-        public Component getTooltipComponent() {
-            return tooltipSupplier.get();
-        }
     }
 }

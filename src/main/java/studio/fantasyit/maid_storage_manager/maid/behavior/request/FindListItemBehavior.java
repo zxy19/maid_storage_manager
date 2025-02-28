@@ -10,13 +10,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.PosUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -33,14 +32,9 @@ public class FindListItemBehavior extends MaidCheckRateTask {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel p_22538_, EntityMaid entityMaid) {
-        if (Conditions.inventoryFull(entityMaid)) return false;
         if (Conditions.takingRequestList(entityMaid)) {
-            Optional<UUID> lastWorkUUID = MemoryUtil.getLastWorkUUID(entityMaid);
-            return lastWorkUUID.map(uuid -> {
-                if (RequestListItem.getUUID(entityMaid.getMainHandItem()).equals(uuid))
-                    return false;
-                return true;
-            }).orElse(true);
+            UUID lastWorkUUID = MemoryUtil.getRequestProgress(entityMaid).getWorkUUID();
+            return !lastWorkUUID.equals(RequestListItem.getUUID(entityMaid.getMainHandItem()));
         }
         IItemHandler maidInv = entityMaid.getAvailableBackpackInv();
         for (int i = 0; i < maidInv.getSlots(); i++) {
@@ -54,6 +48,7 @@ public class FindListItemBehavior extends MaidCheckRateTask {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22557_) {
+        //获取请求清单，将其交换到主手
         if (!Conditions.takingRequestList(maid)) {
             IItemHandler maidInv = maid.getAvailableBackpackInv();
             for (int i = 0; i < maidInv.getSlots(); i++) {
@@ -68,30 +63,25 @@ public class FindListItemBehavior extends MaidCheckRateTask {
                 }
             }
         }
+        //背包已满，停止工作，将清单丢掉
+        if (Conditions.inventoryFull(maid)) {
+            RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null);
+            return;
+        }
 
-        MemoryUtil.setLastWorkUUID(maid, RequestListItem.getUUID(maid.getMainHandItem()));
-        MemoryUtil.clearArriveTarget(maid);
-        MemoryUtil.clearReturnToStorage(maid);
-        MemoryUtil.clearVisitedPos(maid.getBrain());
-        MemoryUtil.clearPosition(maid);
-        MemoryUtil.clearCurrentChestPos(maid);
-        MemoryUtil.clearCurrentTerminalPos(maid);
-        MemoryUtil.clearFinish(maid);
-        MemoryUtil.setWorkingRequest(maid, true);
+        //记忆：开始新的工作
+        MemoryUtil.getRequestProgress(maid).newWork(RequestListItem.getUUID(maid.getMainHandItem()));
         MemoryUtil.clearReturnWorkSchedule(maid);
 
+        //标黑存储箱子相连的所有箱子
         BlockPos storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
-            BlockEntity blockEntity = level.getBlockEntity(storageBlock);
-            if (blockEntity != null)
-                blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER)
-                        .ifPresent(itemHandler -> {
-                            InvUtil.checkNearByContainers(level, storageBlock, itemHandler, pos -> {
-                                Set<BlockPos> visitedPos = MemoryUtil.getVisitedPos(maid.getBrain());
-                                visitedPos.add(PosUtil.getEntityPos(level, pos));
-                                maid.getBrain().setMemory(MemoryModuleRegistry.MAID_VISITED_POS.get(), visitedPos);
-                            });
-                        });
+            MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock);
+            DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", storageBlock.toShortString());
+            InvUtil.checkNearByContainers(level, storageBlock, pos -> {
+                MemoryUtil.getRequestProgress(maid).addVisitedPos(pos);
+                DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", pos.toShortString());
+            });
         }
     }
 }

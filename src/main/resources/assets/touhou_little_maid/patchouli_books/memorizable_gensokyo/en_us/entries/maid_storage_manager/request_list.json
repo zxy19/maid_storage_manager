@@ -1,0 +1,21 @@
+{
+  "sortnum": 2,
+  "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.request_list",
+  "icon": "maid_storage_manager:request_list",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.request_list.pages.0.1.text"
+    },
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:request_list",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.request_list.pages.0.2.text"
+    },
+    {
+      "type": "text",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.request_list.pages.0.3.text"
+    }
+  ]
+}

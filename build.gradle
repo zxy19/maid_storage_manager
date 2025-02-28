@@ -190,11 +190,12 @@ dependencies {
     compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     compileOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
+    compileOnly fg.deobf("curse.maven:just-enough-characters-250702:5543190")
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:sophisticated-storage-619320:6217888")
     runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6223074")
-    runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
+    runtimeOnly fg.deobf("curse.maven:patchouli-306770:6164575")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

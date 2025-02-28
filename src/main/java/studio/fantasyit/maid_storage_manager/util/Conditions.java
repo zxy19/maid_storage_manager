@@ -2,10 +2,13 @@ package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.ModList;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
@@ -41,14 +44,6 @@ public class Conditions {
         return RequestListItem.isAllStored(maid.getMainHandItem());
     }
 
-    public static boolean isTryToReturnStorage(EntityMaid maid) {
-        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.RETURN_STORAGE.get());
-    }
-
-    public static boolean alreadyArriveTarget(EntityMaid maid) {
-        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.ARRIVE_TARGET.get());
-    }
-
     public static boolean hasReachedValidTargetOrReset(EntityMaid maid) {
         Brain<EntityMaid> brain = maid.getBrain();
         return brain.getMemory(InitEntities.TARGET_POS.get()).map(targetPos -> {
@@ -64,19 +59,11 @@ public class Conditions {
         }).orElse(false);
     }
 
-    public static boolean hasCurrentChestPos(EntityMaid maid) {
-        return MemoryUtil.getCurrentChestPos(maid) != null;
-    }
-
-    public static boolean hasCurrentTerminalPos(EntityMaid maid) {
-        return MemoryUtil.getCurrentTerminalPos(maid) != null;
-    }
-
-    public static boolean finishAll(EntityMaid maid) {
-        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.FINISH_CHEST.get())
-                && maid.getBrain().hasMemoryValue(MemoryModuleRegistry.FINISH_TERMINAL.get());
-    }
     public static boolean isWaitingForReturn(EntityMaid maid) {
         return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.RETURN_TO_SCHEDULE_AT.get());
+    }
+
+    public static boolean isInvEmpty(EntityMaid maid) {
+        return InvUtil.isEmpty(maid.getAvailableInv(false));
     }
 }

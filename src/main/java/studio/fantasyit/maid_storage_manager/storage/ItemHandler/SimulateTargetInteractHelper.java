@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.util;
+package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.authlib.GameProfile;
@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
@@ -17,6 +18,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -24,25 +26,25 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class SimulateTargetInteractHelper {
     public static ConcurrentMap<BlockPos, Integer> counter = new ConcurrentHashMap<>();
     final ServerLevel level;
-    final EntityMaid maid;
     final public BlockPos target;
     @Nullable
     final BlockEntity blockEntity;
+    private final EntityMaid maid;
     @Nullable
     public IItemHandler itemHandler;
-    public final IItemHandler maidInv;
     final Player opener;
     int currentSlot = 0;
     int restTick = 0;
 
     public SimulateTargetInteractHelper(EntityMaid maid, BlockPos targetPos, ServerLevel level) {
         this.maid = maid;
-        this.maidInv = maid.getAvailableBackpackInv();
         this.target = targetPos;
         this.level = level;
         this.blockEntity = level.getBlockEntity(target);
@@ -53,6 +55,12 @@ public class SimulateTargetInteractHelper {
                 itemHandler = capability.orElseThrow(RuntimeException::new);
             }
         }
+    }
+
+    protected boolean isStillValid() {
+        if (blockEntity == null || itemHandler == null) return false;
+        if (blockEntity.isRemoved()) return false;
+        return true;
     }
 
 
@@ -72,16 +80,12 @@ public class SimulateTargetInteractHelper {
 
     public boolean doneTaking() {
         if (restTick > 0) return false;
+        if (!isStillValid()) return true;
         return itemHandler == null || currentSlot >= itemHandler.getSlots();
     }
 
     public boolean doneViewing() {
         return doneTaking();
-    }
-
-    public boolean donePlacing() {
-        if (restTick > 0) return false;
-        return itemHandler == null || currentSlot >= maidInv.getSlots();
     }
 
     public void open() {
@@ -94,53 +98,30 @@ public class SimulateTargetInteractHelper {
                     level.getBlockState(target));
         });
         currentSlot = 0;
-        restTick = 20;
         counter.put(target, counter.getOrDefault(target, 0) + 1);
     }
 
-    private void tickCommon() {
-        if (restTick > 0) {
-            restTick--;
-        }
-    }
-
-    public void takeItemTick(ToTakenItemGetter cb) {
-        tickCommon();
-        if (restTick > 0) return;
-        invTransTick(cb, itemHandler, maidInv);
-    }
-
-
-    public void placeItemTick(ToTakenItemGetter cb) {
-        tickCommon();
-        if (restTick > 0) return;
-        invTransTick(cb, maidInv, itemHandler);
-    }
-
-    private void invTransTick(ToTakenItemGetter cb, IItemHandler invFrom, IItemHandler invTarg) {
-        if (invFrom == null || invTarg == null)
-            return;
+    public void takeItemTick(Function<ItemStack, ItemStack> cb) {
+        if (itemHandler == null) return;
         int count = 0;
-        for (; currentSlot < invFrom.getSlots(); currentSlot++) {
+        for (; currentSlot < itemHandler.getSlots(); currentSlot++) {
             if (++count >= 10) break;
             //可以获取到的物品
-            ItemStack copy = invFrom.extractItem(currentSlot,
-                    invFrom.getStackInSlot(currentSlot).getCount(),
+            ItemStack copy = itemHandler.extractItem(currentSlot,
+                    itemHandler.getStackInSlot(currentSlot).getCount(),
                     true).copy();
+            int originalCount = copy.getCount();
             if (copy.isEmpty()) continue;
-            int maxStore = InvUtil.maxCanPlace(invTarg, copy);
-            int toTake = cb.getToTakenItemCount(copy, invTarg, maxStore);
-            if (toTake == 0) continue;
-            ItemStack restNotPlaced = InvUtil.tryPlace(invTarg, copy.copyWithCount(toTake));
-            invFrom.extractItem(currentSlot, toTake - restNotPlaced.getCount(), false);
-            currentSlot++;
+            //获取在处理后剩余的物品数量
+            ItemStack result = cb.apply(copy);
+            //如果没有变化，则跳过
+            if (result.getCount() == originalCount) continue;
+            itemHandler.extractItem(currentSlot, originalCount - result.getCount(), false);
             break;
         }
     }
 
     public void viewItemTick(Consumer<ItemStack> cb) {
-        tickCommon();
-        if (restTick > 0) return;
         if (itemHandler == null) return;
         int count = 0;
         for (; currentSlot < itemHandler.getSlots(); currentSlot++) {
@@ -156,9 +137,7 @@ public class SimulateTargetInteractHelper {
     }
 
     public void stop() {
-        Brain<EntityMaid> brain = maid.getBrain();
-        brain.eraseMemory(MemoryModuleRegistry.ARRIVE_TARGET.get());
-        if (blockEntity != null && opener != null) {
+        if (blockEntity != null && opener != null && isStillValid()) {
             trySeekCounter(blockEntity).ifPresent(containerOpenersCounter -> {
                 containerOpenersCounter.decrementOpeners(opener,
                         level,
@@ -167,11 +146,6 @@ public class SimulateTargetInteractHelper {
             });
         }
         counter.put(target, Math.max(counter.getOrDefault(target, 0) - 1, 0));
-    }
-
-    @FunctionalInterface
-    public interface ToTakenItemGetter {
-        int getToTakenItemCount(ItemStack itemStack, IItemHandler targetInv, int maxStore);
     }
 
     public static class ChestOpener extends FakePlayer {

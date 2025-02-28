@@ -48,21 +48,29 @@ public final class DebugBoxRender {
                         ),
                         EntitySelector.NO_SPECTATORS
                 );
+
                 for (EntityMaid maid : entities) {
-                    DebugData.getInstance().getData("chest_" + maid.getUUID()).ifPresent(data -> {
+                    DebugData.getInstance().getData("finding_" + maid.getUUID()).ifPresent(data -> {
                         if (data.isEmpty()) return;
                         BlockPos pos = NbtUtils.readBlockPos(data);
                         AABB aabb = new AABB(pos).move(position);
                         VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0, 0F, 1.0F, 0.5F);
+                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0.63F, 0.21F, 0.23F, 0.5F);
                     });
 
-                    DebugData.getInstance().getData("terminal_" + maid.getUUID()).ifPresent(data -> {
+                    DebugData.getInstance().getData("viewing_" + maid.getUUID()).ifPresent(data -> {
                         if (data.isEmpty()) return;
                         BlockPos pos = NbtUtils.readBlockPos(data);
                         AABB aabb = new AABB(pos).move(position);
                         VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0, 1.0F, 1.0F, 0.5F);
+                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0.55F, 0.24F, 0.63F, 0.5F);
+                    });
+                    DebugData.getInstance().getData("placing_" + maid.getUUID()).ifPresent(data -> {
+                        if (data.isEmpty()) return;
+                        BlockPos pos = NbtUtils.readBlockPos(data);
+                        AABB aabb = new AABB(pos).move(position);
+                        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0.37F, 0.43F, 0.63F, 0.5F);
                     });
 
                     DebugData.getInstance().getData("target_" + maid.getUUID()).ifPresent(data -> {

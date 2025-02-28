@@ -8,7 +8,8 @@ public class ItemSelectorGuiPacket {
     public enum SlotType{
         COUNT,
         MATCH_TAG,
-        CLEAR
+        CLEAR,
+        BLACKLIST,
     }
     public final SlotType type;
     public final int key;

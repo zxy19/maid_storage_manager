@@ -1,24 +1,21 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    " C ",
-    "ABA",
-    "   "
-  ],
-  "key": {
-    "A": {
-      "tag": "minecraft:planks"
+    "type": "touhou_little_maid:altar_crafting",
+    "output": {
+      "type": "minecraft:item",
+      "nbt": {
+        "Item": {
+          "id": "maid_storage_manager:inventory_list",
+          "Count": 1
+        }
+      }
     },
-    "B": {
-      "item": "minecraft:paper"
-    },
-    "C": {
-      "item": "minecraft:feather"
-    }
-  },
-  "result": {
-    "item": "maid_storage_manager:inventory_list",
-    "count": 1
-  },
-  "show_notification": true
-}
+    "power": 0,
+    "ingredients": [
+      {
+        "item": "minecraft:writable_book"
+      },
+      {
+        "item": "minecraft:cake"
+      }
+    ]
+  }

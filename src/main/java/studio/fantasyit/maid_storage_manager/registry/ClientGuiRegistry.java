@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -14,6 +15,9 @@ public class ClientGuiRegistry {
     public static void init(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             MenuScreens.register(GuiRegistry.ITEM_SELECTOR_MENU.get(), ItemSelectorScreen::new);
+        });
+        event.enqueueWork(() -> {
+            MenuScreens.register(GuiRegistry.FILTER_MENU.get(), FilterScreen::new);
         });
     }
 }

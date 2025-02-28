@@ -8,9 +8,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -36,6 +41,14 @@ public class InvUtil {
         return restItem;
     }
 
+    public static ItemStack tryPlace(IStorageContext container, ItemStack itemStack) {
+        if (itemStack.isEmpty()) return itemStack;
+        if (container instanceof IStorageInsertableContext isic) {
+            return isic.insert(itemStack);
+        }
+        return itemStack;
+    }
+
     public static int maxCanPlace(IItemHandler container, ItemStack itemStack) {
         int count = 0;
         ItemStack testStack = itemStack.copyWithCount(itemStack.getMaxStackSize());
@@ -52,7 +65,12 @@ public class InvUtil {
     }
 
 
-    public static void checkNearByContainers(ServerLevel level, BlockPos pos, IItemHandler inv, Consumer<BlockPos> consumer) {
+    public static void checkNearByContainers(ServerLevel level, BlockPos pos, Consumer<BlockPos> consumer) {
+        BlockEntity blockEntity1 = level.getBlockEntity(pos);
+        if (blockEntity1 == null) return;
+        @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
+        if (!optCap.isPresent()) return;
+        IItemHandler inv = optCap.orElseThrow(RuntimeException::new);
         ItemStack itemStack = inv.extractItem(0, inv.getStackInSlot(0).getCount(), false);
         ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
         CompoundTag tag = markItem.getOrCreateTag();
@@ -60,7 +78,7 @@ public class InvUtil {
         markItem.setTag(tag);
         inv.insertItem(0, markItem, false);
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
-            if (blockPos.equals(pos)) return false;
+            if (blockPos.equals(pos)) return null;
             BlockEntity blockEntity = level.getBlockEntity(blockPos);
             if (blockEntity != null) {
                 blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
@@ -69,12 +87,21 @@ public class InvUtil {
                     }
                 });
             }
-            return false;
+            return null;
         }, 1);
 
         inv.extractItem(0, markItem.getCount(), false);
         if (itemStack.getCount() > 0) {
             inv.insertItem(0, itemStack, false);
         }
+    }
+
+    public static boolean isEmpty(CombinedInvWrapper availableInv) {
+        for (int i = 0; i < availableInv.getSlots(); i++) {
+            if (!availableInv.getStackInSlot(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

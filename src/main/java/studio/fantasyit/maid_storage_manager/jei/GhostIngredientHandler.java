@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
+import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class GhostIngredientHandler implements IGhostIngredientHandler<ItemSelec
             return List.of();
         List<Target<I>> result = new ArrayList<>();
         for (Slot slot : gui.getMenu().slots) {
-            if (slot instanceof ItemSelectorMenu.FilterSlot ifs) {
+            if (slot instanceof FilterSlot ifs) {
                 result.add(new GhostTarget<>(gui, ifs));
             }
         }

@@ -1,21 +1,21 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    " A ",
-    "ABA",
-    "   "
-  ],
-  "key": {
-    "A": {
-      "item": "minecraft:paper"
+    "type": "touhou_little_maid:altar_crafting",
+    "output": {
+      "type": "minecraft:item",
+      "nbt": {
+        "Item": {
+          "id": "maid_storage_manager:request_list",
+          "Count": 1
+        }
+      }
     },
-    "B": {
-      "item": "minecraft:iron_nugget"
-    }
-  },
-  "result": {
-    "item": "maid_storage_manager:request_list",
-    "count": 3
-  },
-  "show_notification": true
-}
+    "power": 0,
+    "ingredients": [
+      {
+        "item": "minecraft:book"
+      },
+      {
+        "item": "minecraft:sugar"
+      }
+    ]
+  }

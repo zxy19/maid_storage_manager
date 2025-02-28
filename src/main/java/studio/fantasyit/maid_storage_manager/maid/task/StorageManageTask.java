@@ -11,15 +11,18 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.*;
-import studio.fantasyit.maid_storage_manager.maid.behavior.request.chest.GoToChestMoveBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.request.chest.PickItemBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.FillReturnStorageBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.StartStorageResultBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.request.terminal.GoToTerminalMoveBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.request.terminal.PickItemFromMeBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewChestMoveBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewStorageAndStoreBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestFindMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestFindBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.RequestRetBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.RequestRetMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.WriteInventoryListBehavior;
 
 import java.util.ArrayList;
@@ -44,18 +47,26 @@ public class StorageManageTask implements IMaidTask {
 
     @Override
     public @NotNull List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid entityMaid) {
-        return new ArrayList<>(List.of(
-                Pair.of(20, new PickItemBehavior()),
-                Pair.of(20, new FindListItemBehavior()),
-                Pair.of(20, new GoToChestMoveBehavior()),
-                Pair.of(20, new StartStorageResultBehavior()),
-                Pair.of(20, new FillReturnStorageBehavior()),
-                Pair.of(10, new ViewChestMoveBehavior()),
-                Pair.of(10, new ViewStorageAndStoreBehavior()),
-                Pair.of(10, new WriteInventoryListBehavior()),
-                Pair.of(40, new GoToTerminalMoveBehavior()),
-                Pair.of(40, new PickItemFromMeBehavior()),
-                Pair.of(10, new ReturnWorkScheduleBehavior())
-        ));
+        ArrayList<Pair<Integer, BehaviorControl<? super EntityMaid>>> list = new ArrayList<>();
+        //找到列表的任务
+        list.add(Pair.of(10, new FindListItemBehavior()));
+        //寻找/存放
+        list.add(Pair.of(10, new RequestFindBehavior()));
+        list.add(Pair.of(10, new RequestFindMoveBehavior()));
+        list.add(Pair.of(10, new RequestRetMoveBehavior()));
+        list.add(Pair.of(10, new RequestRetBehavior()));
+        //游走查看箱子
+        list.add(Pair.of(5, new ViewMoveBehavior()));
+        list.add(Pair.of(5, new ViewBehavior()));
+        list.add(Pair.of(5, new WriteInventoryListBehavior()));
+        //整理
+        list.add(Pair.of(6, new ResortBehavior()));
+        list.add(Pair.of(6, new ResortMoveBehavior()));
+        //存放物品
+        list.add(Pair.of(7, new PlaceBehavior()));
+        list.add(Pair.of(7, new PlaceMoveBehavior()));
+        //工作冷却
+        list.add(Pair.of(10, new ScheduleBehavior()));
+        return list;
     }
 }

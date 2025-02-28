@@ -2,6 +2,8 @@ package studio.fantasyit.maid_storage_manager.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -14,13 +16,16 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.commons.lang3.tuple.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Network {
@@ -62,6 +67,8 @@ public class Network {
                         ServerPlayer sender = context.get().getSender();
                         if (sender != null && sender.containerMenu instanceof ItemSelectorMenu ism) {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
+                        } else if (sender.containerMenu instanceof FilterMenu ifm) {
+                            ifm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
                     context.get().setPacketHandled(true);
@@ -89,7 +96,13 @@ public class Network {
                 DebugDataPacket::new,
                 (msg, context) -> {
                     context.get().enqueueWork(() -> {
-                        DebugData.getInstance().setData(msg.type, msg.data);
+                        if (!Config.enableDebug) return;
+                        if (Objects.equals(msg.type, DebugData.TYPE_DEBUG_MSG)) {
+                            if (Minecraft.getInstance().player != null) {
+                                Minecraft.getInstance().player.sendSystemMessage(Component.literal(msg.data.getString("msg")));
+                            }
+                        } else
+                            DebugData.getInstance().setData(msg.type, msg.data);
                     });
                     context.get().setPacketHandled(true);
                 }

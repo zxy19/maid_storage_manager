@@ -25,17 +25,12 @@ public class MaidExtension implements ILittleMaid {
             @Override
             public List<MemoryModuleType<?>> getExtraMemoryTypes() {
                 return List.of(
-                        MemoryModuleRegistry.MAID_VISITED_POS.get(),
-                        MemoryModuleRegistry.RETURN_STORAGE.get(),
-                        MemoryModuleRegistry.ARRIVE_TARGET.get(),
-                        MemoryModuleRegistry.LAST_TAKE_LIST.get(),
-                        MemoryModuleRegistry.CURRENT_CHEST_POS.get(),
-                        MemoryModuleRegistry.IS_WORKING_REQUEST.get(),
                         MemoryModuleRegistry.VIEWED_INVENTORY.get(),
-                        MemoryModuleRegistry.FINISH_TERMINAL.get(),
-                        MemoryModuleRegistry.FINISH_CHEST.get(),
-                        MemoryModuleRegistry.CURRENT_TERMINAL_POS.get(),
-                        MemoryModuleRegistry.RETURN_TO_SCHEDULE_AT.get()
+                        MemoryModuleRegistry.RETURN_TO_SCHEDULE_AT.get(),
+                        MemoryModuleRegistry.PLACING_INVENTORY.get(),
+                        MemoryModuleRegistry.REQUEST_PROGRESS.get(),
+                        MemoryModuleRegistry.RESORTING.get(),
+                        MemoryModuleRegistry.CURRENTLY_WORKING.get()
                 );
             }
         });

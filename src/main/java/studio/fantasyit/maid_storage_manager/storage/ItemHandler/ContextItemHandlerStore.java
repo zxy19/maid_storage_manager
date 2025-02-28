@@ -1,0 +1,52 @@
+package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
+
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.items.FilterListItem;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.PosUtil;
+
+import java.util.List;
+
+public class ContextItemHandlerStore extends FilterableItemHandler implements IStorageInsertableContext {
+    private SimulateTargetInteractHelper helper;
+    private EntityMaid maid;
+    private ItemStack filter;
+
+    @Override
+    public void start(EntityMaid maid, ServerLevel level, BlockPos target) {
+        this.maid = maid;
+        helper = new SimulateTargetInteractHelper(maid, target, level);
+        helper.open();
+        super.init(level, target);
+    }
+
+    @Override
+    public void finish() {
+        helper.stop();
+    }
+
+    @Override
+    public ItemStack insert(ItemStack item) {
+        if (!this.isAvailable(item)) return item;
+        ItemStack copy = item.copy();
+        for (int i = 0; i < this.helper.itemHandler.getSlots(); i++) {
+            copy = this.helper.itemHandler.insertItem(i, copy, false);
+            if (copy.isEmpty()) return ItemStack.EMPTY;
+        }
+        return copy;
+    }
+}

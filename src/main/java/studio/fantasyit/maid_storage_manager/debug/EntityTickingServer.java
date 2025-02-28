@@ -25,15 +25,22 @@ public class EntityTickingServer {
             );
         }, () -> DebugData.getInstance().setDataAndSync("target_" + maid.getUUID(), new CompoundTag()));
 
-        maid.getBrain().getMemory(MemoryModuleRegistry.CURRENT_CHEST_POS.get()).ifPresentOrElse(pos -> {
-            DebugData.getInstance().setDataAndSync("chest_" + maid.getUUID(),
-                    NbtUtils.writeBlockPos(pos)
+        maid.getBrain().getMemory(MemoryModuleRegistry.PLACING_INVENTORY.get()).ifPresentOrElse(pos -> {
+            DebugData.getInstance().setDataAndSync("placing_" + maid.getUUID(),
+                    NbtUtils.writeBlockPos(pos.getTargetPos())
             );
-        }, () -> DebugData.getInstance().setDataAndSync("chest_" + maid.getUUID(), new CompoundTag()));
-        maid.getBrain().getMemory(MemoryModuleRegistry.CURRENT_TERMINAL_POS.get()).ifPresentOrElse(pos -> {
-            DebugData.getInstance().setDataAndSync("terminal_" + maid.getUUID(),
-                    NbtUtils.writeBlockPos(pos)
+        }, () -> DebugData.getInstance().setDataAndSync("placing_" + maid.getUUID(), new CompoundTag()));
+
+        maid.getBrain().getMemory(MemoryModuleRegistry.VIEWED_INVENTORY.get()).ifPresentOrElse(pos -> {
+            DebugData.getInstance().setDataAndSync("viewing_" + maid.getUUID(),
+                    NbtUtils.writeBlockPos(pos.getTargetPos())
             );
-        }, () -> DebugData.getInstance().setDataAndSync("terminal_" + maid.getUUID(), new CompoundTag()));
+        }, () -> DebugData.getInstance().setDataAndSync("viewing_" + maid.getUUID(), new CompoundTag()));
+
+        maid.getBrain().getMemory(MemoryModuleRegistry.REQUEST_PROGRESS.get()).ifPresentOrElse(pos -> {
+            DebugData.getInstance().setDataAndSync("finding_" + maid.getUUID(),
+                    NbtUtils.writeBlockPos(pos.getTargetPos())
+            );
+        }, () -> DebugData.getInstance().setDataAndSync("finding_" + maid.getUUID(), new CompoundTag()));
     }
 }
