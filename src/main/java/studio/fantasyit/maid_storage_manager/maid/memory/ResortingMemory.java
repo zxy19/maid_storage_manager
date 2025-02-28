@@ -4,7 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ResortingMemory extends AbstractTargetMemory {
     public static final Codec<ResortingMemory> CODEC = RecordCodecBuilder.create(instance ->

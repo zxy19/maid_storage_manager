@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Arrays;
 
@@ -36,10 +35,7 @@ public class Ae2Storage implements IMaidStorage {
                             .orderedByNearest(maid))
                     .anyMatch(direction -> {
                         IPart part = cbb.getCableBus().getPart(direction);
-                        if (part instanceof AbstractTerminalPart atp) {
-                            return true;
-                        }
-                        return false;
+                        return part instanceof AbstractTerminalPart atp;
                     });
         }
         return false;

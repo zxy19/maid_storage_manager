@@ -11,7 +11,6 @@ import net.minecraftforge.common.util.INBTSerializable;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 
 import java.util.Arrays;
 

@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRateTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.server.level.ServerLevel;

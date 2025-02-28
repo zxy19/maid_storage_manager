@@ -28,10 +28,7 @@ public class Ae2PlacingContext implements IStorageInsertableContext {
                             .orderedByNearest(maid))
                     .filter(direction -> {
                         IPart part = cbbe.getCableBus().getPart(direction);
-                        if (part instanceof AbstractTerminalPart atp) {
-                            return true;
-                        }
-                        return false;
+                        return part instanceof AbstractTerminalPart atp;
                     })
                     .findFirst();
 

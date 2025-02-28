@@ -11,9 +11,8 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class ItemHandlerStorage implements IMaidStorage {
     @Override

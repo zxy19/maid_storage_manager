@@ -11,7 +11,7 @@ import java.util.function.Function;
 public class ContextItemHandlerCollect extends FilterableItemHandler implements IStorageInteractContext {
     private SimulateTargetInteractHelper helper;
     private EntityMaid maid;
-    private int currentSlot = 0;
+    private final int currentSlot = 0;
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, BlockPos target) {

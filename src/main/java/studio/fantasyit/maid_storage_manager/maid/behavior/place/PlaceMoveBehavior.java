@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.sensor.MaidPickupEntitiesSensor;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
@@ -44,8 +43,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.PLACE) return false;
         if (Conditions.isWaitingForReturn(owner)) return false;
         if (Conditions.takingRequestList(owner)) return false;
-        if (Conditions.isInvEmpty(owner)) return false;
-        return true;
+        return !Conditions.isInvEmpty(owner);
     }
 
     @Override

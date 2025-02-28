@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.Nullable;
@@ -16,10 +15,12 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.util.*;
+import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.MoveUtil;
+import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 
 import java.util.Map;
-import java.util.concurrent.locks.Condition;
 
 /**
  * 当女仆背包装满或者任务完成，计划回到存储标记点
@@ -39,8 +40,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
         if (!Conditions.takingRequestList(maid)) return false;
 
         if (Conditions.listAllDone(maid)) return true;
-        if (Conditions.inventoryFull(maid)) return true;
-        return false;
+        return Conditions.inventoryFull(maid);
     }
 
     @Override

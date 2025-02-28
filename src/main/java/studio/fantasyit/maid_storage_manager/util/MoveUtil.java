@@ -11,9 +11,6 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
-import java.util.Collection;
-import java.util.List;
-
 public class MoveUtil {
     public static @Nullable BlockPos selectPosForTarget(ServerLevel level, EntityMaid maid, BlockPos target) {
         //寻找落脚点

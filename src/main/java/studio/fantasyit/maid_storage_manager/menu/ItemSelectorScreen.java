@@ -5,10 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +24,6 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @MouseTweaksDisableWheelTweak
 public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu> {

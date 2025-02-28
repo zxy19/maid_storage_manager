@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.registry;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -14,8 +13,6 @@ import studio.fantasyit.maid_storage_manager.maid.memory.ResortingMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 public class MemoryModuleRegistry {
     public static final DeferredRegister<MemoryModuleType<?>> REGISTER

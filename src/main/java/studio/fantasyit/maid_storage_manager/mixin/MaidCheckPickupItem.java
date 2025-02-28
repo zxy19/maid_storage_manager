@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -33,7 +32,6 @@ public abstract class MaidCheckPickupItem {
         if (entityItem.getItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
             if (!InvUtil.hasAnyFree(getAvailableBackpackInv())) {
                 cir.setReturnValue(false);
-                return;
             }
         }
     }

@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
-import com.mojang.datafixers.util.Pair;
 import me.towdium.jecharacters.utils.Match;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -120,10 +119,7 @@ public class InventoryListScreen extends Screen {
                         return true;
                     if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
                         return true;
-                    if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search))) {
-                        return true;
-                    }
-                    return false;
+                    return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
                 }).toList();
         }
 

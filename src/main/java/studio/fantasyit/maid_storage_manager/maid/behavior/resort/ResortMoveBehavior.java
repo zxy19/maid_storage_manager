@@ -1,13 +1,10 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.resort;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
@@ -15,10 +12,11 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.util.*;
+import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
 import java.util.Map;
 
@@ -33,8 +31,7 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
         if (Conditions.isWaitingForReturn(owner)) return false;
         if (Conditions.takingRequestList(owner)) return false;
         if (!Conditions.isInvEmpty(owner)) return false;
-        if (!MemoryUtil.getResorting(owner).hasTarget()) return false;
-        return true;
+        return MemoryUtil.getResorting(owner).hasTarget();
     }
 
     @Override

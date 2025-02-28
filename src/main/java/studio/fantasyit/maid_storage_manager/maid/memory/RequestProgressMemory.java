@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.*;
+import java.util.UUID;
 
 public class RequestProgressMemory extends AbstractTargetMemory {
     public static final Codec<RequestProgressMemory> CODEC = RecordCodecBuilder.create(instance ->

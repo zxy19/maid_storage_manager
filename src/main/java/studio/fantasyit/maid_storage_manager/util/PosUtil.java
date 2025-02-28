@@ -63,9 +63,7 @@ public class PosUtil {
         if (tmp != null) return tmp;
 
         tmp = findAroundFromStandPos(pos.below(depth - 1), consumer, depth);
-        if (tmp != null) return tmp;
-
-        return null;
+        return tmp;
     }
 
     static public @NotNull BlockPos getEntityPos(Level level, @NotNull BlockPos pos) {

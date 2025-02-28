@@ -5,7 +5,6 @@ import appeng.api.networking.IGridNode;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.parts.IPart;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.AEKey;
 import appeng.api.storage.MEStorage;
 import appeng.blockentity.networking.CableBusBlockEntity;
 import appeng.parts.reporting.AbstractTerminalPart;
@@ -14,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 
 import java.util.Arrays;
@@ -34,10 +32,7 @@ public class Ae2ViewContext implements IStorageInteractContext {
                             .orderedByNearest(maid))
                     .filter(direction -> {
                         IPart part = cbbe.getCableBus().getPart(direction);
-                        if (part instanceof AbstractTerminalPart atp) {
-                            return true;
-                        }
-                        return false;
+                        return part instanceof AbstractTerminalPart atp;
                     })
                     .findFirst();
 
