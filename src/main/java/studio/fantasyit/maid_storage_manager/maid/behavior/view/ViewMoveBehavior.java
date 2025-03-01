@@ -34,9 +34,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (!super.checkExtraStartConditions(worldIn, owner)) return false;
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.VIEW) return false;
-        if (Conditions.isWaitingForReturn(owner)) return true;
-        if (Conditions.takingRequestList(owner)) return false;
-        return Conditions.isInvEmpty(owner);
+        return true;
     }
 
     @Override

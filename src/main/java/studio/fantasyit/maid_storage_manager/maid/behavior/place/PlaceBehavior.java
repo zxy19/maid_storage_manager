@@ -45,7 +45,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         if (Conditions.isWaitingForReturn(maid)) return false;
-        if (Conditions.isInvEmpty(maid)) return false;
+        if (Conditions.isNothingToPlace(maid)) return false;
         if (count >= maid.getAvailableInv(false).getSlots()) return false;
         return context != null && !context.isDone();
     }

@@ -5,8 +5,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -35,6 +39,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
         this.imageHeight = 200;
         this.inventoryLabelY = this.imageHeight - 94;
         this.addButtons();
+        this.addRepeatControl();
     }
 
     protected List<Component> getTooltipForResult(int slot) {
@@ -96,6 +101,69 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
                 },
                 this
         ));
+    }
+
+    private void addRepeatControl() {
+        this.addRenderableWidget(new AbstractWidget(
+                128,
+                20,
+                32,
+                28,
+                Component.translatable("gui.maid_storage_manager.request_list.repeat")
+        ) {
+            @Override
+            public int getX() {
+                return getGuiLeft() + super.getX();
+            }
+
+            @Override
+            public int getY() {
+                return getGuiTop() + super.getY();
+            }
+
+            @Override
+            protected void renderWidget(GuiGraphics graphics, int p_268034_, int p_268009_, float p_268085_) {
+                graphics.drawString(Minecraft.getInstance().font,
+                        Component.translatable("gui.maid_storage_manager.request_list.repeat"),
+                        this.getX() + 1,
+                        this.getY() + 1,
+                        0xFFFFFF,
+                        false
+                );
+                MutableComponent repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.never");
+                if (getMenu().repeat != -1) {
+                    repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.repeat_desc", String.valueOf(getMenu().repeat));
+                }
+                graphics.drawString(Minecraft.getInstance().font,
+                        repeatDesc,
+                        this.getX() + 1,
+                        this.getY() + 12,
+                        0x2e7d32,
+                        false
+                );
+            }
+
+            @Override
+            public boolean mouseScrolled(double p_94734_, double p_94735_, double p_94736_) {
+                int dv = (int) (Math.abs(p_94736_) / p_94736_);
+                if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
+                    dv *= 10;
+                if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL))
+                    dv *= 10;
+                getMenu().repeat = Math.max(-1, Math.min(getMenu().repeat + dv, 20 * 3600));
+                Network.sendItemSelectorGuiPacket(
+                        ItemSelectorGuiPacket.SlotType.REPEAT,
+                        0,
+                        getMenu().repeat
+                );
+                return true;
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
+                p_259858_.add(NarratedElementType.HINT, this.getMessage());
+            }
+        });
     }
 
     @Override

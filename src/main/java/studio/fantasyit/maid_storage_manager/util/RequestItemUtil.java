@@ -15,11 +15,15 @@ public class RequestItemUtil {
     public static void stopJobAndStoreOrThrowItem(EntityMaid maid, @Nullable IStorageContext storeTo) {
         Level level = maid.level();
         ItemStack reqList = maid.getMainHandItem();
-        //1 尝试放入指定位置
-        if (storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
+        CompoundTag tag = reqList.getOrCreateTag();
+        //1 尝试放入指定位置。例外：如果有循环请求任务，那么不会存入目标容器.
+        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) >= 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
             //没能成功，尝试背包
-            CompoundTag tag = reqList.getOrCreateTag();
-            tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
+            if(tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) >= 0){
+                tag.putInt(RequestListItem.TAG_COOLING_DOWN, tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL));
+            }else{
+                tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
+            }
             reqList.setTag(tag);
             if (!InvUtil.tryPlace(maid.getAvailableBackpackInv(), reqList).isEmpty()) {
                 //背包也没空。。扔地上站未来

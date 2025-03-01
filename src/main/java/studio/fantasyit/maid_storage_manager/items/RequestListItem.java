@@ -23,9 +23,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
@@ -44,6 +46,8 @@ public class RequestListItem extends Item implements MenuProvider {
     public static final String TAG_MATCH_TAG = "match_tag";
     public static final String TAG_UUID = "uuid";
     public static final String TAG_IGNORE_TASK = "ignore_task";
+    public static final String TAG_COOLING_DOWN = "cooling";
+    public static final String TAG_REPEAT_INTERVAL = "interval";
 
     public RequestListItem() {
         super(
@@ -98,6 +102,7 @@ public class RequestListItem extends Item implements MenuProvider {
             tmp.putInt(RequestListItem.TAG_ITEMS_STORED, 0);
             list.set(i, tmp);
         }
+        tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
@@ -111,6 +116,31 @@ public class RequestListItem extends Item implements MenuProvider {
             return false;
         CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
         return tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
+    }
+
+    public static boolean isCoolingDown(ItemStack item) {
+        if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return false;
+        if (!item.hasTag())
+            return false;
+        CompoundTag tag = Objects.requireNonNull(item.getTag());
+        return tag.getInt(TAG_COOLING_DOWN) > 0;
+    }
+
+    public static void tickCoolingDown(ItemStack item) {
+        if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return;
+        if (!item.hasTag())
+            return;
+        CompoundTag tag = Objects.requireNonNull(item.getTag());
+        if (tag.getInt(TAG_COOLING_DOWN) > 0) {
+            tag.putInt(TAG_COOLING_DOWN, tag.getInt(TAG_COOLING_DOWN) - 1);
+            item.setTag(tag);
+            if (tag.getInt(TAG_COOLING_DOWN) == 0) {
+                DebugData.getInstance().sendMessage("Cooling Done(clear_repeat)");
+                clearItemProcess(item);
+            }
+        }
     }
 
     @Override
@@ -203,6 +233,14 @@ public class RequestListItem extends Item implements MenuProvider {
                 }
                 toolTip.add(component);
             }
+        }
+
+        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) >= 0) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL)));
+            if (tag.getInt(RequestListItem.TAG_COOLING_DOWN) > 0) {
+                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", tag.getInt(RequestListItem.TAG_COOLING_DOWN)).withStyle(ChatFormatting.GREEN));
+            }
+
         }
     }
 

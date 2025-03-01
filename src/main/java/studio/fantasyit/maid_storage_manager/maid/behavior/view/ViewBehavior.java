@@ -37,15 +37,14 @@ public class ViewBehavior extends MaidCheckRateTask {
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (!super.checkExtraStartConditions(worldIn, owner)) return false;
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.VIEW) return false;
-        if (MemoryUtil.getResorting(owner).hasTarget()) return false;
         if (!MemoryUtil.getViewedInventory(owner).hasTarget()) return false;
         return Conditions.hasReachedValidTargetOrReset(owner);
     }
 
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
-        if (Conditions.isWaitingForReturn(maid)) return true;
-        if (!Conditions.isInvEmpty(maid)) return false;
+        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW) return false;
+        if (!Conditions.isNothingToPlace(maid)) return false;
         return context != null && !context.isDone();
     }
 

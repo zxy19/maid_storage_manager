@@ -24,6 +24,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     public FilterContainer filteredItems;
     public boolean matchTag = false;
     public boolean shouldClear = false;
+    public int repeat = -1;
 
     public ItemSelectorMenu(int p_38852_, Player player) {
         super(GuiRegistry.ITEM_SELECTOR_MENU.get(), p_38852_);
@@ -33,6 +34,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         filteredItems = new FilterContainer(10, this);
         filteredItems.deserializeNBT(tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
         matchTag = tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
+        repeat = tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL);
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
@@ -59,6 +61,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         }
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putBoolean(RequestListItem.TAG_MATCH_TAG, matchTag);
+        tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat);
         target.setTag(tag);
     }
 
@@ -131,7 +134,6 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     }
 
     private void addSpecialSlots() {
-
         addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -155,6 +157,17 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 if (p_40208_ != 0) {
                     clear();
                 }
+            }
+        });
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return repeat;
+            }
+
+            @Override
+            public void set(int p_40208_) {
+                repeat = p_40208_;
             }
         });
     }
@@ -203,6 +216,10 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
             case CLEAR:
                 clear();
                 break;
+            case REPEAT:
+                repeat = value;
+                save();
+                break;
         }
     }
 
@@ -210,6 +227,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     public boolean canDragTo(Slot p_38945_) {
         return !(p_38945_ instanceof FilterSlot);
     }
+
     protected static class CountSlot extends DataSlot {
 
         private final MutableInt count;

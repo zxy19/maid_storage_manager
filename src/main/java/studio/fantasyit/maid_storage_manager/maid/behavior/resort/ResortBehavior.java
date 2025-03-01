@@ -34,11 +34,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid maid) {
-        if (!super.checkExtraStartConditions(worldIn, maid)) return false;
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.RESORT) return false;
-        if (Conditions.takingRequestList(maid)) return false;
-        if (Conditions.isWaitingForReturn(maid)) return false;
-        if (!Conditions.isInvEmpty(maid)) return false;
         if (!MemoryUtil.getResorting(maid).hasTarget()) return false;
         return Conditions.hasReachedValidTargetOrReset(maid);
     }

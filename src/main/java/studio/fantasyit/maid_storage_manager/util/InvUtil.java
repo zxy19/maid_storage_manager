@@ -14,8 +14,11 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class InvUtil {
     public static boolean hasAnyFree(IItemHandler container) {
@@ -100,5 +103,15 @@ public class InvUtil {
             }
         }
         return true;
+    }
+    public static List<ItemStack> forSlotMatches(IItemHandler container, Predicate<ItemStack> matches){
+        List<ItemStack> list = new ArrayList<>();
+        for (int i = 0; i < container.getSlots(); i++) {
+            ItemStack stackInSlot = container.getStackInSlot(i);
+            if (matches.test(stackInSlot)) {
+                list.add(stackInSlot);
+            }
+        }
+        return list;
     }
 }

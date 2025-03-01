@@ -43,7 +43,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.PLACE) return false;
         if (Conditions.isWaitingForReturn(owner)) return false;
         if (Conditions.takingRequestList(owner)) return false;
-        return !Conditions.isInvEmpty(owner);
+        return !Conditions.isNothingToPlace(owner);
     }
 
     @Override

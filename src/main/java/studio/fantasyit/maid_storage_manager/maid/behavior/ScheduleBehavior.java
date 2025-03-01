@@ -34,9 +34,10 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
             if (restartAt < level.getServer().getTickCount())
                 MemoryUtil.clearReturnWorkSchedule(maid);
             next = Schedule.NO_SCHEDULE;
+            //如果拿着列表且背包有空就可以开始处理请求，否则还得继续放东西
         } else if (Conditions.takingRequestList(maid) && (last == Schedule.REQUEST || Conditions.inventoryNotFull(maid)))
             next = Schedule.REQUEST;
-        else if (!Conditions.isInvEmpty(maid))
+        else if (!Conditions.isNothingToPlace(maid))
             next = Schedule.PLACE;
         else if (MemoryUtil.getResorting(maid).hasTarget())
             next = Schedule.RESORT;

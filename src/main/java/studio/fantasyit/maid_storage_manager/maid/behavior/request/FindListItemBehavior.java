@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
@@ -22,23 +23,25 @@ import java.util.UUID;
 /**
  * 闲置，在背包查找请求清单，找到则放到主手上
  */
-public class FindListItemBehavior extends MaidCheckRateTask {
+public class FindListItemBehavior extends Behavior<EntityMaid> {
     public FindListItemBehavior() {
         super(Map.of());
     }
 
     @Override
-    protected boolean checkExtraStartConditions(ServerLevel p_22538_, EntityMaid entityMaid) {
-        if (Conditions.takingRequestList(entityMaid)) {
-            UUID lastWorkUUID = MemoryUtil.getRequestProgress(entityMaid).getWorkUUID();
-            return !lastWorkUUID.equals(RequestListItem.getUUID(entityMaid.getMainHandItem()));
+    protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
+        if (Conditions.takingRequestList(maid)) {
+            UUID lastWorkUUID = MemoryUtil.getRequestProgress(maid).getWorkUUID();
+            return !lastWorkUUID.equals(RequestListItem.getUUID(maid.getMainHandItem()));
         }
-        IItemHandler maidInv = entityMaid.getAvailableBackpackInv();
+        IItemHandler maidInv = maid.getAvailableBackpackInv();
         for (int i = 0; i < maidInv.getSlots(); i++) {
             ItemStack item = maidInv.getStackInSlot(i);
-            if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-                if (!RequestListItem.isIgnored(item))
+            if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                RequestListItem.tickCoolingDown(item);
+                if (!RequestListItem.isIgnored(item) && !RequestListItem.isCoolingDown(item))
                     return true;
+            }
         }
         return false;
     }
@@ -51,7 +54,7 @@ public class FindListItemBehavior extends MaidCheckRateTask {
             for (int i = 0; i < maidInv.getSlots(); i++) {
                 ItemStack item = maidInv.getStackInSlot(i);
                 if (maidInv.getStackInSlot(i).is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                    if (!RequestListItem.isIgnored(item)) {
+                    if (!RequestListItem.isIgnored(item) && !RequestListItem.isCoolingDown(item)) {
                         @NotNull ItemStack itemstack = maidInv.extractItem(i, 1, false);
                         maidInv.insertItem(i, maid.getMainHandItem(), false);
                         maid.setItemInHand(InteractionHand.MAIN_HAND, itemstack);

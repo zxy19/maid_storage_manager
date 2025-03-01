@@ -37,8 +37,6 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
-        if (!Conditions.takingRequestList(maid)) return false;
-
         if (Conditions.listAllDone(maid)) return true;
         return Conditions.inventoryFull(maid);
     }

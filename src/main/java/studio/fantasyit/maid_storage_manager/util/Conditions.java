@@ -60,7 +60,11 @@ public class Conditions {
         return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.RETURN_TO_SCHEDULE_AT.get());
     }
 
-    public static boolean isInvEmpty(EntityMaid maid) {
-        return InvUtil.isEmpty(maid.getAvailableInv(false));
+    public static boolean isNothingToPlace(EntityMaid maid) {
+        return InvUtil.forSlotMatches(
+                maid.getAvailableInv(false),
+                //请求列表如果不处在忽略工作状态，则说明可以进行
+                slot -> (!slot.is(ItemRegistry.REQUEST_LIST_ITEM.get()) || !RequestListItem.isIgnored(slot))
+        ).stream().allMatch(stack -> stack.isEmpty());
     }
 }

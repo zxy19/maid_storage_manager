@@ -27,11 +27,7 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
-        if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.RESORT) return false;
-        if (Conditions.isWaitingForReturn(owner)) return false;
-        if (Conditions.takingRequestList(owner)) return false;
-        if (!Conditions.isInvEmpty(owner)) return false;
-        return MemoryUtil.getResorting(owner).hasTarget();
+        return MemoryUtil.getCurrentlyWorking(owner) == ScheduleBehavior.Schedule.RESORT;
     }
 
     @Override
