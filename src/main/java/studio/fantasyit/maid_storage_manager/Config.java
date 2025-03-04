@@ -32,9 +32,9 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue PLACE_SPEED = BUILDER
             .comment("Speed when placing items to chests")
             .defineInRange("place_speed", 0.5, 0.0, 3.0);
-    private static final ForgeConfigSpec.ConfigValue<String> DEBUG = BUILDER
-            .comment("debug")
-            .define("debug", "-0.86,0.1,-0.55,0.08,0.15,0.45,0.8");
+    private static final ForgeConfigSpec.IntValue MAX_STORE_TRIES = BUILDER
+            .comment("Maximum times Maid will try to store items")
+            .defineInRange("max_store_tries", 3, 0, 999999);
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -44,6 +44,7 @@ public class Config {
     public static double viewSpeed;
     public static double placeSpeed;
     public static List<Double> debug;
+    public static int maxStoreTries;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -52,6 +53,6 @@ public class Config {
         collectSpeed = COLLECT_SPEED.get();
         viewSpeed = VIEW_SPEED.get();
         placeSpeed = PLACE_SPEED.get();
-        debug = Arrays.stream(DEBUG.get().split(",")).map(Double::parseDouble).collect(Collectors.toList());
+        maxStoreTries = MAX_STORE_TRIES.get();
     }
 }

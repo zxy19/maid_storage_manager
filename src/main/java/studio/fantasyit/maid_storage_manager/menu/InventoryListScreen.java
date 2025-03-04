@@ -78,7 +78,7 @@ public class InventoryListScreen extends Screen {
         this.columns = (this.width - 10) / 18;
         this.rows = (this.height - 50) / 18;
 
-        this.gridSize = this.width * this.columns;
+        this.gridSize = this.rows * this.columns;
         this.gridStart = 0;
 
         this.prevButton.setX(this.left);

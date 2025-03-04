@@ -4,8 +4,11 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 
 import java.util.*;
 
@@ -85,8 +88,8 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return viewedInventory;
     }
 
-    public Map<BlockPos, List<ItemCount>> positionFlatten() {
-        Map<BlockPos, List<ItemCount>> result = new HashMap<>();
+    public Map<Storage, List<ItemCount>> positionFlatten() {
+        Map<Storage, List<ItemCount>> result = new HashMap<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> blockEntry : viewedInventory.entrySet()) {
             List<ItemCount> itemCounts = new ArrayList<>();
             for (Map.Entry<String, List<ItemCount>> slot : blockEntry.getValue().entrySet()) {
@@ -104,12 +107,9 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                         itemCounts.add(itemCount);
                 });
             }
-            String[] posAxis = blockEntry.getKey().split(", ");
-            if (posAxis.length == 3) {
-                BlockPos blockPos = new BlockPos(Integer.parseInt(posAxis[0]),
-                        Integer.parseInt(posAxis[1]),
-                        Integer.parseInt(posAxis[2]));
-                result.put(blockPos, itemCounts);
+            Storage pos = Storage.fromStoreString(blockEntry.getKey());
+            if (pos != null) {
+                result.put(pos, itemCounts);
             }
         }
         return result;
@@ -139,11 +139,11 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     }
 
 
-    public void addItem(BlockPos pos, ItemStack itemStack) {
+    public void addItem(Storage pos, ItemStack itemStack) {
         if (pos == null || itemStack == null || itemStack.isEmpty()) return;
-        if (!viewedInventory.containsKey(pos.toShortString()))
-            viewedInventory.put(pos.toShortString(), new HashMap<>());
-        Map<String, List<ItemCount>> map = viewedInventory.get(pos.toShortString());
+        if (!viewedInventory.containsKey(pos.toStoreString()))
+            viewedInventory.put(pos.toStoreString(), new HashMap<>());
+        Map<String, List<ItemCount>> map = viewedInventory.get(pos.toStoreString());
 
         String itemKey = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString();
         List<ItemCount> list = map.getOrDefault(itemKey, new ArrayList<>());
@@ -159,26 +159,20 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         if (!found)
             list.add(new ItemCount(itemStack.copyWithCount(1), itemStack.getCount()));
         map.put(itemKey, list);
-        viewedInventory.put(pos.toShortString(), map);
+        viewedInventory.put(pos.toStoreString(), map);
     }
 
     public void removeUnvisited() {
         ArrayList<String> posList = new ArrayList<>(viewedInventory.keySet());
         for (String pos : posList) {
-            String[] posAxis = pos.split(", ");
-            if (posAxis.length == 3) {
-                BlockPos blockPos = new BlockPos(Integer.parseInt(posAxis[0]),
-                        Integer.parseInt(posAxis[1]),
-                        Integer.parseInt(posAxis[2]));
-
-                if (!isVisitedPos(blockPos))
-                    viewedInventory.remove(pos);
-            }
+            Storage storage = Storage.fromStoreString(pos);
+            if (storage == null || !isVisitedPos(storage))
+                viewedInventory.remove(pos);
         }
     }
 
-    public void resetViewedInvForPos(BlockPos pos) {
-        viewedInventory.remove(pos.toShortString());
-        viewedInventory.put(pos.toShortString(), new HashMap<>());
+    public void resetViewedInvForPos(Storage pos) {
+        viewedInventory.remove(pos.toStoreString());
+        viewedInventory.put(pos.toStoreString(), new HashMap<>());
     }
 }

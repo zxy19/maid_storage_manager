@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,9 +31,12 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RequestListItem extends Item implements MenuProvider {
@@ -160,15 +164,30 @@ public class RequestListItem extends Item implements MenuProvider {
             if (!serverPlayer.isShiftKeyDown())
                 return InteractionResult.PASS;
             BlockPos clickedPos = context.getClickedPos();
-            BlockEntity be = context.getLevel().getBlockEntity(clickedPos);
-            if (be != null && be.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()) {
+            Storage validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
+            if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
                 CompoundTag tag = item.getOrCreateTag();
-                if (tag.contains(TAG_STORAGE) && NbtUtils.readBlockPos(tag.getCompound(TAG_STORAGE)).equals(clickedPos)) {
-                    tag.remove(TAG_STORAGE);
-                    serverPlayer.sendSystemMessage(Component.translatable("interaction.clear_storage"));
+                if (tag.contains(TAG_STORAGE)) {
+                    Storage storage = Storage.fromNbt(tag.getCompound(TAG_STORAGE));
+                    if (storage.getPos().equals(clickedPos) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
+                        tag.remove(TAG_STORAGE);
+                        serverPlayer.sendSystemMessage(Component.translatable("interaction.clear_storage"));
+                    } else {
+                        if (storage.pos.equals(clickedPos)) {
+                            storage.side = context.getClickedFace();
+                        } else {
+                            storage.pos = clickedPos;
+                            storage.side = null;
+                        }
+                        serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage",
+                                clickedPos.getX(),
+                                clickedPos.getY(),
+                                clickedPos.getZ()));
+                        tag.put(TAG_STORAGE, storage.toNbt());
+                    }
                 } else {
-                    tag.put(TAG_STORAGE, NbtUtils.writeBlockPos(clickedPos));
+                    tag.put(TAG_STORAGE, validTarget.toNbt());
                     serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage",
                             clickedPos.getX(),
                             clickedPos.getY(),
@@ -199,7 +218,8 @@ public class RequestListItem extends Item implements MenuProvider {
         if (!tag.contains(RequestListItem.TAG_STORAGE)) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
         } else {
-            BlockPos storagePos = NbtUtils.readBlockPos(tag.getCompound(RequestListItem.TAG_STORAGE));
+            Storage storage = Storage.fromNbt(tag.getCompound(RequestListItem.TAG_STORAGE));
+            BlockPos storagePos = storage.getPos();
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.storage", storagePos.getX(), storagePos.getY(), storagePos.getZ()));
         }
 
@@ -235,7 +255,7 @@ public class RequestListItem extends Item implements MenuProvider {
             }
         }
 
-        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) >= 0) {
+        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL)));
             if (tag.getInt(RequestListItem.TAG_COOLING_DOWN) > 0) {
                 toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", tag.getInt(RequestListItem.TAG_COOLING_DOWN)).withStyle(ChatFormatting.GREEN));
@@ -285,7 +305,7 @@ public class RequestListItem extends Item implements MenuProvider {
                 .toList();
     }
 
-    public static @Nullable BlockPos getStorageBlock(ItemStack stack) {
+    public static @Nullable Storage getStorageBlock(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
             return null;
         if (!stack.hasTag())
@@ -293,7 +313,7 @@ public class RequestListItem extends Item implements MenuProvider {
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         if (!tag.contains(TAG_STORAGE))
             return null;
-        return NbtUtils.readBlockPos(tag.getCompound(TAG_STORAGE));
+        return Storage.fromNbt(tag.getCompound(TAG_STORAGE));
     }
 
     /**

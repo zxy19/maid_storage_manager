@@ -2,11 +2,15 @@ package studio.fantasyit.maid_storage_manager.maid;
 
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
+import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.ai.IExtraMaidBrain;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
+import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.List;
@@ -17,6 +21,11 @@ public class MaidExtension implements ILittleMaid {
     public void addMaidTask(TaskManager manager) {
         ILittleMaid.super.addMaidTask(manager);
         manager.add(new StorageManageTask());
+    }
+
+    @Override
+    public void bindMaidBauble(BaubleManager manager) {
+        manager.bind(ItemRegistry.STORAGE_DEFINE_BAUBLE.get(), (IMaidBauble) ItemRegistry.STORAGE_DEFINE_BAUBLE.get());
     }
 
     @Override

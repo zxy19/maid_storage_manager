@@ -11,6 +11,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
@@ -51,32 +52,15 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
-        IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(MemoryUtil.getRequestProgress(maid).getTargetType()));
+        IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(MemoryUtil.getRequestProgress(maid).getTarget().getType()));
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return;
-        ResourceLocation type = MemoryUtil.getRequestProgress(maid).getTargetType();
-        BlockPos pos = MemoryUtil.getRequestProgress(maid).getTargetPos();
+        Storage target = MemoryUtil.getRequestProgress(maid).getTarget();
 
-        context = storage.onStartCollect(level, maid, pos);
+        context = storage.onStartCollect(level, maid, target);
         if (context != null)
-            context.start(maid, level, pos);
+            context.start(maid, level, target);
     }
 
-    @Override
-    protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
-        super.stop(level, maid, p_22550_);
-        if (context != null) {
-            context.finish();
-            if (context.isDone()) {
-                BlockPos targetPos = MemoryUtil.getRequestProgress(maid).getTargetPos();
-                MemoryUtil.getRequestProgress(maid).addVisitedPos(targetPos);
-                InvUtil.checkNearByContainers(level, targetPos, (pos) -> {
-                    MemoryUtil.getRequestProgress(maid).addVisitedPos(pos);
-                });
-            }
-        }
-        MemoryUtil.getRequestProgress(maid).clearTarget();
-        MemoryUtil.clearTarget(maid);
-    }
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
@@ -110,4 +94,20 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         }
     }
 
+    @Override
+    protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        super.stop(level, maid, p_22550_);
+        if (context != null) {
+            context.finish();
+            if (context.isDone()) {
+                Storage target = MemoryUtil.getRequestProgress(maid).getTarget();
+                MemoryUtil.getRequestProgress(maid).addVisitedPos(target);
+                InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
+                    MemoryUtil.getRequestProgress(maid).addVisitedPos(target.sameType(pos, null));
+                });
+            }
+        }
+        MemoryUtil.getRequestProgress(maid).clearTarget();
+        MemoryUtil.clearTarget(maid);
+    }
 }

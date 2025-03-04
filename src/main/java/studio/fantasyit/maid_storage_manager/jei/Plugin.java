@@ -8,6 +8,8 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 
 @JeiPlugin
@@ -21,7 +23,7 @@ public class Plugin implements IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addGhostIngredientHandler(ItemSelectorScreen.class, new GhostIngredientHandler());
+        registration.addGhostIngredientHandler(AbstractFilterScreen.class, new GhostIngredientHandler());
     }
 
     @Override

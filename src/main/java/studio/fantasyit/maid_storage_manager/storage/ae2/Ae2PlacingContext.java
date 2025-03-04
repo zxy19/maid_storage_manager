@@ -9,10 +9,10 @@ import appeng.api.storage.MEStorage;
 import appeng.blockentity.networking.CableBusBlockEntity;
 import appeng.parts.reporting.AbstractTerminalPart;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
 import java.util.Arrays;
@@ -22,8 +22,8 @@ public class Ae2PlacingContext implements IStorageInsertableContext {
     private MEStorage inv;
 
     @Override
-    public void start(EntityMaid maid, ServerLevel level, BlockPos target) {
-        if (level.getBlockEntity(target) instanceof CableBusBlockEntity cbbe) {
+    public void start(EntityMaid maid, ServerLevel level, Storage target) {
+        if (level.getBlockEntity(target.pos) instanceof CableBusBlockEntity cbbe) {
             Optional<Direction> first = Arrays.stream(Direction
                             .orderedByNearest(maid))
                     .filter(direction -> {

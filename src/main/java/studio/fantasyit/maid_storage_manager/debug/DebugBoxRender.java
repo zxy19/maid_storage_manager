@@ -18,12 +18,23 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
 import java.util.List;
+import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public final class DebugBoxRender {
+    private static final Map<String, float[]> defs = Map.of(
+            "finding", new float[]{0.55F, 0.24F, 0.63F, 0.5F},
+            "viewing", new float[]{0.37F, 0.43F, 0.63F, 0.5F},
+            "placing", new float[]{0.37F, 0.43F, 0.63F, 0.5F},
+            "target", new float[]{0, 1.0F, 0, 0.5F},
+            "crafting", new float[]{0.55F, 0.24F, 0.63F, 0.5F}
+    );
+
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {
         if (!Config.enableDebug) return;
@@ -43,30 +54,13 @@ public final class DebugBoxRender {
                         EntitySelector.NO_SPECTATORS
                 );
 
+
                 for (EntityMaid maid : entities) {
-                    DebugData.getInstance().getData("finding_" + maid.getUUID()).ifPresent(data -> {
-                        if (data.isEmpty()) return;
-                        BlockPos pos = NbtUtils.readBlockPos(data);
-                        AABB aabb = new AABB(pos).move(position);
-                        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0.63F, 0.21F, 0.23F, 0.5F);
-                    });
-
-                    DebugData.getInstance().getData("viewing_" + maid.getUUID()).ifPresent(data -> {
-                        if (data.isEmpty()) return;
-                        BlockPos pos = NbtUtils.readBlockPos(data);
-                        AABB aabb = new AABB(pos).move(position);
-                        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0.55F, 0.24F, 0.63F, 0.5F);
-                    });
-                    DebugData.getInstance().getData("placing_" + maid.getUUID()).ifPresent(data -> {
-                        if (data.isEmpty()) return;
-                        BlockPos pos = NbtUtils.readBlockPos(data);
-                        AABB aabb = new AABB(pos).move(position);
-                        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0.37F, 0.43F, 0.63F, 0.5F);
-                    });
-
+                    for (Map.Entry<String, float[]> entry : defs.entrySet()) {
+                        DebugData.getInstance().getData(entry.getKey() + "_" + maid.getUUID()).ifPresent(data -> {
+                            BoxRenderUtil.renderStorage(Storage.fromNbt(data), entry.getValue(), event, entry.getKey());
+                        });
+                    }
                     DebugData.getInstance().getData("target_" + maid.getUUID()).ifPresent(data -> {
                         if (data.isEmpty()) return;
                         BlockPos pos = NbtUtils.readBlockPos(data);

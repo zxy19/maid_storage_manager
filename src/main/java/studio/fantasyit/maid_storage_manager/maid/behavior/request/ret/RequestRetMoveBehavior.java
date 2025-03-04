@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
@@ -37,14 +38,15 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (!Conditions.takingRequestList(maid)) return false;
         if (Conditions.listAllDone(maid)) return true;
         return Conditions.inventoryFull(maid);
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        @Nullable BlockPos target = RequestListItem.getStorageBlock(maid.getMainHandItem());
-        @Nullable Pair<ResourceLocation, BlockPos> storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target);
+        @Nullable Storage target = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        @Nullable Storage storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
         //如果没有绑定存储方块位置，那么直接停止任务，扔掉或者存储清单，三十秒后进行日常工作
         if (target == null || storage == null) {
             DebugData.getInstance().sendMessage("[REQUEST_RET] No target");
@@ -54,16 +56,16 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             return;
         }
         //寻找落脚点
-        BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target);
+        BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
 
         if (goal == null) {
             DebugData.getInstance().sendMessage("[REQUEST_RET] Unavailable target, waiting");
             return;
         }
-        DebugData.getInstance().sendMessage("[REQUEST_RET] Return target %s", goal.toShortString());
+        DebugData.getInstance().sendMessage("[REQUEST_RET] Return target %s", storage);
 
         MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
         MemoryUtil.getRequestProgress(maid).setReturn();
-        MemoryUtil.getRequestProgress(maid).setTarget(storage.getA(), storage.getB());
+        MemoryUtil.getRequestProgress(maid).setTarget(storage);
     }
 }

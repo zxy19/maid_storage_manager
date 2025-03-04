@@ -13,6 +13,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
@@ -28,7 +29,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
         this.setMaxCheckRate(100);
     }
 
-    Pair<ResourceLocation, BlockPos> chestPos = null;
+    Storage chestPos = null;
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
@@ -47,8 +48,8 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
             DebugData.getInstance().sendMessage("[VIEW]Reset, waiting");
         } else {
             if (chestPos != null) {
-                MemoryUtil.getViewedInventory(maid).setTarget(chestPos.getA(), chestPos.getB());
-                maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.getB()));
+                MemoryUtil.getViewedInventory(maid).setTarget(chestPos);
+                maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.getPos()));
             }
         }
     }
@@ -59,15 +60,12 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
                                    @NotNull BlockPos blockPos) {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
         //寻找当前格子能触碰的箱子
-        Pair<ResourceLocation, BlockPos> canTouchChest = MoveUtil.findTargetForPos(serverLevel,
+        Storage canTouchChest = MoveUtil.findTargetForPos(serverLevel,
                 entityMaid,
                 blockPos,
                 MemoryUtil.getViewedInventory(entityMaid));
         if (canTouchChest != null) {
-            DebugData.getInstance().sendMessage("[VIEW]Target %s (%s)",
-                    canTouchChest.getB().toShortString(),
-                    canTouchChest.getA().toString()
-            );
+            DebugData.getInstance().sendMessage("[VIEW]Target %s", canTouchChest);
             chestPos = canTouchChest;
             return true;
         }

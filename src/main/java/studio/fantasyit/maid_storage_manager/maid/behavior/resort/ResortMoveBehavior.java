@@ -14,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
@@ -32,8 +33,8 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        @Nullable BlockPos target = MemoryUtil.getResorting(maid).getTargetPos();
-        @Nullable Pair<ResourceLocation, BlockPos> storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target);
+        @Nullable Storage target = MemoryUtil.getResorting(maid).getTarget();
+        @Nullable Storage storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.pos, target.side);
 
         //整理消失
         if (target == null || storage == null) {
@@ -43,7 +44,7 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
             return;
         }
 
-        if (!storage.getA().equals(MemoryUtil.getResorting(maid).getTargetType())) {
+        if (!storage.getType().equals(MemoryUtil.getResorting(maid).getTarget().getType())) {
             DebugData.getInstance().sendMessage("[RESORT]Target Changed");
             MemoryUtil.getResorting(maid).clearNeedToResort();
             MemoryUtil.getResorting(maid).clearTarget();
@@ -51,7 +52,7 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
         }
 
         //寻找落脚点
-        BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target);
+        BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.getPos());
 
         if (goal == null) {
             return;

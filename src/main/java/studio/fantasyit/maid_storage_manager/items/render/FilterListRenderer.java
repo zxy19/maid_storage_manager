@@ -82,7 +82,7 @@ public class FilterListRenderer extends BlockEntityWithoutLevelRenderer {
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
-                        false,
+                        true,
                         pose,
                         multiBufferSource,
                         light,

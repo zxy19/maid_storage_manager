@@ -84,6 +84,10 @@ public class Network {
                             msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
                             ism.save();
                             ism.broadcastChanges();
+                        } else if (sender != null && sender.containerMenu instanceof FilterMenu ism) {
+                            msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
+                            ism.save();
+                            ism.broadcastChanges();
                         }
                     });
                     context.get().setPacketHandled(true);

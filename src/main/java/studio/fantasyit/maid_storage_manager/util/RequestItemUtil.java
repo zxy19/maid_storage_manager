@@ -17,9 +17,9 @@ public class RequestItemUtil {
         ItemStack reqList = maid.getMainHandItem();
         CompoundTag tag = reqList.getOrCreateTag();
         //1 尝试放入指定位置。例外：如果有循环请求任务，那么不会存入目标容器.
-        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) >= 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
+        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
             //没能成功，尝试背包
-            if(tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) >= 0){
+            if(tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0){
                 tag.putInt(RequestListItem.TAG_COOLING_DOWN, tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL));
             }else{
                 tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);

@@ -3,12 +3,16 @@ package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.LazyOptional;
@@ -36,14 +40,19 @@ public class SimulateTargetInteractHelper {
     int currentSlot = 0;
     int restTick = 0;
 
-    public SimulateTargetInteractHelper(EntityMaid maid, BlockPos targetPos, ServerLevel level) {
+    public SimulateTargetInteractHelper(EntityMaid maid, BlockPos targetPos, @Nullable Direction side, ServerLevel level) {
         this.maid = maid;
         this.target = targetPos;
         this.level = level;
         this.blockEntity = level.getBlockEntity(target);
         this.opener = ChestOpener.getOrCreate(level, maid);
         if (blockEntity != null) {
-            LazyOptional<IItemHandler> capability = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER);
+            LazyOptional<IItemHandler> capability;
+            if (side == null)
+                capability = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER);
+            else
+                capability = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side);
+
             if (capability.isPresent()) {
                 itemHandler = capability.orElseThrow(RuntimeException::new);
             }
@@ -66,6 +75,37 @@ public class SimulateTargetInteractHelper {
                 } catch (IllegalAccessException ignore) {
                 }
             }
+        }
+        if (blockEntity instanceof WorldlyContainer wc) {
+            return Optional.of(new ContainerOpenersCounter() {
+                @Override
+                public void decrementOpeners(Player p_155469_, Level p_155470_, BlockPos p_155471_, BlockState p_155472_) {
+                    wc.stopOpen(p_155469_);
+                }
+
+                @Override
+                public void incrementOpeners(Player p_155453_, Level p_155454_, BlockPos p_155455_, BlockState p_155456_) {
+                    wc.startOpen(p_155453_);
+                }
+
+                @Override
+                protected void onOpen(Level p_155460_, BlockPos p_155461_, BlockState p_155462_) {
+
+                }
+
+                @Override
+                protected void onClose(Level p_155473_, BlockPos p_155474_, BlockState p_155475_) {
+                }
+
+                @Override
+                protected void openerCountChanged(Level p_155463_, BlockPos p_155464_, BlockState p_155465_, int p_155466_, int p_155467_) {
+                }
+
+                @Override
+                protected boolean isOwnContainer(Player p_155451_) {
+                    return false;
+                }
+            });
         }
         return Optional.empty();
     }

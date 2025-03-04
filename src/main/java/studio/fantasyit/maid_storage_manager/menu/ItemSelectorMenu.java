@@ -3,15 +3,18 @@ package studio.fantasyit.maid_storage_manager.menu;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
@@ -22,9 +25,10 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     Player player;
     ItemStack target;
     public FilterContainer filteredItems;
+    public SimpleContainer storageHandler;
     public boolean matchTag = false;
     public boolean shouldClear = false;
-    public int repeat = -1;
+    public int repeat = 0;
 
     public ItemSelectorMenu(int p_38852_, Player player) {
         super(GuiRegistry.ITEM_SELECTOR_MENU.get(), p_38852_);
@@ -35,6 +39,14 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         filteredItems.deserializeNBT(tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
         matchTag = tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
         repeat = tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL);
+        storageHandler = new SimpleContainer(1) {
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                save();
+            }
+        };
+        storageHandler.setItem(0, ItemStack.of(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE)));
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
@@ -62,6 +74,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putBoolean(RequestListItem.TAG_MATCH_TAG, matchTag);
         tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat);
+        tag.put(StorageDefineBauble.TAG_STORAGE_DEFINE, storageHandler.getItem(0).serializeNBT());
         target.setTag(tag);
     }
 
@@ -102,7 +115,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
 
     @Override
     public void clicked(int slotId, int dragType, ClickType clickTypeIn, Player player) {
-        if (slotId != -999 && this.getSlot(slotId) instanceof FilterSlot fs) {
+        if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs) {
             int slot = fs.getContainerSlot();
             if (clickTypeIn == ClickType.THROW)
                 return;
@@ -134,6 +147,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     }
 
     private void addSpecialSlots() {
+        addSlot(new Slot(storageHandler, 0, 8, 71));
         addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -226,6 +240,12 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     @Override
     public boolean canDragTo(Slot p_38945_) {
         return !(p_38945_ instanceof FilterSlot);
+    }
+
+    @Override
+    public void slotsChanged(Container p_38868_) {
+        super.slotsChanged(p_38868_);
+        save();
     }
 
     protected static class CountSlot extends DataSlot {

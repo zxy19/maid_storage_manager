@@ -3,45 +3,46 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class AbstractTargetMemory {
+
     public static class TargetData {
         public static final Codec<TargetData> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.list(BlockPos.CODEC)
+                        Codec.list(Storage.CODEC)
                                 .fieldOf("visitedPos")
                                 .forGetter(TargetData::getVisitedPos),
-                        ResourceLocation.CODEC.fieldOf("targetType")
-                                .forGetter(TargetData::getTargetType),
-                        BlockPos.CODEC.fieldOf("targetPos")
-                                .forGetter(TargetData::getTargetPos)
+                        Storage.CODEC.fieldOf("target")
+                                .forGetter(TargetData::getTarget)
                 ).apply(instance, TargetData::new));
         public static ResourceLocation NO_TARGET = new ResourceLocation(MaidStorageManager.MODID, "no_target");
-        public List<BlockPos> visitedPos;
-        public ResourceLocation targetType;
-        public BlockPos targetPos;
+        public List<Storage> visitedPos;
+        public Storage target;
 
-        public TargetData(List<BlockPos> visitedPos, ResourceLocation targetType, BlockPos targetPos) {
+        public TargetData(List<Storage> visitedPos, Storage target) {
             this.visitedPos = new ArrayList<>(visitedPos);
-            this.targetType = targetType;
-            this.targetPos = targetPos;
+            this.target = target;
         }
 
-        public List<BlockPos> getVisitedPos() {
+        public List<Storage> getVisitedPos() {
             return visitedPos;
         }
 
-        public ResourceLocation getTargetType() {
-            return targetType;
+
+        public Storage getTarget() {
+            return target;
         }
 
-        public BlockPos getTargetPos() {
-            return targetPos;
+        public void setTarget(Storage target) {
+            this.target = target;
         }
     }
 
@@ -56,23 +57,14 @@ public abstract class AbstractTargetMemory {
     }
 
     public AbstractTargetMemory() {
-        targetData = new TargetData(new ArrayList<>(), TargetData.NO_TARGET, BlockPos.ZERO);
+        targetData = new TargetData(new ArrayList<>(), new Storage(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty()));
     }
 
-    public ResourceLocation getTargetType() {
-        return targetData.targetType;
-    }
-
-    public BlockPos getTargetPos() {
-        return targetData.targetPos;
-    }
-
-
-    public List<BlockPos> getVisitedPos() {
+    public List<Storage> getVisitedPos() {
         return targetData.visitedPos;
     }
 
-    public void addVisitedPos(BlockPos pos) {
+    public void addVisitedPos(Storage pos) {
         targetData.visitedPos.add(pos);
     }
 
@@ -80,21 +72,23 @@ public abstract class AbstractTargetMemory {
         targetData.visitedPos.clear();
     }
 
-    public boolean isVisitedPos(BlockPos pos) {
+    public boolean isVisitedPos(Storage pos) {
         return targetData.visitedPos.contains(pos);
     }
 
-    public void setTarget(ResourceLocation a, BlockPos b) {
-        targetData.targetType = a;
-        targetData.targetPos = b;
+
+    public Storage getTarget() {
+        return targetData.getTarget();
+    }
+    public void setTarget(Storage target) {
+        targetData.setTarget(target);
     }
 
     public void clearTarget() {
-        targetData.targetType = TargetData.NO_TARGET;
-        targetData.targetPos = BlockPos.ZERO;
+        targetData.setTarget(new Storage(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty()));
     }
 
     public boolean hasTarget() {
-        return !targetData.targetType.equals(TargetData.NO_TARGET);
+        return !targetData.getTarget().type.equals(TargetData.NO_TARGET);
     }
 }

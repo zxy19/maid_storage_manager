@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -74,12 +75,12 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         MemoryUtil.clearReturnWorkSchedule(maid);
 
         //标黑存储箱子相连的所有箱子
-        BlockPos storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        Storage storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
             MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock);
-            DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", storageBlock.toShortString());
-            InvUtil.checkNearByContainers(level, storageBlock, pos -> {
-                MemoryUtil.getRequestProgress(maid).addVisitedPos(pos);
+            DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", storageBlock);
+            InvUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
+                MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock.sameType(pos, null));
                 DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", pos.toShortString());
             });
         }

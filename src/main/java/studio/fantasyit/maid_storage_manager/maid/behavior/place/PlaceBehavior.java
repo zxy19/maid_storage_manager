@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
@@ -26,7 +27,7 @@ import java.util.Map;
 public class PlaceBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     private IStorageContext context = null;
-    BlockPos target = null;
+    Storage target = null;
     int count = 0;
     private boolean changed;
 
@@ -52,12 +53,11 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        ResourceLocation type = MemoryUtil.getPlacingInv(maid).getTargetType();
         if (!MemoryUtil.getPlacingInv(maid).hasTarget()) return;
-        target = MemoryUtil.getPlacingInv(maid).getTargetPos();
+        target = MemoryUtil.getPlacingInv(maid).getTarget();
         context = MaidStorage
                 .getInstance()
-                .getStorage(type)
+                .getStorage(target.getType())
                 .onStartPlace(level, maid, target);
         if (context != null) {
             context.start(maid, level, target);
@@ -105,8 +105,8 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             if (!changed)
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target);
             MemoryUtil.getPlacingInv(maid).clearArrangeItems();
-            InvUtil.checkNearByContainers(level, target, pos -> {
-                MemoryUtil.getPlacingInv(maid).addVisitedPos(pos);
+            InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+                MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
         }
         MemoryUtil.clearTarget(maid);

@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PlaceMoveBehavior extends MaidMoveToBlockTask {
-    private Pair<ResourceLocation, BlockPos> chestPos;
+    private Storage chestPos;
 
     public PlaceMoveBehavior() {
         super((float) Config.placeSpeed, 3);
@@ -60,8 +61,8 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             DebugData.getInstance().sendMessage("[PLACE]Reset (Iter all)");
         } else {
             if (chestPos != null) {
-                MemoryUtil.getPlacingInv(maid).setTarget(chestPos.getA(), chestPos.getB());
-                maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.getB()));
+                MemoryUtil.getPlacingInv(maid).setTarget(chestPos);
+                maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.pos));
             }
         }
     }
@@ -73,29 +74,33 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             if (!inv.getStackInSlot(i).isEmpty())
                 items.add(inv.getStackInSlot(i));
         }
-        Pair<ResourceLocation, BlockPos> targetContent = null;
+        Storage targetContent = null;
         List<ItemStack> targetContentList = new ArrayList<>();
         BlockPos targetContentPos = null;
-        Pair<ResourceLocation, BlockPos> targetFilter = null;
+        Storage targetFilter = null;
         List<ItemStack> targetFilterList = new ArrayList<>();
         BlockPos targetFilterPos = null;
 
-        Map<BlockPos, List<ViewedInventoryMemory.ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
-        for (Map.Entry<BlockPos, List<ViewedInventoryMemory.ItemCount>> blockPos : blockPosListMap.entrySet()) {
+        Map<Storage, List<ViewedInventoryMemory.ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        for (Map.Entry<Storage, List<ViewedInventoryMemory.ItemCount>> blockPos : blockPosListMap.entrySet()) {
             if (targetFilter != null) break;
-            if (MemoryUtil.getPlacingInv(maid).isVisitedPos(blockPos.getKey())) continue;
 
-            @Nullable BlockPos possibleMove = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey());
+            @Nullable BlockPos possibleMove = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
             if (possibleMove == null) continue;
 
             //过滤器判断
-            Pair<ResourceLocation, BlockPos> validTarget = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey());
+            Storage validTarget = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
             if (validTarget != null) {
-                @Nullable IStorageContext context = MaidStorage.getInstance().getStorage(validTarget.getA()).onPreviewFilter(level, maid, blockPos.getKey());
-                if (context != null) context.start(maid, level, blockPos.getKey());
+                if (MemoryUtil.getPlacingInv(maid).isVisitedPos(validTarget))
+                    continue;
+                @Nullable IStorageContext context = MaidStorage
+                        .getInstance()
+                        .getStorage(validTarget.getType())
+                        .onPreviewFilter(level, maid, validTarget);
+                if (context != null) context.start(maid, level, validTarget);
                 if (context instanceof IFilterable ift) {
                     //请求返回箱子，不能存入其他物品
-                    if(ift.isRequestOnly())continue;
+                    if (ift.isRequestOnly()) continue;
                     if (ift.isWhitelist()) {
                         boolean found = false;
                         for (ItemStack itemStack : items) {
@@ -140,20 +145,14 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             placingInv.setArrangeItems(targetFilterList);
             chestPos = targetFilter;
             MemoryUtil.setTarget(maid, targetFilterPos, (float) Config.placeSpeed);
-            DebugData.getInstance().sendMessage("[PLACE]Priority By Filter %s(%s)",
-                    targetFilter.getB().toShortString(),
-                    targetFilter.getA().toString()
-            );
+            DebugData.getInstance().sendMessage("[PLACE]Priority By Filter %s", targetFilter.toString());
             return true;
         } else if (targetContent != null) {
             PlacingInventoryMemory placingInv = MemoryUtil.getPlacingInv(maid);
             placingInv.setArrangeItems(targetContentList);
             chestPos = targetContent;
             MemoryUtil.setTarget(maid, targetContentPos, (float) Config.placeSpeed);
-            DebugData.getInstance().sendMessage("[PLACE]Priority By Content %s(%s)",
-                    targetContent.getB().toShortString(),
-                    targetContent.getA().toString()
-            );
+            DebugData.getInstance().sendMessage("[PLACE]Priority By Content %s", targetContent);
             return true;
         }
         return false;
@@ -164,16 +163,13 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
 
         //寻找当前格子能触碰的箱子
-        Pair<ResourceLocation, BlockPos> canTouchChest = MoveUtil.findTargetForPos(serverLevel,
+        Storage canTouchChest = MoveUtil.findTargetForPos(serverLevel,
                 entityMaid,
                 blockPos,
                 MemoryUtil.getPlacingInv(entityMaid));
         if (canTouchChest != null) {
             chestPos = canTouchChest;
-            DebugData.getInstance().sendMessage("[PLACE]Normal %s(%s)",
-                    canTouchChest.getB().toShortString(),
-                    canTouchChest.getA().toString()
-            );
+            DebugData.getInstance().sendMessage("[PLACE]Normal %s", canTouchChest);
             return true;
         }
         return false;

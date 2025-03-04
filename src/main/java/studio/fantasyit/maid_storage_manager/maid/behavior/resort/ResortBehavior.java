@@ -10,6 +10,7 @@ import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class ResortBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     private IStorageContext context = null;
-    BlockPos target = null;
+    Storage target = null;
     int count = 0;
 
     public ResortBehavior() {
@@ -48,12 +49,11 @@ public class ResortBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        ResourceLocation type = MemoryUtil.getResorting(maid).getTargetType();
         if (!MemoryUtil.getResorting(maid).hasTarget()) return;
-        target = MemoryUtil.getResorting(maid).getTargetPos();
+        target = MemoryUtil.getResorting(maid).getTarget();
         context = MaidStorage
                 .getInstance()
-                .getStorage(type)
+                .getStorage(target.getType())
                 .onStartCollect(level, maid, target);
         if (!(context instanceof IFilterable)) {
             context = null;
@@ -106,8 +106,9 @@ public class ResortBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getResorting(maid).clearTarget();
 
             MemoryUtil.getPlacingInv(maid).resetVisitedPos();
-            InvUtil.checkNearByContainers(level, target, pos -> {
-                MemoryUtil.getPlacingInv(maid).addVisitedPos(pos);
+            MemoryUtil.getPlacingInv(maid).addVisitedPos(target);
+            InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+                MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
             context.finish();
         }

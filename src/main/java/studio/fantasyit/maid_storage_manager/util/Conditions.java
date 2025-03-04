@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.phys.Vec3;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
@@ -64,7 +65,16 @@ public class Conditions {
         return InvUtil.forSlotMatches(
                 maid.getAvailableInv(false),
                 //请求列表如果不处在忽略工作状态，则说明可以进行
-                slot -> (!slot.is(ItemRegistry.REQUEST_LIST_ITEM.get()) || !RequestListItem.isIgnored(slot))
+                slot -> {
+                    if (slot.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                        return RequestListItem.isIgnored(slot);
+                    }
+                    return true;
+                }
         ).stream().allMatch(stack -> stack.isEmpty());
+    }
+
+    public static boolean triesReach(EntityMaid maid) {
+        return MemoryUtil.getRequestProgress(maid).getTries() > Config.maxStoreTries;
     }
 }

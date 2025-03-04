@@ -9,6 +9,8 @@
     "MaidCheckPickupItem"
   ],
   "client": [
+    "GuiGraphicMixin",
+    "MinecraftMixin"
   ],
   "injectors": {
     "defaultRequire": 1

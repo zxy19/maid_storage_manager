@@ -8,8 +8,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
 
 import java.util.function.Supplier;
@@ -38,5 +40,6 @@ public class ItemRegistry {
     public static final RegistryObject<Item> INVENTORY_LIST = item("inventory_list");
     public static final RegistryObject<Item> WRITTEN_INVENTORY_LIST = item("written_inventory_list", WrittenInvListItem::new);
     public static final RegistryObject<Item> FILTER_LIST = item("filter_list", FilterListItem::new);
+    public static final RegistryObject<Item> STORAGE_DEFINE_BAUBLE = item("storage_define_bauble", StorageDefineBauble::new);
     public static final RegistryObject<Item> NO_ACCESS = item("no_access");
 }

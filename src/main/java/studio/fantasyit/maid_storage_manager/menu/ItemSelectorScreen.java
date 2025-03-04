@@ -14,23 +14,28 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
 import java.util.Optional;
 
+import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
+
 @MouseTweaksDisableWheelTweak
-public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu> {
+public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu>{
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/item_selector.png");
 
     public ItemSelectorScreen(ItemSelectorMenu p_97741_, Inventory p_97742_, Component p_97743_) {
@@ -106,7 +111,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
     private void addRepeatControl() {
         this.addRenderableWidget(new AbstractWidget(
                 128,
-                20,
+                30,
                 32,
                 28,
                 Component.translatable("gui.maid_storage_manager.request_list.repeat")
@@ -131,7 +136,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
                         false
                 );
                 MutableComponent repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.never");
-                if (getMenu().repeat != -1) {
+                if (getMenu().repeat != 0) {
                     repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.repeat_desc", String.valueOf(getMenu().repeat));
                 }
                 graphics.drawString(Minecraft.getInstance().font,
@@ -150,7 +155,7 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
                     dv *= 10;
                 if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL))
                     dv *= 10;
-                getMenu().repeat = Math.max(-1, Math.min(getMenu().repeat + dv, 20 * 3600));
+                getMenu().repeat = Math.max(0, Math.min(getMenu().repeat + dv, 20 * 3600));
                 Network.sendItemSelectorGuiPacket(
                         ItemSelectorGuiPacket.SlotType.REPEAT,
                         0,
@@ -181,6 +186,14 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
                 this.imageHeight,
                 256,
                 256);
+
+        guiGraphics.setColor(1, 1, 1, 0.5F);
+        guiGraphics.renderItem(
+                ItemRegistry.STORAGE_DEFINE_BAUBLE.get().getDefaultInstance(),
+                relX + 8,
+                relY + 71
+        );
+        guiGraphics.setColor(1, 1, 1, 1);
     }
 
     @Override
@@ -306,5 +319,16 @@ public class ItemSelectorScreen extends AbstractContainerScreen<ItemSelectorMenu
             );
         }
         return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+    }
+
+    @Override
+    public void accept(FilterSlot menu, ItemStack item) {
+        ItemStack itemStack = item.copyWithCount(1);
+        getMenu().filteredItems.setItem(menu.getContainerSlot(), itemStack);
+        sendItemSelectorSetItemPacket(menu.getContainerSlot(), itemStack);
+    }
+    @Override
+    public List<FilterSlot> getSlots() {
+        return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();
     }
 }

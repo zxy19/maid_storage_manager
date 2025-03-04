@@ -11,6 +11,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
@@ -18,18 +19,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FilterableItemHandler implements IFilterable {
+    protected Storage storage;
+
+    public FilterableItemHandler(Storage storage) {
+        this.storage = storage;
+    }
+
     List<Pair<ItemStack, Boolean>> filtered;
     boolean isBlackMode;
     boolean requestOnly;
 
-    public void init(ServerLevel level, BlockPos target) {
-        List<BlockPos> samePos = new ArrayList<>(List.of(target));
-        InvUtil.checkNearByContainers(level, target, samePos::add);
-        AABB aabb = AABB.ofSize(target.getCenter(), 3, 3, 3);
+    public void init(ServerLevel level, Storage target) {
+        List<BlockPos> samePos = new ArrayList<>(List.of(target.pos));
+        InvUtil.checkNearByContainers(level, target.pos, samePos::add);
+        AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);
         List<ItemFrame> frames = level.getEntities(
                 EntityTypeTest.forClass(ItemFrame.class),
                 aabb,
                 itemFrame -> {
+                    if (storage.side != null && storage.side != itemFrame.getDirection()) return false;
                     BlockPos relative = itemFrame.blockPosition().relative(itemFrame.getDirection(), -1);
                     return samePos.stream().anyMatch(t -> t.equals(relative));
                 }

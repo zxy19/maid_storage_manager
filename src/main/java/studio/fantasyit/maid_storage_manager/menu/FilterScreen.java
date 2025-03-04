@@ -6,15 +6,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 
+import java.util.List;
 
-public class FilterScreen extends AbstractContainerScreen<FilterMenu> {
+import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
+
+
+public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/filter_list.png");
 
     public FilterScreen(FilterMenu p_97741_, Inventory p_97742_, Component p_97743_) {
@@ -129,5 +135,17 @@ public class FilterScreen extends AbstractContainerScreen<FilterMenu> {
             });
         }
         super.renderTooltip(graphics, x, y);
+    }
+
+    @Override
+    public void accept(FilterSlot menu, ItemStack item) {
+        ItemStack itemStack = item.copyWithCount(1);
+        getMenu().filteredItems.setItem(menu.getContainerSlot(), itemStack);
+        sendItemSelectorSetItemPacket(menu.getContainerSlot(), itemStack);
+    }
+
+    @Override
+    public List<FilterSlot> getSlots() {
+        return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();
     }
 }

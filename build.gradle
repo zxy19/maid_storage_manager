@@ -193,8 +193,7 @@ dependencies {
     compileOnly fg.deobf("curse.maven:just-enough-characters-250702:5543190")
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
-    runtimeOnly fg.deobf("curse.maven:sophisticated-storage-619320:6217888")
-    runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6223074")
+    runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:6164575")
 }
 

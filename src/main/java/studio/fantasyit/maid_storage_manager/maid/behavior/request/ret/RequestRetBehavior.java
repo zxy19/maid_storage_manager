@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -48,11 +49,14 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (requestProgress.isReturning() && requestProgress.hasTarget()) {
-            BlockPos targetPos = requestProgress.getTargetPos();
-            ResourceLocation type = requestProgress.getTargetType();
-            context = Objects.requireNonNull(MaidStorage.getInstance().getStorage(type)).onStartPlace(level, maid, targetPos);
+            requestProgress.addTries();
+            Storage target = requestProgress.getTarget();
+            context = Objects.requireNonNull(MaidStorage
+                            .getInstance()
+                            .getStorage(target.getType()))
+                    .onStartPlace(level, maid, target);
             if (context != null)
-                context.start(maid, level, targetPos);
+                context.start(maid, level, target);
 
         }
         currentSlot = 0;
@@ -81,7 +85,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
         super.stop(level, maid, p_22550_);
-        if (Conditions.listAllStored(maid) && Conditions.listAllDone(maid)) {
+        if ((Conditions.listAllStored(maid) || Conditions.triesReach(maid)) && Conditions.listAllDone(maid)) {
             RequestItemUtil.stopJobAndStoreOrThrowItem(maid, context);
         }
         if (context != null)

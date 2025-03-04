@@ -17,18 +17,22 @@ public class RequestProgressMemory extends AbstractTargetMemory {
                     Codec.BOOL.fieldOf("isReturning")
                             .forGetter(RequestProgressMemory::isReturning),
                     UUIDUtil.CODEC.fieldOf("workUUID")
-                            .forGetter(RequestProgressMemory::getWorkUUID)
+                            .forGetter(RequestProgressMemory::getWorkUUID),
+                    Codec.INT.fieldOf("tries")
+                            .forGetter(RequestProgressMemory::getTries)
             ).apply(instance, RequestProgressMemory::new)
     );
     public UUID workUUID;
     public boolean isReturning;
     public CompoundTag context;
+    private int tries;
 
-    public RequestProgressMemory(TargetData targetData, CompoundTag context, boolean isReturning, UUID workUUID) {
+    public RequestProgressMemory(TargetData targetData, CompoundTag context, boolean isReturning, UUID workUUID, int tries) {
         super(targetData);
         this.context = context;
         this.isReturning = isReturning;
         this.workUUID = workUUID;
+        this.tries = tries;
     }
 
     public RequestProgressMemory() {
@@ -36,6 +40,7 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         this.context = new CompoundTag();
         this.isReturning = false;
         this.workUUID = UUID.randomUUID();
+        this.tries = 0;
     }
 
     public CompoundTag getContext() {
@@ -57,7 +62,9 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         this.isReturning = false;
         this.clearTarget();
         this.resetVisitedPos();
+        this.tries = 0;
     }
+
     public void stopWork() {
         this.workUUID = UUID.randomUUID();
         this.clearTarget();
@@ -69,5 +76,13 @@ public class RequestProgressMemory extends AbstractTargetMemory {
 
     public void setReturn(boolean returning) {
         this.isReturning = returning;
+    }
+
+    public void addTries() {
+        this.tries++;
+    }
+
+    public int getTries() {
+        return this.tries;
     }
 }
