@@ -11,6 +11,17 @@ public class FilterSlot extends Slot {
         super(handler, index, x, y);
     }
 
+    boolean active = true;
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
+    }
+
     @Override
     public ItemStack safeInsert(ItemStack p_150657_, int p_150658_) {
         this.set(p_150657_.copy());

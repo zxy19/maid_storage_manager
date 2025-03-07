@@ -36,6 +36,11 @@ public class ContextItemHandlerCollect extends FilterableItemHandler implements 
     }
 
     @Override
+    public void reset() {
+        helper.reset();
+    }
+
+    @Override
     public void tick(Function<ItemStack, ItemStack> process) {
         helper.takeItemTick(process);
     }

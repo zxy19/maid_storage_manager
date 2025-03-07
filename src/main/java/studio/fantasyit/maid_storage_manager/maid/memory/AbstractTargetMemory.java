@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractTargetMemory {
-
     public static class TargetData {
         public static final Codec<TargetData> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
@@ -21,15 +22,24 @@ public abstract class AbstractTargetMemory {
                                 .fieldOf("visitedPos")
                                 .forGetter(TargetData::getVisitedPos),
                         Storage.CODEC.fieldOf("target")
-                                .forGetter(TargetData::getTarget)
+                                .forGetter(TargetData::getTarget),
+                        ItemStack.CODEC.optionalFieldOf("check")
+                                .forGetter(TargetData::getCheckItem)
                 ).apply(instance, TargetData::new));
         public static ResourceLocation NO_TARGET = new ResourceLocation(MaidStorageManager.MODID, "no_target");
         public List<Storage> visitedPos;
         public Storage target;
+        @Nullable
+        public ItemStack checkItem;
 
         public TargetData(List<Storage> visitedPos, Storage target) {
+            this(visitedPos, target, Optional.empty());
+        }
+
+        public TargetData(List<Storage> visitedPos, Storage target, Optional<ItemStack> checkItem) {
             this.visitedPos = new ArrayList<>(visitedPos);
             this.target = target;
+            this.checkItem = checkItem.orElse(null);
         }
 
         public List<Storage> getVisitedPos() {
@@ -43,6 +53,10 @@ public abstract class AbstractTargetMemory {
 
         public void setTarget(Storage target) {
             this.target = target;
+        }
+
+        public Optional<ItemStack> getCheckItem() {
+            return Optional.ofNullable(checkItem);
         }
     }
 
@@ -80,6 +94,7 @@ public abstract class AbstractTargetMemory {
     public Storage getTarget() {
         return targetData.getTarget();
     }
+
     public void setTarget(Storage target) {
         targetData.setTarget(target);
     }
@@ -90,5 +105,15 @@ public abstract class AbstractTargetMemory {
 
     public boolean hasTarget() {
         return !targetData.getTarget().type.equals(TargetData.NO_TARGET);
+    }
+
+    public void setCheckItem(ItemStack checkItem) {
+        targetData.checkItem = checkItem;
+    }
+    public void clearCheckItem() {
+        targetData.checkItem = null;
+    }
+    public ItemStack getCheckItem() {
+        return targetData.checkItem;
     }
 }

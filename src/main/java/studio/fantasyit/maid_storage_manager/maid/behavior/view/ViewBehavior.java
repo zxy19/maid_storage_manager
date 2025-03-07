@@ -1,11 +1,13 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.view;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRateTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
@@ -92,6 +94,7 @@ public class ViewBehavior extends MaidCheckRateTask {
         MemoryUtil.clearTarget(maid);
 
         if (!mismatchFilter.isEmpty()) {
+            ChatTexts.send(maid, ChatTexts.CHAT_RESORT);
             MemoryUtil.getResorting(maid).setNeedToResort(mismatchFilter);
             MemoryUtil.getResorting(maid).setTarget(target);
             MemoryUtil.getResorting(maid).addVisitedPos(target);

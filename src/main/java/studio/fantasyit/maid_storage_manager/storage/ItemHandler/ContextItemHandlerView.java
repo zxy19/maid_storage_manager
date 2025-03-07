@@ -34,6 +34,11 @@ public class ContextItemHandlerView extends FilterableItemHandler implements ISt
     }
 
     @Override
+    public void reset() {
+        helper.reset();
+    }
+
+    @Override
     public void tick(Function<ItemStack, ItemStack> process) {
         helper.viewItemTick(process::apply);
     }

@@ -1,16 +1,15 @@
 package studio.fantasyit.maid_storage_manager.registry;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ResortingMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.maid.memory.*;
 
 import java.util.Optional;
 
@@ -31,6 +30,10 @@ public class MemoryModuleRegistry {
 
     public static final RegistryObject<MemoryModuleType<ScheduleBehavior.Schedule>> CURRENTLY_WORKING
             = REGISTER.register("working", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final RegistryObject<MemoryModuleType<CraftMemory>> CRAFTING
+            = REGISTER.register("crafting", () -> new MemoryModuleType<>(Optional.of(CraftMemory.CODEC)));
+    public static final RegistryObject<MemoryModuleType<BlockPos>> INTERACTION_RESULT
+            = REGISTER.register("interact_result", () -> new MemoryModuleType<>(Optional.empty()));
 
 
     public static void register(IEventBus eventBus) {

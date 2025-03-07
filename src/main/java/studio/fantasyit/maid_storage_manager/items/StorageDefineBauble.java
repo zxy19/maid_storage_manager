@@ -39,6 +39,7 @@ public class StorageDefineBauble extends Item implements IMaidBauble {
 
     public static final String TAG_STORAGE_DEFINE = "storage_define";
 
+
     public enum Mode {
         APPEND,
         REPLACE,
@@ -59,6 +60,17 @@ public class StorageDefineBauble extends Item implements IMaidBauble {
         tag.putString(TAG_MODE, newMode.name());
         stack.setTag(tag);
         return newMode;
+    }
+
+    public static void rollMode(ItemStack stack, ServerPlayer sender, int value) {
+        CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.contains(TAG_MODE)) {
+            tag.putString(TAG_MODE, Mode.APPEND.name());
+        }
+        int dv = value > 0 ? 1 : Mode.values().length - 1;
+        Mode newMode = Mode.values()[(Mode.valueOf(tag.getString(TAG_MODE)).ordinal() + dv) % Mode.values().length];
+        tag.putString(TAG_MODE, newMode.name());
+        stack.setTag(tag);
     }
 
     public static Mode getMode(ItemStack stack) {

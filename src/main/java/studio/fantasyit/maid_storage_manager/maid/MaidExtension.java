@@ -17,6 +17,7 @@ import java.util.List;
 
 @LittleMaidExtension
 public class MaidExtension implements ILittleMaid {
+
     @Override
     public void addMaidTask(TaskManager manager) {
         ILittleMaid.super.addMaidTask(manager);
@@ -26,6 +27,7 @@ public class MaidExtension implements ILittleMaid {
     @Override
     public void bindMaidBauble(BaubleManager manager) {
         manager.bind(ItemRegistry.STORAGE_DEFINE_BAUBLE.get(), (IMaidBauble) ItemRegistry.STORAGE_DEFINE_BAUBLE.get());
+        manager.bind(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), (IMaidBauble) ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get());
     }
 
     @Override
@@ -39,7 +41,9 @@ public class MaidExtension implements ILittleMaid {
                         MemoryModuleRegistry.PLACING_INVENTORY.get(),
                         MemoryModuleRegistry.REQUEST_PROGRESS.get(),
                         MemoryModuleRegistry.RESORTING.get(),
-                        MemoryModuleRegistry.CURRENTLY_WORKING.get()
+                        MemoryModuleRegistry.CRAFTING.get(),
+                        MemoryModuleRegistry.CURRENTLY_WORKING.get(),
+                        MemoryModuleRegistry.INTERACTION_RESULT.get()
                 );
             }
         });

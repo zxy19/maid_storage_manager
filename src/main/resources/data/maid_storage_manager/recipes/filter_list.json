@@ -5,7 +5,7 @@
       "nbt": {
         "Item": {
           "id": "maid_storage_manager:filter_list",
-          "Count": 5
+          "Count": 3
         }
       }
     },
@@ -13,12 +13,6 @@
     "ingredients": [
       {
         "tag": "forge:dyes"
-      },
-      {
-        "item": "paper"
-      },
-      {
-        "item": "paper"
       },
       {
         "item": "paper"

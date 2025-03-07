@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.items;
 
+import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -47,6 +49,7 @@ public class RequestListItem extends Item implements MenuProvider {
     public static final String TAG_ITEMS_ITEM = "item";
     public static final String TAG_ITEMS_REQUESTED = "requested";
     public static final String TAG_ITEMS_COLLECTED = "collected";
+    public static final String TAG_ITEMS_MISSING = "missing";
     public static final String TAG_MATCH_TAG = "match_tag";
     public static final String TAG_UUID = "uuid";
     public static final String TAG_IGNORE_TASK = "ignore_task";
@@ -104,6 +107,7 @@ public class RequestListItem extends Item implements MenuProvider {
             tmp.putInt(RequestListItem.TAG_ITEMS_COLLECTED, 0);
             tmp.putInt(RequestListItem.TAG_ITEMS_DONE, 0);
             tmp.putInt(RequestListItem.TAG_ITEMS_STORED, 0);
+            tmp.remove(RequestListItem.TAG_ITEMS_MISSING);
             list.set(i, tmp);
         }
         tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
@@ -145,6 +149,23 @@ public class RequestListItem extends Item implements MenuProvider {
                 clearItemProcess(item);
             }
         }
+    }
+
+    public static void markDone(ItemStack mainHandItem, ItemStack target) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return;
+        if (!mainHandItem.hasTag())
+            return;
+        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
+        ListTag items = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < items.size(); i++) {
+            CompoundTag tmp = items.getCompound(i);
+            if (!ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), target)) continue;
+            tmp.putInt(TAG_ITEMS_DONE, 1);
+            items.set(i, tmp);
+        }
+        tag.put(TAG_ITEMS, items);
+        mainHandItem.setTag(tag);
     }
 
     @Override
@@ -468,6 +489,46 @@ public class RequestListItem extends Item implements MenuProvider {
         return tag.getUUID(TAG_UUID);
     }
 
+    public static void setMissingItem(ItemStack itemStack, ItemStack item, List<ItemStack> missing) {
+        if (!itemStack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return;
+        if (!itemStack.hasTag())
+            return;
+        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
+        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag tmp = list.getCompound(i);
+            if (ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), item)) {
+                ListTag missingList = new ListTag();
+                for (ItemStack ti : missing) {
+                    missingList.add(ti.save(new CompoundTag()));
+                }
+                tmp.put(TAG_ITEMS_MISSING, missingList);
+                list.set(i, tmp);
+                break;
+            }
+        }
+        tag.put(TAG_ITEMS, list);
+        itemStack.setTag(tag);
+    }
+
+    public static boolean isAllSuccess(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return false;
+        if (!stack.hasTag())
+            return false;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag tmp = list.getCompound(i);
+            if (tmp.getInt(TAG_ITEMS_REQUESTED) == -1)
+                continue;
+            if (tmp.getInt(TAG_ITEMS_COLLECTED) < tmp.getInt(TAG_ITEMS_REQUESTED))
+                return false;
+        }
+        return true;
+    }
+
     @Override
     public @NotNull Component getDisplayName() {
         return Component.literal("");
@@ -478,4 +539,5 @@ public class RequestListItem extends Item implements MenuProvider {
     public AbstractContainerMenu createMenu(int p_39954_, Inventory p_39955_, Player p_39956_) {
         return new ItemSelectorMenu(p_39954_, p_39956_);
     }
+
 }

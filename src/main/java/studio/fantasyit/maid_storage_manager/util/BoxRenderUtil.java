@@ -16,9 +16,11 @@ import org.apache.logging.log4j.util.Strings;
 import studio.fantasyit.maid_storage_manager.data.IGuiGraphicsGetter;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 
+import java.util.Map;
+
 @OnlyIn(Dist.CLIENT)
 public class BoxRenderUtil {
-    public static void renderStorage(Storage storage, float[] colors, RenderLevelStageEvent event, String key) {
+    public static void renderStorage(Storage storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
@@ -69,13 +71,13 @@ public class BoxRenderUtil {
             Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
+            guiGraphics.pose().translate(0, floating.getOrDefault(storage.getPos(), 0) * 0.3f, 0);
+            floating.put(storage.getPos(), floating.getOrDefault(storage.getPos(), 0) + 1);
             guiGraphics.pose().mulPose(Axis.YP.rotationDegrees(-event.getCamera().getYRot()));
             guiGraphics.pose().mulPose(Axis.XP.rotationDegrees(event.getCamera().getXRot()));
             guiGraphics.pose().scale(-0.025f, -0.025f, -1f);
             guiGraphics.pose().translate(-mc.font.width(key) / 2f, 0, 0);
-//            guiGraphics.setColor(colors[0], colors[1], colors[2], colors[3]);
             guiGraphics.drawString(mc.font, key, 0, 0, 0xffffff);
-//            guiGraphics.setColor(1, 1, 1, 1);
             guiGraphics.pose().popPose();
         }
     }

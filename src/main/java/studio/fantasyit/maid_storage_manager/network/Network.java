@@ -5,12 +5,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
+import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -20,8 +22,14 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.items.CraftGuide;
+import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.menu.CraftGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
+import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
 import java.util.Objects;
@@ -64,10 +72,13 @@ public class Network {
                 (msg, context) -> {
                     context.get().enqueueWork(() -> {
                         ServerPlayer sender = context.get().getSender();
-                        if (sender != null && sender.containerMenu instanceof ItemSelectorMenu ism) {
+                        if (sender == null) return;
+                        if (sender.containerMenu instanceof ItemSelectorMenu ism) {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
                         } else if (sender.containerMenu instanceof FilterMenu ifm) {
                             ifm.handleUpdate(msg.type, msg.key, msg.value);
+                        } else if (sender.containerMenu instanceof CraftGuideMenu cm) {
+                            cm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
                     context.get().setPacketHandled(true);
@@ -86,6 +97,23 @@ public class Network {
                             ism.broadcastChanges();
                         } else if (sender != null && sender.containerMenu instanceof FilterMenu ism) {
                             msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
+                            ism.save();
+                            ism.broadcastChanges();
+                        } else if (sender != null && sender.containerMenu instanceof CraftGuideMenu ism) {
+                            msg.items.forEach((p) -> {
+                                if (ism.getSlot(p.getLeft()) instanceof FilterSlot fs) {
+                                    Integer iid = ism.iid.get(fs.index);
+                                    FilterContainer filter = ism.filters.get(fs.index);
+                                    if (filter != null && iid != null) {
+                                        filter.count[iid].setValue(p.getRight().getCount());
+                                        filter.setItem(iid, p.getRight());
+                                    }
+                                }
+                                ism.recalcRecipe();
+                                ism.recheckValidation();
+                                ism.save();
+                            });
+                            ism.recalcRecipe();
                             ism.save();
                             ism.broadcastChanges();
                         }
@@ -121,6 +149,25 @@ public class Network {
                         } else {
                             context.get().getSender().getServer().overworld().getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY)
                                     .ifPresent(inventoryListData -> inventoryListData.sendTo(msg.key, context.get().getSender()));
+                        }
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(4,
+                ClientInputPacket.class,
+                ClientInputPacket::toBytes,
+                ClientInputPacket::new,
+                (msg, context) -> {
+                    NetworkEvent.Context context1 = context.get();
+                    context1.enqueueWork(() -> {
+                        ServerPlayer sender = context1.getSender();
+                        if (sender != null) {
+                            ItemStack item = sender.getItemInHand(InteractionHand.MAIN_HAND);
+                            if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
+                                CraftGuide.rollMode(item, sender, msg.value);
+                            } else if (item.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
+                                StorageDefineBauble.rollMode(item, sender, msg.value);
+                            }
                         }
                     });
                 }

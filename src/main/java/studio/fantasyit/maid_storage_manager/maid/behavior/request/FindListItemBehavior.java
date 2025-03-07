@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRateTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +12,7 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -73,6 +75,8 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         //记忆：开始新的工作
         MemoryUtil.getRequestProgress(maid).newWork(RequestListItem.getUUID(maid.getMainHandItem()));
         MemoryUtil.clearReturnWorkSchedule(maid);
+        MemoryUtil.getCrafting(maid).clearCraftGuides();
+        MemoryUtil.getCrafting(maid).clearLayers();
 
         //标黑存储箱子相连的所有箱子
         Storage storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
@@ -84,5 +88,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
                 DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", pos.toShortString());
             });
         }
+
+        ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_START);
     }
 }

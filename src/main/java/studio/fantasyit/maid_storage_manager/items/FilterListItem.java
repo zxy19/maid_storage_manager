@@ -20,7 +20,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.items.render.FilterListRenderer;
+import studio.fantasyit.maid_storage_manager.items.render.CustomItemRenderer;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
@@ -128,7 +128,7 @@ public class FilterListItem extends Item implements MenuProvider {
         consumer.accept(new IClientItemExtensions() {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return FilterListRenderer.getInstance();
+                return CustomItemRenderer.getInstance();
             }
         });
     }

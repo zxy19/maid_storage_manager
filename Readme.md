@@ -33,6 +33,17 @@ The maid will search nearby for listed items. Upon completion (regardless of suc
 ### Storage List
 During idle time, maids automatically scan nearby chest contents. Give them a **Storage List** item to record memorized item quantities, which will return a **Recorded Storage List**.
 
+### Storage Define
+
+Storage Define specifies which containers a maid can access and from which faces. Right-click blocks to select/deselect faces; sneak + right-click to select blocks (no face data, e.g., furnaces can directly access all slots).
+Right-click air to switch definition modes:
+
++ Add: Append new storage accesses to the maid's existing list
++ Remove: Delete specified storage from maid's accessible locations
++ Replace: Completely overwrite maid's access points (maid will ONLY use these)
++ Replace Specific: When accessing specified locations, only allow interaction through selected faces
+
+
 ---
 
 ## Compatibility Notes

@@ -23,6 +23,7 @@ import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
@@ -55,10 +56,11 @@ public final class DebugBoxRender {
                 );
 
 
+                Map<BlockPos, Integer> floating = new ConcurrentHashMap<>();
                 for (EntityMaid maid : entities) {
                     for (Map.Entry<String, float[]> entry : defs.entrySet()) {
                         DebugData.getInstance().getData(entry.getKey() + "_" + maid.getUUID()).ifPresent(data -> {
-                            BoxRenderUtil.renderStorage(Storage.fromNbt(data), entry.getValue(), event, entry.getKey());
+                            BoxRenderUtil.renderStorage(Storage.fromNbt(data), entry.getValue(), event, entry.getKey(), floating);
                         });
                     }
                     DebugData.getInstance().getData("target_" + maid.getUUID()).ifPresent(data -> {

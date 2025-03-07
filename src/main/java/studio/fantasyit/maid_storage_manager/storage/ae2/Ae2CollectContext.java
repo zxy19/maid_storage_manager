@@ -44,6 +44,7 @@ public class Ae2CollectContext implements IStorageExtractableContext {
             }
         }
     }
+
     @Override
     public void extract(List<ItemStack> itemList, boolean matchNbt, Function<ItemStack, ItemStack> process) {
         if (inv == null) return;
@@ -78,5 +79,11 @@ public class Ae2CollectContext implements IStorageExtractableContext {
     @Override
     public boolean isDone() {
         return done;
+    }
+
+    @Override
+    public void reset() {
+        current = 0;
+        done = false;
     }
 }

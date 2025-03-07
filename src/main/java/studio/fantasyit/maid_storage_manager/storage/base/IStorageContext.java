@@ -13,4 +13,7 @@ public interface IStorageContext {
     default boolean isDone() {
         return false;
     }
+
+    default void reset() {
+    }
 }

@@ -9,9 +9,12 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
@@ -31,11 +35,12 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 @MouseTweaksDisableWheelTweak
-public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu>{
+public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/item_selector.png");
 
     public ItemSelectorScreen(ItemSelectorMenu p_97741_, Inventory p_97742_, Component p_97743_) {
@@ -43,12 +48,32 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu>{
         this.imageWidth = 176;
         this.imageHeight = 200;
         this.inventoryLabelY = this.imageHeight - 94;
+
+    }
+
+    @Override
+    protected void init() {
+        super.init();
         this.addButtons();
         this.addRepeatControl();
     }
 
     protected List<Component> getTooltipForResult(int slot) {
         FilterContainer filteredItems = this.getMenu().filteredItems;
+        ItemStack listItem = null;
+        if (Minecraft.getInstance().player != null)
+            listItem = Minecraft.getInstance().player.getItemInHand(InteractionHand.MAIN_HAND);
+        List<ItemStack> itemStackStream = null;
+        if (listItem != null) {
+            itemStackStream = listItem.getOrCreateTag()
+                    .getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND)
+                    .getCompound(slot)
+                    .getList(RequestListItem.TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND)
+                    .stream()
+                    .map(t -> ItemStack.of((CompoundTag) t))
+                    .toList();
+        }
+
         List<Component> tooltip = this.getTooltipFromContainerItem(filteredItems.getItem(slot));
         Integer collected = filteredItems.collected[slot].getValue();
         Integer requested = filteredItems.count[slot].getValue();
@@ -60,6 +85,13 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu>{
             }
         } else {
             tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.processing").withStyle(ChatFormatting.YELLOW));
+        }
+
+        if (itemStackStream != null && !itemStackStream.isEmpty()) {
+            tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items").withStyle(ChatFormatting.RED));
+            for (ItemStack itemStack : itemStackStream) {
+                tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items_item", itemStack.getHoverName()));
+            }
         }
 
         tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.collected", collected, String.valueOf(requested == -1 ? "*" : requested)));
@@ -327,6 +359,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu>{
         getMenu().filteredItems.setItem(menu.getContainerSlot(), itemStack);
         sendItemSelectorSetItemPacket(menu.getContainerSlot(), itemStack);
     }
+
     @Override
     public List<FilterSlot> getSlots() {
         return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();

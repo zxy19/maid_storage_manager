@@ -1,9 +1,12 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatText;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -15,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
@@ -43,7 +47,6 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.PLACE) return false;
         if (Conditions.isWaitingForReturn(owner)) return false;
-        if (Conditions.takingRequestList(owner)) return false;
         return !Conditions.isNothingToPlace(owner);
     }
 
@@ -55,8 +58,12 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             this.searchForDestination(level, maid);
 
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
+            if (!MemoryUtil.getPlacingInv(maid).isAnySuccess()) {
+                ChatTexts.send(maid, ChatTexts.CHAT_CHEST_FULL);
+            }
             MemoryUtil.getPlacingInv(maid).resetVisitedPos();
             MemoryUtil.getPlacingInv(maid).clearTarget();
+            MemoryUtil.getPlacingInv(maid).resetAnySuccess();
             MemoryUtil.clearTarget(maid);
             DebugData.getInstance().sendMessage("[PLACE]Reset (Iter all)");
         } else {
@@ -90,6 +97,9 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
 
             //过滤器判断
             Storage validTarget = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
+            if (validTarget != null)
+                if (!MoveUtil.isValidTarget(level, maid, validTarget)) continue;
+
             if (validTarget != null) {
                 if (MemoryUtil.getPlacingInv(maid).isVisitedPos(validTarget))
                     continue;

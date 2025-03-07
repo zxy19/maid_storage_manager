@@ -31,6 +31,12 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
         addButtons();
     }
 
+    @Override
+    protected void init() {
+        super.init();
+        addButtons();
+    }
+
     private void addButtons() {
         this.addRenderableWidget(new ButtonWidget(
                 137, 83, 16, 16,
@@ -148,4 +154,6 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     public List<FilterSlot> getSlots() {
         return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();
     }
+
+
 }

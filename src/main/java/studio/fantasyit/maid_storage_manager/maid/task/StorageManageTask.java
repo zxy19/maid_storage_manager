@@ -15,6 +15,13 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.FindListItemBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.InteractAfterDone;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.CraftExitBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.CraftInitBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestFindBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestFindMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.RequestRetBehavior;
@@ -24,11 +31,21 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortMoveBeha
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.WriteInventoryListBehavior;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class StorageManageTask implements IMaidTask {
+    @Override
+    public boolean enableLookAndRandomWalk(EntityMaid maid) {
+        return switch (MemoryUtil.getCurrentlyWorking(maid)) {
+            case VIEW -> true;
+            case NO_SCHEDULE -> true;
+            default -> false;
+        };
+    }
+
     @Override
     public @NotNull ResourceLocation getUid() {
         return new ResourceLocation(MaidStorageManager.MODID, "storage_manage");
@@ -55,6 +72,13 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(10, new RequestFindMoveBehavior()));
         list.add(Pair.of(10, new RequestRetMoveBehavior()));
         list.add(Pair.of(10, new RequestRetBehavior()));
+        //合成
+        list.add(Pair.of(9, new RequestCraftGatherBehavior()));
+        list.add(Pair.of(9, new RequestCraftGatherMoveBehavior()));
+        list.add(Pair.of(8, new RequestCraftWorkBehavior()));
+        list.add(Pair.of(8, new RequestCraftWorkMoveBehavior()));
+        list.add(Pair.of(5, new CraftExitBehavior()));
+        list.add(Pair.of(5, new CraftInitBehavior()));
         //游走查看箱子
         list.add(Pair.of(5, new ViewMoveBehavior()));
         list.add(Pair.of(5, new ViewBehavior()));
@@ -67,6 +91,8 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(7, new PlaceMoveBehavior()));
         //工作冷却
         list.add(Pair.of(10, new ScheduleBehavior()));
+        //敲钟（？
+        list.add(Pair.of(5, new InteractAfterDone()));
         return list;
     }
 }

@@ -12,4 +12,7 @@ public class BehaviorBreath {
         }
         return false;
     }
+    public void reset(){
+        breath = 0;
+    }
 }

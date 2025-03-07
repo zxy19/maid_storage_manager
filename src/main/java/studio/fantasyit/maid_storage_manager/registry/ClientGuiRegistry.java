@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.CraftGuideScreen;
 import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 
@@ -18,6 +19,9 @@ public class ClientGuiRegistry {
         });
         event.enqueueWork(() -> {
             MenuScreens.register(GuiRegistry.FILTER_MENU.get(), FilterScreen::new);
+        });
+        event.enqueueWork(() -> {
+            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU.get(), CraftGuideScreen::new);
         });
     }
 }

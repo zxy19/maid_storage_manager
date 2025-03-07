@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.event;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -9,6 +10,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -16,6 +18,8 @@ import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
@@ -33,12 +37,14 @@ public final class BindingRender {
             if (mc.player == null) {
                 return;
             }
-            renderForRequest(event, mc);
-            renderForStorage(event, mc);
+            Map<BlockPos, Integer> floating = new ConcurrentHashMap<>();
+            renderForRequest(event, mc, floating);
+            renderForStorage(event, mc, floating);
+            renderForCraftGuide(event, mc, floating);
         }
     }
 
-    private static void renderForRequest(RenderLevelStageEvent event, Minecraft mc) {
+    private static void renderForRequest(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.REQUEST_LIST_ITEM.get()) {
             return;
@@ -47,10 +53,11 @@ public final class BindingRender {
         if (storage == null) {
             return;
         }
-        BoxRenderUtil.renderStorage(storage, colors_p, event, Component.translatable("maid_storage_manager.request_list_binding_render").getString());
+        BoxRenderUtil.renderStorage(storage, colors_p, event, Component.translatable("maid_storage_manager.request_list_binding_render").getString(),
+                floating);
     }
 
-    private static void renderForStorage(RenderLevelStageEvent event, Minecraft mc) {
+    private static void renderForStorage(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) {
             if (mainStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
@@ -82,7 +89,39 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(storage1,
                     color,
                     event,
-                    Component.translatable("maid_storage_manager.storage_define_bauble_binding_render." + mode).getString());
+                    Component.translatable("maid_storage_manager.storage_define_bauble_binding_render." + mode).getString(),
+                    floating);
         }
     }
+
+    private static void renderForCraftGuide(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
+        ItemStack mainStack = mc.player.getMainHandItem();
+        if (mainStack.getItem() != ItemRegistry.CRAFT_GUIDE.get()) {
+            return;
+        }
+        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(mainStack);
+        if (craftGuideData.getInput1().available()) {
+            BoxRenderUtil.renderStorage(craftGuideData.getInput1().getStorage(),
+                    colors_g,
+                    event,
+                    Component.translatable("maid_storage_manager.craft_guide_render.input1").getString(),
+                    floating);
+        }
+        if (craftGuideData.getInput2().available()) {
+            BoxRenderUtil.renderStorage(craftGuideData.getInput2().getStorage(),
+                    colors_b,
+                    event,
+                    Component.translatable("maid_storage_manager.craft_guide_render.input2").getString(),
+                    floating);
+        }
+        if (craftGuideData.getOutput().available()) {
+            BoxRenderUtil.renderStorage(craftGuideData.getOutput().getStorage(),
+                    colors_r,
+                    event,
+                    Component.translatable("maid_storage_manager.craft_guide_render.output").getString(),
+                    floating);
+        }
+    }
+
+
 }

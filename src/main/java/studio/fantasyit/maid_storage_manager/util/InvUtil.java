@@ -1,16 +1,23 @@
 package studio.fantasyit.maid_storage_manager.util;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
@@ -49,6 +56,22 @@ public class InvUtil {
         return itemStack;
     }
 
+    public static ItemStack tryExtract(IItemHandler inv, ItemStack itemStack) {
+        int count = 0;
+        int max = itemStack.getCount();
+        for (int i = 0; i < inv.getSlots(); i++) {
+            ItemStack stackInSlot = inv.getStackInSlot(i);
+            if (ItemStack.isSameItemSameTags(stackInSlot, itemStack)) {
+                int extractCurrent = Math.min(max - count, stackInSlot.getCount());
+                ItemStack get = inv.extractItem(i, extractCurrent, false);
+                count += get.getCount();
+                if (count >= max) break;
+            }
+        }
+        return itemStack.copyWithCount(count);
+
+    }
+
     public static int maxCanPlace(IItemHandler container, ItemStack itemStack) {
         int count = 0;
         ItemStack testStack = itemStack.copyWithCount(itemStack.getMaxStackSize());
@@ -64,8 +87,21 @@ public class InvUtil {
         return count;
     }
 
+    public static TagKey<Block>[] allowTags = new TagKey[]{
+            TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation("forge", "chests")),
+            TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "mb_chests")),
+    };
 
     public static void checkNearByContainers(ServerLevel level, BlockPos pos, Consumer<BlockPos> consumer) {
+        BlockState blockState = level.getBlockState(pos);
+        boolean isChest = false;
+        for (TagKey<Block> tagKey : allowTags) {
+            if (blockState.is(tagKey)) {
+                isChest = true;
+                break;
+            }
+        }
+        if (!isChest) return;
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
         if (blockEntity1 == null) return;
         @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
@@ -104,7 +140,8 @@ public class InvUtil {
         }
         return true;
     }
-    public static List<ItemStack> forSlotMatches(IItemHandler container, Predicate<ItemStack> matches){
+
+    public static List<ItemStack> forSlotMatches(IItemHandler container, Predicate<ItemStack> matches) {
         List<ItemStack> list = new ArrayList<>();
         for (int i = 0; i < container.getSlots(); i++) {
             ItemStack stackInSlot = container.getStackInSlot(i);
@@ -114,4 +151,5 @@ public class InvUtil {
         }
         return list;
     }
+
 }

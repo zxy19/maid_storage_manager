@@ -1,0 +1,105 @@
+package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work;
+
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.wrapper.RangedWrapper;
+import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
+import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
+import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.util.*;
+
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * 合成工作1
+ */
+public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
+    public RequestCraftWorkMoveBehavior() {
+        super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT));
+    }
+
+    Storage target;
+
+    @Override
+    protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
+        if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (!Conditions.takingRequestList(owner)) return false;
+        if (!MemoryUtil.getCrafting(owner).hasStartWorking()) return false;
+        if (!MemoryUtil.getCrafting(owner).hasCurrent()) return false;
+        if (!MemoryUtil.getCrafting(owner).getCurrentLayer().hasCollectedAll()) return false;
+        return true;
+    }
+
+
+    @Override
+    protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK);
+        for (int i = 0; i < 3; i++) {
+            if (targeting(level, maid))
+                return;
+        }
+    }
+
+    private boolean targeting(ServerLevel level, EntityMaid maid) {
+        CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
+        CraftGuideStepData step = layer.getStepData();
+        if (step == null) {
+            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
+            //根层
+            RangedWrapper availableBackpackInv = maid.getAvailableBackpackInv();
+            for (int i = 0; i < availableBackpackInv.getSlots(); i++) {
+                ItemStack itemStack = availableBackpackInv.getStackInSlot(i);
+                RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, itemStack.getCount());
+            }
+            MemoryUtil.getCrafting(maid).lastSuccess();
+            MemoryUtil.getCrafting(maid).nextLayer();
+            MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
+            return true;
+        }
+        Storage storage = step.getStorage();
+        if (storage == null) {
+            //当前合成不存在，直接进行下一步
+            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]No current step. Next.");
+            layer.nextStep();
+            if (layer.isDone()) {
+                MemoryUtil.getCrafting(maid).nextLayer();
+                MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
+            }
+            //遇到这种情况需要重新选择
+            return false;
+        } else {
+            DebugData.getInstance().sendMessage(
+                    String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
+                            layer.getStep(),
+                            layer.getDoneCount(),
+                            layer.getCount(),
+                            storage
+                    )
+            );
+            BlockPos blockPos = MoveUtil.selectPosForTarget(level, maid, storage.getPos());
+            if (blockPos != null) {
+                MemoryUtil.setTarget(maid, blockPos, (float) Config.craftWorkSpeed);
+                MemoryUtil.getCrafting(maid).setTarget(storage);
+                MemoryUtil.setLookAt(maid, storage.getPos());
+            }
+        }
+        return true;
+    }
+}

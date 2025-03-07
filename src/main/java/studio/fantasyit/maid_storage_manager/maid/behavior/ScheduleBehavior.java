@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
@@ -35,9 +36,17 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.clearReturnWorkSchedule(maid);
             next = Schedule.NO_SCHEDULE;
             //如果拿着列表且背包有空就可以开始处理请求，否则还得继续放东西
-        } else if (Conditions.takingRequestList(maid) && (last == Schedule.REQUEST || Conditions.inventoryNotFull(maid)))
+        } else if (MemoryUtil.getCrafting(maid).isFinishCurrent() && !MemoryUtil.getCrafting(maid).isLastSuccess()) {
+            //之前在执行请求且上次任务完成，而且没成功，那么进入放置物品阶段
+            //如果背包清空，则继续执行任务
+            if (Conditions.isNothingToPlace(maid)) {
+                MemoryUtil.getCrafting(maid).setFinishCurrent(false);
+                next = Schedule.NO_SCHEDULE;
+            } else
+                next = Schedule.PLACE;
+        } else if (Conditions.takingRequestList(maid) && (last == Schedule.REQUEST || InvUtil.hasAnyFree(maid.getAvailableBackpackInv()))) {
             next = Schedule.REQUEST;
-        else if (!Conditions.isNothingToPlace(maid))
+        } else if (!Conditions.isNothingToPlace(maid))
             next = Schedule.PLACE;
         else if (MemoryUtil.getResorting(maid).hasTarget())
             next = Schedule.RESORT;

@@ -9,8 +9,6 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
-import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 
 @JeiPlugin
 public class Plugin implements IModPlugin {
@@ -28,7 +26,8 @@ public class Plugin implements IModPlugin {
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addUniversalRecipeTransferHandler(new RecipeHandler());
+        registration.addUniversalRecipeTransferHandler(new RequestRecipeHandler());
+        registration.addUniversalRecipeTransferHandler(new GuideRecipeHandler());
     }
 
     @Override

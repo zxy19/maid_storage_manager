@@ -58,6 +58,11 @@ public class Ae2ViewContext implements IStorageInteractContext {
     }
 
     @Override
+    public void reset() {
+        current = 0;
+    }
+
+    @Override
     public void tick(Function<ItemStack, ItemStack> process) {
         int count = 0;
         for (; current < keys.size(); current++) {

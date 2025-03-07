@@ -15,6 +15,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
@@ -66,7 +67,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         while (list.size() <= filteredItems.getContainerSize())
             list.add(new CompoundTag());
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {
-            CompoundTag tmp = new CompoundTag();
+            CompoundTag tmp = list.getCompound(i);
             tmp.put(RequestListItem.TAG_ITEMS_ITEM, filteredItems.getItem(i).serializeNBT());
             tmp.putInt(RequestListItem.TAG_ITEMS_REQUESTED, filteredItems.count[i].getValue());
             list.set(i, tmp);
@@ -246,29 +247,6 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     public void slotsChanged(Container p_38868_) {
         super.slotsChanged(p_38868_);
         save();
-    }
-
-    protected static class CountSlot extends DataSlot {
-
-        private final MutableInt count;
-        private final Container container;
-
-        CountSlot(MutableInt count, Container container) {
-            super();
-            this.count = count;
-            this.container = container;
-        }
-
-        @Override
-        public int get() {
-            return count.getValue();
-        }
-
-        @Override
-        public void set(int p_39402_) {
-            count.setValue(p_39402_);
-            container.setChanged();
-        }
     }
 
     protected static class BasicData extends DataSlot {

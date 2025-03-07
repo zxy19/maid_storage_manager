@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.ret;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -10,6 +11,7 @@ import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -26,6 +28,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Nullable IStorageContext context;
     int currentSlot = 0;
+    private Storage target;
 
     public RequestRetBehavior() {
         super(Map.of(), 10000000);
@@ -50,14 +53,13 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (requestProgress.isReturning() && requestProgress.hasTarget()) {
             requestProgress.addTries();
-            Storage target = requestProgress.getTarget();
+            target = requestProgress.getTarget();
             context = Objects.requireNonNull(MaidStorage
                             .getInstance()
                             .getStorage(target.getType()))
                     .onStartPlace(level, maid, target);
             if (context != null)
                 context.start(maid, level, target);
-
         }
         currentSlot = 0;
     }
@@ -85,8 +87,21 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
         super.stop(level, maid, p_22550_);
+        if (MemoryUtil.getCrafting(maid).hasTasks()) {
+            MemoryUtil.getRequestProgress(maid).setReturn(false);
+            MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
+            return;
+        }
         if ((Conditions.listAllStored(maid) || Conditions.triesReach(maid)) && Conditions.listAllDone(maid)) {
+            if (RequestListItem.isAllSuccess(maid.getMainHandItem()))
+                ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_FINISH);
+            else
+                ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_FAIL);
+
             RequestItemUtil.stopJobAndStoreOrThrowItem(maid, context);
+            if (target != null) {
+                MemoryUtil.setInteractPos(maid, target.getPos().above());
+            }
         }
         if (context != null)
             context.finish();

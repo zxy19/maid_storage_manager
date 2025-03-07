@@ -7,10 +7,7 @@ import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ResortingMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.maid.memory.*;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 public class MemoryUtil {
@@ -49,6 +46,7 @@ public class MemoryUtil {
             maid.getBrain().setMemory(MemoryModuleRegistry.PLACING_INVENTORY.get(), new PlacingInventoryMemory());
         return maid.getBrain().getMemory(MemoryModuleRegistry.PLACING_INVENTORY.get()).orElse(null);
     }
+
     public static ResortingMemory getResorting(EntityMaid maid) {
         if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.RESORTING.get()))
             maid.getBrain().setMemory(MemoryModuleRegistry.RESORTING.get(), new ResortingMemory());
@@ -62,5 +60,27 @@ public class MemoryUtil {
 
     public static ScheduleBehavior.Schedule getCurrentlyWorking(EntityMaid maid) {
         return maid.getBrain().getMemory(MemoryModuleRegistry.CURRENTLY_WORKING.get()).orElse(ScheduleBehavior.Schedule.NO_SCHEDULE);
+    }
+
+    public static CraftMemory getCrafting(EntityMaid maid) {
+        if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.CRAFTING.get()))
+            maid.getBrain().setMemory(MemoryModuleRegistry.CRAFTING.get(), new CraftMemory());
+        return maid.getBrain().getMemory(MemoryModuleRegistry.CRAFTING.get()).orElse(null);
+    }
+
+    public static void setLookAt(EntityMaid maid, BlockPos pos) {
+        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
+    }
+
+    public static BlockPos getInteractPos(EntityMaid maid) {
+        return maid.getBrain().getMemory(MemoryModuleRegistry.INTERACTION_RESULT.get()).orElse(null);
+    }
+
+    public static void setInteractPos(EntityMaid maid, BlockPos above) {
+        maid.getBrain().setMemory(MemoryModuleRegistry.INTERACTION_RESULT.get(), above);
+    }
+
+    public static void clearInteractPos(EntityMaid maid) {
+        maid.getBrain().eraseMemory(MemoryModuleRegistry.INTERACTION_RESULT.get());
     }
 }

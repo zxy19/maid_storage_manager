@@ -26,6 +26,10 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue COLLECT_SPEED = BUILDER
             .comment("Speed when collecting requested list")
             .defineInRange("collect_speed", 0.5, 0.0, 3.0);
+
+    private static final ForgeConfigSpec.DoubleValue CRAFT_WORK_SPEED = BUILDER
+            .comment("Speed when working crafting")
+            .defineInRange("crafting_speed", 0.5, 0.0, 3.0);
     private static final ForgeConfigSpec.DoubleValue VIEW_SPEED = BUILDER
             .comment("Speed when viewing chests in spare time")
             .defineInRange("view_speed", 0.3, 0.0, 3.0);
@@ -35,7 +39,13 @@ public class Config {
     private static final ForgeConfigSpec.IntValue MAX_STORE_TRIES = BUILDER
             .comment("Maximum times Maid will try to store items")
             .defineInRange("max_store_tries", 3, 0, 999999);
+    private static final ForgeConfigSpec.IntValue MAX_CRAFT_TRIES = BUILDER
+            .comment("Maximum tick Maid will try to perform craft action")
+            .defineInRange("max_craft_tries", 600, 0, 9999999);
 
+//    private static final ForgeConfigSpec.ConfigValue<String> DEBUG = BUILDER
+//            .comment("Debug values")
+//            .define("debug", "0.5,0.5,0");
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
@@ -43,8 +53,10 @@ public class Config {
     public static double collectSpeed;
     public static double viewSpeed;
     public static double placeSpeed;
-    public static List<Double> debug;
+    public static double craftWorkSpeed;
+    public static List<Float> debug;
     public static int maxStoreTries;
+    public static int maxCraftTries;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -54,5 +66,8 @@ public class Config {
         viewSpeed = VIEW_SPEED.get();
         placeSpeed = PLACE_SPEED.get();
         maxStoreTries = MAX_STORE_TRIES.get();
+        maxCraftTries = MAX_CRAFT_TRIES.get();
+        craftWorkSpeed = CRAFT_WORK_SPEED.get();
+//        debug = Arrays.stream(DEBUG.get().split(",")).map(Float::parseFloat).toList();
     }
 }

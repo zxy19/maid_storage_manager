@@ -7,6 +7,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.CraftGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 
@@ -16,6 +17,8 @@ public class GuiRegistry {
             () -> IForgeMenuType.create((windowId, inv, data) -> new ItemSelectorMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<FilterMenu>> FILTER_MENU = MENU_TYPES.register("filter_menu",
             () -> IForgeMenuType.create((windowId, inv, data) -> new FilterMenu(windowId, inv.player)));
+    public static final RegistryObject<MenuType<CraftGuideMenu>> CRAFT_GUIDE_MENU = MENU_TYPES.register("craft_guide_menu",
+            () -> IForgeMenuType.create((windowId, inv, data) -> new CraftGuideMenu(windowId, inv.player)));
     public static void init(IEventBus modEventBus) {
         MENU_TYPES.register(modEventBus);
     }

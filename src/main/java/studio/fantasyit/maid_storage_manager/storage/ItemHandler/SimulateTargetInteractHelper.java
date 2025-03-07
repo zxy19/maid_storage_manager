@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
@@ -180,22 +181,13 @@ public class SimulateTargetInteractHelper {
         counter.put(target, Math.max(counter.getOrDefault(target, 0) - 1, 0));
     }
 
-    public static class ChestOpener extends FakePlayer {
-
-        public static ConcurrentMap<UUID, ChestOpener> cache = new ConcurrentHashMap<>();
-
-        public static ChestOpener getOrCreate(ServerLevel level, EntityMaid maid) {
-            if (cache.containsKey(maid.getUUID())) {
-                return cache.get(maid.getUUID());
-            } else {
-                ChestOpener opener = new ChestOpener(level, new GameProfile(UUID.randomUUID(), maid.getName().getString()));
-                cache.put(maid.getUUID(), opener);
-                return opener;
+    public static class ChestOpener {
+        public static ConcurrentMap<UUID, UUID> cache = new ConcurrentHashMap<>();
+        public static FakePlayer getOrCreate(ServerLevel level, EntityMaid maid) {
+            if (!cache.containsKey(maid.getUUID())) {
+                cache.put(maid.getUUID(), maid.getUUID());
             }
-        }
-
-        public ChestOpener(ServerLevel level, GameProfile name) {
-            super(level, name);
+            return FakePlayerFactory.get(level, new GameProfile(cache.get(maid.getUUID()), maid.getName().getString()));
         }
     }
 }

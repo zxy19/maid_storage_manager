@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class RecipeHandler implements IUniversalRecipeTransferHandler<ItemSelectorMenu> {
+public class RequestRecipeHandler implements IUniversalRecipeTransferHandler<ItemSelectorMenu> {
 
     @Override
     public @NotNull Class getContainerClass() {

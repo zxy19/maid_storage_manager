@@ -84,10 +84,15 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                         CompoundTag tag = item.getOrCreateTag();
                         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
                         item.setTag(tag);
-                        inv.setStackInSlot(count, isic.insert(item));
+                        ItemStack insert = isic.insert(item);
+                        MemoryUtil.getViewedInventory(maid).addItem(target, insert.copyWithCount(oCount - insert.getCount()));
+                        inv.setStackInSlot(count, insert);
                     }
-                } else
-                    inv.setStackInSlot(count, isic.insert(item));
+                } else {
+                    ItemStack insert = isic.insert(item);
+                    MemoryUtil.getViewedInventory(maid).addItem(target, insert.copyWithCount(oCount - insert.getCount()));
+                    inv.setStackInSlot(count, insert);
+                }
             }
         }
         if (inv.getStackInSlot(count).getCount() != oCount) {
@@ -102,8 +107,11 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.finish();
             MemoryUtil.getPlacingInv(maid).clearTarget();
-            if (!changed)
+            if (!changed) {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target);
+            } else {
+                MemoryUtil.getPlacingInv(maid).anySuccess();
+            }
             MemoryUtil.getPlacingInv(maid).clearArrangeItems();
             InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));

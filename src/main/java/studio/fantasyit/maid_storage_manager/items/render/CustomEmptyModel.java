@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-public class FilterListModel implements BakedModel, UnbakedModel, IForgeBakedModel {
+public class CustomEmptyModel implements BakedModel, UnbakedModel, IForgeBakedModel {
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState p_235039_, @Nullable Direction p_235040_, RandomSource p_235041_) {
         return List.of();

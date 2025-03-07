@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -21,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MoveUtil {
+    public static boolean isValidTarget(ServerLevel level, EntityMaid maid, Storage target) {
+        List<Storage> rewrite = findTargetRewriteByBauble(level, maid, target);
+        return rewrite.contains(target);
+    }
+
     public static @Nullable BlockPos selectPosForTarget(ServerLevel level, EntityMaid maid, BlockPos target) {
         //寻找落脚点
         return PosUtil.findAroundUpAndDown(target,

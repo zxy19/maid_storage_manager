@@ -70,7 +70,14 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                                  Map<String, Map<String, List<ItemCount>>> viewedInventory,
                                  int coolingDown) {
         super(targetData);
-        this.viewedInventory = new HashMap<>(viewedInventory);
+        this.viewedInventory = new HashMap<>();
+        for (Map.Entry<String, Map<String, List<ItemCount>>> entry : viewedInventory.entrySet()) {
+            Map<String, List<ItemCount>> tmp = new HashMap<>();
+            for (Map.Entry<String, List<ItemCount>> slot : entry.getValue().entrySet()) {
+                tmp.put(slot.getKey(), new ArrayList<>(slot.getValue()));
+            }
+            this.viewedInventory.put(entry.getKey(), tmp);
+        }
         this.coolingDown = coolingDown;
     }
 
@@ -138,6 +145,26 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return result;
     }
 
+    public void removeItem(Storage pos, ItemStack itemStack, int count) {
+        if (pos == null || itemStack == null || itemStack.isEmpty()) return;
+        if (!viewedInventory.containsKey(pos.toStoreString()))
+            viewedInventory.put(pos.toStoreString(), new HashMap<>());
+        Map<String, List<ItemCount>> map = viewedInventory.get(pos.toStoreString());
+
+        String itemKey = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString();
+        List<ItemCount> list = map.getOrDefault(itemKey, new ArrayList<>());
+        for (int i = 0; i < list.size(); i++) {
+            ItemCount itemCount = list.get(i);
+            if (ItemStack.isSameItemSameTags(itemCount.getFirst(), itemStack)) {
+                list.set(i, new ItemCount(itemStack, itemCount.getSecond() - count));
+                if (itemCount.getSecond() - count <= 0)
+                    list.remove(i);
+                break;
+            }
+        }
+        map.put(itemKey, list);
+        viewedInventory.put(pos.toStoreString(), map);
+    }
 
     public void addItem(Storage pos, ItemStack itemStack) {
         if (pos == null || itemStack == null || itemStack.isEmpty()) return;
