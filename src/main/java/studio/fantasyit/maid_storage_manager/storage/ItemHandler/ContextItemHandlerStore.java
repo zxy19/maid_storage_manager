@@ -31,6 +31,7 @@ public class ContextItemHandlerStore extends FilterableItemHandler implements IS
     @Override
     public ItemStack insert(ItemStack item) {
         if (!this.isAvailable(item)) return item;
+        if (!this.helper.isStillValid()) return item;
         ItemStack copy = item.copy();
         for (int i = 0; i < this.helper.itemHandler.getSlots(); i++) {
             copy = this.helper.itemHandler.insertItem(i, copy, false);

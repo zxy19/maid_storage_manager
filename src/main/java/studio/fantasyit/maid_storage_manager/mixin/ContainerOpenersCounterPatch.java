@@ -14,7 +14,7 @@ public class ContainerOpenersCounterPatch {
     @Inject(method = "getOpenCount", at = @At("RETURN"), cancellable = true)
     private void getOpenCount(Level p_155458_, BlockPos p_155459_, CallbackInfoReturnable<Integer> cir) {
         cir.setReturnValue(
-                SimulateTargetInteractHelper.counter.getOrDefault(p_155459_, 0)
+                SimulateTargetInteractHelper.openCount(p_155459_)
                         + cir.getReturnValue()
         );
     }

@@ -21,15 +21,64 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class SimulateTargetInteractHelper {
-    public static ConcurrentMap<BlockPos, Integer> counter = new ConcurrentHashMap<>();
+    public static ConcurrentMap<BlockPos, Set<UUID>> counter = new ConcurrentHashMap<>();
+    public static ConcurrentMap<UUID, EntityMaid> maids = new ConcurrentHashMap<>();
+    public static ConcurrentMap<UUID, BlockPos> maidUsingPos = new ConcurrentHashMap<>();
+
+
+    public static void removeInvalid() {
+        Set<UUID> uuids = new HashSet<>(maids.keySet());
+        for (UUID uuid : uuids) {
+            boolean valid = true;
+            if (!maids.containsKey(uuid)) valid = false;
+            else if (!maids.get(uuid).isAlive()) valid = false;
+
+            if (!maidUsingPos.containsKey(uuid)) valid = false;
+
+            if (valid) continue;
+            maids.remove(uuid);
+            maidUsingPos.remove(uuid);
+            for (BlockPos pos : counter.keySet()) {
+                counter.get(pos).remove(uuid);
+            }
+        }
+    }
+
+    public static void addCounter(EntityMaid maid, BlockPos pos) {
+        if (!counter.containsKey(pos))
+            counter.put(pos, ConcurrentHashMap.newKeySet());
+        counter.get(pos).add(maid.getUUID());
+        if (maidUsingPos.containsKey(maid.getUUID())) {
+            counter.remove(maidUsingPos.get(maid.getUUID()));
+        }
+        maidUsingPos.put(maid.getUUID(), pos);
+        maids.put(maid.getUUID(), maid);
+    }
+
+    public static void removeCounter(EntityMaid maid, BlockPos pos) {
+        if (!counter.containsKey(pos)) return;
+        counter.get(pos).remove(maid.getUUID());
+        if (counter.get(pos).isEmpty()) counter.remove(pos);
+        if (maidUsingPos.containsKey(maid.getUUID())) {
+            counter.remove(maidUsingPos.get(maid.getUUID()));
+            maidUsingPos.remove(maid.getUUID());
+        }
+        maids.remove(maid.getUUID());
+    }
+
+    public static int openCount(BlockPos pos) {
+        if (!counter.containsKey(pos)) return 0;
+        return counter.get(pos).size();
+    }
+
+
     final ServerLevel level;
     final public BlockPos target;
     @Nullable
@@ -59,6 +108,7 @@ public class SimulateTargetInteractHelper {
             }
         }
     }
+
 
     protected boolean isStillValid() {
         if (blockEntity == null || itemHandler == null) return false;
@@ -131,7 +181,7 @@ public class SimulateTargetInteractHelper {
                     level.getBlockState(target));
         });
         currentSlot = 0;
-        counter.put(target, counter.getOrDefault(target, 0) + 1);
+        addCounter(maid, target);
     }
 
     public void takeItemTick(Function<ItemStack, ItemStack> cb) {
@@ -178,11 +228,12 @@ public class SimulateTargetInteractHelper {
                         level.getBlockState(target));
             });
         }
-        counter.put(target, Math.max(counter.getOrDefault(target, 0) - 1, 0));
+        removeCounter(maid, target);
     }
 
     public static class ChestOpener {
         public static ConcurrentMap<UUID, UUID> cache = new ConcurrentHashMap<>();
+
         public static FakePlayer getOrCreate(ServerLevel level, EntityMaid maid) {
             if (!cache.containsKey(maid.getUUID())) {
                 cache.put(maid.getUUID(), maid.getUUID());

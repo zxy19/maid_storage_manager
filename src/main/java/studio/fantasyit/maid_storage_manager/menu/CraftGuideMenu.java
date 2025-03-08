@@ -256,14 +256,14 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
 
     @Override
     public void clicked(int slotId, int dragType, ClickType clickTypeIn, Player player) {
-        if (slotId != -999 && this.getSlot(slotId) instanceof NoPlaceFilterSlot fs) {
+        if (slotId >= 0 && this.getSlot(slotId) instanceof NoPlaceFilterSlot fs) {
             fs.set(ItemStack.EMPTY);
             recheckValidation();
             recalcRecipe();
             save();
             return;
         }
-        if (slotId != -999 && this.getSlot(slotId) instanceof FilterSlot fs) {
+        if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs) {
             int slot = fs.getContainerSlot();
             FilterContainer container = filters.get(fs.index);
             if (clickTypeIn == ClickType.THROW)

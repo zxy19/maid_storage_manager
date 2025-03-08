@@ -24,6 +24,7 @@ public class Ae2CollectContext implements IStorageExtractableContext {
     private MEStorage inv;
     private int current = 0;
     private boolean done = false;
+    private List<AEItemKey> keys;
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Storage target) {
@@ -41,6 +42,13 @@ public class Ae2CollectContext implements IStorageExtractableContext {
             IGridNode terminal = cbbe.getGridNode(first.get());
             if (terminal != null && terminal.getGrid() != null) {
                 this.inv = terminal.getGrid().getStorageService().getInventory();
+                this.keys = inv
+                        .getAvailableStacks()
+                        .keySet()
+                        .stream()
+                        .filter(key -> key instanceof AEItemKey)
+                        .map(key -> (AEItemKey) key)
+                        .toList();
             }
         }
     }
@@ -51,25 +59,28 @@ public class Ae2CollectContext implements IStorageExtractableContext {
         for (; current < itemList.size(); current++) {
             ItemStack item = itemList.get(current);
             if (item.isEmpty()) continue;
-            AEItemKey key = AEItemKey.of(item);
+            AEItemKey keyTmp = AEItemKey.of(item);
+            List<AEItemKey> filteredKey = keyTmp == null ? List.of() : List.of(keyTmp);
             if (!matchNbt) {
-                key = AEItemKey.of(item.getItem());
+                filteredKey = keys.stream()
+                        .filter(aeItemKey -> aeItemKey.getItem() == item.getItem())
+                        .toList();
             }
-            if (key == null) continue;
-
-            long extract = inv.extract(key, item.getCount(), Actionable.SIMULATE, IActionSource.empty());
-            if (extract == 0) continue;
-            while (extract > 0) {
-                ItemStack tmp = key
-                        .getReadOnlyStack()
-                        .copyWithCount((int) Math.min(extract, item.getMaxStackSize()));
-                ItemStack apply = process.apply(tmp);
-                if (!apply.isEmpty()) {
-                    inv.extract(key, apply.getCount(), Actionable.MODULATE, IActionSource.empty());
-                    extract -= apply.getCount();
-                } else break;
+            for(AEItemKey key : filteredKey) {
+                long extract = inv.extract(key, item.getCount(), Actionable.SIMULATE, IActionSource.empty());
+                if (extract == 0) continue;
+                while (extract > 0) {
+                    ItemStack tmp = key
+                            .getReadOnlyStack()
+                            .copyWithCount((int) Math.min(extract, item.getMaxStackSize()));
+                    ItemStack apply = process.apply(tmp);
+                    if (!apply.isEmpty()) {
+                        inv.extract(key, apply.getCount(), Actionable.MODULATE, IActionSource.empty());
+                        extract -= apply.getCount();
+                    } else break;
+                }
+                break;
             }
-            break;
         }
         if (current >= itemList.size()) {
             done = true;

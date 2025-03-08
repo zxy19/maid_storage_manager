@@ -30,7 +30,7 @@ public class ViewBehavior extends MaidCheckRateTask {
     List<ItemStack> mismatchFilter = new ArrayList<>();
 
     public ViewBehavior() {
-        super(Map.of());
+        super(Map.of(),500000);
         this.setMaxCheckRate(5);
     }
 

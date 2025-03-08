@@ -32,7 +32,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     private boolean changed;
 
     public PlaceBehavior() {
-        super(Map.of());
+        super(Map.of(), 5000);
     }
 
     @Override

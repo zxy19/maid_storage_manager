@@ -59,7 +59,11 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
 
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
             if (!MemoryUtil.getPlacingInv(maid).isAnySuccess()) {
-                ChatTexts.send(maid, ChatTexts.CHAT_CHEST_FULL);
+                MemoryUtil.getPlacingInv(maid).addFailCount();
+                if (MemoryUtil.getPlacingInv(maid).getFailCount() >= 5)
+                    ChatTexts.send(maid, ChatTexts.CHAT_CHEST_FULL);
+            } else {
+                MemoryUtil.getPlacingInv(maid).resetFailCount();
             }
             MemoryUtil.getPlacingInv(maid).resetVisitedPos();
             MemoryUtil.getPlacingInv(maid).clearTarget();

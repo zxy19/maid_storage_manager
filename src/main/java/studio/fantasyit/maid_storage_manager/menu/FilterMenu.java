@@ -93,7 +93,7 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
 
     @Override
     public void clicked(int slotId, int dragType, ClickType clickTypeIn, Player player) {
-        if (slotId != -999 && this.getSlot(slotId) instanceof FilterSlot fs) {
+        if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs) {
             int slot = fs.getContainerSlot();
             if (clickTypeIn == ClickType.THROW)
                 return;

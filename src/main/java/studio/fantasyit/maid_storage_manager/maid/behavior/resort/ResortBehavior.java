@@ -30,7 +30,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     int count = 0;
 
     public ResortBehavior() {
-        super(Map.of());
+        super(Map.of(),50000);
     }
 
     @Override

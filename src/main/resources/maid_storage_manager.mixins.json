@@ -6,7 +6,8 @@
   "refmap": "maid_storage_manager.refmap.json",
   "mixins": [
     "ContainerOpenersCounterPatch",
-    "MaidCheckPickupItem"
+    "MaidCheckPickupItem",
+    "MaidWalkAndLookAround"
   ],
   "client": [
     "GuiGraphicMixin",

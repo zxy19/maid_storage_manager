@@ -15,17 +15,21 @@ public class PlacingInventoryMemory extends AbstractTargetMemory {
                             .fieldOf("arrangeItems")
                             .forGetter(PlacingInventoryMemory::getArrangeItems),
                     Codec.BOOL.fieldOf("anySuccess")
-                            .forGetter(PlacingInventoryMemory::isAnySuccess)
+                            .forGetter(PlacingInventoryMemory::isAnySuccess),
+                    Codec.INT.fieldOf("failCount")
+                            .forGetter(PlacingInventoryMemory::getFailCount)
             ).apply(instance, PlacingInventoryMemory::new)
     );
+    private int failCount;
 
     public List<ItemStack> arrangeItems;
     private boolean anySuccess;
 
-    public PlacingInventoryMemory(TargetData targetData, List<ItemStack> arrangeItems, boolean anySuccess) {
+    public PlacingInventoryMemory(TargetData targetData, List<ItemStack> arrangeItems, boolean anySuccess, int failCount) {
         super(targetData);
         this.arrangeItems = new ArrayList<>(arrangeItems);
         this.anySuccess = anySuccess;
+        this.failCount = failCount;
     }
 
     public PlacingInventoryMemory() {
@@ -56,5 +60,17 @@ public class PlacingInventoryMemory extends AbstractTargetMemory {
 
     public boolean isAnySuccess() {
         return anySuccess;
+    }
+
+    public int getFailCount() {
+        return failCount;
+    }
+
+    public void addFailCount() {
+        failCount++;
+    }
+
+    public void resetFailCount() {
+        failCount = 0;
     }
 }
