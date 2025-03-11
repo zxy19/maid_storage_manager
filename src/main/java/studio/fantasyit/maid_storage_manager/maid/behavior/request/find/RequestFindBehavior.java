@@ -57,6 +57,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return false;
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
+        if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
         return Conditions.hasReachedValidTargetOrReset(maid);
     }
 

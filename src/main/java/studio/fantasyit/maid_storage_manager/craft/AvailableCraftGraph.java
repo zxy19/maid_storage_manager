@@ -53,7 +53,7 @@ public class AvailableCraftGraph {
 
     private int getItemIndex(ItemStack itemStack) {
         for (int i = 0; i < this.items.size(); i++) {
-            if (ItemStack.isSameItemSameTags(this.items.get(i), itemStack))
+            if (ItemStack.isSameItem(this.items.get(i), itemStack))
                 return i;
         }
         return -1;
@@ -70,7 +70,7 @@ public class AvailableCraftGraph {
                 if (existing.getOutput().getItems().stream().anyMatch(
                         i1 ->
                                 inComing.getOutput().getItems().stream().anyMatch(
-                                        i2 -> ItemStack.isSameItemSameTags(i1, i2) && !i1.isEmpty()
+                                        i2 -> ItemStack.isSameItem(i1, i2) && !i1.isEmpty()
                                 )
                 )) {
                     duplicate = true;
@@ -227,7 +227,7 @@ public class AvailableCraftGraph {
             //计算出抵扣完成后任然需要的数量
             // lastRest = count - (total - current)
             // currentReq = lastRest - current;
-            int lastRest = counts.get(pair.index) - (totalRequire.get(pair.index) - currentRequire.get(pair.index));
+            int lastRest = Math.max(0, counts.get(pair.index) - (totalRequire.get(pair.index) - currentRequire.get(pair.index)));
             int needCount = Math.max(0, currentRequire.get(pair.index) - lastRest);
             //如果仍然需要进一步合成，则当前节点不影响检查结果。但是当前节点的所有前置节点都会影响
             boolean isCurrentChecking = checkNodes.contains(pair.index);
@@ -269,17 +269,19 @@ public class AvailableCraftGraph {
         }
         List<CraftLayer> res = new ArrayList<>();
         CraftGuideData lastOne = null;
+        int lastOneIndex = 0;
         while (!results.isEmpty()) {
             CraftResultNode resultNode = results.pop();
             if (isItem(resultNode.index)) continue;
 
             lastOne = this.craftGuideData.get(resultNode.index);
+            lastOneIndex = resultNode.index;
             List<ItemStack> itemStacks = new ArrayList<>();
             Consumer<ItemStack> addWithCountMultiple = (itemStack) -> {
                 if (itemStack.isEmpty()) return;
                 int count = resultNode.count * itemStack.getCount();
                 for (ItemStack existing : itemStacks) {
-                    if (ItemStack.isSameItemSameTags(existing, itemStack)) {
+                    if (ItemStack.isSameItem(existing, itemStack)) {
                         existing.grow(count);
                         return;
                     }
@@ -294,8 +296,16 @@ public class AvailableCraftGraph {
                     resultNode.count
             ));
         }
-        if (lastOne != null)
-            res.add(new CraftLayer(Optional.empty(), lastOne.getOutput().items, 0));
+        if (lastOne != null) {
+            int finalLastOneIndex = lastOneIndex;
+            res.add(new CraftLayer(Optional.empty(),
+                    lastOne.getOutput().items
+                            .stream()
+                            .filter(itemStack -> !itemStack.isEmpty())
+                            .map(itemStack -> itemStack.copyWithCount(currentRequire.get(finalLastOneIndex) * itemStack.getCount()))
+                            .toList(),
+                    contextRequireCount));
+        }
         return res;
     }
 

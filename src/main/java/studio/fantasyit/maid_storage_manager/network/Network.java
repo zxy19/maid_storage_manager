@@ -1,11 +1,13 @@
 package studio.fantasyit.maid_storage_manager.network;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,6 +19,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
@@ -24,6 +27,7 @@ import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.menu.CraftGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
@@ -62,6 +66,10 @@ public class Network {
 
     public static void sendRequestListPacket(UUID uuid) {
         INSTANCE.send(PacketDistributor.SERVER.noArg(), new PartialInventoryListData(uuid, List.of()));
+    }
+
+    public static void sendMaidDataSync(MaidDataSyncPacket.Type type, int id, int value) {
+        INSTANCE.send(PacketDistributor.SERVER.noArg(), new MaidDataSyncPacket(type, id, value));
     }
 
     private static void registerMessage() {
@@ -170,6 +178,35 @@ public class Network {
                             }
                         }
                     });
+                }
+        );
+        Network.INSTANCE.registerMessage(5,
+                MaidDataSyncPacket.class,
+                MaidDataSyncPacket::toBytes,
+                MaidDataSyncPacket::new,
+                (msg, context) -> {
+                    @Nullable ServerPlayer sender = context.get().getSender();
+                    if (sender == null) return;
+                    Entity entity = sender.level().getEntity(msg.id);
+                    if (entity instanceof EntityMaid maid) {
+                        if (msg.type == MaidDataSyncPacket.Type.MemoryAssistant) {
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.memoryAssistant(StorageManagerConfigData.MemoryAssistant.values()[msg.value]);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        } else {
+                            if (msg.type == MaidDataSyncPacket.Type.NoPlaceSort) {
+                                StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                        StorageManagerConfigData.KEY,
+                                        StorageManagerConfigData.Data.getDefault()
+                                );
+                                data.noSortPlacement(msg.value == 1);
+                                maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            }
+                        }
+                    }
                 }
         );
     }

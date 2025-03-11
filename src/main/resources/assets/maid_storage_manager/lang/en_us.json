@@ -75,9 +75,7 @@
   "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager.pages.0.2.text": "When storing items, the maid follows these principles: $(li) If there is a whitelist filter nearby, prioritize placing the item in that container. $(li) If there is an existing container with the same item, place it there next. $(li) Otherwise, find any available container.",
   "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide": "Crafting",
   "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.1.text": "As a qualified helper, your maid can assist with daily tasks, such as crafting and manufacturing using items from storage. However, the maid's own abilities may not always suffice for these tasks, so you need to prepare accordingly.$(br2)The maid can perform automated crafting when the following conditions are met:$(li)The maid can locate a [Craft Guide] for the target item.$(li)The maid is equipped with a [Portable Craft Calculator].",
-
   "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.2.text": "A highly advanced automated device that helps the maid record encountered Craft Guides and calculate crafting trees based on the maid's needs. The maid must equip this accessory to perform crafting.$(#9e9e9e)$(o)Small enough to carry with you$()",
-
   "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.3.text": "A Craft Guide is a paper documenting an item's production process, instructing the maid on which blocks to use for crafting specific items.$(br2)Each Craft Guide has two input slots and one output slot. The maid will insert materials into the input slots and retrieve the finished product from the output slot to complete a crafting cycle.",
   "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.4.text": "To program a Craft Guide, hold it while sneaking and right-click a block to designate input/output positions. Click again to assign interaction faces. Use the sneak-scroll action to switch between designated positions.$(br2)After setting positions, fill the input slots with materials and specify the output item to finalize the Craft Guide.$(br2)Note: Crafting tasks exceeding a certain duration will be deemed timed-out failures. All items must fit within the maid's inventory during the entire process.",
   "task.maid_storage_manager.storage_manage": "Storage Manager",
@@ -114,5 +112,12 @@
   "tooltip.maid_storage_manager.request_list.time": "Create at day %s",
   "tooltip.maid_storage_manager.request_list.time.str": "%s (%s:%s)",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
-  "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view."
+  "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
+  "gui.maid_storage_manager.config.memory_assistant": "Memory Assistant Taking",
+  "gui.maid_storage_manager.config.memory_assistant.memory_first": "Memory First",
+  "gui.maid_storage_manager.config.memory_assistant.memory_only": "Memory Only",
+  "gui.maid_storage_manager.config.memory_assistant.always_scan": "Always Scan",
+  "gui.maid_storage_manager.config.no_sort_placement": "No Sorting When Place Item",
+  "gui.maid_storage_manager.config.bool.enable": "Enable",
+  "gui.maid_storage_manager.config.bool.disable": "Disable"
 }

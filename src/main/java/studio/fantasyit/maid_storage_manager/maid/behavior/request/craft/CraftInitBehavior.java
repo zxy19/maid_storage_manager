@@ -39,6 +39,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
     protected boolean checkExtraStartConditions(ServerLevel p_22538_, EntityMaid p_22539_) {
         if (MemoryUtil.getCurrentlyWorking(p_22539_) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!Conditions.takingRequestList(p_22539_)) return false;
+        if (MemoryUtil.getRequestProgress(p_22539_).isReturning()) return false;
         if (!MemoryUtil.getRequestProgress(p_22539_).isTryCrafting()) return false;
         //女仆当前没有生成合成任务，应该立刻计算所有合成
         return !MemoryUtil.getCrafting(p_22539_).hasTasks();
@@ -72,7 +73,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                         for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
                             boolean flag = false;
                             for (int i = 0; i < items.size(); i++) {
-                                if (ItemStack.isSameItemSameTags(itemStack.getFirst(), items.get(i).getFirst())) {
+                                if (ItemStack.isSameItem(itemStack.getFirst(), items.get(i).getFirst())) {
                                     items.set(i, com.mojang.datafixers.util.Pair.of(
                                             items.get(i).getFirst(),
                                             items.get(i).getSecond() + itemStack.getSecond()

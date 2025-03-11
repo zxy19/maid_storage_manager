@@ -152,7 +152,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 boolean found = false;
                 if (needs.get(i).isEmpty()) continue;
                 for (int j = 0; j < inv.getSlots(); j++) {
-                    if (ItemStack.isSameItemSameTags(inv.getStackInSlot(j), needs.get(i))) {
+                    if (ItemStack.isSameItem(inv.getStackInSlot(j), needs.get(i))) {
                         //还有剩余（
                         if (inv.getStackInSlot(j).getCount() > slotExtractCount[j]) {
                             found = true;
@@ -173,7 +173,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 Optional<CraftingRecipe> recipe = RecipeUtil.getRecipe(level, container);
                 if (recipe.isPresent()) {
                     ItemStack result = recipe.get().assemble(container, level.registryAccess());
-                    if (ItemStack.isSameItemSameTags(result, craftGuideStepData.getItems().get(0))) {
+                    if (ItemStack.isSameItem(result, craftGuideStepData.getItems().get(0))) {
                         layer.addCurrentStepPlacedCounts(0, 1);
                     }
                     int maxCanPlace = InvUtil.maxCanPlace(maid.getAvailableBackpackInv(), result);
@@ -200,7 +200,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         Function<ItemStack, ItemStack> taker = itemStack -> {
             int idx = -1;
             for (int i = 0; i < allItems.size(); i++) {
-                if (ItemStack.isSameItemSameTags(allItems.get(i), itemStack)) {
+                if (ItemStack.isSameItem(allItems.get(i), itemStack)) {
                     idx = i;
                     break;
                 }
@@ -235,7 +235,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             for (int i = 0; i < craftGuideStepData.getItems().size(); i++) {
                 //物品匹配且还需继续放入
                 ItemStack stepItem = craftGuideStepData.getItems().get(i);
-                if (ItemStack.isSameItemSameTags(stepItem, item)) {
+                if (ItemStack.isSameItem(stepItem, item)) {
                     if (layer.getCurrentStepCount(i) < stepItem.getCount()) {
                         idx = i;
                         break;

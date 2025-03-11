@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -56,12 +57,20 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
         MemoryUtil.getRequestProgress(maid).clearCheckItem();
         checkItem = null;
         if (!priorityTarget(level, maid))
-            this.searchForDestination(level, maid);
+            if (Conditions.useScanTarget(maid))
+                this.searchForDestination(level, maid);
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
-            DebugData.getInstance().sendMessage("[REQUEST_FIND]No More Target");
-            MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
+            if (MemoryUtil.getRequestProgress(maid).confirmNoTarget()) {
+                DebugData.getInstance().sendMessage("[REQUEST_FIND]No More Target");
+                MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
+                //立刻安排返回存储
+                MemoryUtil.getRequestProgress(maid).setReturn();
+                MemoryUtil.getRequestProgress(maid).clearTarget();
+                MemoryUtil.clearTarget(maid);
+            }
         } else {
+            MemoryUtil.getRequestProgress(maid).resetFailCount();
             if (chestPos != null) {
                 requestProgress.setTarget(chestPos);
                 maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.getPos()));
@@ -74,6 +83,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
 
 
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
+        if (!Conditions.usePriorityTarget(maid)) return false;
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
         Map<Storage, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
         for (Map.Entry<Storage, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
@@ -89,7 +99,23 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
                                     )
                     )
                     .findFirst();
-            if (targetItem.isEmpty()) {
+            Optional<CraftGuideData> targetCraftGuide = blockPos
+                    .getValue()
+                    .stream()
+                    .map(ic -> CraftGuideData.fromItemStack(ic.getItem()))
+                    .filter(cg ->
+                            notDone
+                                    .stream()
+                                    .anyMatch(i2 ->
+                                            cg.getOutput().getItems()
+                                                    .stream()
+                                                    .anyMatch(i3 ->
+                                                            ItemStack.isSameItemSameTags(i2.getA(), i3)
+                                                    )
+                                    )
+                    )
+                    .findFirst();
+            if (targetItem.isEmpty() && targetCraftGuide.isEmpty()) {
                 continue;
             }
             @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
@@ -101,7 +127,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
                     MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
                     DebugData.getInstance().sendMessage("[REQUEST_FIND]Priority By Filter %s", storage);
                 }
-                this.checkItem = targetItem.get().getFirst();
+                targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
                 return true;
             }
         }

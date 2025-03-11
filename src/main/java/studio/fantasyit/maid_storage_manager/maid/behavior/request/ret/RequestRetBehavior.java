@@ -87,9 +87,14 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
         super.stop(level, maid, p_22550_);
+        if (context != null)
+            context.finish();
         if (MemoryUtil.getCrafting(maid).hasTasks()) {
             MemoryUtil.getRequestProgress(maid).setReturn(false);
             MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
+            MemoryUtil.getRequestProgress(maid).clearTarget();
+            MemoryUtil.getCrafting(maid).clearTarget();
+            MemoryUtil.clearTarget(maid);
             return;
         }
         if ((Conditions.listAllStored(maid) || Conditions.triesReach(maid)) && Conditions.listAllDone(maid)) {
@@ -103,11 +108,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.setInteractPos(maid, target.getPos().above());
             }
         }
-        if (context != null)
-            context.finish();
         RequestListItem.updateCollectedNotStored(maid.getMainHandItem(), maid.getAvailableBackpackInv());
         MemoryUtil.getRequestProgress(maid).setReturn(false);
         MemoryUtil.getRequestProgress(maid).clearTarget();
+        MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
 
         //莫名其妙没空了（被扔垃圾了），那就先扔掉清单好勒

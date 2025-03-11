@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractTargetMemory {
+    private int failCount;
+
     public static class TargetData {
         public static final Codec<TargetData> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
@@ -68,6 +70,7 @@ public abstract class AbstractTargetMemory {
 
     public AbstractTargetMemory(TargetData targetData) {
         this.targetData = targetData;
+        failCount = 0;
     }
 
     public AbstractTargetMemory() {
@@ -90,6 +93,26 @@ public abstract class AbstractTargetMemory {
         return targetData.visitedPos.contains(pos);
     }
 
+    public int getFailCount() {
+        return this.failCount;
+    }
+
+    public void addFailCount() {
+        this.failCount++;
+    }
+
+    public void resetFailCount() {
+        this.failCount = 0;
+    }
+
+    public boolean confirmNoTarget() {
+        return confirmNoTarget(30);
+    }
+
+    public boolean confirmNoTarget(int threshold) {
+        addFailCount();
+        return this.failCount >= threshold;
+    }
 
     public Storage getTarget() {
         return targetData.getTarget();
@@ -110,9 +133,11 @@ public abstract class AbstractTargetMemory {
     public void setCheckItem(ItemStack checkItem) {
         targetData.checkItem = checkItem;
     }
+
     public void clearCheckItem() {
         targetData.checkItem = null;
     }
+
     public ItemStack getCheckItem() {
         return targetData.checkItem;
     }

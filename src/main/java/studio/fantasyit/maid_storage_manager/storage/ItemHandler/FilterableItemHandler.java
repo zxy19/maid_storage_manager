@@ -65,7 +65,7 @@ public class FilterableItemHandler implements IFilterable {
                         for (int i = 0; i < list.size(); i++) {
                             CompoundTag tmp = list.getCompound(i);
                             ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
-                            filtered.add(new Pair<>(item, true));
+                            filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
                         }
                     });
             items
@@ -77,7 +77,7 @@ public class FilterableItemHandler implements IFilterable {
                             CompoundTag tmp = list.getCompound(i);
                             ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                             if (isBlackMode)
-                                filtered.add(new Pair<>(item, false));
+                                filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
                             else {
                                 //白名单模式下，黑名单列表的合并方式：移除撞车的
                                 for (int j = 0; j < filtered.size(); j++) {

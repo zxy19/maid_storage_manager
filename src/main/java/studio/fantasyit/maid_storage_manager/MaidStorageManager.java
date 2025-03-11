@@ -20,5 +20,4 @@ public class MaidStorageManager {
         RecipesRegistry.register(modEventBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
-
 }

@@ -323,14 +323,14 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
                 TargetOps target = null;
                 int toPlace = 0;
                 for (int i = 0; i < this.inputSlot1.items.getContainerSize(); i++)
-                    if (ItemStack.isSameItemSameTags(this.inputSlot1.items.getItem(i), slot.getItem())) {
+                    if (ItemStack.isSameItem(this.inputSlot1.items.getItem(i), slot.getItem())) {
                         found = true;
                     } else if (target == null && this.inputSlot1.items.getItem(i).isEmpty()) {
                         target = this.inputSlot1;
                         toPlace = i;
                     }
                 for (int i = 0; i < this.inputSlot2.items.getContainerSize(); i++)
-                    if (ItemStack.isSameItemSameTags(this.inputSlot2.items.getItem(i), slot.getItem())) {
+                    if (ItemStack.isSameItem(this.inputSlot2.items.getItem(i), slot.getItem())) {
                         found = true;
                     } else if (target == null && this.inputSlot2.items.getItem(i).isEmpty()) {
                         target = this.inputSlot2;

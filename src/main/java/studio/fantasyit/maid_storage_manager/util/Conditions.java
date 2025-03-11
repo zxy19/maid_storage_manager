@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.phys.Vec3;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
@@ -76,5 +77,22 @@ public class Conditions {
 
     public static boolean triesReach(EntityMaid maid) {
         return MemoryUtil.getRequestProgress(maid).getTries() > Config.maxStoreTries;
+    }
+
+    public static boolean usePriorityTarget(EntityMaid maid) {
+        return switch (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).memoryAssistant()) {
+            case MEMORY_ONLY, MEMORY_FIRST -> true;
+            case ALWAYS_SCAN -> false;
+        };
+    }
+
+    public static boolean useScanTarget(EntityMaid maid) {
+        return switch (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).memoryAssistant()) {
+            case MEMORY_ONLY -> false;
+            case ALWAYS_SCAN, MEMORY_FIRST -> true;
+        };
+    }
+    public static boolean noSortPlacement(EntityMaid maid) {
+        return maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).noSortPlacement();
     }
 }

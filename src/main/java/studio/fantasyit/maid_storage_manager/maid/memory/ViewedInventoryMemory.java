@@ -148,7 +148,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public void removeItem(Storage pos, ItemStack itemStack, int count) {
         if (pos == null || itemStack == null || itemStack.isEmpty()) return;
         if (!viewedInventory.containsKey(pos.toStoreString()))
-            viewedInventory.put(pos.toStoreString(), new HashMap<>());
+            return;
         Map<String, List<ItemCount>> map = viewedInventory.get(pos.toStoreString());
 
         String itemKey = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString();

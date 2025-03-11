@@ -40,6 +40,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
         if (!MemoryUtil.getCrafting(owner).hasStartWorking()) return false;
         if (!MemoryUtil.getCrafting(owner).hasCurrent()) return false;
@@ -63,14 +64,21 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         if (step == null) {
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
             //根层
-            RangedWrapper availableBackpackInv = maid.getAvailableBackpackInv();
-            for (int i = 0; i < availableBackpackInv.getSlots(); i++) {
-                ItemStack itemStack = availableBackpackInv.getStackInSlot(i);
-                RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, itemStack.getCount());
+            for (int i = 0; i < layer.getItems().size(); i++) {
+                ItemStack itemStack = layer.getItems().get(i);
+                if (itemStack.isEmpty()) continue;
+                RequestListItem.updateCollectedItem(maid.getMainHandItem(),
+                        itemStack,
+                        itemStack.getCount()
+                );
             }
             MemoryUtil.getCrafting(maid).lastSuccess();
             MemoryUtil.getCrafting(maid).nextLayer();
             MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
+            //立刻安排返回存储
+            MemoryUtil.getRequestProgress(maid).setReturn();
+            MemoryUtil.getRequestProgress(maid).clearTarget();
+            MemoryUtil.clearTarget(maid);
             return true;
         }
         Storage storage = step.getStorage();

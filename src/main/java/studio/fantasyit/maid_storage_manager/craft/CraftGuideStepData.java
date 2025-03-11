@@ -80,7 +80,7 @@ public class CraftGuideStepData {
                 craftGuideStepData.items.size() == this.items.size()
         ) {
             for (int i = 0; i < craftGuideStepData.items.size(); i++) {
-                if (!ItemStack.isSameItemSameTags(craftGuideStepData.items.get(i), this.items.get(i))) return false;
+                if (!ItemStack.isSameItem(craftGuideStepData.items.get(i), this.items.get(i))) return false;
             }
             return true;
         }

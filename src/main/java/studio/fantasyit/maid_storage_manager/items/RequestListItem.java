@@ -521,6 +521,8 @@ public class RequestListItem extends Item implements MenuProvider {
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
+            if (ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)).isEmpty())
+                continue;
             if (tmp.getInt(TAG_ITEMS_REQUESTED) == -1)
                 continue;
             if (tmp.getInt(TAG_ITEMS_COLLECTED) < tmp.getInt(TAG_ITEMS_REQUESTED))

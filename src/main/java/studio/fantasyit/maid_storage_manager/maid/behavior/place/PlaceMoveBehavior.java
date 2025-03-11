@@ -79,6 +79,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
     }
 
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
+        if (Conditions.noSortPlacement(maid)) return false;
         CombinedInvWrapper inv = maid.getAvailableInv(true);
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < inv.getSlots(); i++) {

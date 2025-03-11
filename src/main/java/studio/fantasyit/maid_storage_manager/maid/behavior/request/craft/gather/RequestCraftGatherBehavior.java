@@ -24,6 +24,7 @@ import java.util.Objects;
 public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     IStorageContext context;
+    private Storage target;
 
     public RequestCraftGatherBehavior() {
         super(Map.of(), 10000000);
@@ -51,7 +52,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return;
-        Storage target = MemoryUtil.getCrafting(maid).getTarget();
+        target = MemoryUtil.getCrafting(maid).getTarget();
         IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(target.getType()));
 
         context = storage.onStartCollect(level, maid, target);
@@ -71,6 +72,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                     ItemStack copy = itemStack.copy();
                     ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                     copy.shrink(toTake.getCount());
+                    MemoryUtil.getViewedInventory(maid).removeItem(target, itemStack, toTake.getCount());
                     InvUtil.tryPlace(maid.getAvailableBackpackInv(), toTake);
                     return copy;
                 }
@@ -85,6 +87,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                             ItemStack copy = itemStack.copy();
                             ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                             copy.shrink(toTake.getCount());
+                            MemoryUtil.getViewedInventory(maid).removeItem(target, itemStack, toTake.getCount());
                             InvUtil.tryPlace(maid.getAvailableBackpackInv(), toTake);
                             return copy;
                         }
@@ -109,7 +112,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
 
-        if(MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()){
+        if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
             MemoryUtil.getCrafting(maid).finishGathering(maid);
         }
     }

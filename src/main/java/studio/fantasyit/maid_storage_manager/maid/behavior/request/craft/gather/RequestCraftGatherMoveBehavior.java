@@ -41,6 +41,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
         if (MemoryUtil.getCrafting(owner).hasStartWorking()) return false;
         if (!MemoryUtil.getCrafting(owner).hasCurrent()) return false;
@@ -55,11 +56,15 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
             return;
         }
         if (!this.priorityTarget(level, maid))
-            this.searchForDestination(level, maid);
+            if (Conditions.useScanTarget(maid))
+                this.searchForDestination(level, maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER] No More Target");
-            MemoryUtil.getCrafting(maid).finishGathering(maid);
+            if(MemoryUtil.getCrafting(maid).confirmNoTarget()) {
+                DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER] No More Target");
+                MemoryUtil.getCrafting(maid).finishGathering(maid);
+            }
         } else {
+            MemoryUtil.getCrafting(maid).resetFailCount();
             if (chestPos != null) {
                 MemoryUtil.getCrafting(maid).setTarget(chestPos);
                 MemoryUtil.setLookAt(maid, chestPos.getPos());
@@ -70,6 +75,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
     }
 
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
+        if (!Conditions.usePriorityTarget(maid)) return false;
         List<ItemStack> targets = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer()).getItems();
         if (targets.isEmpty()) return false;
         Map<Storage, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
@@ -82,7 +88,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
                             targets
                                     .stream()
                                     .anyMatch(i2 ->
-                                            ItemStack.isSameItemSameTags(i2, itemCount.getItem())
+                                            ItemStack.isSameItem(i2, itemCount.getItem())
                                     )
                     )
             ) {

@@ -43,10 +43,13 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
         super.start(level, maid, p_22542_);
         this.searchForDestination(level, maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
-            MemoryUtil.getViewedInventory(maid).removeUnvisited();
-            MemoryUtil.getViewedInventory(maid).resetVisitedPos();
-            DebugData.getInstance().sendMessage("[VIEW]Reset, waiting");
+            if(MemoryUtil.getViewedInventory(maid).confirmNoTarget(2)) {
+                MemoryUtil.getViewedInventory(maid).removeUnvisited();
+                MemoryUtil.getViewedInventory(maid).resetVisitedPos();
+                DebugData.getInstance().sendMessage("[VIEW]Reset, waiting");
+            }
         } else {
+            MemoryUtil.getViewedInventory(maid).resetFailCount();
             if (chestPos != null) {
                 MemoryUtil.getViewedInventory(maid).setTarget(chestPos);
                 maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.getPos()));

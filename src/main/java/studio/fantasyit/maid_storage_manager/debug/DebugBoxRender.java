@@ -65,13 +65,6 @@ public final class DebugBoxRender {
                             BoxRenderUtil.renderStorage(Storage.fromNbt(data), entry.getValue(), event, entry.getKey(), floating);
                         });
                     }
-//                    DebugData.getInstance().getData("target_" + maid.getUUID()).ifPresent(data -> {
-//                        if (data.isEmpty()) return;
-//                        BlockPos pos = NbtUtils.readBlockPos(data);
-//                        AABB aabb = new AABB(pos).move(position);
-//                        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-//                        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, 0, 1.0F, 0, 0.5F);
-//                    });
                     DebugData.getInstance().getData("path_" + maid.getUUID())
                             .ifPresent(data -> {
                                 ListTag nodes = data.getList("nodes", 10);

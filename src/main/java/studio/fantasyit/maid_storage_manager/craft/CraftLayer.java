@@ -84,7 +84,7 @@ public class CraftLayer {
      */
     public ItemStack memorizeItem(ItemStack itemStack, int maxStore) {
         for (int i = 0; i < items.size(); i++) {
-            if (ItemStack.isSameItemSameTags(items.get(i), itemStack)) {
+            if (ItemStack.isSameItem(items.get(i), itemStack)) {
                 int restNeed = items.get(i).getCount() - collectedCounts.get(i);
                 int toTake = Math.min(restNeed, maxStore);
                 collectedCounts.set(i, collectedCounts.get(i) + toTake);
