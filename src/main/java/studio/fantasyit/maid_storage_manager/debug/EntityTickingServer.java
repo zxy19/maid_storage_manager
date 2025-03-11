@@ -5,8 +5,10 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.Config;
@@ -53,5 +55,18 @@ public class EntityTickingServer {
                     pos.getTarget().toNbt()
             );
         }, () -> DebugData.getInstance().setDataAndSync("crafting_" + maid.getUUID(), new CompoundTag()));
+
+        Path path = maid.getNavigation().getPath();
+        if (path != null) {
+            int nodeCount = path.getNodeCount();
+            int current = path.getNextNodeIndex();
+            ListTag nodes = new ListTag();
+            for (int i = current; i < nodeCount; i++) {
+                nodes.add(NbtUtils.writeBlockPos(path.getNode(i).asBlockPos()));
+            }
+            CompoundTag tag = new CompoundTag();
+            tag.put("nodes", nodes);
+            DebugData.getInstance().setDataAndSync("path_" + maid.getUUID(), tag);
+        }
     }
 }

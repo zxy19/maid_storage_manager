@@ -39,15 +39,6 @@ import java.util.List;
 public class StorageManageTask implements IMaidTask {
     public static ResourceLocation TASK_ID = new ResourceLocation(MaidStorageManager.MODID, "storage_manage");
     @Override
-    public boolean enableLookAndRandomWalk(EntityMaid maid) {
-        return switch (MemoryUtil.getCurrentlyWorking(maid)) {
-            case VIEW -> true;
-            case NO_SCHEDULE -> true;
-            default -> false;
-        };
-    }
-
-    @Override
     public @NotNull ResourceLocation getUid() {
         return TASK_ID;
     }
