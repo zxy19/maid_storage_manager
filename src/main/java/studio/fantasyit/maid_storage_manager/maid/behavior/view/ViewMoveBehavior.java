@@ -56,7 +56,6 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
             }
         }
     }
-
     @Override
     protected boolean shouldMoveTo(@NotNull ServerLevel serverLevel,
                                    EntityMaid entityMaid,

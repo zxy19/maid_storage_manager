@@ -87,21 +87,13 @@ public class InvUtil {
         return count;
     }
 
-    public static TagKey<Block>[] allowTags = new TagKey[]{
-            TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation("forge", "chests")),
-            TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "mb_chests")),
-    };
+    public static TagKey<Block> allowTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "mb_chests"));
 
     public static void checkNearByContainers(ServerLevel level, BlockPos pos, Consumer<BlockPos> consumer) {
         BlockState blockState = level.getBlockState(pos);
-        boolean isChest = false;
-        for (TagKey<Block> tagKey : allowTags) {
-            if (blockState.is(tagKey)) {
-                isChest = true;
-                break;
-            }
+        if (!blockState.is(allowTag)) {
+            return;
         }
-        if (!isChest) return;
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
         if (blockEntity1 == null) return;
         @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);

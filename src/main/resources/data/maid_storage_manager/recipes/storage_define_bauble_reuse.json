@@ -2,12 +2,12 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "item": "maid_storage_manager:written_inventory_list",
+      "item": "maid_storage_manager:storage_define_bauble",
       "count": 1
     }
   ],
   "result": {
-    "item": "maid_storage_manager:inventory_list",
+    "item": "maid_storage_manager:storage_define_bauble",
     "count": 1
   },
   "show_notification": true

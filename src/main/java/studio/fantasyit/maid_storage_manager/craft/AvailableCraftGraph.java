@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 public class AvailableCraftGraph {
     public static class CraftResultNode {
 
+
         public int index;
         public int count;
         public boolean related;
@@ -22,6 +23,7 @@ public class AvailableCraftGraph {
 
     }
 
+    private int taskPerTick = 32;
     List<ItemStack> items;
     List<Integer> counts;
     List<CraftGuideData> craftGuideData;
@@ -102,6 +104,10 @@ public class AvailableCraftGraph {
         contextRequireCount = 0;
     }
 
+    public void setSpeed(int taskPerTick) {
+        this.taskPerTick = taskPerTick;
+    }
+
     public void setCount(ItemStack itemStack, int count) {
         int idx = getItemIndex(itemStack);
         if (idx == -1)
@@ -128,7 +134,7 @@ public class AvailableCraftGraph {
     public boolean buildGraph() {
         int count = 0;
         for (; buildIdx < craftGuideData.size(); buildIdx++) {
-            if (count++ > 16) return false;
+            if (count++ > this.taskPerTick) return false;
             CraftGuideData cgd = this.craftGuideData.get(buildIdx);
             List<ItemStack> items1 = cgd.output.items;
             for (int j = 0; j < items1.size(); j++) {

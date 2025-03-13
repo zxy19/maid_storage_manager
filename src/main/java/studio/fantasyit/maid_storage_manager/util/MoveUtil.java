@@ -6,9 +6,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
@@ -23,7 +26,7 @@ import java.util.List;
 
 public class MoveUtil {
     public static boolean isValidTarget(ServerLevel level, EntityMaid maid, Storage target) {
-        List<Storage> rewrite = findTargetRewriteByBauble(level, maid, target);
+        List<Storage> rewrite = findTargetRewrite(level, maid, target);
         return rewrite.contains(target);
     }
 
@@ -49,7 +52,7 @@ public class MoveUtil {
         return PosUtil.findAroundUpAndDown(blockPos, (pos) -> {
             Storage validTarget = MaidStorage.getInstance().isValidTarget(level, maid, pos);
             if (validTarget == null || !PosUtil.canTouch(level, blockPos, pos)) return null;
-            List<Storage> list = findTargetRewriteByBauble(level, maid, validTarget);
+            List<Storage> list = findTargetRewrite(level, maid, validTarget);
             for (Storage storage : list) {
                 if (memory.isVisitedPos(storage))
                     continue;
@@ -70,7 +73,9 @@ public class MoveUtil {
         });
     }
 
-    public static List<Storage> findTargetRewriteByBauble(ServerLevel level, EntityMaid maid, Storage target) {
+    public static TagKey<Block> allowTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "default_storage_blocks"));
+
+    public static List<Storage> findTargetRewrite(ServerLevel level, EntityMaid maid, Storage target) {
         BaubleItemHandler maidBauble = maid.getMaidBauble();
         List<ItemStack> itemStack = new ArrayList<>();
         for (int i = 0; i < maidBauble.getSlots(); i++) {
@@ -88,7 +93,9 @@ public class MoveUtil {
         }
         if (itemStack.isEmpty()) return List.of(target);
         List<Storage> result = new ArrayList<>();
-        result.add(target);
+        if (Config.useAllStorageByDefault || level.getBlockState(target.getPos()).is(allowTag)) {
+            result.add(target);
+        }
         for (ItemStack stack : itemStack) {
             StorageDefineBauble.Mode mode = StorageDefineBauble.getMode(stack);
             List<Storage> storages = StorageDefineBauble.getStorages(stack);

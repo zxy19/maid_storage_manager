@@ -69,6 +69,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (!breath.breathTick()) return;
         super.tick(p_22551_, maid, p_22553_);
         RangedWrapper availableBackpackInv = maid.getAvailableBackpackInv();
+        for (int i = 0; i < 5 && currentSlot < availableBackpackInv.getSlots(); i++)
+            if (availableBackpackInv.getStackInSlot(currentSlot).isEmpty())
+                currentSlot++;
         if (currentSlot < availableBackpackInv.getSlots()) {
             ItemStack stack = availableBackpackInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty())

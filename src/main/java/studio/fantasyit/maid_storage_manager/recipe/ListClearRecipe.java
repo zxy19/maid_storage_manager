@@ -2,6 +2,8 @@ package studio.fantasyit.maid_storage_manager.recipe;
 
 import com.google.gson.JsonObject;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -11,6 +13,7 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 public class ListClearRecipe extends ShapelessRecipe {
@@ -30,7 +33,13 @@ public class ListClearRecipe extends ShapelessRecipe {
             if (stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
                 ItemStack tmp = stack.copy();
                 RequestListItem.clearItemProcess(tmp);
-                tmp.setTag(tmp.getTag());
+                return tmp;
+            }
+            if (stack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {
+                ItemStack tmp = stack.copy();
+                CompoundTag tag = tmp.getOrCreateTag();
+                tag.put(StorageDefineBauble.TAG_STORAGES, new ListTag());
+                tmp.setTag(tag);
                 return tmp;
             }
         }

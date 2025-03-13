@@ -85,12 +85,12 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
                         item.setTag(tag);
                         ItemStack insert = isic.insert(item);
-                        MemoryUtil.getViewedInventory(maid).addItem(target, item.copyWithCount(oCount - insert.getCount()));
+                        MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
                         inv.setStackInSlot(count, insert);
                     }
                 } else {
                     ItemStack insert = isic.insert(item);
-                    MemoryUtil.getViewedInventory(maid).addItem(target, item.copyWithCount(oCount - insert.getCount()));
+                    MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
                     inv.setStackInSlot(count, insert);
                 }
             }

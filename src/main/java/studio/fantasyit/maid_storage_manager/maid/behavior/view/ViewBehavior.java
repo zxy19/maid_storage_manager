@@ -30,7 +30,7 @@ public class ViewBehavior extends MaidCheckRateTask {
     List<ItemStack> mismatchFilter = new ArrayList<>();
 
     public ViewBehavior() {
-        super(Map.of(),500000);
+        super(Map.of(), 500000);
         this.setMaxCheckRate(5);
     }
 
@@ -54,6 +54,9 @@ public class ViewBehavior extends MaidCheckRateTask {
         if (!MemoryUtil.getViewedInventory(maid).hasTarget()) return;
         target = MemoryUtil.getViewedInventory(maid).getTarget();
         MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
+        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target.sameType(pos, null));
+        });
         context = MaidStorage
                 .getInstance()
                 .getStorage(target.type)

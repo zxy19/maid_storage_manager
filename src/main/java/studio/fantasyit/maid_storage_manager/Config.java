@@ -1,11 +1,15 @@
 package studio.fantasyit.maid_storage_manager;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,8 +46,12 @@ public class Config {
     private static final ForgeConfigSpec.IntValue MAX_CRAFT_TRIES = BUILDER
             .comment("Maximum tick Maid will try to perform craft action")
             .defineInRange("max_craft_tries", 600, 0, 9999999);
+    private static final ForgeConfigSpec.BooleanValue USE_ALL_STORAGE_BY_DEFAULT = BUILDER
+            .comment("Enable maid from visiting all storages.")
+            .define("use_all_storage", false);
 
-//    private static final ForgeConfigSpec.ConfigValue<String> DEBUG = BUILDER
+
+    //    private static final ForgeConfigSpec.ConfigValue<String> DEBUG = BUILDER
 //            .comment("Debug values")
 //            .define("debug", "0.5,0.5,0");
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -57,6 +65,7 @@ public class Config {
     public static List<Float> debug;
     public static int maxStoreTries;
     public static int maxCraftTries;
+    public static boolean useAllStorageByDefault;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -69,5 +78,6 @@ public class Config {
         maxCraftTries = MAX_CRAFT_TRIES.get();
         craftWorkSpeed = CRAFT_WORK_SPEED.get();
 //        debug = Arrays.stream(DEBUG.get().split(",")).map(Float::parseFloat).toList();
+        useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
     }
 }

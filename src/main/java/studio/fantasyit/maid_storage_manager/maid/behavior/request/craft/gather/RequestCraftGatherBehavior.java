@@ -72,7 +72,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                     ItemStack copy = itemStack.copy();
                     ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                     copy.shrink(toTake.getCount());
-                    MemoryUtil.getViewedInventory(maid).removeItem(target, itemStack, toTake.getCount());
+                    MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
                     InvUtil.tryPlace(maid.getAvailableBackpackInv(), toTake);
                     return copy;
                 }
@@ -87,7 +87,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                             ItemStack copy = itemStack.copy();
                             ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                             copy.shrink(toTake.getCount());
-                            MemoryUtil.getViewedInventory(maid).removeItem(target, itemStack, toTake.getCount());
+                            MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
                             InvUtil.tryPlace(maid.getAvailableBackpackInv(), toTake);
                             return copy;
                         }

@@ -45,4 +45,6 @@ public class ChatTexts {
     public static String CHAT_REQUEST_FAIL = "chat_bubbles.maid_storage_manager.request_fail";
     public static String CHAT_REQUEST_START = "chat_bubbles.maid_storage_manager.request_start";
     public static String CHAT_CRAFT_GATHER = "chat_bubbles.maid_storage_manager.crafting_gathering";
+    public static String CHAT_CRAFT_STEP = "chat_bubbles.maid_storage_manager.crafting_step";
+    public static String CHAT_CRAFT_RESULT = "chat_bubbles.maid_storage_manager.crafting_result";
 }

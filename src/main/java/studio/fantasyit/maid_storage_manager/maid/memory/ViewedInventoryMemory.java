@@ -3,12 +3,12 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.mutable.MutableObject;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
 import java.util.*;
 
@@ -143,6 +143,26 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             }
         }
         return result;
+    }
+
+    public void ambitiousRemoveItem(ServerLevel level, Storage target, ItemStack itemStack, int count) {
+        MutableObject<Storage> realTarget = new MutableObject<>(target);
+        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            Storage m = target.sameType(pos, null);
+            if (viewedInventory.containsKey(m.toStoreString()))
+                realTarget.setValue(m);
+        });
+        removeItem(realTarget.getValue(), itemStack, count);
+    }
+
+    public void ambitiousAddItem(ServerLevel level, Storage target, ItemStack itemStack) {
+        MutableObject<Storage> realTarget = new MutableObject<>(target);
+        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            Storage m = target.sameType(pos, null);
+            if (viewedInventory.containsKey(m.toStoreString()))
+                realTarget.setValue(m);
+        });
+        addItem(realTarget.getValue(), itemStack);
     }
 
     public void removeItem(Storage pos, ItemStack itemStack, int count) {

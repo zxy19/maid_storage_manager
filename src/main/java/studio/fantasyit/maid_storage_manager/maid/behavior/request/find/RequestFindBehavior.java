@@ -98,7 +98,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 ItemStack copy = itemStack.copy();
                 ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore);
                 copy.shrink(tmp.getCount());
-                MemoryUtil.getViewedInventory(maid).removeItem(target, itemStack, copy.getCount());
+                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level,target, itemStack, copy.getCount());
                 InvUtil.tryPlace(maid.getAvailableBackpackInv(), copy);
                 return tmp;
             }

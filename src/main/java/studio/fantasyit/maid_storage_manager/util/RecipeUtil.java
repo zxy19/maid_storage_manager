@@ -92,6 +92,7 @@ public class RecipeUtil {
     public static CraftingContainer wrapContainer(List<ItemStack> items, int w, int h) {
         return new ReadonlyCraftingContainer(items, w, h);
     }
+
     public static CraftingContainer wrapContainer(Container items, int w, int h) {
         List<ItemStack> itemList = new ArrayList<>();
         for (int i = 0; i < items.getContainerSize(); i++) {
@@ -99,12 +100,20 @@ public class RecipeUtil {
         }
         return new ReadonlyCraftingContainer(itemList, w, h);
     }
+
     public static Optional<CraftingRecipe> getRecipe(Level level, CraftingContainer container) {
         RecipeManager recipeManager = level.getRecipeManager();
         return recipeManager.getRecipeFor(
                 RecipeType.CRAFTING,
                 container,
                 level
+        );
+    }
+
+    public static List<CraftingRecipe> getAllRecipes(Level level) {
+        RecipeManager recipeManager = level.getRecipeManager();
+        return recipeManager.getAllRecipesFor(
+                RecipeType.CRAFTING
         );
     }
 }

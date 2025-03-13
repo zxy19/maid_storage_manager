@@ -31,6 +31,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     boolean isOutput;
     private CraftLayer layer;
     int slot;
+    int ingredientIndex;
     private boolean done;
     private boolean fail;
     private int tryTick;
@@ -93,6 +94,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         slot = 0;
         tryTick = 0;
+        ingredientIndex = 0;
         done = false;
         breath.reset();
     }
@@ -229,22 +231,26 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
 
     private void placeIngredient(ServerLevel level, EntityMaid maid) {
         RangedWrapper inv = maid.getAvailableBackpackInv();
+        ItemStack stepItem = craftGuideStepData.getItems().get(ingredientIndex);
         if (context instanceof IStorageInsertableContext isic) {
-            @NotNull ItemStack item = inv.getStackInSlot(slot);
-            int idx = -1;
-            for (int i = 0; i < craftGuideStepData.getItems().size(); i++) {
+            boolean shouldDoPlace = false;
+            int count = 0;
+            for (; slot < inv.getSlots(); slot++) {
                 //物品匹配且还需继续放入
-                ItemStack stepItem = craftGuideStepData.getItems().get(i);
+                @NotNull ItemStack item = inv.getStackInSlot(slot);
+                if (item.isEmpty()) continue;
+                if (count++ > 10) break;
                 if (ItemStack.isSameItem(stepItem, item)) {
-                    if (layer.getCurrentStepCount(i) < stepItem.getCount()) {
-                        idx = i;
+                    if (layer.getCurrentStepCount(ingredientIndex) < stepItem.getCount()) {
+                        shouldDoPlace = true;
                         break;
                     }
                 }
             }
-            if (idx != -1) {
-                int placed = layer.getCurrentStepCount(idx);
-                int required = craftGuideStepData.getItems().get(idx).getCount();
+            if (shouldDoPlace) {
+                @NotNull ItemStack item = inv.getStackInSlot(slot);
+                int placed = layer.getCurrentStepCount(ingredientIndex);
+                int required = craftGuideStepData.getItems().get(ingredientIndex).getCount();
                 int pick = Math.min(
                         required - placed,
                         item.getCount()
@@ -252,21 +258,22 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 ItemStack copy = item.copyWithCount(pick);
                 ItemStack rest = isic.insert(copy);
                 item.shrink(pick - rest.getCount());
-                layer.addCurrentStepPlacedCounts(idx, pick - rest.getCount());
-                if (pick - rest.getCount() == 0) {
-                    slot++;
-                } else {
+                layer.addCurrentStepPlacedCounts(ingredientIndex, pick - rest.getCount());
+                if (pick - rest.getCount() != 0) {
                     tryTick = 0;
                 }
-            } else {
-                slot++;
             }
 
-            if (slot >= inv.getSlots()) {
+            if (layer.getCurrentStepCount(ingredientIndex) >= stepItem.getCount()) {
+                ingredientIndex++;
+                slot = 0;
+            } else if (slot >= inv.getSlots()) {
                 if (layer.getStep() == 1)//Input 1:尽力满足输入，而非必须全部输入
-                    done = true;
-                else
-                    slot = 0;
+                    ingredientIndex++;
+                slot = 0;
+            }
+            if (ingredientIndex >= craftGuideStepData.getItems().size()) {
+                done = true;
             }
         } else {
             fail = true;

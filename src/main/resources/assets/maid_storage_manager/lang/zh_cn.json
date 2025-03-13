@@ -3,6 +3,8 @@
   "chat_bubbles.maid_storage_manager.craft_calculated": "合成公式加载中…转圈圈～",
   "chat_bubbles.maid_storage_manager.crafting": "制作魔法启动！咔嚓咔嚓——",
   "chat_bubbles.maid_storage_manager.crafting_gathering": "材料雷达启动！滴滴滴～",
+  "chat_bubbles.maid_storage_manager.crafting_step": "[%s] GET！下一步准备就绪～",
+  "chat_bubbles.maid_storage_manager.crafting_result": "[%s] 完成！女仆的魔法工坊大成功～",
   "chat_bubbles.maid_storage_manager.missing": "物品又捉迷藏了？气鼓鼓！",
   "chat_bubbles.maid_storage_manager.request_fail": "呜…材料不够！眼泪汪汪！",
   "chat_bubbles.maid_storage_manager.request_finish": "任务达成！夸我夸我！",

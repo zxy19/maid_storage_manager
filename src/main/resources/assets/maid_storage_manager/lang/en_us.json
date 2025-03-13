@@ -2,6 +2,8 @@
   "chat_bubbles.maid_storage_manager.chest_full": "Storage full boom! Clean now~",
   "chat_bubbles.maid_storage_manager.craft_calculated": "Crafting math ON! Spinning~",
   "chat_bubbles.maid_storage_manager.crafting": "Crafting magic GO! Click-clack~",
+  "chat_bubbles.maid_storage_manager.crafting_step": "[%s] completed! Maid’s magic workshop triumph~",
+  "chat_bubbles.maid_storage_manager.crafting_result": "[%s] acquired! Next step ready~",
   "chat_bubbles.maid_storage_manager.missing": "Items hide-and-seek? Pout!",
   "chat_bubbles.maid_storage_manager.request_fail": "T^T Items missing! Tears attack!",
   "chat_bubbles.maid_storage_manager.request_finish": "Mission complete! Praise me!",
