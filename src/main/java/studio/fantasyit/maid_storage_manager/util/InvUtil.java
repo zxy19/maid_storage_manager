@@ -40,6 +40,12 @@ public class InvUtil {
         if (itemStack.isEmpty()) return itemStack;
         ItemStack restItem = itemStack.copy();
         for (int i = 0; i < container.getSlots(); i++) {
+            if (ItemStack.isSameItemSameTags(container.getStackInSlot(i), restItem)) {
+                restItem = container.insertItem(i, restItem, false);
+                if (restItem.isEmpty()) break;
+            }
+        }
+        for (int i = 0; i < container.getSlots(); i++) {
             if (container.isItemValid(i, itemStack)) {
                 restItem = container.insertItem(i, restItem, false);
                 if (restItem.isEmpty()) break;
@@ -144,4 +150,13 @@ public class InvUtil {
         return list;
     }
 
+    public static int freeSlots(IItemHandler availableInv) {
+        int count = 0;
+        for (int i = 0; i < availableInv.getSlots(); i++) {
+            if (availableInv.getStackInSlot(i).isEmpty()) {
+                count++;
+            }
+        }
+        return count;
+    }
 }

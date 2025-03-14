@@ -17,7 +17,7 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
 
-public class PortableCraftCalculatorBauble extends Item implements IMaidBauble {
+public class PortableCraftCalculatorBauble extends MaidInteractItem implements IMaidBauble {
     public static final String TAG_STORED_RECIPE = "recipes";
     public static final String TAG_STORED_LAYERS = "layers";
     public static final String TAG_PROGRESS = "progress";
@@ -76,6 +76,6 @@ public class PortableCraftCalculatorBauble extends Item implements IMaidBauble {
     }
 
     public PortableCraftCalculatorBauble() {
-        super(new Properties());
+        super(new Properties().stacksTo(1));
     }
 }

@@ -6,6 +6,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -68,7 +70,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         super.tick(p_22551_, maid, p_22553_);
         if (!breath.breathTick()) return;
-        RangedWrapper maidInv = maid.getAvailableBackpackInv();
+        CombinedInvWrapper maidInv = maid.getAvailableInv(false);
         if (context instanceof IStorageInteractContext isic) {
             isic.tick(itemStack -> {
                 if (!((IFilterable) isic).isAvailable(itemStack)) {

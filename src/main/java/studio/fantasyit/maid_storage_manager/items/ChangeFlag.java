@@ -21,14 +21,16 @@ import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.PosUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ChangeFlag extends Item {
     public ChangeFlag() {
-        super(new Properties());
+        super(new Properties().stacksTo(1));
     }
 
     public static final String TAG_STORAGES = "storages";
@@ -68,15 +70,16 @@ public class ChangeFlag extends Item {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity living, InteractionHand hand) {
-        if (hand == InteractionHand.MAIN_HAND && living instanceof EntityMaid maid) {
+        if (!player.level().isClientSide && hand == InteractionHand.MAIN_HAND && living instanceof EntityMaid maid) {
             if (maid.getOwner() != null
                     && maid.getOwner().getUUID().equals(player.getUUID())
                     && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
                 getStorages(itemStack).forEach(storage -> {
-                    clearVisForMemories(maid, storage);
+                    clearVisForMemories((ServerLevel) player.level(), maid, storage);
                     MemoryUtil.getViewedInventory(maid).addMarkChanged(storage);
                 });
                 clearStorages(itemStack);
+                MemoryUtil.clearTarget(maid);
                 ChatTexts.send(maid, ChatTexts.CHAT_CHECK_MARK_CHANGED);
                 player.sendSystemMessage(Component.translatable("interaction.flag_changed"));
                 return InteractionResult.SUCCESS;
@@ -102,15 +105,18 @@ public class ChangeFlag extends Item {
         stack.setTag(tag);
     }
 
-    public static void clearVisForMemories(EntityMaid maid, Storage storage) {
-        clearVisForMemories(MemoryUtil.getRequestProgress(maid), storage);
-        clearVisForMemories(MemoryUtil.getViewedInventory(maid), storage);
-        clearVisForMemories(MemoryUtil.getCrafting(maid), storage);
-        clearVisForMemories(MemoryUtil.getPlacingInv(maid), storage);
-        clearVisForMemories(MemoryUtil.getResorting(maid), storage);
+    public static void clearVisForMemories(ServerLevel level, EntityMaid maid, Storage storage) {
+        clearVisForMemories(level, MemoryUtil.getRequestProgress(maid), storage);
+        clearVisForMemories(level, MemoryUtil.getViewedInventory(maid), storage);
+        clearVisForMemories(level, MemoryUtil.getCrafting(maid), storage);
+        clearVisForMemories(level, MemoryUtil.getPlacingInv(maid), storage);
+        clearVisForMemories(level, MemoryUtil.getResorting(maid), storage);
     }
 
-    public static void clearVisForMemories(AbstractTargetMemory memory, Storage storage) {
+    public static void clearVisForMemories(ServerLevel level, AbstractTargetMemory memory, Storage storage) {
         memory.removeVisitedPos(storage);
+        InvUtil.checkNearByContainers(level, storage.getPos(), pos -> {
+            memory.removeVisitedPos(storage.sameType(pos, null));
+        });
     }
 }

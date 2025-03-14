@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +44,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
-        if (currentSlot >= maid.getAvailableBackpackInv().getSlots())
+        if (currentSlot >= maid.getAvailableInv(false).getSlots())
             return false;
         return context != null && !context.isDone();
     }
@@ -68,12 +69,15 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         if (!breath.breathTick()) return;
         super.tick(p_22551_, maid, p_22553_);
-        RangedWrapper availableBackpackInv = maid.getAvailableBackpackInv();
-        for (int i = 0; i < 5 && currentSlot < availableBackpackInv.getSlots(); i++)
-            if (availableBackpackInv.getStackInSlot(currentSlot).isEmpty())
+        CombinedInvWrapper availableInv = maid.getAvailableInv(true);
+
+        for (int i = 0; i < 5 && currentSlot < availableInv.getSlots(); i++)
+            if (availableInv.getStackInSlot(currentSlot).isEmpty())
                 currentSlot++;
-        if (currentSlot < availableBackpackInv.getSlots()) {
-            ItemStack stack = availableBackpackInv.getStackInSlot(currentSlot);
+        if (availableInv.getStackInSlot(currentSlot) == maid.getMainHandItem())
+            currentSlot++;
+        if (currentSlot < availableInv.getSlots()) {
+            ItemStack stack = availableInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty())
                 if (context instanceof IStorageInsertableContext isic) {
                     int i = RequestListItem.updateStored(maid.getMainHandItem(), stack, true);
@@ -81,7 +85,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                     ItemStack notInserted = isic.insert(stack.copyWithCount(canStoreCount));
                     ItemStack toStoreItemStack = stack.copyWithCount(canStoreCount - notInserted.getCount());
                     RequestListItem.updateStored(maid.getMainHandItem(), toStoreItemStack, false);
-                    availableBackpackInv.setStackInSlot(currentSlot, stack.copyWithCount(stack.getCount() - toStoreItemStack.getCount()));
+                    availableInv.setStackInSlot(currentSlot, stack.copyWithCount(stack.getCount() - toStoreItemStack.getCount()));
                 }
             currentSlot++;
         }
@@ -111,14 +115,14 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.setInteractPos(maid, target.getPos().above());
             }
         }
-        RequestListItem.updateCollectedNotStored(maid.getMainHandItem(), maid.getAvailableBackpackInv());
+        RequestListItem.updateCollectedNotStored(maid.getMainHandItem(), maid.getAvailableInv(false));
         MemoryUtil.getRequestProgress(maid).setReturn(false);
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
 
         //莫名其妙没空了（被扔垃圾了），那就先扔掉清单好勒
-        if (!InvUtil.hasAnyFree(maid.getAvailableBackpackInv())) {
+        if (!InvUtil.hasAnyFree(maid.getAvailableInv(false))) {
             RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null);
         }
     }

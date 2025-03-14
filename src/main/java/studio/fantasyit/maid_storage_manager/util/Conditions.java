@@ -20,7 +20,7 @@ public class Conditions {
     }
 
     public static boolean inventoryNotFull(EntityMaid maid) {
-        return InvUtil.hasAnyFree(maid.getAvailableBackpackInv());
+        return InvUtil.hasAnyFree(maid.getAvailableInv(false));
     }
 
     public static boolean inventoryFull(EntityMaid maid) {

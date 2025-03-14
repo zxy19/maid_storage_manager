@@ -44,7 +44,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 next = Schedule.NO_SCHEDULE;
             } else
                 next = Schedule.PLACE;
-        } else if (Conditions.takingRequestList(maid) && (last == Schedule.REQUEST || InvUtil.hasAnyFree(maid.getAvailableBackpackInv()))) {
+        } else if (Conditions.takingRequestList(maid) && (last == Schedule.REQUEST || InvUtil.hasAnyFree(maid.getAvailableInv(false)))) {
             next = Schedule.REQUEST;
         } else if (!Conditions.isNothingToPlace(maid))
             next = Schedule.PLACE;

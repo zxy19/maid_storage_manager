@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.AvailableCraftGraph;
+import studio.fantasyit.maid_storage_manager.craft.BiCraftCountCalculator;
 import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
@@ -17,6 +18,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
 
     private AvailableCraftGraph availableCraftGraph;
     List<Pair<ItemStack, Integer>> notDone;
+    private BiCraftCountCalculator biCalc;
     int count = 0;
     int success = 0;
     private boolean done;
@@ -63,6 +66,11 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE);
         DebugData.getInstance().sendMessage("[REQUEST_CRAFT]Start. Calculate tree");
         notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
+        if (notDone.isEmpty()) {
+            done = true;
+            success = 0;
+            return;
+        }
         Storage storage = RequestListItem.getStorageBlock(maid.getMainHandItem());
         List<com.mojang.datafixers.util.Pair<ItemStack, Integer>> items;
         if (storage != null) {
@@ -109,48 +117,54 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                 .forEach(itemStack -> {
                     availableCraftGraph.setCount(itemStack.getA(), 0);
                 });
-
         MemoryUtil.getCrafting(maid).clearLayers();
         MemoryUtil.getCrafting(maid).resetVisitedPos();
         MemoryUtil.getCrafting(maid).startWorking(false);
+        biCalc = null;
     }
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
-        if (!availableCraftGraph.buildGraph()) return;
-        if (!availableCraftGraph.processQueues()) return;
-        if (count != 0) {
-            List<CraftLayer> results = availableCraftGraph.getResults();
-            if (results == null) {
-                DebugData.getInstance().sendMessage(
-                        "[REQUEST_CRAFT] Failed to find recipe for %s",
-                        notDone.get(count - 1).getA().getHoverName().getString()
-                );
-                List<Pair<ItemStack, Integer>> fails = availableCraftGraph.getFails();
-                RequestListItem.setMissingItem(
-                        maid.getMainHandItem(),
-                        notDone.get(count - 1).getA(),
-                        fails.stream().map(e -> e.getA().copyWithCount(e.getB())).toList()
-                );
-            } else {
-                results.forEach(craftLayer -> {
-                    MemoryUtil.getCrafting(maid).addLayer(craftLayer);
-                });
-
-                DebugData.getInstance().sendMessage(
-                        "[REQUEST_CRAFT] %s tree with %d layers",
-                        notDone.get(count - 1).getA().getHoverName().getString(),
-                        results.size()
-                );
-                success += 1;
-            }
+        if (biCalc == null) {
+            biCalc = new BiCraftCountCalculator(
+                    availableCraftGraph,
+                    notDone.get(count).getA(),
+                    notDone.get(count).getB(),
+                    InvUtil.freeSlots(maid.getAvailableInv(true))
+            );
         }
+        if (biCalc.tick()) return;
+
+        List<CraftLayer> results = biCalc.getResults();
+        if (results.isEmpty()) {
+            DebugData.getInstance().sendMessage(
+                    "[REQUEST_CRAFT] Failed to find recipe for %s",
+                    notDone.get(count).getA().getHoverName().getString()
+            );
+        } else {
+            results.forEach(craftLayer -> {
+                MemoryUtil.getCrafting(maid).addLayer(craftLayer);
+            });
+
+            DebugData.getInstance().sendMessage(
+                    "[REQUEST_CRAFT] %s tree with %d layers",
+                    notDone.get(count).getA().getHoverName().getString(),
+                    results.size()
+            );
+            success += 1;
+        }
+        List<Pair<ItemStack, Integer>> fails = biCalc.getFails();
+        if (!fails.isEmpty())
+            RequestListItem.setMissingItem(
+                    maid.getMainHandItem(),
+                    notDone.get(count).getA(),
+                    fails.stream().map(e -> e.getA().copyWithCount(e.getB())).toList()
+            );
+        biCalc = null;
+        count++;
         if (count >= notDone.size()) {
             done = true;
-            return;
         }
-        availableCraftGraph.startContext(notDone.get(count).getA(), notDone.get(count).getB());
-        count++;
     }
 
     @Override

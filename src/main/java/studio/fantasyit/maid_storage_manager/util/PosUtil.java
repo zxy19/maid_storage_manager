@@ -10,60 +10,51 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class PosUtil {
-    /**
-     * 当前方块开始向上四格，左右各一格
-     *
-     * @param pos
-     * @param consumer
-     * @return
-     */
-    static public @Nullable <T> T findAroundFromStandPos(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
-        return findAroundFromStandPos(pos, consumer, 4);
-    }
-
-    static public @Nullable <T> T findAroundFromStandPos(BlockPos pos, Function<BlockPos, @Nullable T> consumer, int depth) {
-        T tmp;
-        for (int i = 0; i < depth; i++) {
-            if ((tmp = consumer.apply(pos)) != null) return tmp;
-            if ((tmp = consumer.apply(pos.north())) != null) return tmp;
-            if ((tmp = consumer.apply(pos.east())) != null) return tmp;
-            if ((tmp = consumer.apply(pos.south())) != null) return tmp;
-            if ((tmp = consumer.apply(pos.west())) != null) return tmp;
-            pos = pos.above();
-        }
-        if ((tmp = consumer.apply(pos)) != null) return tmp;
-        return null;
-    }
-
-
-    static public @Nullable <T> T findAroundBeside(BlockPos pos, Function<BlockPos, @Nullable T> consumer){
-        T tmp = null;
-        if((tmp = consumer.apply(pos)) != null) return tmp;
-        if((tmp = consumer.apply(pos.above())) != null) return tmp;
-        if((tmp = consumer.apply(pos.below())) != null) return tmp;
-        if((tmp = consumer.apply(pos.north())) != null) return tmp;
-        if((tmp = consumer.apply(pos.east())) != null) return tmp;
-        if((tmp = consumer.apply(pos.south())) != null) return tmp;
-        if((tmp = consumer.apply(pos.west())) != null) return tmp;
-        return null;
-    }
     static public @Nullable <T> T findAroundUpAndDown(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
         return findAroundUpAndDown(pos, consumer, 4);
     }
 
     static public @Nullable <T> T findAroundUpAndDown(BlockPos pos, Function<BlockPos, @Nullable T> consumer, int depth) {
-        @Nullable T tmp = findAroundFromStandPos(pos, consumer, depth);
-        if (tmp != null) return tmp;
+        T tmp;
+        for (int i = 0; i < depth * 2; i++) {
+            if ((tmp = consumer.apply(pos)) != null) return tmp;
+            if ((tmp = consumer.apply(pos.north())) != null) return tmp;
+            if ((tmp = consumer.apply(pos.east())) != null) return tmp;
+            if ((tmp = consumer.apply(pos.south())) != null) return tmp;
+            if ((tmp = consumer.apply(pos.west())) != null) return tmp;
+            if (i % 2 != 0)
+                pos = pos.above(i + 1);
+            else
+                pos = pos.below(i + 1);
+        }
+        if ((tmp = consumer.apply(pos)) != null) return tmp;
+        return null;
+    }
 
-        tmp = findAroundFromStandPos(pos.below(depth - 1), consumer, depth);
-        return tmp;
+    static public <T> @NotNull List<T> gatherAroundUpAndDown(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
+        return gatherAroundUpAndDown(pos, consumer, 4);
+    }
+
+    static public <T> @NotNull List<T> gatherAroundUpAndDown(BlockPos pos, Function<BlockPos, @Nullable T> consumer, int depth) {
+        T tmp;
+        List<T> result = new ArrayList<>();
+        for (int i = 0; i < depth * 2; i++) {
+            if ((tmp = consumer.apply(pos)) != null) result.add(tmp);
+            if ((tmp = consumer.apply(pos.north())) != null) result.add(tmp);
+            if ((tmp = consumer.apply(pos.east())) != null) result.add(tmp);
+            if ((tmp = consumer.apply(pos.south())) != null) result.add(tmp);
+            if ((tmp = consumer.apply(pos.west())) != null) result.add(tmp);
+            if (i % 2 != 0)
+                pos = pos.above(i + 1);
+            else
+                pos = pos.below(i + 1);
+        }
+        if ((tmp = consumer.apply(pos)) != null) result.add(tmp);
+        return result;
     }
 
     static public @NotNull BlockPos getEntityPos(Level level, @NotNull BlockPos pos) {

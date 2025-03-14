@@ -47,7 +47,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long p_22547_) {
         if (!Conditions.takingRequestList(maid)) return false;
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
-        if (!InvUtil.hasAnyFree(maid.getAvailableBackpackInv())) return false;
+        if (!InvUtil.hasAnyFree(maid.getMaidInv())) return false;
         if (!canPick) return true;
         return context != null && !context.isDone();
     }
@@ -96,13 +96,13 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             if (checkItem != null && ItemStack.isSameItemSameTags(itemStack, checkItem))
                 checkItem = null;
 
-            int maxStore = InvUtil.maxCanPlace(maid.getAvailableBackpackInv(), itemStack);
+            int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
             if (maxStore > 0) {
                 ItemStack copy = itemStack.copy();
                 ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore);
                 copy.shrink(tmp.getCount());
                 MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, copy.getCount());
-                InvUtil.tryPlace(maid.getAvailableBackpackInv(), copy);
+                InvUtil.tryPlace(maid.getAvailableInv(false), copy);
                 return tmp;
             }
             return itemStack;

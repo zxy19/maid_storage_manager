@@ -19,17 +19,25 @@ public class MaidInteractItem extends Item {
         super(p_41383_);
     }
 
+    public MaidInteractItem() {
+        super(new Item.Properties());
+    }
+
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player p_41399_, LivingEntity entity, InteractionHand p_41401_) {
-        if (p_41399_.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND && p_41399_.isShiftKeyDown() && entity instanceof EntityMaid maid) {
-            IItemHandler inv;
-            if (BaubleManager.getBauble(itemStack) != null) {
-                inv = maid.getMaidBauble();
-            } else {
-                inv = maid.getMaidInv();
-            }
-            if (InvUtil.maxCanPlace(inv, itemStack) > 0) {
-                itemStack.setCount(InvUtil.tryPlace(maid.getMaidInv(), itemStack).getCount());
+        if (!p_41399_.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND && entity instanceof EntityMaid maid) {
+            if(p_41399_.getUUID().equals(maid.getOwner().getUUID())) {
+                IItemHandler inv;
+                if (BaubleManager.getBauble(itemStack) != null) {
+                    inv = maid.getMaidBauble();
+                } else {
+                    inv = maid.getAvailableInv(false);
+                }
+                if (InvUtil.maxCanPlace(inv, itemStack) > 0) {
+                    int count = InvUtil.tryPlace(inv, itemStack).getCount();
+                    p_41399_.getMainHandItem().setCount(count);
+                    return InteractionResult.SUCCESS;
+                }
             }
         }
         return super.interactLivingEntity(itemStack, p_41399_, entity, p_41401_);

@@ -34,7 +34,7 @@ public class ItemRegistry {
     }
 
     public static final RegistryObject<Item> REQUEST_LIST_ITEM = item("request_list", RequestListItem::new);
-    public static final RegistryObject<Item> INVENTORY_LIST = item("inventory_list");
+    public static final RegistryObject<Item> INVENTORY_LIST = item("inventory_list",MaidInteractItem::new);
     public static final RegistryObject<Item> WRITTEN_INVENTORY_LIST = item("written_inventory_list", WrittenInvListItem::new);
     public static final RegistryObject<Item> FILTER_LIST = item("filter_list", FilterListItem::new);
     public static final RegistryObject<Item> STORAGE_DEFINE_BAUBLE = item("storage_define_bauble", StorageDefineBauble::new);

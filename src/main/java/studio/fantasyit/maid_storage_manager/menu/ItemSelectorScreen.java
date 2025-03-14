@@ -90,7 +90,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
         if (itemStackStream != null && !itemStackStream.isEmpty()) {
             tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items").withStyle(ChatFormatting.RED));
             for (ItemStack itemStack : itemStackStream) {
-                tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items_item", itemStack.getHoverName()));
+                tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items_item", itemStack.getHoverName(),itemStack.getCount()));
             }
         }
 

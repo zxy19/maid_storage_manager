@@ -9,8 +9,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
@@ -22,6 +25,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class MoveUtil {
@@ -32,16 +36,19 @@ public class MoveUtil {
 
     public static @Nullable BlockPos selectPosForTarget(ServerLevel level, EntityMaid maid, BlockPos target) {
         //寻找落脚点
-        return PosUtil.findAroundUpAndDown(target,
+        @NotNull List<Pair<BlockPos, Integer>> posList = PosUtil.gatherAroundUpAndDown(target,
                 pos -> {
                     if (!PosUtil.isSafePos(level, pos)) return null;
-
-                    if (maid.isWithinRestriction(pos) && maid.canPathReach(pos) && PosUtil.canTouch(level, pos, target)) {
-                        return pos;
+                    if (maid.isWithinRestriction(pos) && PosUtil.canTouch(level, pos, target)) {
+                        Path path = maid.getNavigation().createPath(pos, 0);
+                        if (path != null && path.canReach())
+                            return new Pair<>(pos, path.getNodeCount());
+                        return null;
                     } else {
                         return null;
                     }
                 });
+        return posList.stream().min(Comparator.comparingInt(Pair::getB)).map(Pair::getA).orElse(null);
     }
 
     public static @Nullable Storage findTargetForPos(ServerLevel level, EntityMaid maid, BlockPos blockPos, AbstractTargetMemory memory) {

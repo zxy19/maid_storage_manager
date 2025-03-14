@@ -2,6 +2,8 @@ package studio.fantasyit.maid_storage_manager.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,8 +18,9 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 @Mixin(EntityMaid.class)
 public abstract class MaidCheckPickupItem {
-    @Shadow(remap = false)
-    public abstract RangedWrapper getAvailableBackpackInv();
+    @Shadow(remap = false) public abstract CombinedInvWrapper getAvailableInv(boolean handsFirst);
+
+
 
     @Inject(method = "pickupItem", at = @At("HEAD"), cancellable = true, remap = false)
     public void maid_storage_manager$pickupItem(ItemEntity entityItem, boolean simulate, CallbackInfoReturnable<Boolean> cir) {
@@ -30,7 +33,7 @@ public abstract class MaidCheckPickupItem {
             return;
         }
         if (entityItem.getItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            if (!InvUtil.hasAnyFree(getAvailableBackpackInv())) {
+            if (!InvUtil.hasAnyFree(getAvailableInv(false))) {
                 cir.setReturnValue(false);
             }
         }

@@ -115,7 +115,7 @@
   "tooltip.maid_storage_manager.request_list.done_success": "完成",
   "tooltip.maid_storage_manager.request_list.jei.too_many_to_transfer": "太多要转移的物品",
   "tooltip.maid_storage_manager.request_list.missing_items": "未找到",
-  "tooltip.maid_storage_manager.request_list.missing_items_item": "- [%s]",
+  "tooltip.maid_storage_manager.request_list.missing_items_item": "- [%s * %s]",
   "tooltip.maid_storage_manager.request_list.no_storage": "Shift并右键一个箱子来设置存储",
   "tooltip.maid_storage_manager.request_list.no_tag": "空的请求列表",
   "tooltip.maid_storage_manager.request_list.open_gui_to_config": "打开GUI来配置",

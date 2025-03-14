@@ -67,13 +67,13 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
         if (context instanceof IStorageInteractContext isic) {
             isic.tick(itemStack -> {
-                int maxStore = InvUtil.maxCanPlace(maid.getAvailableBackpackInv(), itemStack);
+                int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
                 if (maxStore > 0) {
                     ItemStack copy = itemStack.copy();
                     ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                     copy.shrink(toTake.getCount());
                     MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
-                    InvUtil.tryPlace(maid.getAvailableBackpackInv(), toTake);
+                    InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
                     return copy;
                 }
                 return itemStack;
@@ -82,13 +82,13 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
             isec.extract(layer.getUnCollectedItems(),
                     true,
                     itemStack -> {
-                        int maxStore = InvUtil.maxCanPlace(maid.getAvailableBackpackInv(), itemStack);
+                        int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
                         if (maxStore > 0) {
                             ItemStack copy = itemStack.copy();
                             ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                             copy.shrink(toTake.getCount());
                             MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
-                            InvUtil.tryPlace(maid.getAvailableBackpackInv(), toTake);
+                            InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
                             return copy;
                         }
                         return itemStack;

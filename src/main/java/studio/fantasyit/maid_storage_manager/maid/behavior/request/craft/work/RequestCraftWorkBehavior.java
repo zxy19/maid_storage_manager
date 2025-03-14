@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
@@ -145,7 +146,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
 
     private void tryCrafting(ServerLevel level, EntityMaid maid) {
         layer.getCraftData().ifPresentOrElse(craftGuideData -> {
-            RangedWrapper inv = maid.getAvailableBackpackInv();
+            CombinedInvWrapper inv = maid.getAvailableInv(false);
             List<ItemStack> needs = craftGuideData.getInput1().items;
             int[] slotExtractCount = new int[inv.getSlots()];
             Arrays.fill(slotExtractCount, 0);
@@ -178,9 +179,9 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                     if (ItemStack.isSameItem(result, craftGuideStepData.getItems().get(0))) {
                         layer.addCurrentStepPlacedCounts(0, 1);
                     }
-                    int maxCanPlace = InvUtil.maxCanPlace(maid.getAvailableBackpackInv(), result);
-                    if (maxCanPlace > result.getCount()) {
-                        InvUtil.tryPlace(maid.getAvailableBackpackInv(), result);
+                    int maxCanPlace = InvUtil.maxCanPlace(inv, result);
+                    if (maxCanPlace >= result.getCount()) {
+                        InvUtil.tryPlace(inv, result);
                         for (int j = 0; j < inv.getSlots(); j++) {
                             inv.extractItem(j, slotExtractCount[j], false);
                         }
@@ -212,7 +213,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 int takenCount = layer.getCurrentStepCount(idx);
                 int toTakeCount = Math.min(totalCount - takenCount, itemStack.getCount());
                 ItemStack takenItem = itemStack.copyWithCount(toTakeCount);
-                ItemStack itemStack1 = InvUtil.tryPlace(maid.getAvailableBackpackInv(), takenItem);
+                ItemStack itemStack1 = InvUtil.tryPlace(maid.getAvailableInv(false), takenItem);
                 takenItem.shrink(itemStack1.getCount());
                 layer.addCurrentStepPlacedCounts(idx, takenItem.getCount());
                 if (takenItem.getCount() > 0) tryTick = 0;
@@ -230,7 +231,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     }
 
     private void placeIngredient(ServerLevel level, EntityMaid maid) {
-        RangedWrapper inv = maid.getAvailableBackpackInv();
+        CombinedInvWrapper inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getItems().get(ingredientIndex);
         if (context instanceof IStorageInsertableContext isic) {
             boolean shouldDoPlace = false;

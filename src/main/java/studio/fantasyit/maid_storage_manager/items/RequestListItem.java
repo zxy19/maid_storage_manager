@@ -57,26 +57,19 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_REPEAT_INTERVAL = "interval";
 
     public RequestListItem() {
-        super(
-                new Properties()
-                        .stacksTo(1)
-        );
+        super(new Properties().stacksTo(1));
     }
 
     public static boolean isIgnored(ItemStack mainHandItem) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return false;
-        if (!mainHandItem.hasTag())
-            return false;
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!mainHandItem.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
         return tag.getBoolean(TAG_IGNORE_TASK);
     }
 
     public static void addItemStackCollected(ItemStack mainHandItem, ItemStack a, int count) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
-        if (!mainHandItem.hasTag())
-            return;
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!mainHandItem.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
         ListTag items = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < items.size(); i++) {
@@ -98,8 +91,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static void clearItemProcess(ItemStack target) {
-        if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
+        if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
         CompoundTag tag = target.getOrCreateTag();
         ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
@@ -118,28 +110,22 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static boolean matchNbt(ItemStack mainHandItem) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return false;
-        if (!mainHandItem.hasTag())
-            return false;
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!mainHandItem.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
         return tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
     }
 
     public static boolean isCoolingDown(ItemStack item) {
-        if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return false;
-        if (!item.hasTag())
-            return false;
+        if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!item.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(item.getTag());
         return tag.getInt(TAG_COOLING_DOWN) > 0;
     }
 
     public static void tickCoolingDown(ItemStack item) {
-        if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
-        if (!item.hasTag())
-            return;
+        if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!item.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(item.getTag());
         if (tag.getInt(TAG_COOLING_DOWN) > 0) {
             tag.putInt(TAG_COOLING_DOWN, tag.getInt(TAG_COOLING_DOWN) - 1);
@@ -152,10 +138,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static void markDone(ItemStack mainHandItem, ItemStack target) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
-        if (!mainHandItem.hasTag())
-            return;
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!mainHandItem.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
         ListTag items = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < items.size(); i++) {
@@ -182,8 +166,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
         if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
-            if (!serverPlayer.isShiftKeyDown())
-                return InteractionResult.PASS;
+            if (!serverPlayer.isShiftKeyDown()) return InteractionResult.PASS;
             BlockPos clickedPos = context.getClickedPos();
             Storage validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
             if (validTarget != null) {
@@ -201,34 +184,24 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                             storage.pos = clickedPos;
                             storage.side = null;
                         }
-                        serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage",
-                                clickedPos.getX(),
-                                clickedPos.getY(),
-                                clickedPos.getZ()));
+                        serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                         tag.put(TAG_STORAGE, storage.toNbt());
                     }
                 } else {
                     tag.put(TAG_STORAGE, validTarget.toNbt());
-                    serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage",
-                            clickedPos.getX(),
-                            clickedPos.getY(),
-                            clickedPos.getZ()));
+                    serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                 }
                 item.setTag(tag);
             }
             return InteractionResult.CONSUME;
         } else {
-            if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown())
-                return InteractionResult.CONSUME;
+            if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown()) return InteractionResult.CONSUME;
             return InteractionResult.PASS;
         }
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack itemStack,
-                                @Nullable Level p_41422_,
-                                @NotNull List<Component> toolTip,
-                                @NotNull TooltipFlag p_41424_) {
+    public void appendHoverText(@NotNull ItemStack itemStack, @Nullable Level p_41422_, @NotNull List<Component> toolTip, @NotNull TooltipFlag p_41424_) {
         super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
         toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.desc").withStyle(ChatFormatting.GRAY));
         if (!itemStack.hasTag()) {
@@ -258,10 +231,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 int collected = itemTag.getInt(RequestListItem.TAG_ITEMS_COLLECTED);
                 int requested = itemTag.getInt(RequestListItem.TAG_ITEMS_REQUESTED);
 
-                Component component = Component.translatable("gui.maid_storage_manager.written_inventory_list.request_item_info",
-                        itemstack.getHoverName().getString(),
-                        collected,
-                        String.valueOf(requested == -1 ? "*" : requested));
+                Component component = Component.translatable("gui.maid_storage_manager.written_inventory_list.request_item_info", itemstack.getHoverName().getString(), collected, String.valueOf(requested == -1 ? "*" : requested));
 
                 if (itemTag.getBoolean(RequestListItem.TAG_ITEMS_DONE)) {
                     if (collected >= requested || requested == -1) {
@@ -286,19 +256,15 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static boolean isAllStored(ItemStack stack) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return false;
-        if (!stack.hasTag())
-            return false;
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!stack.hasTag()) return false;
         CompoundTag tag = stack.getTag();
         ListTag list = Objects.requireNonNull(tag).getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
-        return list.stream()
-                .map(t -> (CompoundTag) t)
-                .noneMatch(t -> {
-                    if (ItemStack.of(t.getCompound(TAG_ITEMS_ITEM)).isEmpty()) return false;
-                    if (!t.getBoolean(TAG_ITEMS_DONE)) return false;
-                    return t.getInt(TAG_ITEMS_COLLECTED) > t.getInt(TAG_ITEMS_STORED);
-                });
+        return list.stream().map(t -> (CompoundTag) t).noneMatch(t -> {
+            if (ItemStack.of(t.getCompound(TAG_ITEMS_ITEM)).isEmpty()) return false;
+            if (!t.getBoolean(TAG_ITEMS_DONE)) return false;
+            return t.getInt(TAG_ITEMS_COLLECTED) > t.getInt(TAG_ITEMS_STORED);
+        });
     }
 
     public static List<Pair<ItemStack, Integer>> getItemStacksNotDone(ItemStack stack) {
@@ -306,34 +272,23 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static List<Pair<ItemStack, Integer>> getItemStacksNotDone(ItemStack stack, boolean includingNoRequest) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return List.of();
-        if (!stack.hasTag())
-            return List.of();
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return List.of();
+        if (!stack.hasTag()) return List.of();
         CompoundTag tag = stack.getTag();
         ListTag list = Objects.requireNonNull(tag).getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
-        return list.stream()
-                .filter(t -> !((CompoundTag) t).getBoolean(TAG_ITEMS_DONE))
-                .filter(t -> ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED) != -1 || includingNoRequest)
-                .map(t -> {
-                    ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(TAG_ITEMS_ITEM));
-                    int cnt = ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED);
-                    if (cnt != -1)
-                        cnt -= ((CompoundTag) t).getInt(TAG_ITEMS_COLLECTED);
-                    return new Pair<>(item, cnt);
-                })
-                .filter(i -> !i.getA().isEmpty())
-                .toList();
+        return list.stream().filter(t -> !((CompoundTag) t).getBoolean(TAG_ITEMS_DONE)).filter(t -> ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED) != -1 || includingNoRequest).map(t -> {
+            ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(TAG_ITEMS_ITEM));
+            int cnt = ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED);
+            if (cnt != -1) cnt -= ((CompoundTag) t).getInt(TAG_ITEMS_COLLECTED);
+            return new Pair<>(item, cnt);
+        }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
     public static @Nullable Storage getStorageBlock(ItemStack stack) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return null;
-        if (!stack.hasTag())
-            return null;
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
+        if (!stack.hasTag()) return null;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        if (!tag.contains(TAG_STORAGE))
-            return null;
+        if (!tag.contains(TAG_STORAGE)) return null;
         return Storage.fromNbt(tag.getCompound(TAG_STORAGE));
     }
 
@@ -345,10 +300,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
      * @param collected
      */
     public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return ItemStack.EMPTY;
-        if (!stack.hasTag())
-            return ItemStack.EMPTY;
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStack.EMPTY;
+        if (!stack.hasTag()) return ItemStack.EMPTY;
         //如果最大收集量要比物品栈数量小，那么有一部分不算入计算
         int nonCalc = Math.max(0, collected.getCount() - maxCollect);
 
@@ -360,8 +313,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
-            if (tmp.getBoolean(TAG_ITEMS_DONE))
-                continue;
+            if (tmp.getBoolean(TAG_ITEMS_DONE)) continue;
             //获取每一组被需求的物品
             ItemStack requested = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
             if (ItemStack.isSameItem(collected, requested)) {
@@ -388,8 +340,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                             list.set(i, tmp);
                         }
                     }
-                    if (rest <= 0)
-                        break;
+                    if (rest <= 0) break;
                 }
             }
         }
@@ -399,10 +350,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return toStore.getCount();
-        if (!stack.hasTag())
-            return toStore.getCount();
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return toStore.getCount();
+        if (!stack.hasTag()) return toStore.getCount();
 
         //从剩余的数量中进行计算
         int rest = toStore.getCount();
@@ -414,22 +363,19 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             ItemStack target = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
             int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
             int stored = tmp.getInt(TAG_ITEMS_STORED);
-            if (stored >= collected)
-                continue;
+            if (stored >= collected) continue;
             if (ItemStack.isSameItem(toStore, target)) {
                 if (!tag.getBoolean(TAG_MATCH_TAG) || ItemStack.isSameItemSameTags(toStore, target)) {
                     int maxToStore = collected - stored;
                     maxToStore = Math.min(maxToStore, rest);
                     if (maxToStore > 0) {
                         rest -= maxToStore;
-                        if (!simulate)
-                            tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
+                        if (!simulate) tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
                         list.set(i, tmp);
                     }
                 }
             }
-            if (rest <= 0)
-                break;
+            if (rest <= 0) break;
         }
         tag.put(TAG_ITEMS, list);
         stack.setTag(tag);
@@ -437,10 +383,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static void updateCollectedNotStored(ItemStack stack, IItemHandler tmpStorage) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
-        if (!stack.hasTag())
-            return;
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!stack.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
@@ -449,8 +393,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int requested = tmp.getInt(TAG_ITEMS_REQUESTED);
             int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
             int stored = tmp.getInt(TAG_ITEMS_STORED);
-            if (stored >= collected)
-                continue;
+            if (stored >= collected) continue;
             int count = 0;
             for (int j = 0; j < tmpStorage.getSlots(); j++) {
                 ItemStack itemStack = tmpStorage.getStackInSlot(j);
@@ -464,10 +407,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static void markAllDone(ItemStack stack) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
-        if (!stack.hasTag())
-            return;
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!stack.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
@@ -479,29 +420,33 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static @NotNull UUID getUUID(ItemStack stack) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return UUID.randomUUID();
-        if (!stack.hasTag())
-            return UUID.randomUUID();
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return UUID.randomUUID();
+        if (!stack.hasTag()) return UUID.randomUUID();
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        if (!tag.contains(TAG_UUID))
-            tag.putUUID(TAG_UUID, UUID.randomUUID());
+        if (!tag.contains(TAG_UUID)) tag.putUUID(TAG_UUID, UUID.randomUUID());
         return tag.getUUID(TAG_UUID);
     }
 
     public static void setMissingItem(ItemStack itemStack, ItemStack item, List<ItemStack> missing) {
-        if (!itemStack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return;
-        if (!itemStack.hasTag())
-            return;
+        if (!itemStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!itemStack.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
             if (ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), item)) {
-                ListTag missingList = new ListTag();
+                ListTag missingList = tmp.getList(TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND);
                 for (ItemStack ti : missing) {
-                    missingList.add(ti.save(new CompoundTag()));
+                    if (ti.isEmpty()) continue;
+                    int idx = -1;
+                    for (int j = 0; j < missingList.size(); j++) {
+                        if (ItemStack.isSameItemSameTags(ItemStack.of(missingList.getCompound(j)), ti)) idx = j;
+                    }
+                    if (idx != -1) {
+                        ItemStack itemstack = ItemStack.of(missingList.getCompound(idx));
+                        itemstack.grow(ti.getCount());
+                        missingList.set(idx, itemStack.save(new CompoundTag()));
+                    } else missingList.add(ti.save(new CompoundTag()));
                 }
                 tmp.put(TAG_ITEMS_MISSING, missingList);
                 list.set(i, tmp);
@@ -513,20 +458,15 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     public static boolean isAllSuccess(ItemStack stack) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-            return false;
-        if (!stack.hasTag())
-            return false;
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!stack.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
-            if (ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)).isEmpty())
-                continue;
-            if (tmp.getInt(TAG_ITEMS_REQUESTED) == -1)
-                continue;
-            if (tmp.getInt(TAG_ITEMS_COLLECTED) < tmp.getInt(TAG_ITEMS_REQUESTED))
-                return false;
+            if (ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)).isEmpty()) continue;
+            if (tmp.getInt(TAG_ITEMS_REQUESTED) == -1) continue;
+            if (tmp.getInt(TAG_ITEMS_COLLECTED) < tmp.getInt(TAG_ITEMS_REQUESTED)) return false;
         }
         return true;
     }

@@ -106,7 +106,7 @@
   "tooltip.maid_storage_manager.request_list.done_success": "Done Successfully",
   "tooltip.maid_storage_manager.request_list.jei.too_many_to_transfer": "Too many Items to transfer",
   "tooltip.maid_storage_manager.request_list.missing_items": "Missing",
-  "tooltip.maid_storage_manager.request_list.missing_items_item": "- [%s]",
+  "tooltip.maid_storage_manager.request_list.missing_items_item": "- [%s * %s]",
   "tooltip.maid_storage_manager.request_list.no_storage": "Shift&click an chest to set storage",
   "tooltip.maid_storage_manager.request_list.no_tag": "Empty Request List",
   "tooltip.maid_storage_manager.request_list.open_gui_to_config": "Open GUI to config",

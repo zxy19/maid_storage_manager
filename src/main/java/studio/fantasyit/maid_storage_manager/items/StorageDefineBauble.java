@@ -48,7 +48,7 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
     }
 
     public StorageDefineBauble() {
-        super(new Properties());
+        super(new Properties().stacksTo(1));
     }
 
     public static Mode rollMode(ItemStack stack) {

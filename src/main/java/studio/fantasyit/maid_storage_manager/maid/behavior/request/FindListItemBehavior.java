@@ -37,7 +37,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
             UUID lastWorkUUID = MemoryUtil.getRequestProgress(maid).getWorkUUID();
             return !lastWorkUUID.equals(RequestListItem.getUUID(maid.getMainHandItem()));
         }
-        IItemHandler maidInv = maid.getAvailableBackpackInv();
+        IItemHandler maidInv = maid.getAvailableInv(false);
         for (int i = 0; i < maidInv.getSlots(); i++) {
             ItemStack item = maidInv.getStackInSlot(i);
             if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
@@ -53,7 +53,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
     protected void start(ServerLevel level, EntityMaid maid, long p_22557_) {
         //获取请求清单，将其交换到主手
         if (!Conditions.takingRequestList(maid)) {
-            IItemHandler maidInv = maid.getAvailableBackpackInv();
+            IItemHandler maidInv = maid.getAvailableInv(false);
             for (int i = 0; i < maidInv.getSlots(); i++) {
                 ItemStack item = maidInv.getStackInSlot(i);
                 if (maidInv.getStackInSlot(i).is(ItemRegistry.REQUEST_LIST_ITEM.get())) {

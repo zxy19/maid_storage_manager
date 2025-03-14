@@ -25,7 +25,7 @@ public class RequestItemUtil {
                 tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
             }
             reqList.setTag(tag);
-            if (!InvUtil.tryPlace(maid.getAvailableBackpackInv(), reqList).isEmpty()) {
+            if (!InvUtil.tryPlace(maid.getAvailableInv(false), reqList).isEmpty()) {
                 //背包也没空。。扔地上站未来
                 ItemEntity itementity = new ItemEntity(level, maid.getX(), maid.getY(), maid.getZ(), reqList);
                 maid.getMaxHeadXRot();

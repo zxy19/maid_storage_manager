@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.craft;
 
-import net.minecraft.CharPredicate;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 
@@ -183,12 +182,18 @@ public class AvailableCraftGraph {
 
         return true;
     }
-    public void reverseCurrentAndStartContext(ItemStack item, int count) {
+
+    public void restoreCurrent() {
         for (int i = 0; i < currentRequire.size(); i++) {
             totalRequire.set(i, totalRequire.get(i) - currentRequire.get(i));
         }
+    }
+
+    public void restoreCurrentAndStartContext(ItemStack item, int count) {
+        restoreCurrent();
         startContext(item, count);
     }
+
     public void startContext(ItemStack item, int count) {
         int idx = getItemIndex(item);
         if (idx == -1) {
