@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -99,21 +100,10 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
                                     )
                     )
                     .findFirst();
-            Optional<CraftGuideData> targetCraftGuide = blockPos
+            Optional<ViewedInventoryMemory.ItemCount> targetCraftGuide = blockPos
                     .getValue()
                     .stream()
-                    .map(ic -> CraftGuideData.fromItemStack(ic.getItem()))
-                    .filter(cg ->
-                            notDone
-                                    .stream()
-                                    .anyMatch(i2 ->
-                                            cg.getOutput().getItems()
-                                                    .stream()
-                                                    .anyMatch(i3 ->
-                                                            ItemStack.isSameItemSameTags(i2.getA(), i3)
-                                                    )
-                                    )
-                    )
+                    .filter(i -> i.getItem().is(ItemRegistry.CRAFT_GUIDE.get()))
                     .findFirst();
             if (targetItem.isEmpty() && targetCraftGuide.isEmpty()) {
                 continue;

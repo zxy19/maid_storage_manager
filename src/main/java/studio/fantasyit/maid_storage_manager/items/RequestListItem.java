@@ -41,7 +41,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class RequestListItem extends Item implements MenuProvider {
+public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_ITEMS_DONE = "done";
     public static final String TAG_ITEMS_STORED = "stored";
     public static final String TAG_STORAGE = "storage";

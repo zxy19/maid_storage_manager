@@ -14,12 +14,13 @@ import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import yalter.mousetweaks.api.MouseTweaksIgnore;
 
 import java.util.List;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
-
+@MouseTweaksIgnore
 public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/filter_list.png");
 
@@ -116,7 +117,7 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
             int inGuiX = x - this.getGuiLeft();
             int inGuiY = y - this.getGuiTop();
             for (Slot slot : this.getMenu().slots) {
-                if (slot.x <= inGuiX && slot.x + 30 >= inGuiX && slot.y <= inGuiY && slot.y + 16 >= inGuiY) {
+                if (slot.x <= inGuiX && slot.x + 16 >= inGuiX && slot.y <= inGuiY && slot.y + 16 >= inGuiY) {
                     if (slot instanceof FilterSlot filterSlot) {
                         if (!filterSlot.getItem().isEmpty())
                             graphics.renderTooltip(this.font,

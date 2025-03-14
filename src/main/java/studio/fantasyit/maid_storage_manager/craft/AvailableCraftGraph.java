@@ -183,7 +183,12 @@ public class AvailableCraftGraph {
 
         return true;
     }
-
+    public void reverseCurrentAndStartContext(ItemStack item, int count) {
+        for (int i = 0; i < currentRequire.size(); i++) {
+            totalRequire.set(i, totalRequire.get(i) - currentRequire.get(i));
+        }
+        startContext(item, count);
+    }
     public void startContext(ItemStack item, int count) {
         int idx = getItemIndex(item);
         if (idx == -1) {
@@ -322,4 +327,5 @@ public class AvailableCraftGraph {
                         totalRequire.get(idx) - counts.get(idx)))
                 .toList();
     }
+
 }

@@ -89,6 +89,10 @@ public abstract class AbstractTargetMemory {
         targetData.visitedPos.clear();
     }
 
+    public void removeVisitedPos(Storage pos) {
+        targetData.visitedPos.remove(pos);
+    }
+
     public boolean isVisitedPos(Storage pos) {
         return targetData.visitedPos.contains(pos);
     }

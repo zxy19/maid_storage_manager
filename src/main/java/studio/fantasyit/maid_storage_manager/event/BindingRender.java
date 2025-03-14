@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -41,6 +42,7 @@ public final class BindingRender {
             renderForRequest(event, mc, floating);
             renderForStorage(event, mc, floating);
             renderForCraftGuide(event, mc, floating);
+            renderForFlag(event, mc, floating);
         }
     }
 
@@ -90,6 +92,24 @@ public final class BindingRender {
                     color,
                     event,
                     Component.translatable("maid_storage_manager.storage_define_bauble_binding_render." + mode).getString(),
+                    floating);
+        }
+    }
+
+    private static void renderForFlag(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
+        ItemStack mainStack = mc.player.getMainHandItem();
+        if (mainStack.getItem() != ItemRegistry.CHANGE_FLAG.get()) {
+            return;
+        }
+        List<Storage> storage = ChangeFlag.getStorages(mainStack);
+        if (storage == null || storage.isEmpty()) {
+            return;
+        }
+        for (Storage storage1 : storage) {
+            BoxRenderUtil.renderStorage(storage1,
+                    colors_r,
+                    event,
+                    Component.translatable("maid_storage_manager.changed_flag_binding_render.changed").getString(),
                     floating);
         }
     }

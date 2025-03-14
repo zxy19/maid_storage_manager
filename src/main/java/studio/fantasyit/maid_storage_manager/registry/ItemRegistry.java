@@ -41,4 +41,5 @@ public class ItemRegistry {
     public static final RegistryObject<Item> NO_ACCESS = item("no_access");
     public static final RegistryObject<Item> CRAFT_GUIDE = item("craft_guide", CraftGuide::new);
     public static final RegistryObject<Item> PORTABLE_CRAFT_CALCULATOR_BAUBLE = item("portable_craft_calculator_bauble", PortableCraftCalculatorBauble::new);
+    public static final RegistryObject<Item> CHANGE_FLAG = item("change_flag", ChangeFlag::new);
 }

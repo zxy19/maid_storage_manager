@@ -83,6 +83,9 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             if (context.isDone()) {
                 context.reset();
                 canPick = true;
+                if (context instanceof IStorageInteractContext) {
+                    MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
+                }
             }
         }
     }
@@ -98,7 +101,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 ItemStack copy = itemStack.copy();
                 ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore);
                 copy.shrink(tmp.getCount());
-                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level,target, itemStack, copy.getCount());
+                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, copy.getCount());
                 InvUtil.tryPlace(maid.getAvailableBackpackInv(), copy);
                 return tmp;
             }
@@ -118,6 +121,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (!breath.breathTick()) return;
         if (context instanceof IStorageInteractContext isic) {
             isic.tick(itemStack -> {
+                MemoryUtil.getViewedInventory(maid).addItem(target, itemStack);
                 if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
                     MemoryUtil.getCrafting(maid).addCraftGuide(CraftGuideData.fromItemStack(itemStack));
                 }
@@ -132,7 +136,6 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                         }
                         return itemStack;
                     });
-
         }
     }
 
@@ -150,7 +153,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             }
         }
 
-        if(checkItem != null){
+        if (checkItem != null) {
             ChatTexts.send(maid, ChatTexts.CHAT_MISSING);
         }
 

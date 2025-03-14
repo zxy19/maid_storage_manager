@@ -20,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -95,6 +96,10 @@ public class ViewBehavior extends MaidCheckRateTask {
             context.finish();
         }
         MemoryUtil.clearTarget(maid);
+        LinkedList<Storage> markChanged = MemoryUtil.getViewedInventory(maid).getMarkChanged();
+        if (!markChanged.isEmpty() && markChanged.peek().equals(target)) {
+            markChanged.poll();
+        }
 
         if (!mismatchFilter.isEmpty()) {
             ChatTexts.send(maid, ChatTexts.CHAT_RESORT);
@@ -106,5 +111,4 @@ public class ViewBehavior extends MaidCheckRateTask {
             });
         }
     }
-
 }

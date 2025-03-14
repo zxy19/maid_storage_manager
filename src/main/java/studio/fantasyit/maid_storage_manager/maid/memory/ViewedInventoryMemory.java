@@ -60,15 +60,19 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                             ).fieldOf("viewedInventory")
                             .forGetter(ViewedInventoryMemory::getViewedInventory),
                     Codec.INT.fieldOf("coolingDown")
-                            .forGetter(ViewedInventoryMemory::getCoolingDown)
+                            .forGetter(ViewedInventoryMemory::getCoolingDown),
+                    Storage.CODEC.listOf().fieldOf("mark_changed")
+                            .forGetter(ViewedInventoryMemory::getMarkChanged)
             ).apply(instance, ViewedInventoryMemory::new)
     );
     public Map<String, Map<String, List<ItemCount>>> viewedInventory;
+    private LinkedList<Storage> markChanged;
     public int coolingDown;
 
     public ViewedInventoryMemory(TargetData targetData,
                                  Map<String, Map<String, List<ItemCount>>> viewedInventory,
-                                 int coolingDown) {
+                                 int coolingDown,
+                                 List<Storage> markChanged) {
         super(targetData);
         this.viewedInventory = new HashMap<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> entry : viewedInventory.entrySet()) {
@@ -79,12 +83,14 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             this.viewedInventory.put(entry.getKey(), tmp);
         }
         this.coolingDown = coolingDown;
+        this.markChanged = new LinkedList<>(markChanged);
     }
 
     public ViewedInventoryMemory() {
         super();
         viewedInventory = new HashMap<>();
         coolingDown = 0;
+        markChanged = new LinkedList<>();
     }
 
     public int getCoolingDown() {
@@ -222,4 +228,23 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         viewedInventory.remove(pos.toStoreString());
         viewedInventory.put(pos.toStoreString(), new HashMap<>());
     }
+
+    public LinkedList<Storage> getMarkChanged() {
+        return markChanged;
+    }
+
+    public void addMarkChanged(Storage pos) {
+        if (!markChanged.contains(pos))
+            markChanged.add(pos);
+    }
+
+    int failTime = 0;
+
+    public void markFailTime() {
+        if (markChanged.isEmpty()) return;
+        if (failTime++ > 3) {
+            markChanged.poll();
+        }
+    }
+
 }

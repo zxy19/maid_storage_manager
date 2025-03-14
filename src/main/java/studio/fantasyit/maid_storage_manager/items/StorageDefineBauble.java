@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class StorageDefineBauble extends Item implements IMaidBauble {
+public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble {
 
     public static String TAG_STORAGES = "storages";
     public static String TAG_MODE = "mode";

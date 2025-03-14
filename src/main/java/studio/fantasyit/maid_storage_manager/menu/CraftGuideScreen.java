@@ -26,13 +26,14 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
+import yalter.mousetweaks.api.MouseTweaksIgnore;
 
 import java.util.List;
 import java.util.Optional;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
-@MouseTweaksDisableWheelTweak
+@MouseTweaksIgnore
 public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft_guide.png");
 

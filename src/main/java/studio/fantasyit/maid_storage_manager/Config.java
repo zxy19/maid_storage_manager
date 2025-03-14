@@ -37,6 +37,9 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue VIEW_SPEED = BUILDER
             .comment("Speed when viewing chests in spare time")
             .defineInRange("view_speed", 0.3, 0.0, 3.0);
+    private static final ForgeConfigSpec.DoubleValue VIEW_CHANGE_SPEED = BUILDER
+            .comment("Speed when viewing chests in spare time")
+            .defineInRange("view_change_speed", 0.5, 0.0, 3.0);
     private static final ForgeConfigSpec.DoubleValue PLACE_SPEED = BUILDER
             .comment("Speed when placing items to chests")
             .defineInRange("place_speed", 0.5, 0.0, 3.0);
@@ -61,6 +64,7 @@ public class Config {
     public static double collectSpeed;
     public static double viewSpeed;
     public static double placeSpeed;
+    public static double viewChangeSpeed;
     public static double craftWorkSpeed;
     public static List<Float> debug;
     public static int maxStoreTries;
@@ -79,5 +83,6 @@ public class Config {
         craftWorkSpeed = CRAFT_WORK_SPEED.get();
 //        debug = Arrays.stream(DEBUG.get().split(",")).map(Float::parseFloat).toList();
         useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
+        viewChangeSpeed = VIEW_CHANGE_SPEED.get();
     }
 }

@@ -10,6 +10,7 @@
   "chat_bubbles.maid_storage_manager.resort": "Wrong spot! Naughty master~",
   "chat_bubbles.maid_storage_manager.request_start": "Search mode activated! Beep beep——",
   "chat_bubbles.maid_storage_manager.crafting_gathering": "Items radar ON! Beep beep~",
+  "chat_bubbles.maid_storage_manager.check_mark_changed": "Okey-dokey~ Check the box!",
   "gui.maid_storage_manager.filter_list.blacklist": "Using blacklist",
   "gui.maid_storage_manager.filter_list.item": "* %s",
   "gui.maid_storage_manager.filter_list.match_tag_off": "Don't match tags",
@@ -44,6 +45,7 @@
   "item.maid_storage_manager.request_list": "Request List",
   "item.maid_storage_manager.storage_define_bauble": "Storage Define",
   "item.maid_storage_manager.written_inventory_list": "Written Inventory List",
+  "item.maid_storage_manager.change_flag": "Change Flag",
   "jei.maid_storage_manager.altar_craft.item_craft.result": "Crafting Item",
   "maid_storage_manager.craft_guide_render.input1": "Input1",
   "maid_storage_manager.craft_guide_render.input2": "Input2",
@@ -115,11 +117,14 @@
   "tooltip.maid_storage_manager.request_list.time.str": "%s (%s:%s)",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
+  "tooltop.maid_storage_manager.change_flag.desc": "Mark the storages to be changed by player or others and let maid check it again.",
   "gui.maid_storage_manager.config.memory_assistant": "Memory Assistant Taking",
   "gui.maid_storage_manager.config.memory_assistant.memory_first": "Memory First",
   "gui.maid_storage_manager.config.memory_assistant.memory_only": "Memory Only",
   "gui.maid_storage_manager.config.memory_assistant.always_scan": "Always Scan",
   "gui.maid_storage_manager.config.no_sort_placement": "No Sorting When Place Item",
   "gui.maid_storage_manager.config.bool.enable": "Enable",
-  "gui.maid_storage_manager.config.bool.disable": "Disable"
+  "gui.maid_storage_manager.config.bool.disable": "Disable",
+  "maid_storage_manager.changed_flag_binding_render.changed": "Changed",
+  "interaction.flag_changed": "%d storage changes has been provided to this maid."
 }

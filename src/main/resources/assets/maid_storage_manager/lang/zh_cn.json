@@ -1,10 +1,11 @@
 {
+  "chat_bubbles.maid_storage_manager.check_mark_changed": "好的呢~ 去查箱子！",
   "chat_bubbles.maid_storage_manager.chest_full": "箱子要爆炸啦～快清理！",
   "chat_bubbles.maid_storage_manager.craft_calculated": "合成公式加载中…转圈圈～",
   "chat_bubbles.maid_storage_manager.crafting": "制作魔法启动！咔嚓咔嚓——",
   "chat_bubbles.maid_storage_manager.crafting_gathering": "材料雷达启动！滴滴滴～",
-  "chat_bubbles.maid_storage_manager.crafting_step": "[%s] GET！下一步准备就绪～",
   "chat_bubbles.maid_storage_manager.crafting_result": "[%s] 完成！女仆的魔法工坊大成功～",
+  "chat_bubbles.maid_storage_manager.crafting_step": "[%s] GET！下一步准备就绪～",
   "chat_bubbles.maid_storage_manager.missing": "物品又捉迷藏了？气鼓鼓！",
   "chat_bubbles.maid_storage_manager.request_fail": "呜…材料不够！眼泪汪汪！",
   "chat_bubbles.maid_storage_manager.request_finish": "任务达成！夸我夸我！",
@@ -36,6 +37,7 @@
   "gui.maid_storage_manager.written_inventory_list.search": "搜索",
   "interaction.bind_storage": "存储绑定到 [%s,%s,%s]",
   "interaction.clear_storage": "存储已解绑",
+  "interaction.flag_changed": "%d 个存储位置的更改已经告诉该女仆.",
   "interaction.mode_append": "模式：添加",
   "interaction.mode_remove": "模式：删除",
   "interaction.mode_replace": "模式：替换",
@@ -43,6 +45,7 @@
   "interaction.select_input1": "选择输入1",
   "interaction.select_input2": "选择输入2",
   "interaction.select_output": "选择输出",
+  "item.maid_storage_manager.change_flag": "存储更新旗",
   "item.maid_storage_manager.craft_guide": "合成指南",
   "item.maid_storage_manager.filter_list": "过滤器",
   "item.maid_storage_manager.inventory_list": "仓储列表",
@@ -52,6 +55,7 @@
   "item.maid_storage_manager.storage_define_bauble": "存储定义",
   "item.maid_storage_manager.written_inventory_list": "记录的仓储列表",
   "jei.maid_storage_manager.altar_craft.item_craft.result": "合成物品",
+  "maid_storage_manager.changed_flag_binding_render.changed": "已更改",
   "maid_storage_manager.craft_guide_render.input1": "输入1",
   "maid_storage_manager.craft_guide_render.input2": "输入2",
   "maid_storage_manager.craft_guide_render.output": "输出",
@@ -110,7 +114,7 @@
   "tooltip.maid_storage_manager.request_list.done_fail": "收集失败",
   "tooltip.maid_storage_manager.request_list.done_success": "完成",
   "tooltip.maid_storage_manager.request_list.jei.too_many_to_transfer": "太多要转移的物品",
-  "tooltip.maid_storage_manager.request_list.missing_items": "Missing",
+  "tooltip.maid_storage_manager.request_list.missing_items": "未找到",
   "tooltip.maid_storage_manager.request_list.missing_items_item": "- [%s]",
   "tooltip.maid_storage_manager.request_list.no_storage": "Shift并右键一个箱子来设置存储",
   "tooltip.maid_storage_manager.request_list.no_tag": "空的请求列表",
@@ -121,5 +125,6 @@
   "tooltip.maid_storage_manager.request_list.time": "创建于 %s",
   "tooltip.maid_storage_manager.request_list.time.str": "%s日 (%s:%s)",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s 个存储位置",
-  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本"
+  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本",
+  "tooltop.maid_storage_manager.change_flag.desc": "标记已经更改的存储位置并让女仆重新检查它们"
 }
