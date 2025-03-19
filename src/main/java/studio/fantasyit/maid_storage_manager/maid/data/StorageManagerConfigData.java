@@ -8,16 +8,18 @@ import java.util.Objects;
 
 public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfigData.Data> {
     public static final class Data {
+        private boolean coWorkMode;
         private MemoryAssistant memoryAssistant;
         private boolean noSortPlacement = false;
 
-        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement) {
+        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
+            this.coWorkMode = coWorkMode;
         }
 
         public static Data getDefault() {
-            return new Data(MemoryAssistant.MEMORY_FIRST, false);
+            return new Data(MemoryAssistant.MEMORY_FIRST, false, false);
         }
 
         public MemoryAssistant memoryAssistant() {
@@ -35,6 +37,14 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         public void noSortPlacement(boolean noSortPlacement) {
             this.noSortPlacement = noSortPlacement;
         }
+
+        public boolean coWorkMode() {
+            return coWorkMode;
+        }
+
+        public void coWorkMode(boolean coWorkMode) {
+            this.coWorkMode = coWorkMode;
+        }
     }
 
     public static TaskDataKey<Data> KEY = null;
@@ -50,6 +60,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         CompoundTag tag = new CompoundTag();
         tag.putString("memoryAssistant", data.memoryAssistant().name());
         tag.putBoolean("noSortPlacement", data.noSortPlacement());
+        tag.putBoolean("coWorkMode", data.coWorkMode());
         return tag;
     }
 
@@ -57,7 +68,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     public Data readSaveData(CompoundTag compound) {
         MemoryAssistant memoryAssistant = MemoryAssistant.valueOf(compound.getString("memoryAssistant"));
         boolean noSortPlacement = compound.getBoolean("noSortPlacement");
-        return new Data(memoryAssistant, noSortPlacement);
+        boolean coWorkMode = compound.getBoolean("coWorkMode");
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {

@@ -80,6 +80,8 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
                     chestPos = storage;
                     MemoryUtil.setTarget(maid, target, (float) Config.viewChangeSpeed);
                     DebugData.getInstance().sendMessage("[VIEW]Priority By Change %s", storage);
+                    MemoryUtil.getViewedInventory(maid).resetMarkFailTime();
+                    return true;
                 }
             }
             MemoryUtil.getViewedInventory(maid).markFailTime();

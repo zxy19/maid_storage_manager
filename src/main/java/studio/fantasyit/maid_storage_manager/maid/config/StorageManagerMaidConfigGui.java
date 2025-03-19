@@ -73,5 +73,19 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.NoPlaceSort, this.maid.getId(), 1);
                 }
         ));
+        this.addRenderableWidget(new MaidConfigButton(startLeft, startTop + 26,
+                Component.translatable("gui.maid_storage_manager.config.co_work"),
+                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.coWorkMode())),
+                button -> {
+                    this.currentMAData.coWorkMode(false);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.CoWork, this.maid.getId(), 0);
+                },
+                button -> {
+                    this.currentMAData.coWorkMode(true);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.CoWork, this.maid.getId(), 1);
+                }
+        ));
     }
 }

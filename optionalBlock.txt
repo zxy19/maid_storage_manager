@@ -1,3 +1,4 @@
+ae2:cable_bus
 sophisticatedstorage:barrel
 sophisticatedstorage:copper_barrel
 sophisticatedstorage:iron_barrel

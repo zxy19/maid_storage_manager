@@ -9,8 +9,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
@@ -43,6 +45,7 @@ public final class BindingRender {
             renderForStorage(event, mc, floating);
             renderForCraftGuide(event, mc, floating);
             renderForFlag(event, mc, floating);
+            renderForInv(event, mc, floating);
         }
     }
 
@@ -143,5 +146,22 @@ public final class BindingRender {
         }
     }
 
-
+    private static void renderForInv(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
+        if (InventoryListDataClient.showingInv == null)
+            return;
+        for (int i = 0; i < InventoryListDataClient.showingInv.posAndSlot.size(); i++) {
+            Pair<Storage, Integer> storageIntegerPair = InventoryListDataClient.showingInv.posAndSlot.get(i);
+            BoxRenderUtil.renderStorage(
+                    storageIntegerPair.getA(),
+                    colors_y,
+                    event,
+                    Component.translatable("maid_storage_manager.inventory_list_render.inv",
+                                    InventoryListDataClient.showingInv.itemStack.getDisplayName().getString(),
+                                    storageIntegerPair.getB()
+                            )
+                            .getString(),
+                    floating
+            );
+        }
+    }
 }

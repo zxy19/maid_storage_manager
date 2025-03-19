@@ -19,7 +19,6 @@ public class AvailableCraftGraph {
             this.count = count;
             this.related = related;
         }
-
     }
 
     private int taskPerTick = 32;
@@ -60,7 +59,7 @@ public class AvailableCraftGraph {
         return -1;
     }
 
-    public AvailableCraftGraph(List<com.mojang.datafixers.util.Pair<ItemStack, Integer>> items,
+    public AvailableCraftGraph(List<Pair<ItemStack, Integer>> items,
                                List<CraftGuideData> craftGuideData) {
         this.items = new ArrayList<>();
         this.counts = new ArrayList<>();
@@ -92,10 +91,10 @@ public class AvailableCraftGraph {
             inDegree.add(0);
             totalRequire.add(0);
         }
-        for (com.mojang.datafixers.util.Pair<ItemStack, Integer> itemStackIntegerPair : items) {
-            ItemStack itemStack = itemStackIntegerPair.getFirst();
+        for (Pair<ItemStack, Integer> itemStackIntegerPair : items) {
+            ItemStack itemStack = itemStackIntegerPair.getA();
             if (itemStack.isEmpty()) continue;
-            this.counts.set(item(this.addItemNode(itemStack.copyWithCount(1))), itemStackIntegerPair.getSecond());
+            this.counts.set(item(this.addItemNode(itemStack.copyWithCount(1))), itemStackIntegerPair.getB());
         }
         //初始情况下，不要建图
         buildIdx = craftGuideData.size();
@@ -112,6 +111,16 @@ public class AvailableCraftGraph {
         if (idx == -1)
             idx = addItemNode(itemStack);
         counts.set(item(idx), count);
+    }
+
+    public void addCount(ItemStack itemStack, int count) {
+        int idx = getItemIndex(itemStack);
+        if (idx == -1)
+            idx = addItemNode(itemStack);
+        //如果目前需求数量已经大于实际数量，为了表明该物品从此开始有剩余了，选择将数量设置为目前的需求总量（也即重置剩余数量）
+        if (totalRequire.get(item(idx)) > counts.get(item(idx)))
+            counts.set(item(idx), totalRequire.get(item(idx)));
+        counts.set(item(idx), counts.get(item(idx)) + count);
     }
 
     public void addEdge(int from, int to, int count) {

@@ -1,0 +1,13 @@
+{
+  "sortnum": 5,
+  "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.change_flag",
+  "icon": "maid_storage_manager:change_flag",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:change_flag",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.change_flag.pages.0.1.text"
+    }
+  ]
+}

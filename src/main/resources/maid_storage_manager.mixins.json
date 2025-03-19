@@ -5,9 +5,10 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "maid_storage_manager.refmap.json",
   "mixins": [
+    "ChatBubbleMgrMixin",
     "ContainerOpenersCounterPatch",
     "MaidCheckPickupItem",
-    "MaidWalkAndLookAround"
+    "ParseI18nMixin"
   ],
   "client": [
     "GuiGraphicMixin",

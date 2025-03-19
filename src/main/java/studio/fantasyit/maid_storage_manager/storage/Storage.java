@@ -117,4 +117,8 @@ public class Storage {
         }
         return false;
     }
+
+    public Storage withoutSide() {
+        return new Storage(type, pos, Optional.empty());
+    }
 }

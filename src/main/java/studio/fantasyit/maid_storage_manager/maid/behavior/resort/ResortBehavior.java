@@ -32,7 +32,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     int count = 0;
 
     public ResortBehavior() {
-        super(Map.of(),50000);
+        super(Map.of());
     }
 
     @Override
@@ -115,5 +115,9 @@ public class ResortBehavior extends Behavior<EntityMaid> {
             context.finish();
         }
         MemoryUtil.clearTarget(maid);
+    }
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

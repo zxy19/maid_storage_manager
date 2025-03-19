@@ -1,0 +1,16 @@
+{
+  "sortnum": 6,
+  "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.work_setting",
+  "icon": "minecraft:crafting_table",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.work_setting.pages.0.1.text"
+    },
+    {
+      "type": "text",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.work_setting.pages.0.2.text"
+    }
+  ]
+}

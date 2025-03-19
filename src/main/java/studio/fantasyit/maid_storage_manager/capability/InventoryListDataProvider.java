@@ -16,6 +16,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.network.PartialInventoryListData;
 
@@ -38,7 +39,7 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        for (Map.Entry<UUID, Map<String, List<Pair<ItemStack, Integer>>>> entry : inventoryListData.dataMap.entrySet()) {
+        for (Map.Entry<UUID, Map<String, List<InventoryItem>>> entry : inventoryListData.dataMap.entrySet()) {
             ListTag listTag = inventoryListData.get(entry.getKey());
             tag.put(entry.getKey().toString(), listTag);
         }
@@ -59,33 +60,30 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
     }
 
     public static class InventoryListData {
-        public Map<UUID, Map<String, List<Pair<ItemStack, Integer>>>> dataMap = new ConcurrentHashMap<>();
+        public Map<UUID, Map<String, List<InventoryItem>>> dataMap = new ConcurrentHashMap<>();
 
         public void set(UUID uuid, ListTag listTag) {
-            ConcurrentHashMap<String, List<Pair<ItemStack, Integer>>> map = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String, List<InventoryItem>> map = new ConcurrentHashMap<>();
             for (int i = 0; i < listTag.size(); i++) {
                 CompoundTag tag = listTag.getCompound(i);
                 String key = tag.getString("key");
-                ListTag sameItem = tag.getList("items", ListTag.TAG_COMPOUND);
-                List<Pair<ItemStack, Integer>> items = new ArrayList<>();
-                for (int j = 0; j < sameItem.size(); j++) {
-                    CompoundTag tmp = sameItem.getCompound(j);
-                    ItemStack item = ItemStack.of(tmp.getCompound("item"));
-                    int count = tmp.getInt("count");
-                    items.add(new Pair<>(item, count));
+                ListTag itemList = tag.getList("items", ListTag.TAG_COMPOUND);
+                List<InventoryItem> items = new ArrayList<>();
+                for (int j = 0; j < itemList.size(); j++) {
+                    items.add(InventoryItem.fromNbt(itemList.getCompound(j)));
                 }
                 map.put(key, items);
             }
             dataMap.put(uuid, map);
         }
 
-        public void set(UUID uuid, List<Pair<ItemStack, Integer>> list) {
-            for(Pair<ItemStack, Integer> pair : list){
-                ItemStack item = pair.getFirst();
+        public void set(UUID uuid, List<InventoryItem> list) {
+            if (!dataMap.containsKey(uuid)) {
+                dataMap.put(uuid, new ConcurrentHashMap<>());
+            }
+            for (InventoryItem pair : list) {
+                ItemStack item = pair.itemStack;
                 String key = String.valueOf(ForgeRegistries.ITEMS.getKey(item.getItem()));
-                if (!dataMap.containsKey(uuid)) {
-                    dataMap.put(uuid, new ConcurrentHashMap<>());
-                }
                 if (!dataMap.get(uuid).containsKey(key)) {
                     dataMap.get(uuid).put(key, new ArrayList<>());
                 }
@@ -101,11 +99,8 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
                 CompoundTag compoundTag = new CompoundTag();
                 compoundTag.putString("key", entry.getKey());
                 ListTag sameItem = new ListTag();
-                for (Pair<ItemStack, Integer> pair : entry.getValue()) {
-                    CompoundTag tmp = new CompoundTag();
-                    tmp.put("item", pair.getFirst().save(new CompoundTag()));
-                    tmp.putInt("count", pair.getSecond());
-                    sameItem.add(tmp);
+                for (InventoryItem inventoryItem : entry.getValue()) {
+                    sameItem.add(inventoryItem.serializeNBT());
                 }
                 compoundTag.put("items", sameItem);
                 listTag.add(compoundTag);
@@ -115,10 +110,10 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
 
         public void sendTo(UUID key, ServerPlayer sender) {
             if (!dataMap.containsKey(key)) return;
-            Set<Map.Entry<String, List<Pair<ItemStack, Integer>>>> keys = dataMap.get(key).entrySet();
-            List<Pair<ItemStack, Integer>> list = new ArrayList<>();
-            for (Map.Entry<String, List<Pair<ItemStack, Integer>>> entry : keys) {
-                for (Pair<ItemStack, Integer> pair : entry.getValue()) {
+            Set<Map.Entry<String, List<InventoryItem>>> keys = dataMap.get(key).entrySet();
+            List<InventoryItem> list = new ArrayList<>();
+            for (Map.Entry<String, List<InventoryItem>> entry : keys) {
+                for (InventoryItem pair : entry.getValue()) {
                     list.add(pair);
                     if (list.size() >= 10) {
                         Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> sender),

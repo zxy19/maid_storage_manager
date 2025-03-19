@@ -196,15 +196,20 @@ public class Network {
                             );
                             data.memoryAssistant(StorageManagerConfigData.MemoryAssistant.values()[msg.value]);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
-                        } else {
-                            if (msg.type == MaidDataSyncPacket.Type.NoPlaceSort) {
-                                StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                        StorageManagerConfigData.KEY,
-                                        StorageManagerConfigData.Data.getDefault()
-                                );
-                                data.noSortPlacement(msg.value == 1);
-                                maid.setAndSyncData(StorageManagerConfigData.KEY, data);
-                            }
+                        } else if (msg.type == MaidDataSyncPacket.Type.NoPlaceSort) {
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.noSortPlacement(msg.value == 1);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        }else if(msg.type == MaidDataSyncPacket.Type.CoWork){
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.coWorkMode(msg.value == 1);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
                 }

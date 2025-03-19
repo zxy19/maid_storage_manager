@@ -1,12 +1,14 @@
 package studio.fantasyit.maid_storage_manager.maid.memory;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
@@ -128,23 +130,27 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return result;
     }
 
-    public List<Pair<ItemStack, Integer>> flatten() {
-        List<Pair<ItemStack, Integer>> result = new ArrayList<>();
+    public List<InventoryItem> flatten() {
+        List<InventoryItem> result = new ArrayList<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> blockEntry : viewedInventory.entrySet()) {
+            @Nullable Storage pos = Storage.fromStoreString(blockEntry.getKey());
             for (Map.Entry<String, List<ItemCount>> slot : blockEntry.getValue().entrySet()) {
                 for (ItemCount itemCount : slot.getValue()) {
                     if (itemCount.getFirst().isEmpty()) continue;
                     boolean found = false;
                     for (int i = 0; i < result.size(); i++) {
-                        if (ItemStack.isSameItemSameTags(result.get(i).getFirst(), itemCount.getFirst())) {
-                            result.set(i, new Pair<>(result.get(i).getFirst(),
-                                    result.get(i).getSecond() + itemCount.getSecond()));
+                        if (ItemStack.isSameItemSameTags(result.get(i).itemStack, itemCount.getFirst())) {
+                            result.get(i).addCount(pos, itemCount.getSecond());
                             found = true;
                             break;
                         }
                     }
                     if (!found)
-                        result.add(new Pair<>(itemCount.getItem(), itemCount.getCount()));
+                        result.add(new InventoryItem(itemCount.getItem(),
+                                        itemCount.getCount(),
+                                        new ArrayList<>(List.of(new Pair<>(pos, itemCount.getSecond())))
+                                )
+                        );
                 }
             }
         }
@@ -152,23 +158,13 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     }
 
     public void ambitiousRemoveItem(ServerLevel level, Storage target, ItemStack itemStack, int count) {
-        MutableObject<Storage> realTarget = new MutableObject<>(target);
-        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
-            Storage m = target.sameType(pos, null);
-            if (viewedInventory.containsKey(m.toStoreString()))
-                realTarget.setValue(m);
-        });
-        removeItem(realTarget.getValue(), itemStack, count);
+        Storage realTarget = ambitiousPos(level, target);
+        removeItem(realTarget, itemStack, count);
     }
 
     public void ambitiousAddItem(ServerLevel level, Storage target, ItemStack itemStack) {
-        MutableObject<Storage> realTarget = new MutableObject<>(target);
-        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
-            Storage m = target.sameType(pos, null);
-            if (viewedInventory.containsKey(m.toStoreString()))
-                realTarget.setValue(m);
-        });
-        addItem(realTarget.getValue(), itemStack);
+        Storage realTarget = ambitiousPos(level, target);
+        addItem(realTarget, itemStack);
     }
 
     public void removeItem(Storage pos, ItemStack itemStack, int count) {
@@ -238,7 +234,22 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             markChanged.add(pos);
     }
 
+    public Storage ambitiousPos(ServerLevel level, Storage storage) {
+        if (viewedInventory.containsKey(storage.toStoreString()))
+            return storage;
+        MutableObject<Storage> realTarget = new MutableObject<>(storage);
+        InvUtil.checkNearByContainers(level, storage.getPos(), pos -> {
+            Storage m = storage.sameType(pos, null);
+            if (viewedInventory.containsKey(m.toStoreString()))
+                realTarget.setValue(m);
+        });
+        return realTarget.getValue();
+    }
+
     int failTime = 0;
+    public void resetMarkFailTime() {
+        failTime = 0;
+    }
 
     public void markFailTime() {
         if (markChanged.isEmpty()) return;

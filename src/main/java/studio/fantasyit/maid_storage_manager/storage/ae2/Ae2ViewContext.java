@@ -54,7 +54,7 @@ public class Ae2ViewContext implements IStorageInteractContext {
 
     @Override
     public boolean isDone() {
-        return current >= keys.size();
+        return keys == null || current >= keys.size();
     }
 
     @Override

@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.jei.IFilterScreen;
@@ -14,13 +15,15 @@ import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 import yalter.mousetweaks.api.MouseTweaksIgnore;
 
 import java.util.List;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
-@MouseTweaksIgnore
+@MouseTweaksDisableWheelTweak
+@IPNIgnore
 public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/filter_list.png");
 

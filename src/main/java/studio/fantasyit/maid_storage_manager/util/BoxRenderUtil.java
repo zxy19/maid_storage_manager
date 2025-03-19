@@ -13,7 +13,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.apache.logging.log4j.util.Strings;
-import studio.fantasyit.maid_storage_manager.data.IGuiGraphicsGetter;
+import studio.fantasyit.maid_storage_manager.api.IGuiGraphicsGetter;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 
 import java.util.Map;

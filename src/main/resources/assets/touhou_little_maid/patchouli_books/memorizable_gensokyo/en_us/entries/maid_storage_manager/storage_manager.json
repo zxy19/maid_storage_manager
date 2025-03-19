@@ -11,6 +11,10 @@
     {
       "type": "text",
       "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager.pages.0.2.text"
+    },
+    {
+      "type": "text",
+      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager.pages.0.3.text"
     }
   ]
 }

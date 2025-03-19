@@ -1,14 +1,10 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.ret;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -32,7 +28,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     private Storage target;
 
     public RequestRetBehavior() {
-        super(Map.of(), 10000000);
+        super(Map.of());
     }
 
     @Override
@@ -106,7 +102,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         }
         if ((Conditions.listAllStored(maid) || Conditions.triesReach(maid)) && Conditions.listAllDone(maid)) {
             if (RequestListItem.isAllSuccess(maid.getMainHandItem()))
-                ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_FINISH);
+                ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_SUCCESS);
             else
                 ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_FAIL);
 
@@ -125,5 +121,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (!InvUtil.hasAnyFree(maid.getAvailableInv(false))) {
             RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null);
         }
+    }
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

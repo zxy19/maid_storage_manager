@@ -7,11 +7,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.*;
 
@@ -124,6 +127,31 @@ public class CraftMemory extends AbstractTargetMemory {
                         i--;
                     }
                 }
+                //来到树根了，清除剩余的材料（因为女仆会尝试放置到附近）
+                if (nextLayer.getCraftData().isEmpty()) {
+                    remainMaterials.clear();
+                }
+                DebugData.getInstance().sendMessage(
+                        "[REQUEST_CRAFT]Next Layer,%s", nextLayer.getCraftData().map(e -> "Normal").orElse("TreeRoot")
+                );
+                for (int i = 0; i < nextLayer.getItems().size(); i++) {
+                    DebugData.getInstance().sendMessage(
+                            "[REQUEST_CRAFT] + %s [%d/%d]",
+                            nextLayer.getItems().get(i).getDisplayName().getString(),
+                            nextLayer.getCollectedCounts().get(i),
+                            nextLayer.getItems().get(i).getCount()
+                    );
+                }
+                nextLayer.getCraftData().map(CraftGuideData::getOutput).ifPresent(output -> {
+                    for (int i = 0; i < output.getItems().size(); i++) {
+                        DebugData.getInstance().sendMessage(
+                                "[REQUEST_CRAFT] ===> %s [%d] * %d",
+                                output.getItems().get(i).getDisplayName().getString(),
+                                output.getItems().get(i).getCount(),
+                                nextLayer.getCount()
+                        );
+                    }
+                });
             }
         }
     }
@@ -155,6 +183,7 @@ public class CraftMemory extends AbstractTargetMemory {
         if (this.hasCurrent()) {
             CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
             if (layer.hasCollectedAll()) {
+                ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK);
                 layer.resetStep();
                 startWorking(true);
             } else {
@@ -165,6 +194,15 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void failCurrent(EntityMaid maid, List<ItemStack> missing) {
         CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
+        ChatTexts.send(
+                maid, ChatTexts.CHAT_CRAFTING_FAIL,
+                layer
+                        .getCraftData()
+                        .map(CraftGuideData::getOutput)
+                        .map(CraftGuideStepData::getItems)
+                        .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
+                        .orElse("")
+        );
         List<ItemStack> targets = null;
         //跳过合成直到一个根任务（表示树完全失败）
         for (; currentLayer < layers.size(); currentLayer++) {

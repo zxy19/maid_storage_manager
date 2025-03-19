@@ -157,6 +157,17 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.dev"
     }
+    maven {
+        name = "IPN-Releases"
+        mavenContent {
+            releasesOnly()
+        }
+        content {
+            includeGroup("org.anti_ad.mc")
+            includeGroup("ca.solo-studios")
+        }
+        url = uri("https://maven.ipn-mod.org/releases")
+    }
 }
 
 dependencies {
@@ -183,11 +194,12 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6120178")
-    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:6120178")
+    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6302618")
+    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:6302618")
 
-    compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}"))
-    compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
+    compileOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
     compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     compileOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
     compileOnly fg.deobf("curse.maven:just-enough-characters-250702:5543190")
@@ -195,6 +207,12 @@ dependencies {
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:6164575")
+    runtimeOnly fg.deobf("curse.maven:sophisticated-storage-619320:6217888")
+    runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6266807")
+    runtimeOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
+//    runtimeOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
+//    runtimeOnly fg.deobf("org.anti_ad.mc:libIPN-forge-1.20:4.0.2")
+//    runtimeOnly fg.deobf("curse.maven:kotlin-for-forge-351264:5402061")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -203,29 +221,30 @@ dependencies {
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version       : forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors         : mod_authors, mod_description: mod_description,
     ]
 
     inputs.properties replaceProperties
 
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
-    }}
+    }
+}
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
-                "Specification-Title": mod_id,
-                "Specification-Vendor": mod_authors,
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": project.jar.archiveVersion,
-                "Implementation-Vendor": mod_authors,
+                "Specification-Title"     : mod_id,
+                "Specification-Vendor"    : mod_authors,
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.jar.archiveVersion,
+                "Implementation-Vendor"   : mod_authors,
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }

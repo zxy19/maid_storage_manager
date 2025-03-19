@@ -45,7 +45,7 @@ public class CraftGuideStepData {
         if (tag.contains(CraftGuide.TAG_OP_STORAGE))
             storage = Storage.fromNbt(tag.getCompound(CraftGuide.TAG_OP_STORAGE));
         List<ItemStack> items = new ArrayList<>();
-        if (tag.contains(CraftGuide.TAG_OP_ITEMS)) {
+        if (storage != null && tag.contains(CraftGuide.TAG_OP_ITEMS)) {
             ListTag list = tag.getList(CraftGuide.TAG_OP_ITEMS, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 items.add(

@@ -17,6 +17,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.CoWorkChestView;
+import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowActionBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowDisableBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowEnableBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.FindListItemBehavior;
@@ -45,6 +49,21 @@ import java.util.List;
 
 public class StorageManageTask implements IMaidTask {
     public static ResourceLocation TASK_ID = new ResourceLocation(MaidStorageManager.MODID, "storage_manage");
+
+    @Override
+    public boolean enableEating(@NotNull EntityMaid maid) {
+        return switch (MemoryUtil.getCurrentlyWorking(maid)) {
+            case VIEW, NO_SCHEDULE -> true;
+            default -> false;
+        };
+    }
+    @Override
+    public boolean enableLookAndRandomWalk(@NotNull EntityMaid maid) {
+        return switch (MemoryUtil.getCurrentlyWorking(maid)) {
+            case VIEW, NO_SCHEDULE -> true;
+            default -> false;
+        };
+    }
 
     @Override
     public @NotNull ResourceLocation getUid() {
@@ -93,6 +112,11 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(10, new ScheduleBehavior()));
         //敲钟（？
         list.add(Pair.of(5, new InteractAfterDone()));
+        //协同工作模式
+        list.add(Pair.of(5, new CoWorkChestView()));
+        list.add(Pair.of(5, new FollowActionBehavior()));
+        list.add(Pair.of(5, new FollowEnableBehavior()));
+        list.add(Pair.of(5, new FollowDisableBehavior()));
         return list;
     }
 

@@ -35,7 +35,8 @@ public final class DebugBoxRender {
             "viewing", new float[]{0.37F, 0.43F, 0.63F, 0.5F},
             "placing", new float[]{0.37F, 0.43F, 0.63F, 0.5F},
             "target", new float[]{0, 1.0F, 0, 0.5F},
-            "crafting", new float[]{0.55F, 0.24F, 0.63F, 0.5F}
+            "crafting", new float[]{0.55F, 0.24F, 0.63F, 0.5F},
+            "co_work_", new float[]{0.91F, 0.43F, 0.59F, 0.5F}
     );
 
     @SubscribeEvent

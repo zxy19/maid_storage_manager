@@ -7,9 +7,9 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.*;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 
 import java.util.Optional;
 
@@ -34,6 +34,10 @@ public class MemoryModuleRegistry {
             = REGISTER.register("crafting", () -> new MemoryModuleType<>(Optional.of(CraftMemory.CODEC)));
     public static final RegistryObject<MemoryModuleType<BlockPos>> INTERACTION_RESULT
             = REGISTER.register("interact_result", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final RegistryObject<MemoryModuleType<Boolean>> CO_WORK_MODE
+            = REGISTER.register("co_work", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final RegistryObject<MemoryModuleType<Storage>> CO_WORK_TARGET_STORAGE
+            = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
 
 
     public static void register(IEventBus eventBus) {

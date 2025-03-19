@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -10,6 +9,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.AvailableCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.BiCraftCountCalculator;
 import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -17,9 +17,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +25,13 @@ import java.util.Map;
 
 public class CraftInitBehavior extends Behavior<EntityMaid> {
     public CraftInitBehavior() {
-        super(Map.of(), 10000);
+        super(Map.of());
     }
 
 
     private AvailableCraftGraph availableCraftGraph;
+    List<Integer> futureSteps;
+    int totalSteps;
     List<Pair<ItemStack, Integer>> notDone;
     private BiCraftCountCalculator biCalc;
     int count = 0;
@@ -63,7 +63,6 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             success = 0;
             return;
         }
-        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE);
         DebugData.getInstance().sendMessage("[REQUEST_CRAFT]Start. Calculate tree");
         notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
         if (notDone.isEmpty()) {
@@ -72,34 +71,31 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             return;
         }
         Storage storage = RequestListItem.getStorageBlock(maid.getMainHandItem());
-        List<com.mojang.datafixers.util.Pair<ItemStack, Integer>> items;
-        if (storage != null) {
-            items = new ArrayList<>();
-            MemoryUtil.getViewedInventory(maid).positionFlatten()
-                    .forEach((pos, itemStacks) -> {
-                        if (pos.equals(storage)) return;
-                        for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
-                            boolean flag = false;
-                            for (int i = 0; i < items.size(); i++) {
-                                if (ItemStack.isSameItem(itemStack.getFirst(), items.get(i).getFirst())) {
-                                    items.set(i, com.mojang.datafixers.util.Pair.of(
-                                            items.get(i).getFirst(),
-                                            items.get(i).getSecond() + itemStack.getSecond()
-                                    ));
-                                    flag = true;
-                                    break;
-                                }
+        List<Pair<ItemStack, Integer>> items = new ArrayList<>();
+        MemoryUtil.getViewedInventory(maid).positionFlatten()
+                .forEach((pos, itemStacks) -> {
+                    if (pos.equals(storage)) return;
+                    if (MoveUtil.findTargetRewrite(level, maid, pos).isEmpty()) return;
+                    for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
+                        boolean flag = false;
+                        for (int i = 0; i < items.size(); i++) {
+                            if (ItemStack.isSameItem(itemStack.getFirst(), items.get(i).getA())) {
+                                items.set(i, new Pair<>(
+                                        items.get(i).getA(),
+                                        items.get(i).getB() + itemStack.getSecond()
+                                ));
+                                flag = true;
+                                break;
                             }
-                            if (flag) continue;
-                            items.add(com.mojang.datafixers.util.Pair.of(
-                                    itemStack.getFirst(),
-                                    itemStack.getSecond()
-                            ));
                         }
-                    });
+                        if (flag) continue;
+                        items.add(new Pair<>(
+                                itemStack.getFirst(),
+                                itemStack.getSecond()
+                        ));
+                    }
+                });
 
-        } else
-            items = MemoryUtil.getViewedInventory(maid).flatten();
 
         availableCraftGraph = new AvailableCraftGraph(
                 items,
@@ -121,6 +117,17 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).resetVisitedPos();
         MemoryUtil.getCrafting(maid).startWorking(false);
         biCalc = null;
+
+        futureSteps = new ArrayList<>();
+        int tmpStep = 0;
+        for (int i = 0; i < notDone.size(); i++) {
+            futureSteps.add(0);
+        }
+        for (int i = notDone.size() - 1; i >= 0; i--) {
+            futureSteps.set(i, tmpStep);
+            tmpStep += MathUtil.biMaxStepCalc(notDone.get(i).getB());
+        }
+        totalSteps = tmpStep;
     }
 
     @Override
@@ -133,7 +140,17 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                     InvUtil.freeSlots(maid.getAvailableInv(true))
             );
         }
-        if (biCalc.tick()) return;
+        if (p_22553_ % 2 == 0) {
+            int restSteps = futureSteps.get(count) + biCalc.getWorstRestSteps();
+            ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE, String.valueOf(totalSteps - restSteps), String.valueOf(totalSteps));
+        }
+        boolean finish = false;
+        for (int i = 0; i < 5; i++) {
+            if (biCalc.tick()) continue;
+            finish = true;
+            break;
+        }
+        if (!finish) return;
 
         List<CraftLayer> results = biCalc.getResults();
         if (results.isEmpty()) {
@@ -177,5 +194,10 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT] Failed to find recipe for any items");
         }
         MemoryUtil.clearTarget(maid);
+    }
+
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

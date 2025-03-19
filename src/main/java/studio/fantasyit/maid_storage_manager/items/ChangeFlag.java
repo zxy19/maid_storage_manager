@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +15,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
@@ -23,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 import studio.fantasyit.maid_storage_manager.util.PosUtil;
 
 import java.util.ArrayList;
@@ -35,6 +41,10 @@ public class ChangeFlag extends Item {
 
     public static final String TAG_STORAGES = "storages";
 
+    @Override
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+        return this.useOn(context);
+    }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
@@ -71,17 +81,31 @@ public class ChangeFlag extends Item {
     @Override
     public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity living, InteractionHand hand) {
         if (!player.level().isClientSide && hand == InteractionHand.MAIN_HAND && living instanceof EntityMaid maid) {
+            ServerLevel level = (ServerLevel) player.level();
             if (maid.getOwner() != null
                     && maid.getOwner().getUUID().equals(player.getUUID())
                     && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
-                getStorages(itemStack).forEach(storage -> {
+                List<Storage> storages = getStorages(itemStack);
+                if (storages.size() == 0) {
+                    return InteractionResult.CONSUME;
+                }
+                storages.forEach(interactedTarget -> {
+                    Storage target;
+                    List<Storage> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
+                    if (possibleTargets.contains(interactedTarget))
+                        target = interactedTarget;
+                    else if (possibleTargets.size() > 0)
+                        target = possibleTargets.get(0);
+                    else
+                        return;
+                    Storage storage = MemoryUtil.getViewedInventory(maid).ambitiousPos(level, target);
                     clearVisForMemories((ServerLevel) player.level(), maid, storage);
                     MemoryUtil.getViewedInventory(maid).addMarkChanged(storage);
                 });
+                player.sendSystemMessage(Component.translatable("interaction.flag_changed", storages.size()));
                 clearStorages(itemStack);
                 MemoryUtil.clearTarget(maid);
                 ChatTexts.send(maid, ChatTexts.CHAT_CHECK_MARK_CHANGED);
-                player.sendSystemMessage(Component.translatable("interaction.flag_changed"));
                 return InteractionResult.SUCCESS;
             }
         }
@@ -119,4 +143,13 @@ public class ChangeFlag extends Item {
             memory.removeVisitedPos(storage.sameType(pos, null));
         });
     }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack itemStack, @Nullable Level p_41422_, List<Component> tooltip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_41422_, tooltip, p_41424_);
+        CompoundTag tag = itemStack.getOrCreateTag();
+        tooltip.add(Component.translatable("tooltip.maid_storage_manager.change_flag.desc").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.maid_storage_manager.change_flag.storages", getStorages(itemStack).size()));
+    }
+
 }

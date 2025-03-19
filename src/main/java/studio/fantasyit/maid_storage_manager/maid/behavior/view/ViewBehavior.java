@@ -31,7 +31,7 @@ public class ViewBehavior extends MaidCheckRateTask {
     List<ItemStack> mismatchFilter = new ArrayList<>();
 
     public ViewBehavior() {
-        super(Map.of(), 500000);
+        super(Map.of());
         this.setMaxCheckRate(5);
     }
 
@@ -110,5 +110,9 @@ public class ViewBehavior extends MaidCheckRateTask {
                 MemoryUtil.getResorting(maid).addVisitedPos(target.sameType(pos, null));
             });
         }
+    }
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

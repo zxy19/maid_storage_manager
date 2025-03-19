@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -30,8 +31,10 @@ public class BiCraftCountCalculator {
         if (!availableCraftGraph.buildGraph()) return true;
         if (!availableCraftGraph.processQueues()) return true;
         List<CraftLayer> currentResults = availableCraftGraph.getResults();
+        CraftResultContext context = null;
         if (currentResults != null && !currentResults.isEmpty()) {
-            if (evaluateLayersSlotCount(currentResults) > availableSlots) {
+            context = new CraftResultContext(currentResults);
+            if (context.getSlotConsume() > availableSlots) {
                 currentResults = null;
             }
         }
@@ -40,6 +43,7 @@ public class BiCraftCountCalculator {
             results.addAll(currentResults);
             maxRequire -= currentRequire;
             currentRequire = maxRequire;
+            context.forEachRemaining(availableCraftGraph::addCount);
             if (maxRequire <= 0) return false;
             availableCraftGraph.startContext(this.item, currentRequire);
             fullGroupFails = List.of();
@@ -66,52 +70,7 @@ public class BiCraftCountCalculator {
         return fails;
     }
 
-    public int evaluateLayersSlotCount(List<CraftLayer> layers) {
-        int result = 0;
-        Map<ItemStack, Integer> itemConsumeCount = new HashMap<>();
-        BiConsumer<ItemStack, Integer> addConsumeCount = (itemStack, count) -> {
-            HashSet<ItemStack> ks = new HashSet<>(itemConsumeCount.keySet());
-            for (ItemStack itemStack1 : ks) {
-                if (ItemStack.isSameItemSameTags(itemStack1, itemStack)) {
-                    int currentCount = Math.min(itemStack1.getMaxStackSize(), count);
-                    count -= currentCount;
-                    itemConsumeCount.put(itemStack1, itemConsumeCount.get(itemStack1) + currentCount);
-                    if (count <= 0)
-                        return;
-                }
-            }
-            while (count > 0) {
-                int currentCount = Math.min(itemStack.getMaxStackSize(), count);
-                itemConsumeCount.put(itemStack.copy(), currentCount);
-                count -= currentCount;
-            }
-        };
-        BiConsumer<ItemStack, Integer> removeConsumeCount = (itemStack, count) -> {
-            HashSet<ItemStack> ks = new HashSet<>(itemConsumeCount.keySet());
-            for (ItemStack itemStack1 : ks) {
-                if (ItemStack.isSameItemSameTags(itemStack1, itemStack)) {
-                    int currentCount = Math.min(itemConsumeCount.get(itemStack1), count);
-                    count -= currentCount;
-                    itemConsumeCount.put(itemStack1, itemConsumeCount.get(itemStack1) - currentRequire);
-                    if (itemConsumeCount.get(itemStack1) == 0)
-                        itemConsumeCount.remove(itemStack1);
-                    else
-                        return;
-                }
-            }
-        };
-
-        for (CraftLayer layer : layers) {
-            layer.items.forEach(i -> addConsumeCount.accept(i, i.getCount()));
-            result = Math.max(result, itemConsumeCount.keySet().size());
-            Optional<CraftGuideData> craftData = layer.getCraftData();
-            if (craftData.isPresent()) {
-                craftData.get().getOutput().getItems().forEach(i -> addConsumeCount.accept(i, i.getCount() * layer.getCount()));
-                result = Math.max(result, itemConsumeCount.keySet().size());
-                craftData.get().getInput1().getItems().forEach(i -> removeConsumeCount.accept(i, i.getCount() * layer.getCount()));
-                craftData.get().getInput2().getItems().forEach(i -> removeConsumeCount.accept(i, i.getCount() * layer.getCount()));
-            }
-        }
-        return result;
+    public int getWorstRestSteps() {
+        return MathUtil.biMaxStepCalc(maxRequire) - (int) MathUtil.log2((double) maxRequire / currentRequire);
     }
 }

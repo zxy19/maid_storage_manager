@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
@@ -27,13 +28,17 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     private Storage target;
 
     public RequestCraftGatherBehavior() {
-        super(Map.of(), 10000000);
+        super(Map.of());
     }
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long p_22547_) {
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
+        if (MemoryUtil.getCrafting(maid).hasCurrent()) {
+            if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll())
+                return false;
+        }
         return context != null && !context.isDone();
     }
 
@@ -71,6 +76,11 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                 if (maxStore > 0) {
                     ItemStack copy = itemStack.copy();
                     ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
+                    if (toTake.getCount() > 0)
+                        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
+                                ChatTexts.fromComponent(itemStack.getHoverName()),
+                                String.valueOf(toTake.getCount())
+                        );
                     copy.shrink(toTake.getCount());
                     MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
                     InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
@@ -86,6 +96,11 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                         if (maxStore > 0) {
                             ItemStack copy = itemStack.copy();
                             ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
+                            if (toTake.getCount() > 0)
+                                ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
+                                        ChatTexts.fromComponent(itemStack.getHoverName()),
+                                        String.valueOf(toTake.getCount())
+                                );
                             copy.shrink(toTake.getCount());
                             MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
                             InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
@@ -117,4 +132,8 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         }
     }
 
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
+    }
 }

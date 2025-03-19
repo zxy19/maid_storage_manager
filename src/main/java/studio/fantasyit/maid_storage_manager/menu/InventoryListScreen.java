@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
 import me.towdium.jecharacters.utils.Match;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -10,9 +11,15 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.fml.ModList;
+import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
+import studio.fantasyit.maid_storage_manager.storage.Storage;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class InventoryListScreen extends Screen {
@@ -29,8 +36,8 @@ public class InventoryListScreen extends Screen {
     private int gridStart = 0;
     private int columns;
     private int rows;
-    private List<ItemStack> originalList;
-    private List<ItemStack> list;
+    private List<InventoryItem> originalList;
+    private List<InventoryItem> list;
     private String search;
     private EditBox searchBox;
 
@@ -44,7 +51,7 @@ public class InventoryListScreen extends Screen {
                 .size(16, 16)
                 .build();
         this.data = InventoryListDataClient.getInstance();
-        this.originalList = data.get(uuid).stream().map(pair -> pair.getFirst().copyWithCount(pair.getSecond())).toList();
+        this.originalList = data.get(uuid);
         this.list = originalList;
     }
 
@@ -58,6 +65,22 @@ public class InventoryListScreen extends Screen {
         if (data.get(uuid).size() <= gridStart + gridSize)
             return;
         gridStart += gridSize;
+    }
+
+
+    protected List<Component> getTooltipForResult(int index) {
+        InventoryItem inventoryItem = list.get(index);
+        List<Component> tooltip = new ArrayList<>(Screen.getTooltipFromItem(minecraft, inventoryItem.itemStack));
+        tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.find"));
+        for (Pair<Storage, Integer> pair : inventoryItem.posAndSlot) {
+            tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.pos",
+                    pair.getA().getPos().getX(),
+                    pair.getA().getPos().getY(),
+                    pair.getA().getPos().getZ(),
+                    pair.getB()
+            ).withStyle(ChatFormatting.DARK_GRAY));
+        }
+        return tooltip;
     }
 
     @Override
@@ -96,7 +119,7 @@ public class InventoryListScreen extends Screen {
         super.tick();
 
         if (data.get(uuid).size() != originalList.size()) {
-            originalList = data.get(uuid).stream().map(pair -> pair.getFirst().copyWithCount(pair.getSecond())).toList();
+            originalList = data.get(uuid);
             list = originalList;
             search = null;
         }
@@ -105,22 +128,24 @@ public class InventoryListScreen extends Screen {
             if (search.equals(""))
                 list = originalList;
             else
-                list = originalList.stream().filter(itemStack -> {
-                    if (ModList.get().isLoaded("jecharacters")) {
-                        if (Match.matches(itemStack.getHoverName().getString(), search))
-                            return true;
-                        if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
-                            return true;
-                        if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
-                            return true;
-                        }
-                    }
-                    if (itemStack.getHoverName().getString().contains(search))
-                        return true;
-                    if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
-                        return true;
-                    return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
-                }).toList();
+                list = originalList.stream()
+                        .filter(inventoryItem -> {
+                            ItemStack itemStack = inventoryItem.itemStack;
+                            if (ModList.get().isLoaded("jecharacters")) {
+                                if (Match.matches(itemStack.getHoverName().getString(), search))
+                                    return true;
+                                if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
+                                    return true;
+                                if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+                                    return true;
+                                }
+                            }
+                            if (itemStack.getHoverName().getString().contains(search))
+                                return true;
+                            if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
+                                return true;
+                            return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
+                        }).toList();
         }
 
 
@@ -140,21 +165,29 @@ public class InventoryListScreen extends Screen {
                 if (index < list.size()) {
                     int ix = this.left + j * 18;
                     int iy = this.top + 20 + i * 18;
-                    ItemStack item = list.get(index);
+                    ItemStack item = list.get(index).itemStack;
                     guiGraphics.renderItem(
                             item,
                             ix,
                             iy
                     );
                     guiGraphics.pose().pushPose();
+                    guiGraphics.pose().translate(0, 0, 1000);
+                    guiGraphics.renderItemDecorations(this.font, item, ix, iy);
                     guiGraphics.pose().scale(0.5F, 0.5F, 1);
-                    guiGraphics.renderItemDecorations(this.font, item, 2 * ix + 16, 2 * iy + 16);
+                    guiGraphics.drawString(this.font,
+                            Integer.toString(list.get(index).totalCount),
+                            2 * ix + 32 - this.font.width(Integer.toString(list.get(index).totalCount)),
+                            2 * iy + 32 - this.font.lineHeight,
+                            0xffffff
+                    );
                     guiGraphics.pose().popPose();
                     if (x >= ix && x < ix + 16 && y >= iy && y < iy + 16) {
                         guiGraphics.pose().pushPose();
-                        guiGraphics.pose().translate(0, 0, 2000);
+                        guiGraphics.pose().translate(0, 0, 5000);
                         guiGraphics.renderTooltip(this.font,
-                                item,
+                                this.getTooltipForResult(index),
+                                Optional.empty(),
                                 x,
                                 y
                         );
@@ -171,5 +204,20 @@ public class InventoryListScreen extends Screen {
                 this.left + this.width / 2 - this.font.width(component) / 2,
                 this.top,
                 0xFFFFFF);
+    }
+
+    @Override
+    public boolean mouseClicked(double x, double y, int p_94697_) {
+        int ix = (int) Math.floor((x - this.left) / 18);
+        int iy = (int) Math.floor((y - this.top - 20) / 18);
+        if (ix >= 0 && ix < columns && iy >= 0 && iy < rows) {
+            int idx = iy * columns + ix + gridStart;
+            if (idx < list.size()) {
+                InventoryListDataClient.showingInv = list.get(idx);
+                InventoryListDataClient.showingTime = 400;
+                minecraft.setScreen(null);
+            }
+        }
+        return super.mouseClicked(x, y, p_94697_);
     }
 }

@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Storage;
@@ -38,7 +39,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     private int tryTick;
 
     public RequestCraftWorkBehavior() {
-        super(Map.of(), 10000000);
+        super(Map.of());
     }
 
     @Override
@@ -70,6 +71,16 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         layer = MemoryUtil.getCrafting(maid).getCurrentLayer();
         craftGuideStepData = layer.getStepData();
+        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
+                layer
+                        .getCraftData()
+                        .map(CraftGuideData::getOutput)
+                        .map(CraftGuideStepData::getItems)
+                        .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
+                        .orElse(""),
+                layer.getDoneCount().toString(),
+                layer.getCount().toString()
+        );
         Storage storageTarget = MemoryUtil.getCrafting(maid).getTarget();
         if (!storageTarget.getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
             //非工作台配方
@@ -262,7 +273,8 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 layer.addCurrentStepPlacedCounts(ingredientIndex, pick - rest.getCount());
                 if (pick - rest.getCount() != 0) {
                     tryTick = 0;
-                }
+                } else if (layer.getStep() == 1)
+                    slot++;
             }
 
             if (layer.getCurrentStepCount(ingredientIndex) >= stepItem.getCount()) {
@@ -281,7 +293,6 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             done = true;
         }
     }
-
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
@@ -313,4 +324,8 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
     }
 
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
+    }
 }

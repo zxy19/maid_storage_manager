@@ -32,7 +32,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     private boolean changed;
 
     public PlaceBehavior() {
-        super(Map.of(), 5000);
+        super(Map.of());
     }
 
     @Override
@@ -118,5 +118,9 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             });
         }
         MemoryUtil.clearTarget(maid);
+    }
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

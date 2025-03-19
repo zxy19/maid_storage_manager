@@ -55,6 +55,11 @@ public class EntityTickingServer {
                     pos.getTarget().toNbt()
             );
         }, () -> DebugData.getInstance().setDataAndSync("crafting_" + maid.getUUID(), new CompoundTag()));
+        maid.getBrain().getMemory(MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get()).ifPresentOrElse(pos -> {
+            DebugData.getInstance().setDataAndSync("co_work_" + maid.getUUID(),
+                    pos.toNbt()
+            );
+        }, () -> DebugData.getInstance().setDataAndSync("co_work_" + maid.getUUID(), new CompoundTag()));
 
         Path path = maid.getNavigation().getPath();
         if (path != null) {

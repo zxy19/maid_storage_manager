@@ -43,6 +43,9 @@ public class Config {
     private static final ForgeConfigSpec.DoubleValue PLACE_SPEED = BUILDER
             .comment("Speed when placing items to chests")
             .defineInRange("place_speed", 0.5, 0.0, 3.0);
+    private static final ForgeConfigSpec.DoubleValue FOLLOW_SPEED = BUILDER
+            .comment("Speed when following")
+            .defineInRange("follow_speed", 0.5, 0.0, 3.0);
     private static final ForgeConfigSpec.IntValue MAX_STORE_TRIES = BUILDER
             .comment("Maximum times Maid will try to store items")
             .defineInRange("max_store_tries", 3, 0, 999999);
@@ -70,6 +73,7 @@ public class Config {
     public static int maxStoreTries;
     public static int maxCraftTries;
     public static boolean useAllStorageByDefault;
+    public static double followSpeed;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -84,5 +88,6 @@ public class Config {
 //        debug = Arrays.stream(DEBUG.get().split(",")).map(Float::parseFloat).toList();
         useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
         viewChangeSpeed = VIEW_CHANGE_SPEED.get();
+        followSpeed = FOLLOW_SPEED.get();
     }
 }

@@ -98,11 +98,11 @@ public class MoveUtil {
                 itemStack.add(stack);
             }
         }
-        if (itemStack.isEmpty()) return List.of(target);
         List<Storage> result = new ArrayList<>();
         if (Config.useAllStorageByDefault || level.getBlockState(target.getPos()).is(allowTag)) {
             result.add(target);
         }
+        if (itemStack.isEmpty()) return result;
         for (ItemStack stack : itemStack) {
             StorageDefineBauble.Mode mode = StorageDefineBauble.getMode(stack);
             List<Storage> storages = StorageDefineBauble.getStorages(stack);

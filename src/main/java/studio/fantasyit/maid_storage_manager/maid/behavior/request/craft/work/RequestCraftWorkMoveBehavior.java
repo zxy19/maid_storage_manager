@@ -51,7 +51,6 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK);
         for (int i = 0; i < 3; i++) {
             if (targeting(level, maid))
                 return;
@@ -62,6 +61,10 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
         CraftGuideStepData step = layer.getStepData();
         if (step == null) {
+            if (!layer.getItems().isEmpty())
+                ChatTexts.send(maid, ChatTexts.CHAT_CRAFTING_SUCCESS,
+                        ChatTexts.fromComponent(layer.getItems().get(0).getHoverName())
+                );
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
             //根层
             for (int i = 0; i < layer.getItems().size(); i++) {

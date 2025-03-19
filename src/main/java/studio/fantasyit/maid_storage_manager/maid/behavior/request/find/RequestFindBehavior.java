@@ -40,7 +40,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
 
     public RequestFindBehavior() {
-        super(Map.of(), 10000000);
+        super(Map.of());
     }
 
     @Override
@@ -159,5 +159,9 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
+    }
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

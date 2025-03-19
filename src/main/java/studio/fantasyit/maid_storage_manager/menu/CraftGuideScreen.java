@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +34,8 @@ import java.util.Optional;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
-@MouseTweaksIgnore
+@MouseTweaksDisableWheelTweak
+@IPNIgnore
 public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft_guide.png");
 

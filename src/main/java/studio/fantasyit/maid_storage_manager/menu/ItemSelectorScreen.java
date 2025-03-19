@@ -18,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,6 +41,7 @@ import java.util.stream.Stream;
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 @MouseTweaksDisableWheelTweak
+@IPNIgnore
 public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/item_selector.png");
 
