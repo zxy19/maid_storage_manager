@@ -1,11 +1,13 @@
-package studio.fantasyit.maid_storage_manager.craft;
+package studio.fantasyit.maid_storage_manager.craft.algo;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
-import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BiCraftCountCalculator {
     private final AvailableCraftGraph availableCraftGraph;

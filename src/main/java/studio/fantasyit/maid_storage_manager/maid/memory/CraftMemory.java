@@ -6,17 +6,18 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class CraftMemory extends AbstractTargetMemory {
     public static Codec<CraftMemory> CODEC = RecordCodecBuilder.create(instance ->
@@ -183,7 +184,14 @@ public class CraftMemory extends AbstractTargetMemory {
         if (this.hasCurrent()) {
             CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
             if (layer.hasCollectedAll()) {
-                ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK);
+                ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK,
+                        layer.getCraftData().map(t -> ChatTexts.fromComponent(t
+                                        .getOutput()
+                                        .getItems()
+                                        .get(0)
+                                        .getHoverName()))
+                                .orElse("")
+                );
                 layer.resetStep();
                 startWorking(true);
             } else {
@@ -263,7 +271,7 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void resetAndMarkVisForRequest(ServerLevel level, EntityMaid maid) {
         this.resetVisitedPos();
-        Storage storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
             addVisitedPos(storageBlock);
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT]initial vis %s", storageBlock);

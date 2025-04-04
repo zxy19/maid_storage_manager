@@ -9,7 +9,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
 import java.util.*;
@@ -63,18 +63,18 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                             .forGetter(ViewedInventoryMemory::getViewedInventory),
                     Codec.INT.fieldOf("coolingDown")
                             .forGetter(ViewedInventoryMemory::getCoolingDown),
-                    Storage.CODEC.listOf().fieldOf("mark_changed")
+                    Target.CODEC.listOf().fieldOf("mark_changed")
                             .forGetter(ViewedInventoryMemory::getMarkChanged)
             ).apply(instance, ViewedInventoryMemory::new)
     );
     public Map<String, Map<String, List<ItemCount>>> viewedInventory;
-    private LinkedList<Storage> markChanged;
+    private LinkedList<Target> markChanged;
     public int coolingDown;
 
     public ViewedInventoryMemory(TargetData targetData,
                                  Map<String, Map<String, List<ItemCount>>> viewedInventory,
                                  int coolingDown,
-                                 List<Storage> markChanged) {
+                                 List<Target> markChanged) {
         super(targetData);
         this.viewedInventory = new HashMap<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> entry : viewedInventory.entrySet()) {
@@ -103,8 +103,8 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return viewedInventory;
     }
 
-    public Map<Storage, List<ItemCount>> positionFlatten() {
-        Map<Storage, List<ItemCount>> result = new HashMap<>();
+    public Map<Target, List<ItemCount>> positionFlatten() {
+        Map<Target, List<ItemCount>> result = new HashMap<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> blockEntry : viewedInventory.entrySet()) {
             List<ItemCount> itemCounts = new ArrayList<>();
             for (Map.Entry<String, List<ItemCount>> slot : blockEntry.getValue().entrySet()) {
@@ -122,7 +122,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                         itemCounts.add(itemCount);
                 });
             }
-            Storage pos = Storage.fromStoreString(blockEntry.getKey());
+            Target pos = Target.fromStoreString(blockEntry.getKey());
             if (pos != null) {
                 result.put(pos, itemCounts);
             }
@@ -133,7 +133,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public List<InventoryItem> flatten() {
         List<InventoryItem> result = new ArrayList<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> blockEntry : viewedInventory.entrySet()) {
-            @Nullable Storage pos = Storage.fromStoreString(blockEntry.getKey());
+            @Nullable Target pos = Target.fromStoreString(blockEntry.getKey());
             for (Map.Entry<String, List<ItemCount>> slot : blockEntry.getValue().entrySet()) {
                 for (ItemCount itemCount : slot.getValue()) {
                     if (itemCount.getFirst().isEmpty()) continue;
@@ -157,17 +157,17 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return result;
     }
 
-    public void ambitiousRemoveItem(ServerLevel level, Storage target, ItemStack itemStack, int count) {
-        Storage realTarget = ambitiousPos(level, target);
+    public void ambitiousRemoveItem(ServerLevel level, Target target, ItemStack itemStack, int count) {
+        Target realTarget = ambitiousPos(level, target);
         removeItem(realTarget, itemStack, count);
     }
 
-    public void ambitiousAddItem(ServerLevel level, Storage target, ItemStack itemStack) {
-        Storage realTarget = ambitiousPos(level, target);
+    public void ambitiousAddItem(ServerLevel level, Target target, ItemStack itemStack) {
+        Target realTarget = ambitiousPos(level, target);
         addItem(realTarget, itemStack);
     }
 
-    public void removeItem(Storage pos, ItemStack itemStack, int count) {
+    public void removeItem(Target pos, ItemStack itemStack, int count) {
         if (pos == null || itemStack == null || itemStack.isEmpty()) return;
         if (!viewedInventory.containsKey(pos.toStoreString()))
             return;
@@ -188,7 +188,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         viewedInventory.put(pos.toStoreString(), map);
     }
 
-    public void addItem(Storage pos, ItemStack itemStack) {
+    public void addItem(Target pos, ItemStack itemStack) {
         if (pos == null || itemStack == null || itemStack.isEmpty()) return;
         if (!viewedInventory.containsKey(pos.toStoreString()))
             viewedInventory.put(pos.toStoreString(), new HashMap<>());
@@ -214,32 +214,32 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public void removeUnvisited() {
         ArrayList<String> posList = new ArrayList<>(viewedInventory.keySet());
         for (String pos : posList) {
-            Storage storage = Storage.fromStoreString(pos);
+            Target storage = Target.fromStoreString(pos);
             if (storage == null || !isVisitedPos(storage))
                 viewedInventory.remove(pos);
         }
     }
 
-    public void resetViewedInvForPos(Storage pos) {
+    public void resetViewedInvForPos(Target pos) {
         viewedInventory.remove(pos.toStoreString());
         viewedInventory.put(pos.toStoreString(), new HashMap<>());
     }
 
-    public LinkedList<Storage> getMarkChanged() {
+    public LinkedList<Target> getMarkChanged() {
         return markChanged;
     }
 
-    public void addMarkChanged(Storage pos) {
+    public void addMarkChanged(Target pos) {
         if (!markChanged.contains(pos))
             markChanged.add(pos);
     }
 
-    public Storage ambitiousPos(ServerLevel level, Storage storage) {
+    public Target ambitiousPos(ServerLevel level, Target storage) {
         if (viewedInventory.containsKey(storage.toStoreString()))
             return storage;
-        MutableObject<Storage> realTarget = new MutableObject<>(storage);
+        MutableObject<Target> realTarget = new MutableObject<>(storage);
         InvUtil.checkNearByContainers(level, storage.getPos(), pos -> {
-            Storage m = storage.sameType(pos, null);
+            Target m = storage.sameType(pos, null);
             if (viewedInventory.containsKey(m.toStoreString()))
                 realTarget.setValue(m);
         });

@@ -2,10 +2,10 @@ package studio.fantasyit.maid_storage_manager.storage.base;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 public interface IStorageContext {
-    void start(EntityMaid maid, ServerLevel level, Storage target);
+    void start(EntityMaid maid, ServerLevel level, Target target);
 
     default void finish() {
     }

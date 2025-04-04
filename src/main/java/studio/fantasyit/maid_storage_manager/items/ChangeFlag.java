@@ -25,11 +25,10 @@ import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
-import studio.fantasyit.maid_storage_manager.util.PosUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public class ChangeFlag extends Item {
         if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
             BlockPos clickedPos = context.getClickedPos();
             Direction side = serverPlayer.isShiftKeyDown() ? null : context.getClickedFace();
-            Storage validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
+            Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
                 CompoundTag tag = item.getOrCreateTag();
@@ -61,7 +60,7 @@ public class ChangeFlag extends Item {
                 ListTag list = tag.getList(TAG_STORAGES, 10);
                 boolean found = false;
                 for (int i = 0; i < list.size(); i++) {
-                    Storage storage = Storage.fromNbt(list.getCompound(i));
+                    Target storage = Target.fromNbt(list.getCompound(i));
                     if (storage.equals(validTarget)) {
                         list.remove(i);
                         found = true;
@@ -85,20 +84,20 @@ public class ChangeFlag extends Item {
             if (maid.getOwner() != null
                     && maid.getOwner().getUUID().equals(player.getUUID())
                     && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
-                List<Storage> storages = getStorages(itemStack);
+                List<Target> storages = getStorages(itemStack);
                 if (storages.size() == 0) {
                     return InteractionResult.CONSUME;
                 }
                 storages.forEach(interactedTarget -> {
-                    Storage target;
-                    List<Storage> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
+                    Target target;
+                    List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
                     if (possibleTargets.contains(interactedTarget))
                         target = interactedTarget;
                     else if (possibleTargets.size() > 0)
                         target = possibleTargets.get(0);
                     else
                         return;
-                    Storage storage = MemoryUtil.getViewedInventory(maid).ambitiousPos(level, target);
+                    Target storage = MemoryUtil.getViewedInventory(maid).ambitiousPos(level, target);
                     clearVisForMemories((ServerLevel) player.level(), maid, storage);
                     MemoryUtil.getViewedInventory(maid).addMarkChanged(storage);
                 });
@@ -112,13 +111,13 @@ public class ChangeFlag extends Item {
         return super.interactLivingEntity(itemStack, player, living, hand);
     }
 
-    public static List<Storage> getStorages(ItemStack stack) {
+    public static List<Target> getStorages(ItemStack stack) {
         if (!stack.is(ItemRegistry.CHANGE_FLAG.get()) && !stack.hasTag())
             return List.of();
-        List<Storage> storages = new ArrayList<>();
+        List<Target> storages = new ArrayList<>();
         ListTag tags = stack.getOrCreateTag().getList(TAG_STORAGES, 10);
         for (int i = 0; i < tags.size(); i++) {
-            storages.add(Storage.fromNbt(tags.getCompound(i)));
+            storages.add(Target.fromNbt(tags.getCompound(i)));
         }
         return storages;
     }
@@ -129,7 +128,7 @@ public class ChangeFlag extends Item {
         stack.setTag(tag);
     }
 
-    public static void clearVisForMemories(ServerLevel level, EntityMaid maid, Storage storage) {
+    public static void clearVisForMemories(ServerLevel level, EntityMaid maid, Target storage) {
         clearVisForMemories(level, MemoryUtil.getRequestProgress(maid), storage);
         clearVisForMemories(level, MemoryUtil.getViewedInventory(maid), storage);
         clearVisForMemories(level, MemoryUtil.getCrafting(maid), storage);
@@ -137,7 +136,7 @@ public class ChangeFlag extends Item {
         clearVisForMemories(level, MemoryUtil.getResorting(maid), storage);
     }
 
-    public static void clearVisForMemories(ServerLevel level, AbstractTargetMemory memory, Storage storage) {
+    public static void clearVisForMemories(ServerLevel level, AbstractTargetMemory memory, Target storage) {
         memory.removeVisitedPos(storage);
         InvUtil.checkNearByContainers(level, storage.getPos(), pos -> {
             memory.removeVisitedPos(storage.sameType(pos, null));

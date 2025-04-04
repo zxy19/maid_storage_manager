@@ -1,9 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
@@ -27,7 +25,7 @@ import java.util.Map;
 public class PlaceBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     private IStorageContext context = null;
-    Storage target = null;
+    Target target = null;
     int count = 0;
     private boolean changed;
 

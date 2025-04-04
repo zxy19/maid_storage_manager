@@ -12,7 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
@@ -44,17 +44,17 @@ public class Ae2Storage implements IMaidStorage {
     }
 
     @Override
-    public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Storage block) {
+    public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Target block) {
         return new Ae2CollectContext();
     }
 
     @Override
-    public @Nullable IStorageContext onStartPlace(ServerLevel level, EntityMaid maid, Storage block) {
+    public @Nullable IStorageContext onStartPlace(ServerLevel level, EntityMaid maid, Target block) {
         return new Ae2PlacingContext();
     }
 
     @Override
-    public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Storage block) {
+    public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target block) {
         return new Ae2ViewContext();
     }
 }

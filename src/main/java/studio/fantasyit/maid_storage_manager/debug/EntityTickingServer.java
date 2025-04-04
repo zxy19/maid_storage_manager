@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.debug;
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidTickEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -14,7 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Optional;
 
@@ -28,7 +27,7 @@ public class EntityTickingServer {
             return;
         maid.getBrain().getMemory(InitEntities.TARGET_POS.get()).ifPresentOrElse(pos -> {
             DebugData.getInstance().setDataAndSync("target_" + maid.getUUID(),
-                    (new Storage(new ResourceLocation("tlm", "target"), pos.currentBlockPosition(), Optional.empty()).toNbt())
+                    (new Target(new ResourceLocation("tlm", "target"), pos.currentBlockPosition(), Optional.empty()).toNbt())
             );
         }, () -> DebugData.getInstance().setDataAndSync("target_" + maid.getUUID(), new CompoundTag()));
 

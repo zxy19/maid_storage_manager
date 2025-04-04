@@ -1,7 +1,9 @@
-package studio.fantasyit.maid_storage_manager.craft;
+package studio.fantasyit.maid_storage_manager.craft.algo;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -27,6 +29,8 @@ public class AvailableCraftGraph {
     List<CraftGuideData> craftGuideData;
     List<List<Pair<Integer, Integer>>> edges;
     List<Integer> inDegree = new ArrayList<>();
+    // 禁用输出边。如果某物作为合成第一输出存在但是在当前合成表是非第一输出，则禁用
+    List<boolean[]> disableOutputEdge = new ArrayList<>();
 
     //context related var
     //拓扑图队列
@@ -64,21 +68,35 @@ public class AvailableCraftGraph {
         this.items = new ArrayList<>();
         this.counts = new ArrayList<>();
         this.craftGuideData = new ArrayList<>();
+        ArrayList<ItemStack> existingFirstOutput = new ArrayList<>();
         for (CraftGuideData inComing : craftGuideData) {
             boolean duplicate = false;
+            List<ItemStack> inComingOpt = inComing.getAllOutputItems();
             for (CraftGuideData existing : this.craftGuideData) {
-                if (existing.getOutput().getItems().stream().anyMatch(
-                        i1 ->
-                                inComing.getOutput().getItems().stream().anyMatch(
-                                        i2 -> ItemStack.isSameItem(i1, i2) && !i1.isEmpty()
-                                )
-                )) {
+                List<ItemStack> existingOpt = existing.getAllOutputItems();
+                if (ItemStack.isSameItem(existingOpt.get(0),
+                        inComingOpt.get(0))
+                        && !inComingOpt.get(0).isEmpty()
+                ) {
                     duplicate = true;
                     break;
                 }
             }
             if (!duplicate) {
                 this.craftGuideData.add(inComing);
+                existingFirstOutput.add(inComingOpt.get(0));
+                this.disableOutputEdge.add(new boolean[inComingOpt.size()]);
+            }
+        }
+        for (int i = 0; i < craftGuideData.size(); i++) {
+            List<ItemStack> outputs = craftGuideData.get(i).getAllOutputItems();
+            for (int j = 1; j < outputs.size(); j++) {
+                ItemStack i2 = outputs.get(j);
+                if (existingFirstOutput.stream().anyMatch(
+                        i1 -> ItemStack.isSameItem(i1, i2)
+                )) {
+                    this.disableOutputEdge.get(i)[j] = true;
+                }
             }
         }
         this.edges = new ArrayList<>();
@@ -144,7 +162,7 @@ public class AvailableCraftGraph {
         for (; buildIdx < craftGuideData.size(); buildIdx++) {
             if (count++ > this.taskPerTick) return false;
             CraftGuideData cgd = this.craftGuideData.get(buildIdx);
-            List<ItemStack> items1 = cgd.output.items;
+            List<ItemStack> items1 = cgd.getAllInputItems();
             for (int j = 0; j < items1.size(); j++) {
                 ItemStack item = items1.get(j);
                 if (item.isEmpty()) continue;
@@ -154,19 +172,10 @@ public class AvailableCraftGraph {
                 }
                 addEdge(item(idx), craft(buildIdx), item.getCount());
             }
-            List<ItemStack> items2 = cgd.input1.items;
+            List<ItemStack> items2 = cgd.getAllOutputItems();
             for (int j = 0; j < items2.size(); j++) {
+                if (this.disableOutputEdge.get(buildIdx)[j]) continue;
                 ItemStack item = items2.get(j);
-                if (item.isEmpty()) continue;
-                int idx = getItemIndex(item);
-                if (idx == -1) {
-                    idx = addItemNode(item);
-                }
-                addEdge(craft(buildIdx), item(idx), item.getCount());
-            }
-            List<ItemStack> items3 = cgd.input2.items;
-            for (int j = 0; j < items3.size(); j++) {
-                ItemStack item = items3.get(j);
                 if (item.isEmpty()) continue;
                 int idx = getItemIndex(item);
                 if (idx == -1) {
@@ -313,8 +322,9 @@ public class AvailableCraftGraph {
                 }
                 itemStacks.add(itemStack.copyWithCount(count));
             };
-            lastOne.getInput1().items.forEach(addWithCountMultiple);
-            lastOne.getInput2().items.forEach(addWithCountMultiple);
+            lastOne.getInput().forEach(
+                    i -> i.items.forEach(addWithCountMultiple)
+            );
             res.add(new CraftLayer(
                     Optional.of(lastOne),
                     itemStacks,
@@ -323,12 +333,15 @@ public class AvailableCraftGraph {
         }
         if (lastOne != null) {
             int finalLastOneIndex = lastOneIndex;
+            ArrayList<ItemStack> list = new ArrayList<>();
+            lastOne.getOutput().forEach(i -> i.items
+                    .stream()
+                    .filter(itemStack -> !itemStack.isEmpty())
+                    .map(itemStack -> itemStack.copyWithCount(currentRequire.get(finalLastOneIndex) * itemStack.getCount()))
+                    .forEach(list::add)
+            );
             res.add(new CraftLayer(Optional.empty(),
-                    lastOne.getOutput().items
-                            .stream()
-                            .filter(itemStack -> !itemStack.isEmpty())
-                            .map(itemStack -> itemStack.copyWithCount(currentRequire.get(finalLastOneIndex) * itemStack.getCount()))
-                            .toList(),
+                    list,
                     contextRequireCount));
         }
         return res;

@@ -5,11 +5,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
@@ -25,7 +25,7 @@ import java.util.Objects;
 public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     IStorageContext context;
-    private Storage target;
+    private Target target;
 
     public RequestCraftGatherBehavior() {
         super(Map.of());
@@ -117,7 +117,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.finish();
             if (context.isDone()) {
-                Storage target = MemoryUtil.getCrafting(maid).getTarget();
+                Target target = MemoryUtil.getCrafting(maid).getTarget();
                 MemoryUtil.getCrafting(maid).addVisitedPos(target);
                 InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
                     MemoryUtil.getCrafting(maid).addVisitedPos(target.sameType(pos, null));

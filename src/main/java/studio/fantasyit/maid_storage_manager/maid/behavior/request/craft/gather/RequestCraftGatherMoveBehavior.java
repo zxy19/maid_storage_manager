@@ -1,13 +1,10 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +14,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
@@ -36,7 +33,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
         this.verticalSearchStart = 1;
     }
 
-    Storage chestPos = null;
+    Target chestPos = null;
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
@@ -78,8 +75,8 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
         if (!Conditions.usePriorityTarget(maid)) return false;
         List<ItemStack> targets = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer()).getItems();
         if (targets.isEmpty()) return false;
-        Map<Storage, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
-        for (Map.Entry<Storage, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
+        Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
             if (MemoryUtil.getCrafting(maid).isVisitedPos(blockPos.getKey())) continue;
             if (blockPos
                     .getValue()
@@ -97,7 +94,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
 
             @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
             if (targetPos != null) {
-                @Nullable Storage storage = MaidStorage.getInstance().isValidTarget(level,
+                @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level,
                         maid,
                         blockPos.getKey().getPos(),
                         blockPos.getKey().side);
@@ -119,7 +116,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
                                    @NotNull BlockPos blockPos) {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
         //寻找当前格子能触碰的箱子
-        @Nullable Storage canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, MemoryUtil.getCrafting(entityMaid));
+        @Nullable Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, MemoryUtil.getCrafting(entityMaid));
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER]Target %s", canTouchChest);

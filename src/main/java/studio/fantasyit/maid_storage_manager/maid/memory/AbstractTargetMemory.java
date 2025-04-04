@@ -3,12 +3,11 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,40 +19,40 @@ public abstract class AbstractTargetMemory {
     public static class TargetData {
         public static final Codec<TargetData> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        Codec.list(Storage.CODEC)
+                        Codec.list(Target.CODEC)
                                 .fieldOf("visitedPos")
                                 .forGetter(TargetData::getVisitedPos),
-                        Storage.CODEC.fieldOf("target")
+                        Target.CODEC.fieldOf("target")
                                 .forGetter(TargetData::getTarget),
                         ItemStack.CODEC.optionalFieldOf("check")
                                 .forGetter(TargetData::getCheckItem)
                 ).apply(instance, TargetData::new));
         public static ResourceLocation NO_TARGET = new ResourceLocation(MaidStorageManager.MODID, "no_target");
-        public List<Storage> visitedPos;
-        public Storage target;
+        public List<Target> visitedPos;
+        public Target target;
         @Nullable
         public ItemStack checkItem;
 
-        public TargetData(List<Storage> visitedPos, Storage target) {
+        public TargetData(List<Target> visitedPos, Target target) {
             this(visitedPos, target, Optional.empty());
         }
 
-        public TargetData(List<Storage> visitedPos, Storage target, Optional<ItemStack> checkItem) {
+        public TargetData(List<Target> visitedPos, Target target, Optional<ItemStack> checkItem) {
             this.visitedPos = new ArrayList<>(visitedPos);
             this.target = target;
             this.checkItem = checkItem.orElse(null);
         }
 
-        public List<Storage> getVisitedPos() {
+        public List<Target> getVisitedPos() {
             return visitedPos;
         }
 
 
-        public Storage getTarget() {
+        public Target getTarget() {
             return target;
         }
 
-        public void setTarget(Storage target) {
+        public void setTarget(Target target) {
             this.target = target;
         }
 
@@ -74,14 +73,14 @@ public abstract class AbstractTargetMemory {
     }
 
     public AbstractTargetMemory() {
-        targetData = new TargetData(new ArrayList<>(), new Storage(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty()));
+        targetData = new TargetData(new ArrayList<>(), new Target(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty()));
     }
 
-    public List<Storage> getVisitedPos() {
+    public List<Target> getVisitedPos() {
         return targetData.visitedPos;
     }
 
-    public void addVisitedPos(Storage pos) {
+    public void addVisitedPos(Target pos) {
         targetData.visitedPos.add(pos);
     }
 
@@ -89,11 +88,11 @@ public abstract class AbstractTargetMemory {
         targetData.visitedPos.clear();
     }
 
-    public void removeVisitedPos(Storage pos) {
+    public void removeVisitedPos(Target pos) {
         targetData.visitedPos.remove(pos);
     }
 
-    public boolean isVisitedPos(Storage pos) {
+    public boolean isVisitedPos(Target pos) {
         return targetData.visitedPos.contains(pos);
     }
 
@@ -118,16 +117,16 @@ public abstract class AbstractTargetMemory {
         return this.failCount >= threshold;
     }
 
-    public Storage getTarget() {
+    public Target getTarget() {
         return targetData.getTarget();
     }
 
-    public void setTarget(Storage target) {
+    public void setTarget(Target target) {
         targetData.setTarget(target);
     }
 
     public void clearTarget() {
-        targetData.setTarget(new Storage(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty()));
+        targetData.setTarget(new Target(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty()));
     }
 
     public boolean hasTarget() {

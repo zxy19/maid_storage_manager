@@ -13,7 +13,7 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
@@ -37,22 +37,22 @@ public class ItemHandlerStorage implements IMaidStorage {
     }
 
     @Override
-    public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Storage storage) {
+    public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Target storage) {
         return new ContextItemHandlerCollect(storage);
     }
 
     @Override
-    public @Nullable IStorageContext onStartPlace(ServerLevel level, EntityMaid maid, Storage storage) {
+    public @Nullable IStorageContext onStartPlace(ServerLevel level, EntityMaid maid, Target storage) {
         return new ContextItemHandlerStore(storage);
     }
 
     @Override
-    public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Storage storage) {
+    public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target storage) {
         return new ContextItemHandlerView(storage);
     }
 
     @Override
-    public @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Storage storage) {
+    public @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Target storage) {
         return new ContextItemHandlerPreview(storage);
     }
 }

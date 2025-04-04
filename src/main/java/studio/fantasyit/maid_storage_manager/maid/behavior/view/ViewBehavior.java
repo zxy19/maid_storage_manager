@@ -1,16 +1,15 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.view;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRateTask;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
@@ -27,7 +26,7 @@ import java.util.Map;
 public class ViewBehavior extends MaidCheckRateTask {
     private final BehaviorBreath breath = new BehaviorBreath();
     private IStorageContext context = null;
-    Storage target = null;
+    Target target = null;
     List<ItemStack> mismatchFilter = new ArrayList<>();
 
     public ViewBehavior() {
@@ -66,6 +65,7 @@ public class ViewBehavior extends MaidCheckRateTask {
             context.start(maid, level, target);
         }
         this.mismatchFilter.clear();
+        AdvancementTypes.triggerForMaid(maid, AdvancementTypes.VIEW);
     }
 
     @Override
@@ -96,13 +96,14 @@ public class ViewBehavior extends MaidCheckRateTask {
             context.finish();
         }
         MemoryUtil.clearTarget(maid);
-        LinkedList<Storage> markChanged = MemoryUtil.getViewedInventory(maid).getMarkChanged();
+        LinkedList<Target> markChanged = MemoryUtil.getViewedInventory(maid).getMarkChanged();
         if (!markChanged.isEmpty() && markChanged.peek().equals(target)) {
             markChanged.poll();
         }
 
         if (!mismatchFilter.isEmpty()) {
             ChatTexts.send(maid, ChatTexts.CHAT_RESORT);
+            AdvancementTypes.triggerForMaid(maid, AdvancementTypes.RESORT);
             MemoryUtil.getResorting(maid).setNeedToResort(mismatchFilter);
             MemoryUtil.getResorting(maid).setTarget(target);
             MemoryUtil.getResorting(maid).addVisitedPos(target);

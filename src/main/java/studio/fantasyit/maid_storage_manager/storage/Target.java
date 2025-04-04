@@ -10,51 +10,51 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class Storage {
-    public static Codec<Storage> CODEC = RecordCodecBuilder.create(instance ->
+public class Target {
+    public static Codec<Target> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.fieldOf("type").forGetter(Storage::getType),
-                    BlockPos.CODEC.fieldOf("pos").forGetter(Storage::getPos),
-                    Direction.CODEC.optionalFieldOf("side").forGetter(Storage::getSide)
-            ).apply(instance, Storage::new)
+                    ResourceLocation.CODEC.fieldOf("type").forGetter(Target::getType),
+                    BlockPos.CODEC.fieldOf("pos").forGetter(Target::getPos),
+                    Direction.CODEC.optionalFieldOf("side").forGetter(Target::getSide)
+            ).apply(instance, Target::new)
     );
     public ResourceLocation type;
     public BlockPos pos;
     @Nullable
     public Direction side;
 
-    public Storage(ResourceLocation type, BlockPos pos) {
+    public Target(ResourceLocation type, BlockPos pos) {
         this(type, pos, Optional.empty());
     }
 
-    public Storage(ResourceLocation type, BlockPos pos, Optional<Direction> side) {
+    public Target(ResourceLocation type, BlockPos pos, Optional<Direction> side) {
         this(type, pos, side.orElse(null));
     }
 
-    public Storage(ResourceLocation type, BlockPos pos, @Nullable Direction side) {
+    public Target(ResourceLocation type, BlockPos pos, @Nullable Direction side) {
         this.type = type;
         this.pos = pos;
         this.side = side;
     }
 
-    public static Storage fromNbt(CompoundTag nbt) {
+    public static Target fromNbt(CompoundTag nbt) {
         if (!nbt.contains("side"))
-            return new Storage(
+            return new Target(
                     new ResourceLocation(nbt.getString("type")),
                     BlockPos.of(nbt.getLong("pos")),
                     Optional.empty()
             );
-        return new Storage(
+        return new Target(
                 new ResourceLocation(nbt.getString("type")),
                 BlockPos.of(nbt.getLong("pos")),
                 Direction.byName(nbt.getString("side"))
         );
     }
 
-    public static @Nullable Storage fromStoreString(String str) {
+    public static @Nullable Target fromStoreString(String str) {
         String[] split = str.split(",");
         if (split.length == 4 || split.length == 5)
-            return new Storage(
+            return new Target(
                     new ResourceLocation(split[0]),
                     new BlockPos(Integer.parseInt(split[1]),
                             Integer.parseInt(split[2]),
@@ -64,8 +64,8 @@ public class Storage {
         return null;
     }
 
-    public Storage sameType(BlockPos pos, @Nullable Direction side) {
-        return new Storage(type, pos, side);
+    public Target sameType(BlockPos pos, @Nullable Direction side) {
+        return new Target(type, pos, side);
     }
 
     public CompoundTag toNbt() {
@@ -110,7 +110,7 @@ public class Storage {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Storage storage) {
+        if (obj instanceof Target storage) {
             return storage.type.equals(this.type) &&
                     storage.pos.equals(this.pos) &&
                     storage.side == this.side;
@@ -118,7 +118,7 @@ public class Storage {
         return false;
     }
 
-    public Storage withoutSide() {
-        return new Storage(type, pos, Optional.empty());
+    public Target withoutSide() {
+        return new Target(type, pos, Optional.empty());
     }
 }

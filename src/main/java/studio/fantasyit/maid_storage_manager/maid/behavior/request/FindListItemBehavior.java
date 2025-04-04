@@ -1,20 +1,18 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRateTask;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -79,7 +77,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearLayers();
 
         //标黑存储箱子相连的所有箱子
-        Storage storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
             MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock);
             DebugData.getInstance().sendMessage("[REQUEST]initial vis %s", storageBlock);
@@ -90,5 +88,9 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         }
 
         ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_START);
+        AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_GOT);
+        if(RequestListItem.getRepeatInterval(maid.getMainHandItem()) > 0){
+            AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_REPEAT_GOT);
+        }
     }
 }

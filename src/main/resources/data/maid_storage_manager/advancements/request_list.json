@@ -1,0 +1,35 @@
+{
+  "parent": "maid_storage_manager:view",
+  "criteria": {
+    "maid_event": {
+      "conditions": {
+        "event": "request_list"
+      },
+      "trigger": "touhou_little_maid:maid/tamed_maid"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "background": "touhou_little_maid:textures/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancements.maid_storage_manager.request_list.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "maid_storage_manager:request_list"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.maid_storage_manager.request_list.title"
+    }
+  },
+  "requirements": [
+    [
+      "maid_event"
+    ]
+  ],
+  "rewards": {
+  },
+  "sends_telemetry_event": true
+}

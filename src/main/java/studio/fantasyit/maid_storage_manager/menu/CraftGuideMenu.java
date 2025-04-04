@@ -1,23 +1,16 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
@@ -25,13 +18,12 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -66,7 +58,7 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
         public FilterContainer items;
         public SimpleContainer blockItem;
         public boolean matchTag;
-        Storage storage;
+        Target storage;
         Player player;
         CraftGuideMenu menu;
 
@@ -97,7 +89,7 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
         public void deserializeNBT(CompoundTag nbt) {
             items.deserializeNBT(nbt.getList(CraftGuide.TAG_OP_ITEMS, ListTag.TAG_COMPOUND));
             if (nbt.contains(CraftGuide.TAG_OP_STORAGE))
-                storage = Storage.fromNbt(nbt.getCompound(CraftGuide.TAG_OP_STORAGE));
+                storage = Target.fromNbt(nbt.getCompound(CraftGuide.TAG_OP_STORAGE));
             if (!nbt.contains(CraftGuide.TAG_OP_MATCH_TAG) || nbt.getBoolean(CraftGuide.TAG_OP_MATCH_TAG))
                 matchTag = true;
             change();
@@ -154,8 +146,8 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
         inputSlot1 = new TargetOps(this, 9);
         inputSlot2 = new TargetOps(this, 9);
         outputSlot = new TargetOps(this, 3);
-        if (tag.contains(CraftGuide.TAG_INPUT_1)) {
-            inputSlot1.deserializeNBT(tag.getCompound(CraftGuide.TAG_INPUT_1));
+        if (tag.contains(CraftGuide.TAG_INPUT)) {
+            inputSlot1.deserializeNBT(tag.getCompound(CraftGuide.TAG_INPUT));
         }
         if (tag.contains(CraftGuide.TAG_INPUT_2)) {
             inputSlot2.deserializeNBT(tag.getCompound(CraftGuide.TAG_INPUT_2));
@@ -171,7 +163,7 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
 
     public void save() {
         CompoundTag tag = target.getOrCreateTag();
-        tag.put(CraftGuide.TAG_INPUT_1, inputSlot1.serializeNBT());
+        tag.put(CraftGuide.TAG_INPUT, inputSlot1.serializeNBT());
         tag.put(CraftGuide.TAG_INPUT_2, inputSlot2.serializeNBT());
         tag.put(CraftGuide.TAG_OUTPUT, outputSlot.serializeNBT());
         target.setTag(tag);
@@ -382,6 +374,25 @@ public class CraftGuideMenu extends AbstractContainerMenu implements ISaveFilter
                         ItemStack item = recipe.assemble(container, player.level().registryAccess());
                         outputSlot.items.setItem(0, item);
                         outputSlot.items.count[0].setValue(item.getCount());
+                        outputSlot.items.setItem(1, ItemStack.EMPTY);
+                        outputSlot.items.setItem(2, ItemStack.EMPTY);
+                        //不消耗物品也要加入产物，用于计算合成方案
+                        NonNullList<ItemStack> remain = recipe.getRemainingItems(container);
+                        for (int j = 0; j < remain.size(); j++) {
+                            if (!remain.get(j).isEmpty()) {
+                                for (int i = 0; i < outputSlot.items.getContainerSize(); i++) {
+                                    ItemStack originalItem = outputSlot.items.getItem(i);
+                                    if (originalItem.isEmpty()) {
+                                        outputSlot.items.setItem(i, remain.get(j));
+                                        outputSlot.items.count[i].setValue(remain.get(j).getCount());
+                                        break;
+                                    } else if (ItemStack.isSameItem(originalItem, remain.get(j))) {
+                                        outputSlot.items.count[i].setValue(remain.get(j).getCount() + outputSlot.items.count[i].getValue());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }, () -> {
                         outputSlot.blockItem.setItem(0, ItemStack.EMPTY);
                         outputSlot.storage = null;

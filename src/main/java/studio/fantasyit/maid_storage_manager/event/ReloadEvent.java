@@ -4,7 +4,7 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.CraftingTableRecipeStore;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftingTableRecipeStore;
 
 import java.util.concurrent.CompletableFuture;
 

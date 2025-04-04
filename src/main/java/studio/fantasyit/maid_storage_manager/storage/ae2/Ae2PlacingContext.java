@@ -12,7 +12,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
 import java.util.Arrays;
@@ -22,7 +22,7 @@ public class Ae2PlacingContext implements IStorageInsertableContext {
     private MEStorage inv;
 
     @Override
-    public void start(EntityMaid maid, ServerLevel level, Storage target) {
+    public void start(EntityMaid maid, ServerLevel level, Target target) {
         if (level.getBlockEntity(target.pos) instanceof CableBusBlockEntity cbbe) {
             Optional<Direction> first = Arrays.stream(Direction
                             .orderedByNearest(maid))

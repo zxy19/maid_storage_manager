@@ -12,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -25,7 +25,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Nullable IStorageContext context;
     int currentSlot = 0;
-    private Storage target;
+    private Target target;
 
     public RequestRetBehavior() {
         super(Map.of());

@@ -11,7 +11,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FilterableItemHandler implements IFilterable {
-    protected Storage storage;
+    protected Target storage;
 
-    public FilterableItemHandler(Storage storage) {
+    public FilterableItemHandler(Target storage) {
         this.storage = storage;
     }
 
@@ -29,7 +29,7 @@ public class FilterableItemHandler implements IFilterable {
     boolean isBlackMode;
     boolean requestOnly;
 
-    public void init(ServerLevel level, Storage target) {
+    public void init(ServerLevel level, Target target) {
         List<BlockPos> samePos = new ArrayList<>(List.of(target.pos));
         InvUtil.checkNearByContainers(level, target.pos, samePos::add);
         AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);

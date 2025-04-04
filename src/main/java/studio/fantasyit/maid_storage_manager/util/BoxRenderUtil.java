@@ -14,13 +14,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.apache.logging.log4j.util.Strings;
 import studio.fantasyit.maid_storage_manager.api.IGuiGraphicsGetter;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class BoxRenderUtil {
-    public static void renderStorage(Storage storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating) {
+    public static void renderStorage(Target storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;

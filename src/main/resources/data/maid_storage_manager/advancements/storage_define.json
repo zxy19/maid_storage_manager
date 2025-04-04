@@ -1,0 +1,38 @@
+{
+  "parent": "maid_storage_manager:storage_manager",
+  "criteria": {
+    "altar_craft": {
+      "conditions": {
+        "recipe_id": "maid_storage_manager:storage_define"
+      },
+      "trigger": "touhou_little_maid:altar/altar_craft"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "background": "touhou_little_maid:textures/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancements.maid_storage_manager.storage_define.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "maid_storage_manager:storage_define"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.maid_storage_manager.storage_define.title"
+    }
+  },
+  "requirements": [
+    [
+      "altar_craft"
+    ]
+  ],
+  "rewards": {
+    "loot": [
+      "touhou_little_maid:advancement/cake"
+    ]
+  },
+  "sends_telemetry_event": true
+}

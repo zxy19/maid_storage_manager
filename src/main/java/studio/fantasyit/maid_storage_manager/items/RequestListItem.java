@@ -1,11 +1,9 @@
 package studio.fantasyit.maid_storage_manager.items;
 
-import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,29 +14,23 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.network.NetworkHooks;
-import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 public class RequestListItem extends MaidInteractItem implements MenuProvider {
@@ -65,6 +57,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (!mainHandItem.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
         return tag.getBoolean(TAG_IGNORE_TASK);
+    }
+
+    public static int getRepeatInterval(ItemStack mainHandItem) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return 0;
+        if (!mainHandItem.hasTag()) return 0;
+        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
+        return tag.getInt(TAG_REPEAT_INTERVAL);
     }
 
     public static void addItemStackCollected(ItemStack mainHandItem, ItemStack a, int count) {
@@ -168,12 +167,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown()) return InteractionResult.PASS;
             BlockPos clickedPos = context.getClickedPos();
-            Storage validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
+            Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
                 CompoundTag tag = item.getOrCreateTag();
                 if (tag.contains(TAG_STORAGE)) {
-                    Storage storage = Storage.fromNbt(tag.getCompound(TAG_STORAGE));
+                    Target storage = Target.fromNbt(tag.getCompound(TAG_STORAGE));
                     if (storage.getPos().equals(clickedPos) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
                         tag.remove(TAG_STORAGE);
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.clear_storage"));
@@ -212,7 +211,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (!tag.contains(RequestListItem.TAG_STORAGE)) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
         } else {
-            Storage storage = Storage.fromNbt(tag.getCompound(RequestListItem.TAG_STORAGE));
+            Target storage = Target.fromNbt(tag.getCompound(RequestListItem.TAG_STORAGE));
             BlockPos storagePos = storage.getPos();
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.storage", storagePos.getX(), storagePos.getY(), storagePos.getZ()));
         }
@@ -284,12 +283,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
-    public static @Nullable Storage getStorageBlock(ItemStack stack) {
+    public static @Nullable Target getStorageBlock(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
         if (!stack.hasTag()) return null;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         if (!tag.contains(TAG_STORAGE)) return null;
-        return Storage.fromNbt(tag.getCompound(TAG_STORAGE));
+        return Target.fromNbt(tag.getCompound(TAG_STORAGE));
     }
 
     /**

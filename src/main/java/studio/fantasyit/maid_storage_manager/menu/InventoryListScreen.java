@@ -12,10 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.fml.ModList;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +71,7 @@ public class InventoryListScreen extends Screen {
         InventoryItem inventoryItem = list.get(index);
         List<Component> tooltip = new ArrayList<>(Screen.getTooltipFromItem(minecraft, inventoryItem.itemStack));
         tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.find"));
-        for (Pair<Storage, Integer> pair : inventoryItem.posAndSlot) {
+        for (Pair<Target, Integer> pair : inventoryItem.posAndSlot) {
             tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.pos",
                     pair.getA().getPos().getX(),
                     pair.getA().getPos().getY(),

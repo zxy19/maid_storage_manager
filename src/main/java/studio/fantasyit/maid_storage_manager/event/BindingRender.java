@@ -11,13 +11,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public final class BindingRender {
         if (mainStack.getItem() != ItemRegistry.REQUEST_LIST_ITEM.get()) {
             return;
         }
-        Storage storage = RequestListItem.getStorageBlock(mainStack);
+        Target storage = RequestListItem.getStorageBlock(mainStack);
         if (storage == null) {
             return;
         }
@@ -73,7 +73,7 @@ public final class BindingRender {
                 return;
             }
         }
-        List<Storage> storage = StorageDefineBauble.getStorages(mainStack);
+        List<Target> storage = StorageDefineBauble.getStorages(mainStack);
         String mode = switch (StorageDefineBauble.getMode(mainStack)) {
             case APPEND -> "append";
             case REMOVE -> "remove";
@@ -90,7 +90,7 @@ public final class BindingRender {
         if (storage == null || storage.isEmpty()) {
             return;
         }
-        for (Storage storage1 : storage) {
+        for (Target storage1 : storage) {
             BoxRenderUtil.renderStorage(storage1,
                     color,
                     event,
@@ -104,11 +104,11 @@ public final class BindingRender {
         if (mainStack.getItem() != ItemRegistry.CHANGE_FLAG.get()) {
             return;
         }
-        List<Storage> storage = ChangeFlag.getStorages(mainStack);
+        List<Target> storage = ChangeFlag.getStorages(mainStack);
         if (storage == null || storage.isEmpty()) {
             return;
         }
-        for (Storage storage1 : storage) {
+        for (Target storage1 : storage) {
             BoxRenderUtil.renderStorage(storage1,
                     colors_r,
                     event,
@@ -150,7 +150,7 @@ public final class BindingRender {
         if (InventoryListDataClient.showingInv == null)
             return;
         for (int i = 0; i < InventoryListDataClient.showingInv.posAndSlot.size(); i++) {
-            Pair<Storage, Integer> storageIntegerPair = InventoryListDataClient.showingInv.posAndSlot.get(i);
+            Pair<Target, Integer> storageIntegerPair = InventoryListDataClient.showingInv.posAndSlot.get(i);
             BoxRenderUtil.renderStorage(
                     storageIntegerPair.getA(),
                     colors_y,

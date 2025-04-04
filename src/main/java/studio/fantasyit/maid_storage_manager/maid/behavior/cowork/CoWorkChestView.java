@@ -4,15 +4,13 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRa
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -29,7 +27,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
         this.setMaxCheckRate(20);
     }
 
-    Storage target;
+    Target target;
     IStorageContext context;
     int currentHoldingContainerId = -1;
 
@@ -48,13 +46,13 @@ public class CoWorkChestView extends MaidCheckRateTask {
     protected void start(@NotNull ServerLevel level,
                          @NotNull EntityMaid maid,
                          long p_22542_) {
-        Storage interactedTarget = MemoryUtil.getCoWorkTargetStorage(maid);
+        Target interactedTarget = MemoryUtil.getCoWorkTargetStorage(maid);
         if (interactedTarget == null) {
             maid.getBrain().eraseMemory(MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get());
             context = null;
             return;
         }
-        List<Storage> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
+        List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
         if (possibleTargets.contains(interactedTarget))
             target = interactedTarget;
         else if (possibleTargets.size() > 0)

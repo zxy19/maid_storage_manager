@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.google.common.collect.ImmutableMap;
@@ -10,21 +9,19 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
-import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
-import studio.fantasyit.maid_storage_manager.util.*;
+import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -35,7 +32,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT));
     }
 
-    Storage target;
+    Target target;
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
@@ -84,7 +81,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             MemoryUtil.clearTarget(maid);
             return true;
         }
-        Storage storage = step.getStorage();
+        Target storage = step.getStorage();
         if (storage == null) {
             //当前合成不存在，直接进行下一步
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]No current step. Next.");

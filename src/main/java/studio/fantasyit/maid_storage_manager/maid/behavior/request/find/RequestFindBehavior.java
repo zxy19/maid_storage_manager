@@ -1,22 +1,18 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.find;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
@@ -35,7 +31,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     IStorageContext context;
     boolean canPick = false;
-    Storage target;
+    Target target;
     ItemStack checkItem = null;
 
 
@@ -145,7 +141,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.finish();
             if (context.isDone()) {
-                Storage target = MemoryUtil.getRequestProgress(maid).getTarget();
+                Target target = MemoryUtil.getRequestProgress(maid).getTarget();
                 MemoryUtil.getRequestProgress(maid).addVisitedPos(target);
                 InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
                     MemoryUtil.getRequestProgress(maid).addVisitedPos(target.sameType(pos, null));

@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -60,5 +61,6 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         itementity.setDeltaMovement(direction);
         itementity.setUnlimitedLifetime();
         level.addFreshEntity(itementity);
+        AdvancementTypes.triggerForMaid(maid, AdvancementTypes.STORAGE_LIST);
     }
 }

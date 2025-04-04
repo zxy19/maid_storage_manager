@@ -1,10 +1,7 @@
 package studio.fantasyit.maid_storage_manager.debug;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -20,7 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
 import java.util.List;
@@ -63,7 +60,7 @@ public final class DebugBoxRender {
                 for (EntityMaid maid : entities) {
                     for (Map.Entry<String, float[]> entry : defs.entrySet()) {
                         DebugData.getInstance().getData(entry.getKey() + "_" + maid.getUUID()).ifPresent(data -> {
-                            BoxRenderUtil.renderStorage(Storage.fromNbt(data), entry.getValue(), event, entry.getKey(), floating);
+                            BoxRenderUtil.renderStorage(Target.fromNbt(data), entry.getValue(), event, entry.getKey(), floating);
                         });
                     }
                     DebugData.getInstance().getData("path_" + maid.getUUID())
@@ -71,7 +68,7 @@ public final class DebugBoxRender {
                                 ListTag nodes = data.getList("nodes", 10);
                                 for (int i = 0; i < nodes.size(); i++) {
                                     BlockPos pos = NbtUtils.readBlockPos(nodes.getCompound(i));
-                                    BoxRenderUtil.renderStorage(new Storage(new ResourceLocation("minecraft", "air"), pos),
+                                    BoxRenderUtil.renderStorage(new Target(new ResourceLocation("minecraft", "air"), pos),
                                             defs.get("target"),
                                             event,
                                             "path_node[" + i + "]",

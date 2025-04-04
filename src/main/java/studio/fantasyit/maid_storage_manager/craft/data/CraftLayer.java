@@ -1,8 +1,11 @@
-package studio.fantasyit.maid_storage_manager.craft;
+package studio.fantasyit.maid_storage_manager.craft.data;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.action.AbstractCraftActionContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,16 +123,16 @@ public class CraftLayer {
 
     public CraftGuideStepData getStepData() {
         if (craftData == null) return null;
-        return switch (step) {
-            case 0 -> craftData.getInput1();
-            case 1 -> craftData.getInput2();
-            case 2 -> craftData.getOutput();
-            default -> null;
-        };
+        return craftData.getStepByIdx(step);
+    }
+
+    public AbstractCraftActionContext startStep(EntityMaid maid) {
+        if (craftData == null) return null;
+        return CraftManager.getInstance().startCurrentStep(this, maid);
     }
 
     public boolean isOutput() {
-        return step == 2;
+        return step >= craftData.getInput().size();
     }
 
     public boolean hasCollectedAll() {

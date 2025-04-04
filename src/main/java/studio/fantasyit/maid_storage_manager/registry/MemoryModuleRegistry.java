@@ -9,7 +9,7 @@ import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.*;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Optional;
 
@@ -36,7 +36,7 @@ public class MemoryModuleRegistry {
             = REGISTER.register("interact_result", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<Boolean>> CO_WORK_MODE
             = REGISTER.register("co_work", () -> new MemoryModuleType<>(Optional.empty()));
-    public static final RegistryObject<MemoryModuleType<Storage>> CO_WORK_TARGET_STORAGE
+    public static final RegistryObject<MemoryModuleType<Target>> CO_WORK_TARGET_STORAGE
             = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
 
 

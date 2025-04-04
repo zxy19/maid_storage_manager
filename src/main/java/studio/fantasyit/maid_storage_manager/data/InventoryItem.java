@@ -1,12 +1,11 @@
 package studio.fantasyit.maid_storage_manager.data;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.INBTSerializable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +13,9 @@ import java.util.List;
 public class InventoryItem implements INBTSerializable<CompoundTag> {
     public ItemStack itemStack;
     public int totalCount;
-    public List<Pair<Storage, Integer>> posAndSlot;
+    public List<Pair<Target, Integer>> posAndSlot;
 
-    public InventoryItem(ItemStack itemStack, int totalCount, List<Pair<Storage, Integer>> posAndSlot) {
+    public InventoryItem(ItemStack itemStack, int totalCount, List<Pair<Target, Integer>> posAndSlot) {
         this.itemStack = itemStack.copyWithCount(1);
         this.totalCount = totalCount;
         this.posAndSlot = posAndSlot;
@@ -28,7 +27,7 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         this.posAndSlot = new ArrayList<>();
     }
 
-    public void addCount(Storage pos, int second) {
+    public void addCount(Target pos, int second) {
         posAndSlot.add(new Pair<>(pos, second));
         totalCount += second;
     }
@@ -60,7 +59,7 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         ListTag list = nbt.getList("posCount", 10);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
-            posAndSlot.add(new Pair<>(Storage.fromNbt(tmp.getCompound("pos")),
+            posAndSlot.add(new Pair<>(Target.fromNbt(tmp.getCompound("pos")),
                     tmp.getInt("count")));
         }
     }

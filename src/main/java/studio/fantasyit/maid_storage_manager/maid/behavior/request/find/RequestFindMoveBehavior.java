@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToB
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -13,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -21,7 +19,7 @@ import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
@@ -41,7 +39,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
     }
 
     ItemStack checkItem = null;
-    Storage chestPos = null;
+    Target chestPos = null;
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
@@ -86,8 +84,8 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
         if (!Conditions.usePriorityTarget(maid)) return false;
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
-        Map<Storage, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
-        for (Map.Entry<Storage, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
+        Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
             if (MemoryUtil.getRequestProgress(maid).isVisitedPos(blockPos.getKey())) continue;
             Optional<ViewedInventoryMemory.ItemCount> targetItem = blockPos
                     .getValue()
@@ -110,7 +108,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
             }
             @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
             if (targetPos != null) {
-                @Nullable Storage storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
+                @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
                 if (storage != null) {
                     if (!MoveUtil.isValidTarget(level, maid, storage)) continue;
                     chestPos = storage;
@@ -131,7 +129,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(entityMaid);
         //寻找当前格子能触碰的箱子
-        Storage canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress);
+        Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress);
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.getInstance().sendMessage("[REQUEST_FIND]Target %s", canTouchChest);

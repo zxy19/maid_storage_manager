@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.storage;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +13,6 @@ import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStor
 import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,15 +40,23 @@ public class MaidStorage {
         this.storages = event.getStorages();
     }
 
+    public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, Target target) {
+        ResourceLocation type = target.getType();
+        for (IMaidStorage storage : storages) {
+            if (storage.getType().equals(type) && storage.isValidTarget(level, maid, target.pos, target.side))
+                return target;
+        }
+        return null;
+    }
 
-    public @Nullable Storage isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block) {
+    public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block) {
         return isValidTarget(level, maid, block, null);
     }
 
-    public @Nullable Storage isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, Direction side) {
+    public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, Direction side) {
         for (IMaidStorage storage : storages) {
             if (storage.isValidTarget(level, maid, block, side)) {
-                return new Storage(storage.getType(), block, side);
+                return new Target(storage.getType(), block, side);
             }
         }
         return null;

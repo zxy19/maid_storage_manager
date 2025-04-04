@@ -24,13 +24,13 @@ import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.items.render.CustomItemRenderer;
 import studio.fantasyit.maid_storage_manager.menu.CraftGuideMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,19 +39,17 @@ import java.util.function.Consumer;
 public class CraftGuide extends Item implements MenuProvider {
     public static final String TAG_RESULT = "result";
     public static final String TAG_SELECTING = "selecting";
-    public static final String TAG_INPUT_1 = "input1";
+    public static final String TAG_INPUT = "input1";
     public static final String TAG_INPUT_2 = "input2";
     public static final String TAG_OUTPUT = "output";
     public static final String TAG_OP_STORAGE = "side";
     public static final String TAG_OP_ITEMS = "items";
+    public static final String TAG_OP_ACTION = "item";
     public static final String TAG_ITEMS_ITEM = "item";
     public static final String TAG_ITEMS_COUNT = "requested";
-    public static final String[] TAG_TARG = {
-            TAG_INPUT_1,
-            TAG_INPUT_2,
-            TAG_OUTPUT
-    };
     public static final String TAG_OP_MATCH_TAG = "match_tag";
+    public static final String TAG_TYPE = "type";
+    public static final String TAG_OP_OPTIONAL = "optional";
 
 
     public CraftGuide() {
@@ -97,7 +95,7 @@ public class CraftGuide extends Item implements MenuProvider {
         tag.putInt(TAG_SELECTING, selectId);
         itemInHand.setTag(tag);
         serverPlayer.sendSystemMessage(Component.translatable("interaction.select_" + switch (TAG_TARG[selectId]) {
-            case TAG_INPUT_1 -> "input1";
+            case TAG_INPUT -> "input1";
             case TAG_INPUT_2 -> "input2";
             case TAG_OUTPUT -> "output";
             default -> "error";
@@ -111,7 +109,7 @@ public class CraftGuide extends Item implements MenuProvider {
         tag.putInt(TAG_SELECTING, selectId);
         itemInHand.setTag(tag);
         serverPlayer.sendSystemMessage(Component.translatable("interaction.select_" + switch (TAG_TARG[selectId]) {
-            case TAG_INPUT_1 -> "input1";
+            case TAG_INPUT -> "input1";
             case TAG_INPUT_2 -> "input2";
             case TAG_OUTPUT -> "output";
             default -> "error";
@@ -129,22 +127,22 @@ public class CraftGuide extends Item implements MenuProvider {
             //工作台特判
             if (context.getLevel().getBlockState(context.getClickedPos()).is(Blocks.CRAFTING_TABLE)) {
                 CompoundTag tmp = new CompoundTag();
-                tmp.put(TAG_OP_STORAGE, new Storage(
+                tmp.put(TAG_OP_STORAGE, new Target(
                         new ResourceLocation(MaidStorageManager.MODID, "crafting"),
                         context.getClickedPos()
                 ).toNbt());
-                tag.put(TAG_INPUT_1, tmp);
+                tag.put(TAG_INPUT, tmp);
                 tag.put(TAG_INPUT_2, new CompoundTag());
                 tag.put(TAG_OUTPUT, new CompoundTag());
             } else {
-                Storage validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, context.getClickedPos(), context.getClickedFace());
-                Storage sidelessTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, context.getClickedPos());
+                Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, context.getClickedPos(), context.getClickedFace());
+                Target sidelessTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, context.getClickedPos());
                 if (validTarget == null) return InteractionResult.CONSUME;
-                if (tag.getCompound(TAG_INPUT_1).contains(TAG_OP_STORAGE)) {
+                if (tag.getCompound(TAG_INPUT).contains(TAG_OP_STORAGE)) {
                     //如果之前是工作台配方，那么应该清空所有的格子
-                    CompoundTag tag1 = tag.getCompound(TAG_INPUT_1).getCompound(TAG_OP_STORAGE);
-                    if (Storage.fromNbt(tag1).getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
-                        tag.put(TAG_INPUT_1, new CompoundTag());
+                    CompoundTag tag1 = tag.getCompound(TAG_INPUT).getCompound(TAG_OP_STORAGE);
+                    if (Target.fromNbt(tag1).getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
+                        tag.put(TAG_INPUT, new CompoundTag());
                         tag.put(TAG_INPUT_2, new CompoundTag());
                         tag.put(TAG_OUTPUT, new CompoundTag());
                     }
@@ -159,7 +157,7 @@ public class CraftGuide extends Item implements MenuProvider {
                     tmp.put(TAG_OP_STORAGE, sidelessTarget.toNbt());
                     tag.put(tagTarg, tmp);
                 }else{
-                    Storage storage = Storage.fromNbt(tag.getCompound(tagTarg).getCompound(TAG_OP_STORAGE));
+                    Target storage = Target.fromNbt(tag.getCompound(tagTarg).getCompound(TAG_OP_STORAGE));
                     if (storage.getPos().equals(context.getClickedPos()) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
                         CompoundTag compound = tag.getCompound(tagTarg);
                         compound.remove(TAG_OP_STORAGE);

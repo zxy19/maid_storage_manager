@@ -2,20 +2,17 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.resort;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
@@ -33,8 +30,8 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        @Nullable Storage target = MemoryUtil.getResorting(maid).getTarget();
-        @Nullable Storage storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.pos, target.side);
+        @Nullable Target target = MemoryUtil.getResorting(maid).getTarget();
+        @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.pos, target.side);
 
         //整理消失
         if (target == null || storage == null) {

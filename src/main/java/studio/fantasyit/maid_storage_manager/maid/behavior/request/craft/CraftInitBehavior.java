@@ -6,17 +6,16 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.AvailableCraftGraph;
-import studio.fantasyit.maid_storage_manager.craft.BiCraftCountCalculator;
-import studio.fantasyit.maid_storage_manager.craft.CraftLayer;
-import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.craft.algo.AvailableCraftGraph;
+import studio.fantasyit.maid_storage_manager.craft.algo.BiCraftCountCalculator;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.ArrayList;
@@ -70,7 +69,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             success = 0;
             return;
         }
-        Storage storage = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        Target storage = RequestListItem.getStorageBlock(maid.getMainHandItem());
         List<Pair<ItemStack, Integer>> items = new ArrayList<>();
         MemoryUtil.getViewedInventory(maid).positionFlatten()
                 .forEach((pos, itemStacks) -> {

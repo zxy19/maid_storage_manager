@@ -4,9 +4,8 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRa
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -14,7 +13,6 @@ import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Objects;
 
 public class FollowEnableBehavior extends MaidCheckRateTask {
     public FollowEnableBehavior() {
@@ -38,6 +36,7 @@ public class FollowEnableBehavior extends MaidCheckRateTask {
     @Override
     protected void start(ServerLevel p_22540_, EntityMaid maid, long p_22542_) {
         maid.getBrain().setMemory(MemoryModuleRegistry.CO_WORK_MODE.get(), true);
+        AdvancementTypes.triggerForMaid(maid, AdvancementTypes.COWORK);
         DebugData.getInstance().sendMessage("[CO_WORK]Enable");
         ChatTexts.send(maid, ChatTexts.CHAT_COWORK_ENABLE);
     }

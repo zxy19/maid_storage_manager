@@ -9,7 +9,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.*;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
 public class MemoryUtil {
     public static RequestProgressMemory getRequestProgress(EntityMaid maid) {
@@ -85,7 +85,7 @@ public class MemoryUtil {
         maid.getBrain().eraseMemory(MemoryModuleRegistry.INTERACTION_RESULT.get());
     }
 
-    public static Storage getCoWorkTargetStorage(EntityMaid maid) {
+    public static Target getCoWorkTargetStorage(EntityMaid maid) {
         return maid.getBrain().getMemory(MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get()).orElse(null);
     }
 

@@ -1,13 +1,9 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatText;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -15,7 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -23,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.Storage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -36,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PlaceMoveBehavior extends MaidMoveToBlockTask {
-    private Storage chestPos;
+    private Target chestPos;
 
     public PlaceMoveBehavior() {
         super((float) Config.placeSpeed, 3);
@@ -86,22 +81,22 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             if (!inv.getStackInSlot(i).isEmpty())
                 items.add(inv.getStackInSlot(i));
         }
-        Storage targetContent = null;
+        Target targetContent = null;
         List<ItemStack> targetContentList = new ArrayList<>();
         BlockPos targetContentPos = null;
-        Storage targetFilter = null;
+        Target targetFilter = null;
         List<ItemStack> targetFilterList = new ArrayList<>();
         BlockPos targetFilterPos = null;
 
-        Map<Storage, List<ViewedInventoryMemory.ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
-        for (Map.Entry<Storage, List<ViewedInventoryMemory.ItemCount>> blockPos : blockPosListMap.entrySet()) {
+        Map<Target, List<ViewedInventoryMemory.ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : blockPosListMap.entrySet()) {
             if (targetFilter != null) break;
 
             @Nullable BlockPos possibleMove = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
             if (possibleMove == null) continue;
 
             //过滤器判断
-            Storage validTarget = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
+            Target validTarget = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
             if (validTarget != null)
                 if (!MoveUtil.isValidTarget(level, maid, validTarget)) continue;
 
@@ -178,7 +173,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
 
         //寻找当前格子能触碰的箱子
-        Storage canTouchChest = MoveUtil.findTargetForPos(serverLevel,
+        Target canTouchChest = MoveUtil.findTargetForPos(serverLevel,
                 entityMaid,
                 blockPos,
                 MemoryUtil.getPlacingInv(entityMaid));
