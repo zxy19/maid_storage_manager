@@ -23,7 +23,7 @@ public class CollectCraftEvent extends Event {
         craftTypes.add(craftType);
     }
 
-    public void addAction(ResourceLocation type, CraftManager.CraftActionProvider craftActionProvider, boolean isCommon) {
-        this.actions.add(new CraftManager.CraftAction(type, craftActionProvider, isCommon));
+    public void addAction(ResourceLocation type, CraftManager.CraftActionProvider craftActionProvider, boolean isCommon,int hasInput, int hasOutput) {
+        this.actions.add(new CraftManager.CraftAction(type, craftActionProvider, isCommon, hasInput, hasOutput));
     }
 }

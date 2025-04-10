@@ -20,10 +20,7 @@ import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
-import studio.fantasyit.maid_storage_manager.util.PosUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.List;
 import java.util.Map;
@@ -84,6 +81,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
         if (!Conditions.usePriorityTarget(maid)) return false;
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
+        boolean matchTag = RequestListItem.matchNbt(maid.getMainHandItem());
         Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
         for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
             if (MemoryUtil.getRequestProgress(maid).isVisitedPos(blockPos.getKey())) continue;
@@ -94,7 +92,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
                             notDone
                                     .stream()
                                     .anyMatch(i2 ->
-                                            ItemStack.isSameItemSameTags(i2.getA(), itemCount.getItem())
+                                            ItemStackUtil.isSame(i2.getA(), itemCount.getItem(), matchTag)
                                     )
                     )
                     .findFirst();

@@ -7,7 +7,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,56 +19,91 @@ import java.util.List;
 public class CraftGuideData {
     public static Codec<CraftGuideData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    CraftGuideStepData.CODEC.listOf().fieldOf(CraftGuide.TAG_INPUT)
-                            .forGetter(CraftGuideData::getInput),
-                    CraftGuideStepData.CODEC.listOf().fieldOf(CraftGuide.TAG_OUTPUT)
-                            .forGetter(CraftGuideData::getOutput),
+                    CraftGuideStepData.CODEC.listOf().fieldOf(CraftGuide.TAG_STEPS)
+                            .forGetter(CraftGuideData::getSteps),
                     ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_TYPE)
                             .forGetter(CraftGuideData::getType)
             ).apply(instance, CraftGuideData::new)
     );
 
-    public List<CraftGuideStepData> inputs;
-    public List<CraftGuideStepData> outputs;
+    public List<CraftGuideStepData> steps;
     public ResourceLocation type;
+    public List<ItemStack> inputs;
+    public List<ItemStack> inputsWithOptional;
+    public List<ItemStack> outputs;
+    public Integer selecting;
 
-    public CraftGuideData(List<CraftGuideStepData> inputs, List<CraftGuideStepData> outputs, ResourceLocation type) {
-        this.inputs = inputs;
-        this.outputs = outputs;
+    public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type) {
+        this.steps = steps;
         this.type = type;
+        this.buildInputAndOutputs();
+    }
+
+    /**
+     * 根据步骤，构建出具体的输入和输出物品及其数量
+     */
+    private void buildInputAndOutputs() {
+        inputs = new ArrayList<>();
+        outputs = new ArrayList<>();
+        for (CraftGuideStepData step : steps) {
+            List<ItemStack> input = step.getInput();
+            for (ItemStack item : input) {
+                if (ItemStackUtil.removeIsMatchInList(outputs, item, step.isMatchTag()).isEmpty()) continue;
+                ItemStackUtil.addToList(inputs, item, step.isMatchTag());
+            }
+            for (ItemStack item : step.getOutput()) {
+                ItemStackUtil.addToList(outputs, item, step.isMatchTag());
+            }
+        }
     }
 
     public static CraftGuideData fromItemStack(ItemStack craftGuide) {
         CompoundTag tag = craftGuide.getOrCreateTag();
-        ListTag inputs = tag.getList(CraftGuide.TAG_INPUT, Tag.TAG_COMPOUND);
+        ListTag inputs = tag.getList(CraftGuide.TAG_STEPS, Tag.TAG_COMPOUND);
         ResourceLocation type = null;
-        ArrayList<CraftGuideStepData> input = new ArrayList<>();
+        ArrayList<CraftGuideStepData> step = new ArrayList<>();
         for (int i = 0; i < inputs.size(); i++) {
-            input.add(CraftGuideStepData.fromCompound(inputs.getCompound(i)));
-        }
-        ListTag outputs = tag.getList(CraftGuide.TAG_OUTPUT, Tag.TAG_COMPOUND);
-        ArrayList<CraftGuideStepData> output = new ArrayList<>();
-        for (int i = 0; i < outputs.size(); i++) {
-            output.add(CraftGuideStepData.fromCompound(outputs.getCompound(i)));
+            step.add(CraftGuideStepData.fromCompound(inputs.getCompound(i)));
         }
         if (tag.contains(CraftGuide.TAG_TYPE)) {
             type = ResourceLocation.tryParse(tag.getString(CraftGuide.TAG_TYPE));
+        } else {
+            type = CommonType.TYPE;
         }
-        return new CraftGuideData(input, output, type);
+        CraftGuideData craftGuideData = new CraftGuideData(step, type);
+        craftGuideData.selecting = 0;
+        if (tag.contains(CraftGuide.TAG_SELECTING))
+            craftGuideData.selecting = tag.getInt(CraftGuide.TAG_SELECTING);
+        return craftGuideData;
     }
 
-    public List<CraftGuideStepData> getInput() {
-        return inputs;
+    public void saveToItemStack(ItemStack itemStack) {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        ListTag inputs = new ListTag();
+        for (CraftGuideStepData step : steps) {
+            inputs.add(step.toCompound());
+        }
+        tag.put(CraftGuide.TAG_STEPS, inputs);
+        tag.putString(CraftGuide.TAG_TYPE, type.toString());
+        if (selecting != null)
+            tag.putInt(CraftGuide.TAG_SELECTING, selecting);
+        itemStack.setTag(tag);
     }
 
-    public List<CraftGuideStepData> getOutput() {
-        return outputs;
+    public List<CraftGuideStepData> getSteps() {
+        return steps;
+    }
+
+    public List<ItemStack> getInput() {
+        return this.inputs;
+    }
+
+    public List<ItemStack> getOutput() {
+        return this.outputs;
     }
 
     public CraftGuideStepData getStepByIdx(int idx) {
-        if (idx < inputs.size())
-            return inputs.get(idx);
-        return outputs.get(idx - inputs.size());
+        return steps.get(idx);
     }
 
     public ResourceLocation getType() {
@@ -78,9 +117,9 @@ public class CraftGuideData {
 
     public List<ItemStack> getAllInputItems(Boolean optional) {
         ArrayList<ItemStack> items = new ArrayList<>();
-        for (CraftGuideStepData input : inputs) {
+        for (CraftGuideStepData input : steps) {
             if (optional == null || input.isOptional() == optional)
-                items.addAll(input.getNonEmptyItems());
+                items.addAll(input.getNonEmptyInput());
         }
         return items;
     }
@@ -91,9 +130,9 @@ public class CraftGuideData {
 
     public List<ItemStack> getAllOutputItems(Boolean optional) {
         ArrayList<ItemStack> items = new ArrayList<>();
-        for (CraftGuideStepData output : outputs) {
+        for (CraftGuideStepData output : steps) {
             if (optional == null || output.isOptional() == optional)
-                items.addAll(output.getNonEmptyItems());
+                items.addAll(output.getNonEmptyOutput());
         }
         return items;
     }
@@ -101,18 +140,19 @@ public class CraftGuideData {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof CraftGuideData craftGuideData) {
-            if (craftGuideData.inputs.size() != this.inputs.size())
-                return false;
-            if (craftGuideData.outputs.size() != this.outputs.size())
-                return false;
-            for (int i = 0; i < craftGuideData.inputs.size(); i++) {
-                if (!craftGuideData.inputs.get(i).equals(this.inputs.get(i))) return false;
-            }
-            for (int i = 0; i < craftGuideData.outputs.size(); i++) {
-                if (!craftGuideData.outputs.get(i).equals(this.outputs.get(i))) return false;
+            if (craftGuideData.steps.size() != this.steps.size()) return false;
+            for (int i = 0; i < craftGuideData.steps.size(); i++) {
+                if (!craftGuideData.steps.get(i).equals(this.steps.get(i))) return false;
             }
             return true;
         }
         return false;
+    }
+
+    public boolean available() {
+        if (steps.size() == 0 || type == null) return false;
+        ICraftType type1 = CraftManager.getInstance().getType(type);
+        if (type1 == null) return false;
+        return type1.available(this);
     }
 }

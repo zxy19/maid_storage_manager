@@ -18,16 +18,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
 import studio.fantasyit.maid_storage_manager.items.render.CustomItemRenderer;
-import studio.fantasyit.maid_storage_manager.menu.CraftGuideMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -39,17 +39,16 @@ import java.util.function.Consumer;
 public class CraftGuide extends Item implements MenuProvider {
     public static final String TAG_RESULT = "result";
     public static final String TAG_SELECTING = "selecting";
-    public static final String TAG_INPUT = "input1";
-    public static final String TAG_INPUT_2 = "input2";
-    public static final String TAG_OUTPUT = "output";
-    public static final String TAG_OP_STORAGE = "side";
-    public static final String TAG_OP_ITEMS = "items";
-    public static final String TAG_OP_ACTION = "item";
+    public static final String TAG_STEPS = "steps";
+    public static final String TAG_OP_STORAGE = "storage";
+    public static final String TAG_OP_ACTION = "action";
     public static final String TAG_ITEMS_ITEM = "item";
     public static final String TAG_ITEMS_COUNT = "requested";
     public static final String TAG_OP_MATCH_TAG = "match_tag";
     public static final String TAG_TYPE = "type";
     public static final String TAG_OP_OPTIONAL = "optional";
+    public static final String TAG_OP_INPUT = "input";
+    public static final String TAG_OP_OUTPUT = "output";
 
 
     public CraftGuide() {
@@ -60,7 +59,7 @@ public class CraftGuide extends Item implements MenuProvider {
     }
 
     public static boolean matchNbt(ItemStack mainHandItem, String targ) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+        if (!mainHandItem.is(ItemRegistry.CRAFT_GUIDE.get()))
             return false;
         if (!mainHandItem.hasTag())
             return true;
@@ -70,6 +69,21 @@ public class CraftGuide extends Item implements MenuProvider {
         if (!tag.getCompound(targ).contains(TAG_OP_MATCH_TAG))
             return true;
         return tag.getCompound(targ).getBoolean(TAG_OP_MATCH_TAG);
+    }
+
+    public static int getSelectId(ItemStack itemInHand) {
+        if (!itemInHand.hasTag())
+            return 0;
+        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
+        if (!tag.contains(TAG_SELECTING))
+            return 0;
+        return tag.getInt(TAG_SELECTING);
+    }
+
+    public static void setSelectId(ItemStack itemInHand, int value) {
+        CompoundTag tag = itemInHand.getOrCreateTag();
+        tag.putInt(TAG_SELECTING, value);
+        itemInHand.setTag(tag);
     }
 
 
@@ -88,32 +102,19 @@ public class CraftGuide extends Item implements MenuProvider {
         }
     }
 
-    private void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer) {
-        CompoundTag tag = itemInHand.getOrCreateTag();
-        int selectId = tag.getInt(TAG_SELECTING);
-        selectId = (selectId + 1) % TAG_TARG.length;
-        tag.putInt(TAG_SELECTING, selectId);
-        itemInHand.setTag(tag);
-        serverPlayer.sendSystemMessage(Component.translatable("interaction.select_" + switch (TAG_TARG[selectId]) {
-            case TAG_INPUT -> "input1";
-            case TAG_INPUT_2 -> "input2";
-            case TAG_OUTPUT -> "output";
-            default -> "error";
-        }));
+    public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
+        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
+        int selectId = getSelectId(itemInHand);
+        selectId = (selectId + 1) % (craftGuideData.getSteps().size() + 1);
+        setSelectId(itemInHand, selectId);
+        if (selectId == craftGuideData.getSteps().size())
+            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_new"));
+        else
+            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_index", selectId + 1));
     }
 
-    public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
-        CompoundTag tag = itemInHand.getOrCreateTag();
-        int selectId = tag.getInt(TAG_SELECTING);
-        selectId = (selectId + (value > 0 ? 1 : (TAG_TARG.length - 1))) % TAG_TARG.length;
-        tag.putInt(TAG_SELECTING, selectId);
-        itemInHand.setTag(tag);
-        serverPlayer.sendSystemMessage(Component.translatable("interaction.select_" + switch (TAG_TARG[selectId]) {
-            case TAG_INPUT -> "input1";
-            case TAG_INPUT_2 -> "input2";
-            case TAG_OUTPUT -> "output";
-            default -> "error";
-        }));
+    public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer) {
+        rollMode(itemInHand, serverPlayer, 1);
     }
 
     @Override
@@ -122,60 +123,54 @@ public class CraftGuide extends Item implements MenuProvider {
             if (!serverPlayer.isShiftKeyDown())
                 return InteractionResult.PASS;
             ItemStack itemInHand = context.getItemInHand();
-            CompoundTag tag = itemInHand.getOrCreateTag();
+            CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
+            int selecting = craftGuideData.selecting;
 
-            //工作台特判
-            if (context.getLevel().getBlockState(context.getClickedPos()).is(Blocks.CRAFTING_TABLE)) {
-                CompoundTag tmp = new CompoundTag();
-                tmp.put(TAG_OP_STORAGE, new Target(
-                        new ResourceLocation(MaidStorageManager.MODID, "crafting"),
-                        context.getClickedPos()
-                ).toNbt());
-                tag.put(TAG_INPUT, tmp);
-                tag.put(TAG_INPUT_2, new CompoundTag());
-                tag.put(TAG_OUTPUT, new CompoundTag());
-            } else {
-                Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, context.getClickedPos(), context.getClickedFace());
-                Target sidelessTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, context.getClickedPos());
-                if (validTarget == null) return InteractionResult.CONSUME;
-                if (tag.getCompound(TAG_INPUT).contains(TAG_OP_STORAGE)) {
-                    //如果之前是工作台配方，那么应该清空所有的格子
-                    CompoundTag tag1 = tag.getCompound(TAG_INPUT).getCompound(TAG_OP_STORAGE);
-                    if (Target.fromNbt(tag1).getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
-                        tag.put(TAG_INPUT, new CompoundTag());
-                        tag.put(TAG_INPUT_2, new CompoundTag());
-                        tag.put(TAG_OUTPUT, new CompoundTag());
-                    }
-                }
-                String tagTarg = TAG_TARG[tag.getInt(TAG_SELECTING)];
-                if (!tag.contains(tagTarg)) {
-                    tag.put(tagTarg, new CompoundTag());
-                }
-                if (!tag.getCompound(tagTarg).contains(TAG_OP_STORAGE)) {
-                    //不存在，设置
-                    CompoundTag tmp = tag.getCompound(tagTarg);
-                    tmp.put(TAG_OP_STORAGE, sidelessTarget.toNbt());
-                    tag.put(tagTarg, tmp);
-                }else{
-                    Target storage = Target.fromNbt(tag.getCompound(tagTarg).getCompound(TAG_OP_STORAGE));
-                    if (storage.getPos().equals(context.getClickedPos()) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
-                        CompoundTag compound = tag.getCompound(tagTarg);
-                        compound.remove(TAG_OP_STORAGE);
-                        tag.put(tagTarg, compound);
-                    } else {
-                        if (storage.pos.equals(context.getClickedPos())) {
-                            storage.side = context.getClickedFace();
-                        } else {
-                            storage.pos = context.getClickedPos();
-                            storage.side = null;
-                        }
-                        CompoundTag tmp = tag.getCompound(tagTarg);
-                        tmp.put(TAG_OP_STORAGE, storage.toNbt());
-                        tag.put(tagTarg, tmp);
-                    }
-                }
+            ResourceLocation specialType = CommonType.TYPE;
+            if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() <= 1) {
+                if (craftGuideData.getType().equals(CommonType.TYPE))
+                    specialType = CraftManager.getInstance().getTargetType((ServerLevel) context.getLevel(),
+                            context.getClickedPos(),
+                            context.getClickedFace());
             }
-            itemInHand.setTag(tag);
+            Target target = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), context.getPlayer(), context.getClickedPos(), context.getClickedFace());
+            if (target == null) {
+                target = Target.virtual(context.getClickedPos(), context.getClickedFace());
+            }
+            if (specialType == CommonType.TYPE) {
+                if (craftGuideData.getSteps().size() == selecting)
+                    craftGuideData.getSteps().add(new CraftGuideStepData(target.withoutSide(),
+                            List.of(),
+                            List.of(),
+                            CraftManager.getInstance().getDefaultAction().type(),
+                            false,
+                            false));
+                else {
+                    CraftGuideStepData craftGuideStepData = craftGuideData.getSteps().get(selecting);
+                    Target existingTarget = craftGuideStepData.getStorage();
+                    if (existingTarget.equals(target)) {
+                        craftGuideData.getSteps().remove(selecting);
+                    } else if (existingTarget.equals(target.withoutSide())) {
+                        craftGuideStepData.storage = target;
+                    } else {
+                        craftGuideStepData.storage = target.withoutSide();
+                    }
+                }
+            } else {
+                List<CraftGuideStepData> steps = craftGuideData.getSteps();
+                steps.clear();
+                steps.add(new CraftGuideStepData(
+                                target.withoutSide(),
+                                List.of(),
+                                List.of(),
+                                CraftGuideStepData.SPECIAL_ACTION,
+                                false,
+                                false
+                        )
+                );
+                craftGuideData.type = specialType;
+            }
+            craftGuideData.saveToItemStack(itemInHand);
             return InteractionResult.CONSUME;
         } else {
             if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown())
@@ -192,21 +187,10 @@ public class CraftGuide extends Item implements MenuProvider {
         super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
 
         CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemStack);
-        CraftGuideStepData input1 = craftGuideData.getInput1();
-        if (input1.available()) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input1"));
-            addTooltip(input1, toolTip);
-        }
-        CraftGuideStepData input2 = craftGuideData.getInput2();
-        if (input2.available()) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input2"));
-            addTooltip(input2, toolTip);
-        }
-        CraftGuideStepData output = craftGuideData.getOutput();
-        if (output.available()) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.output"));
-            addTooltip(output, toolTip);
-        }
+        if (craftGuideData.getType() == null) return;
+        ICraftType type = CraftManager.getInstance().getType(craftGuideData.getType());
+        if (type == null) return;
+        type.getTooltip(craftGuideData, toolTip);
     }
 
     protected void addTooltip(CraftGuideStepData data, List<Component> toolTip) {
@@ -232,7 +216,11 @@ public class CraftGuide extends Item implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int p_39954_, Inventory p_39955_, Player p_39956_) {
-        return new CraftGuideMenu(p_39954_, p_39956_);
+        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(p_39956_.getItemInHand(InteractionHand.MAIN_HAND));
+        if (craftGuideData.getType() == null) return null;
+        ICraftType type = CraftManager.getInstance().getType(craftGuideData.getType());
+        if (type == null) return null;
+        return type.createGui(p_39954_,p_39956_.level(), p_39956_, craftGuideData);
     }
 
     @Override

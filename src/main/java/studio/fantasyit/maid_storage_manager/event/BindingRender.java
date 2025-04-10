@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -123,22 +124,10 @@ public final class BindingRender {
             return;
         }
         CraftGuideData craftGuideData = CraftGuideData.fromItemStack(mainStack);
-        if (craftGuideData.getInput1().available()) {
-            BoxRenderUtil.renderStorage(craftGuideData.getInput1().getStorage(),
-                    colors_g,
-                    event,
-                    Component.translatable("maid_storage_manager.craft_guide_render.input1").getString(),
-                    floating);
-        }
-        if (craftGuideData.getInput2().available()) {
-            BoxRenderUtil.renderStorage(craftGuideData.getInput2().getStorage(),
-                    colors_b,
-                    event,
-                    Component.translatable("maid_storage_manager.craft_guide_render.input2").getString(),
-                    floating);
-        }
-        if (craftGuideData.getOutput().available()) {
-            BoxRenderUtil.renderStorage(craftGuideData.getOutput().getStorage(),
+        List<CraftGuideStepData> steps = craftGuideData.getSteps();
+        for (int i = 0; i < steps.size(); i++) {
+            CraftGuideStepData step = steps.get(i);
+            BoxRenderUtil.renderStorage(step.getStorage(),
                     colors_r,
                     event,
                     Component.translatable("maid_storage_manager.craft_guide_render.output").getString(),

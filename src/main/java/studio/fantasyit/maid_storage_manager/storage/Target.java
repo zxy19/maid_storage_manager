@@ -6,11 +6,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 import java.util.Optional;
 
 public class Target {
+    public static final ResourceLocation VIRTUAL_TYPE = new ResourceLocation(MaidStorageManager.MODID, "virtual");
     public static Codec<Target> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     ResourceLocation.CODEC.fieldOf("type").forGetter(Target::getType),
@@ -62,6 +66,14 @@ public class Target {
                     split.length == 5 ? Direction.byName(split[4]) : null
             );
         return null;
+    }
+
+    public static Target virtual(BlockPos clickedPos, Direction clickedFace) {
+        return new Target(
+                VIRTUAL_TYPE,
+                clickedPos,
+                clickedFace
+        );
     }
 
     public Target sameType(BlockPos pos, @Nullable Direction side) {
@@ -120,5 +132,9 @@ public class Target {
 
     public Target withoutSide() {
         return new Target(type, pos, Optional.empty());
+    }
+
+    public BlockState getBlockStateInLevel(Level level) {
+        return level.getBlockState(pos);
     }
 }

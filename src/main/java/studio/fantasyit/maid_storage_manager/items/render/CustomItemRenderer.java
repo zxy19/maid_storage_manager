@@ -97,7 +97,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.translate(-0.78, 0.23, -0.46);
                 }
 //                pose.translate(0.04, 0.2, 0.45F);
-                pose.scale(0.55f, 0.55f, 0.001F);
+                pose.scale(0.55f, 0.55f, 0.01F);
                 pose.translate(0.5F, 0.5F, 0.5F);
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
@@ -126,7 +126,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                              int light,
                              int overlay) {
         CraftGuideData data = CraftGuideData.fromItemStack(itemStack);
-        List<ItemStack> items = data.getOutput().getItems().stream().filter(e -> !e.isEmpty()).toList();
+        List<ItemStack> items = data.getOutput().stream().filter(e -> !e.isEmpty()).toList();
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
                 new ModelResourceLocation(MaidStorageManager.MODID, items.isEmpty() ? "craft_guide_base" : "craft_guide_base_blank", "inventory")
         );
@@ -135,7 +135,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
             Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
         }
 
-        if (data.getOutput().available() && !items.isEmpty()) {
+        if (data.available() && !items.isEmpty()) {
             int i = (Minecraft.getInstance().player.tickCount / 20) % items.size();
             ItemStack item = items.get(i);
             if (!item.isEmpty()) {
@@ -149,7 +149,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.translate(-0.78, 0.23, -0.46);
                 }
 //                pose.translate(0.04, 0.2, 0.45F);
-                pose.scale(0.55f, 0.55f, 0.001F);
+                pose.scale(0.55f, 0.55f, 0.01F);
                 pose.translate(0.5F, 0.5F, 0.5F);
                 Minecraft.getInstance().getItemRenderer().render(
                         item,

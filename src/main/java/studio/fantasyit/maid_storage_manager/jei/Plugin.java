@@ -27,7 +27,7 @@ public class Plugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(new RequestRecipeHandler());
-        registration.addUniversalRecipeTransferHandler(new GuideRecipeHandler());
+        registration.addUniversalRecipeTransferHandler(new CommonGuideRecipeHandler());
     }
 
     @Override

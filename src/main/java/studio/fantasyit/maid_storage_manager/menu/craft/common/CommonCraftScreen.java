@@ -1,45 +1,43 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
-import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
-import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
+import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
+import studio.fantasyit.maid_storage_manager.menu.craft.base.StepDataContainer;
+import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
-import yalter.mousetweaks.api.MouseTweaksIgnore;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
-public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
-    private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft_guide.png");
+public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> {
+    private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/common.png");
 
-    public CraftGuideScreen(CraftGuideMenu p_97741_, Inventory p_97742_, Component p_97743_) {
+    public final List<List<SelectButtonWidget<?>>> buttonsByRow = new ArrayList<>();
+
+    public CommonCraftScreen(CommonCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
         this.imageWidth = 176;
         this.imageHeight = 239;
@@ -53,31 +51,7 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
         this.addButtons();
     }
 
-    private void addTagBtn(CraftGuideMenu.TargetOps ops, int x, int y, int id) {
-        this.addRenderableWidget(new ButtonWidget(
-                x, y, 16, 16,
-                background,
-                (widget) -> {
-                    if (ops.matchTag) {
-                        return new Pair<>(176, widget.isHovered() ? 16 : 0);
-                    } else {
-                        return new Pair<>(192, widget.isHovered() ? 16 : 0);
-                    }
-                },
-                () -> ops.matchTag ?
-                        Component.translatable("gui.maid_storage_manager.request_list.match_tag_on") :
-                        Component.translatable("gui.maid_storage_manager.request_list.match_tag_off"),
-                () -> {
-                    ops.matchTag = !ops.matchTag;
-                    Network.sendItemSelectorGuiPacket(
-                            ItemSelectorGuiPacket.SlotType.MATCH_TAG,
-                            id,
-                            ops.matchTag ? 1 : 0
-                    );
-                },
-                this
-        ));
-    }
+    private static final int[] SLOT_Y = new int[]{28, 71, 114};
 
     private void addButtons() {
         //TODO:目前配方树计算需要使用准确物品进行匹配，暂时不支持模糊物品作为配方拓扑的节点。
@@ -85,6 +59,63 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
 //        addTagBtn(this.menu.inputSlot1, 75, 18, 1);
 //        addTagBtn(this.menu.inputSlot2, 75, 126, 2);
 //        addTagBtn(this.menu.outputSlot, 104, 113, 3);
+
+        for (int i = 0; i < this.menu.steps.size(); i++) {
+            int finalI = i;
+            ArrayList<SelectButtonWidget<?>> objects = new ArrayList<>();
+            objects.add(addWidget(new SelectButtonWidget<Integer>(131, SLOT_Y[i % 3], (value) -> {
+                if (value == null) value = -1;
+                List<CraftManager.CraftAction> commons = CraftManager.getInstance().getCommonActions();
+                CraftManager.CraftAction next = commons.get((value + 1) % commons.size());
+                CompoundTag data = new CompoundTag();
+                data.putString("ns", next.type().getNamespace());
+                data.putString("id", next.type().getPath());
+                Network.INSTANCE.send(
+                        PacketDistributor.SERVER.noArg(),
+                        new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_MODE, finalI, data));
+                return new SelectButtonWidget.Option<>(
+                        (value + 1) % commons.size(),
+                        CommonCraftAssets.BUTTON_ACTION,
+                        CommonCraftAssets.BUTTON_ACTION_HOVER,
+                        CommonCraftAssets.translationForAction(next.type())
+                );
+            }, this)));
+            addSortButtons(objects, SLOT_Y[i % 3] - 5, i);
+            buttonsByRow.add(objects);
+        }
+    }
+
+    private void addSortButtons(List<SelectButtonWidget<?>> buttons, int sy, int i) {
+        buttons.add(addWidget(new SelectButtonWidget<Integer>(23, sy, (value) -> {
+            Network.INSTANCE.send(
+                    PacketDistributor.SERVER.noArg(),
+                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.UP, i));
+            return new SelectButtonWidget.Option<>(
+                    1,
+                    CommonCraftAssets.BUTTON_UP,
+                    CommonCraftAssets.BUTTON_UP_HOVER,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.up"));
+        }, this)));
+        buttons.add(addWidget(new SelectButtonWidget<Integer>(23, sy + 10, (value) -> {
+            Network.INSTANCE.send(
+                    PacketDistributor.SERVER.noArg(),
+                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.REMOVE, i));
+            return new SelectButtonWidget.Option<>(
+                    1,
+                    CommonCraftAssets.BUTTON_REMOVE,
+                    CommonCraftAssets.BUTTON_REMOVE_HOVER,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.remove"));
+        }, this)));
+        buttons.add(addWidget(new SelectButtonWidget<Integer>(23, sy + 20, (value) -> {
+            Network.INSTANCE.send(
+                    PacketDistributor.SERVER.noArg(),
+                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.DOWN, i));
+            return new SelectButtonWidget.Option<>(
+                    1,
+                    CommonCraftAssets.BUTTON_DOWN,
+                    CommonCraftAssets.BUTTON_DOWN,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.down"));
+        }, this)));
     }
 
     @Override
@@ -102,6 +133,19 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
                 this.imageHeight,
                 256,
                 256);
+
+        for (Slot slot : this.getMenu().slots) {
+            if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer container && filterSlot.isActive()) {
+                ImageAsset back = switch (filterSlot.getContainerSlot()) {
+                    case 0 -> CommonCraftAssets.SLOT_L;
+                    case 1 -> container.getContainerSize() == 2 ? CommonCraftAssets.SLOT_M : CommonCraftAssets.SLOT_R;
+                    case 2 -> CommonCraftAssets.SLOT_R;
+                    default -> null;
+                };
+                if (back != null)
+                    back.blit(guiGraphics, relX + slot.x, relY + slot.y);
+            }
+        }
     }
 
     @Override
@@ -150,14 +194,11 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
         for (Slot slot : this.getMenu().slots) {
-            FilterContainer filters = this.getMenu().filters.get(slot.index);
-            Integer iid = this.getMenu().iid.get(slot.index);
-            if (filters == null) continue;
-            if (slot instanceof FilterSlot filterSlot) {
+            if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc) {
                 if (filterSlot.hasItem()) {
-                    MutableInt count = filters.count[iid];
-                    String text = String.valueOf(count.getValue());
-                    if (count.getValue() == -1) {
+                    int count = sdc.getCount(filterSlot.getContainerSlot());
+                    String text = String.valueOf(count);
+                    if (count == -1) {
                         text = "*";
                     }
                     graphics.pose().pushPose();
@@ -178,11 +219,8 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
     @Override
     public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
         @Nullable Slot slot = this.getSlotUnderMouse();
-        if (slot instanceof FilterSlot filterSlot) {
-            FilterContainer filters = this.getMenu().filters.get(filterSlot.index);
-            Integer iid = this.getMenu().iid.get(filterSlot.index);
-            if (filters == null) return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
-            MutableInt count = filters.count[iid];
+        if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc) {
+            MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
             int dv = (int) (Math.abs(p_94688_) / p_94688_);
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
                 dv *= 10;
@@ -192,10 +230,12 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
             } else {
                 if (count.addAndGet(dv) <= 0) count.setValue(-1);
             }
-            Network.sendItemSelectorGuiPacket(
-                    ItemSelectorGuiPacket.SlotType.COUNT,
-                    filterSlot.index,
-                    count.getValue()
+            Network.INSTANCE.sendToServer(
+                    new CraftGuideGuiPacket(
+                            CraftGuideGuiPacket.Type.COUNT,
+                            filterSlot.getContainerSlot(),
+                            count.getValue()
+                    )
             );
         }
         return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
@@ -203,12 +243,9 @@ public class CraftGuideScreen extends AbstractFilterScreen<CraftGuideMenu> {
 
     @Override
     public void accept(FilterSlot menu, ItemStack item) {
-        if (menu instanceof CraftGuideMenu.NoPlaceFilterSlot) return;
+        if (menu instanceof CommonCraftMenu.NoPlaceFilterSlot) return;
         if (!menu.isActive()) return;
-        ItemStack itemStack = item.copyWithCount(1);
-        FilterContainer filter = this.menu.filters.get(menu.index);
-        filter.setItem(menu.getContainerSlot(), itemStack);
-        sendItemSelectorSetItemPacket(menu.index, itemStack);
+        menu.set(item);
     }
 
     @Override

@@ -2,11 +2,13 @@ package studio.fantasyit.maid_storage_manager.craft.action;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -18,7 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class CraftingRecipeAction extends AbstractCraftActionContext {
-    public CraftingRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, int idx, CraftLayer layer) {
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"craft");
+    public CraftingRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData,  CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
 

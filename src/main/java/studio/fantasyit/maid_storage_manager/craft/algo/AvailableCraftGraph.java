@@ -322,8 +322,8 @@ public class AvailableCraftGraph {
                 }
                 itemStacks.add(itemStack.copyWithCount(count));
             };
-            lastOne.getInput().forEach(
-                    i -> i.items.forEach(addWithCountMultiple)
+            lastOne.getSteps().forEach(
+                    i -> i.input.forEach(addWithCountMultiple)
             );
             res.add(new CraftLayer(
                     Optional.of(lastOne),
@@ -334,12 +334,10 @@ public class AvailableCraftGraph {
         if (lastOne != null) {
             int finalLastOneIndex = lastOneIndex;
             ArrayList<ItemStack> list = new ArrayList<>();
-            lastOne.getOutput().forEach(i -> i.items
+            lastOne.getAllOutputItems(false)
                     .stream()
-                    .filter(itemStack -> !itemStack.isEmpty())
                     .map(itemStack -> itemStack.copyWithCount(currentRequire.get(finalLastOneIndex) * itemStack.getCount()))
-                    .forEach(list::add)
-            );
+                    .forEach(list::add);
             res.add(new CraftLayer(Optional.empty(),
                     list,
                     contextRequireCount));

@@ -7,9 +7,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
-import studio.fantasyit.maid_storage_manager.menu.CraftGuideScreen;
 import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
+import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftScreen;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientGuiRegistry {
@@ -22,7 +22,7 @@ public class ClientGuiRegistry {
             MenuScreens.register(GuiRegistry.FILTER_MENU.get(), FilterScreen::new);
         });
         event.enqueueWork(() -> {
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU.get(), CraftGuideScreen::new);
+            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU.get(), CommonCraftScreen::new);
         });
         event.enqueueWork(() -> {
             MenuScreens.register(GuiRegistry.STORAGE_MANAGER_MAID_CONFIG_GUI.get(), StorageManagerMaidConfigGui::new);

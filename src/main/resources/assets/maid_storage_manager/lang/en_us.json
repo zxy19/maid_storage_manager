@@ -158,5 +158,10 @@
   "advancements.maid_storage_manager.cowork.title": "肩并肩",
   "advancements.maid_storage_manager.cowork.desc": "开启协同工作模式",
   "advancements.maid_storage_manager.storage_manager.title": "箱子海里的管理员",
-  "advancements.maid_storage_manager.storage_manager.desc": "女仆现在是仓库管理员！"
+  "advancements.maid_storage_manager.storage_manager.desc": "女仆现在是仓库管理员！",
+  "interaction.select_step_new": "Select target for new step",
+  "interaction.select_step_index": "Select taget for step %s",
+  "gui.maid_storage_manager.craft_guide.common.up": "Up",
+  "gui.maid_storage_manager.craft_guide.common.remove": "Remove",
+  "gui.maid_storage_manager.craft_guide.common.down": "Down"
 }

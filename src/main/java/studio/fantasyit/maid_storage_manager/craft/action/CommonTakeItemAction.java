@@ -1,10 +1,12 @@
 package studio.fantasyit.maid_storage_manager.craft.action;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -20,10 +22,11 @@ import java.util.List;
 import java.util.function.Function;
 
 public class CommonTakeItemAction extends AbstractCraftActionContext {
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"take");
     IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
-    public CommonTakeItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, int idx, CraftLayer layer) {
+    public CommonTakeItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
 
@@ -50,7 +53,7 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
     @Override
     public Result tick() {
         MutableBoolean hasChange = new MutableBoolean(false);
-        List<ItemStack> allItems = craftGuideStepData.getItems();
+        List<ItemStack> allItems = craftGuideStepData.getOutput();
         Function<ItemStack, ItemStack> taker = itemStack -> {
             int idx = -1;
             for (int i = 0; i < allItems.size(); i++) {
@@ -60,7 +63,7 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
                 }
             }
             if (idx != -1) {
-                int totalCount = craftGuideStepData.getItems().get(idx).getCount();
+                int totalCount = allItems.get(idx).getCount();
                 int takenCount = craftLayer.getCurrentStepCount(idx);
                 int toTakeCount = Math.min(totalCount - takenCount, itemStack.getCount());
                 ItemStack takenItem = itemStack.copyWithCount(toTakeCount);
@@ -73,7 +76,7 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
             return itemStack;
         };
         if (storageContext instanceof IStorageExtractableContext isec) {
-            isec.extract(craftGuideStepData.getItems(), true, taker);
+            isec.extract(allItems, true, taker);
         } else if (storageContext instanceof IStorageInteractContext isic) {
             isic.tick(taker);
         }

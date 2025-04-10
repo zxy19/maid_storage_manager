@@ -28,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -74,16 +75,15 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         for (int i = 0; i < items.size(); i++) {
             CompoundTag tmp = items.getCompound(i);
             ItemStack item = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (!ItemStack.isSameItem(item, a)) continue;
-            if (!tag.getBoolean(TAG_MATCH_TAG) || ItemStack.isSameItemSameTags(item, a)) {
-                int newCount = tag.getInt(TAG_ITEMS_COLLECTED) + count;
-                tmp.putInt(TAG_ITEMS_COLLECTED, newCount);
-                if (newCount > tmp.getInt(TAG_ITEMS_REQUESTED) && tmp.getInt(TAG_ITEMS_REQUESTED) != -1) {
-                    tmp.putBoolean(TAG_ITEMS_DONE, true);
-                }
-                items.set(i, tmp);
-                break;
+            if (!ItemStackUtil.isSame(item, a, tag.getBoolean(TAG_MATCH_TAG))) continue;
+
+            int newCount = tag.getInt(TAG_ITEMS_COLLECTED) + count;
+            tmp.putInt(TAG_ITEMS_COLLECTED, newCount);
+            if (newCount > tmp.getInt(TAG_ITEMS_REQUESTED) && tmp.getInt(TAG_ITEMS_REQUESTED) != -1) {
+                tmp.putBoolean(TAG_ITEMS_DONE, true);
             }
+            items.set(i, tmp);
+            break;
         }
         tag.put(TAG_ITEMS, items);
         mainHandItem.setTag(tag);
@@ -315,32 +315,30 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (tmp.getBoolean(TAG_ITEMS_DONE)) continue;
             //获取每一组被需求的物品
             ItemStack requested = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (ItemStack.isSameItem(collected, requested)) {
-                if (!tag.getBoolean(TAG_MATCH_TAG) || ItemStack.isSameItemSameTags(collected, requested)) {
-                    int requestedCount = tmp.getInt(TAG_ITEMS_REQUESTED);
-                    //如果指定了需要多少某种物品，那么最大值请求的数值
-                    int maxToStore = requestedCount;
-                    //如果没有指定的话，那么最大值就是无限拿
-                    if (maxToStore == -1) maxToStore = Integer.MAX_VALUE;
-                    //因为这里的最大值是请求的数量，需要减去已经拿走了的部分
-                    maxToStore -= tmp.getInt(TAG_ITEMS_COLLECTED);
-                    //最大值不能超过剩余的
-                    maxToStore = Math.min(maxToStore, rest);
-                    //确认本次是需要进行拿取的
-                    if (maxToStore > 0) {
-                        rest -= maxToStore;
-                        //更新需求表的已收集的值
-                        int currentCollected = tmp.getInt(TAG_ITEMS_COLLECTED) + maxToStore;
-                        tmp.putInt(TAG_ITEMS_COLLECTED, currentCollected);
+            if (ItemStackUtil.isSame(collected, requested, tag.getBoolean(TAG_MATCH_TAG))) {
+                int requestedCount = tmp.getInt(TAG_ITEMS_REQUESTED);
+                //如果指定了需要多少某种物品，那么最大值请求的数值
+                int maxToStore = requestedCount;
+                //如果没有指定的话，那么最大值就是无限拿
+                if (maxToStore == -1) maxToStore = Integer.MAX_VALUE;
+                //因为这里的最大值是请求的数量，需要减去已经拿走了的部分
+                maxToStore -= tmp.getInt(TAG_ITEMS_COLLECTED);
+                //最大值不能超过剩余的
+                maxToStore = Math.min(maxToStore, rest);
+                //确认本次是需要进行拿取的
+                if (maxToStore > 0) {
+                    rest -= maxToStore;
+                    //更新需求表的已收集的值
+                    int currentCollected = tmp.getInt(TAG_ITEMS_COLLECTED) + maxToStore;
+                    tmp.putInt(TAG_ITEMS_COLLECTED, currentCollected);
+                    list.set(i, tmp);
+                    //如果已经收集了全部，那么标记为完成
+                    if (currentCollected >= requestedCount && requestedCount != -1) {
+                        tmp.putBoolean(TAG_ITEMS_DONE, true);
                         list.set(i, tmp);
-                        //如果已经收集了全部，那么标记为完成
-                        if (currentCollected >= requestedCount && requestedCount != -1) {
-                            tmp.putBoolean(TAG_ITEMS_DONE, true);
-                            list.set(i, tmp);
-                        }
                     }
-                    if (rest <= 0) break;
                 }
+                if (rest <= 0) break;
             }
         }
         tag.put(TAG_ITEMS, list);
@@ -363,15 +361,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
             int stored = tmp.getInt(TAG_ITEMS_STORED);
             if (stored >= collected) continue;
-            if (ItemStack.isSameItem(toStore, target)) {
-                if (!tag.getBoolean(TAG_MATCH_TAG) || ItemStack.isSameItemSameTags(toStore, target)) {
-                    int maxToStore = collected - stored;
-                    maxToStore = Math.min(maxToStore, rest);
-                    if (maxToStore > 0) {
-                        rest -= maxToStore;
-                        if (!simulate) tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
-                        list.set(i, tmp);
-                    }
+            if (ItemStackUtil.isSame(toStore, target, tag.getBoolean(TAG_MATCH_TAG))) {
+                int maxToStore = collected - stored;
+                maxToStore = Math.min(maxToStore, rest);
+                if (maxToStore > 0) {
+                    rest -= maxToStore;
+                    if (!simulate) tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
+                    list.set(i, tmp);
                 }
             }
             if (rest <= 0) break;
@@ -396,9 +392,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int count = 0;
             for (int j = 0; j < tmpStorage.getSlots(); j++) {
                 ItemStack itemStack = tmpStorage.getStackInSlot(j);
-                if (ItemStack.isSameItem(itemStack, target)) {
-                    if (!tag.getBoolean(TAG_MATCH_TAG) || ItemStack.isSameItemSameTags(itemStack, target))
-                        count += itemStack.getCount();
+                if (ItemStackUtil.isSame(itemStack, target, tag.getBoolean(TAG_MATCH_TAG))) {
+                    count += itemStack.getCount();
                 }
             }
             tmp.putInt(TAG_ITEMS_COLLECTED, stored + Math.min(requested - stored, count));

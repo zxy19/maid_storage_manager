@@ -1,11 +1,13 @@
 package studio.fantasyit.maid_storage_manager.craft.action;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -16,10 +18,11 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"place");
     IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
-    public CommonPlaceItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, int idx, CraftLayer layer) {
+    public CommonPlaceItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
 
@@ -47,7 +50,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
     public Result tick() {
         boolean hasChange = false;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
-        ItemStack stepItem = craftGuideStepData.getItems().get(ingredientIndex);
+        ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
         if (storageContext instanceof IStorageInsertableContext isic) {
             boolean shouldDoPlace = false;
             int count = 0;
@@ -66,7 +69,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
             if (shouldDoPlace) {
                 @NotNull ItemStack item = inv.getStackInSlot(slot);
                 int placed = craftLayer.getCurrentStepCount(ingredientIndex);
-                int required = craftGuideStepData.getItems().get(ingredientIndex).getCount();
+                int required = stepItem.getCount();
                 int pick = Math.min(
                         required - placed,
                         item.getCount()
@@ -89,7 +92,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
                     ingredientIndex++;
                 slot = 0;
             }
-            if (ingredientIndex >= craftGuideStepData.getItems().size()) {
+            if (ingredientIndex >= craftGuideStepData.getNonEmptyInput().size()) {
                 return Result.SUCCESS;
             }
         } else {

@@ -14,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +83,9 @@ public class FilterableItemHandler implements IFilterable {
                                 //白名单模式下，黑名单列表的合并方式：移除撞车的
                                 for (int j = 0; j < filtered.size(); j++) {
                                     Pair<ItemStack, Boolean> pair = filtered.get(j);
-                                    if (ItemStack.isSameItem(pair.getFirst(), item)) {
-                                        if (!tmp.getBoolean(FilterListItem.TAG_MATCH_TAG) || !pair.getSecond() || ItemStack.isSameItemSameTags(pair.getFirst(), item)) {
-                                            filtered.remove(pair);
-                                            j--;
-                                        }
+                                    if (ItemStackUtil.isSame(pair.getFirst(), item, tmp.getBoolean(FilterListItem.TAG_MATCH_TAG) && pair.getSecond())) {
+                                        filtered.remove(pair);
+                                        j--;
                                     }
                                 }
                             }
@@ -99,9 +98,8 @@ public class FilterableItemHandler implements IFilterable {
     @Override
     public boolean isAvailable(ItemStack itemStack) {
         for (Pair<ItemStack, Boolean> pair : filtered) {
-            if (ItemStack.isSameItem(pair.getFirst(), itemStack)) {
-                if (!pair.getSecond() || ItemStack.isSameItemSameTags(pair.getFirst(), itemStack))
-                    return !isBlackMode;
+            if (ItemStackUtil.isSame(pair.getFirst(), itemStack, pair.getSecond())) {
+                return !isBlackMode;
             }
         }
         return isBlackMode;

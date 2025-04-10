@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -115,7 +114,7 @@ public class CraftMemory extends AbstractTargetMemory {
             @Nullable CraftLayer nextLayer = getCurrentLayer();
             if (nextLayer != null) {
                 layer.getCraftData().ifPresent(data -> {
-                    data.getOutput().getItems().forEach(itemStack -> {
+                    data.getOutput().forEach(itemStack -> {
                         if (itemStack.isEmpty()) return;
                         this.remainMaterials.add(itemStack.copyWithCount(itemStack.getCount() * layer.getCount()));
                     });
@@ -143,16 +142,6 @@ public class CraftMemory extends AbstractTargetMemory {
                             nextLayer.getItems().get(i).getCount()
                     );
                 }
-                nextLayer.getCraftData().map(CraftGuideData::getOutput).ifPresent(output -> {
-                    for (int i = 0; i < output.getItems().size(); i++) {
-                        DebugData.getInstance().sendMessage(
-                                "[REQUEST_CRAFT] ===> %s [%d] * %d",
-                                output.getItems().get(i).getDisplayName().getString(),
-                                output.getItems().get(i).getCount(),
-                                nextLayer.getCount()
-                        );
-                    }
-                });
             }
         }
     }
@@ -170,7 +159,7 @@ public class CraftMemory extends AbstractTargetMemory {
     }
 
     public void addCraftGuide(CraftGuideData craftGuideData) {
-        if (!craftGuideData.getInput1().available() || !craftGuideData.getOutput().available())
+        if (!craftGuideData.available())
             return;
         this.craftGuides.add(craftGuideData);
     }
@@ -187,7 +176,6 @@ public class CraftMemory extends AbstractTargetMemory {
                 ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK,
                         layer.getCraftData().map(t -> ChatTexts.fromComponent(t
                                         .getOutput()
-                                        .getItems()
                                         .get(0)
                                         .getHoverName()))
                                 .orElse("")
@@ -207,7 +195,6 @@ public class CraftMemory extends AbstractTargetMemory {
                 layer
                         .getCraftData()
                         .map(CraftGuideData::getOutput)
-                        .map(CraftGuideStepData::getItems)
                         .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
                         .orElse("")
         );

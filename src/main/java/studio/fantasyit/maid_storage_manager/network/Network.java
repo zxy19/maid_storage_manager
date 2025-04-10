@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -28,11 +29,9 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.menu.CraftGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
-import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
-import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
+import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
@@ -85,8 +84,6 @@ public class Network {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
                         } else if (sender.containerMenu instanceof FilterMenu ifm) {
                             ifm.handleUpdate(msg.type, msg.key, msg.value);
-                        } else if (sender.containerMenu instanceof CraftGuideMenu cm) {
-                            cm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
                     context.get().setPacketHandled(true);
@@ -105,23 +102,6 @@ public class Network {
                             ism.broadcastChanges();
                         } else if (sender != null && sender.containerMenu instanceof FilterMenu ism) {
                             msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
-                            ism.save();
-                            ism.broadcastChanges();
-                        } else if (sender != null && sender.containerMenu instanceof CraftGuideMenu ism) {
-                            msg.items.forEach((p) -> {
-                                if (ism.getSlot(p.getLeft()) instanceof FilterSlot fs) {
-                                    Integer iid = ism.iid.get(fs.index);
-                                    FilterContainer filter = ism.filters.get(fs.index);
-                                    if (filter != null && iid != null) {
-                                        filter.count[iid].setValue(p.getRight().getCount());
-                                        filter.setItem(iid, p.getRight());
-                                    }
-                                }
-                                ism.recalcRecipe();
-                                ism.recheckValidation();
-                                ism.save();
-                            });
-                            ism.recalcRecipe();
                             ism.save();
                             ism.broadcastChanges();
                         }
@@ -203,7 +183,7 @@ public class Network {
                             );
                             data.noSortPlacement(msg.value == 1);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
-                        }else if(msg.type == MaidDataSyncPacket.Type.CoWork){
+                        } else if (msg.type == MaidDataSyncPacket.Type.CoWork) {
                             StorageManagerConfigData.Data data = maid.getOrCreateData(
                                     StorageManagerConfigData.KEY,
                                     StorageManagerConfigData.Data.getDefault()
@@ -211,6 +191,18 @@ public class Network {
                             data.coWorkMode(msg.value == 1);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
+                    }
+                }
+        );
+        Network.INSTANCE.registerMessage(6,
+                CraftGuideGuiPacket.class,
+                CraftGuideGuiPacket::toBytes,
+                CraftGuideGuiPacket::new,
+                (msg, context) -> {
+                    @Nullable Player sender = context.get().getSender();
+                    if (sender == null) sender = Minecraft.getInstance().player;
+                    if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
+                        icgpr.handleGuiPacket(msg.type, msg.key, msg.value,msg.data);
                     }
                 }
         );
