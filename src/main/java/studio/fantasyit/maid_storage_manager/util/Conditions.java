@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -16,6 +17,8 @@ import java.util.Optional;
 
 public class Conditions {
     public static boolean takingRequestList(EntityMaid maid) {
+        if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting())
+            return true;
         return maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get());
     }
 
@@ -44,10 +47,14 @@ public class Conditions {
     }
 
     public static boolean hasReachedValidTargetOrReset(EntityMaid maid) {
+        return hasReachedValidTargetOrReset(maid, 2);
+    }
+
+    public static boolean hasReachedValidTargetOrReset(EntityMaid maid, double pathCloseEnoughThreshold) {
         Brain<EntityMaid> brain = maid.getBrain();
         return brain.getMemory(InitEntities.TARGET_POS.get()).map(targetPos -> {
             Vec3 targetV3d = targetPos.currentPosition();
-            if (maid.distanceToSqr(targetV3d) > Math.pow(2, 2)) {
+            if (maid.distanceToSqr(targetV3d) > Math.pow(pathCloseEnoughThreshold, 2)) {
                 Optional<WalkTarget> walkTarget = brain.getMemory(MemoryModuleType.WALK_TARGET);
                 if (walkTarget.isEmpty() || !walkTarget.get().getTarget().currentPosition().equals(targetV3d)) {
                     brain.eraseMemory(InitEntities.TARGET_POS.get());
@@ -92,7 +99,21 @@ public class Conditions {
             case ALWAYS_SCAN, MEMORY_FIRST -> true;
         };
     }
+
     public static boolean noSortPlacement(EntityMaid maid) {
         return maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).noSortPlacement();
+    }
+
+    public static boolean canTempPickUp(EntityMaid entityMaid, ItemStack item) {
+        return entityMaid.getBrain().hasMemoryValue(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get()) &&
+                ItemStack.isSameItemSameTags(entityMaid.getBrain().getMemory(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get()).get(), item);
+    }
+
+    public static void setTempPickUp(EntityMaid entityMaid, ItemStack item) {
+        entityMaid.getBrain().setMemory(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get(), item);
+    }
+
+    public static void clearTempPickUp(EntityMaid entityMaid) {
+        entityMaid.getBrain().eraseMemory(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get());
     }
 }

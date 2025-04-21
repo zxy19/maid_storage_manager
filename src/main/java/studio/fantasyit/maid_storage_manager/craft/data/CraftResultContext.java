@@ -24,19 +24,22 @@ public class CraftResultContext {
             if (craftData.isEmpty()) break;
             //否则，加入该层物品需要占用的背包空间
             layer.items.forEach(i -> addConsumeCount(i, i.getCount()));
-            craftData.get().getAllOutputItems().forEach(i -> addConsumeCount(i, i.getCount() * layer.getCount()));
+            craftData.get().getAllOutputItemsWithOptional().forEach(i -> addConsumeCount(i, i.getCount() * layer.getCount()));
             //记录最大背包占用
             this.slotConsume = Math.max(this.slotConsume, itemConsumeCount.keySet().size());
-            //移除配方开销
-            craftData.get().getAllInputItems(false).forEach(i -> removeConsumeCount(i, i.getCount() * layer.getCount()));
+            //移除配方开销(必选的输入）
+            craftData.get().getAllInputItems().forEach(i -> removeConsumeCount(i, i.getCount() * layer.getCount()));
             //二输入是可选的，所以存在二输入没有成功的可能性，故不需要从中排除
         }
         //所有可选的物品都应该呗当作不存在的。不应当参与计算
         for (CraftLayer layer : layers) {
             Optional<CraftGuideData> craftData = layer.getCraftData();
             if (craftData.isEmpty()) break;
-            craftData.get().getAllInputItems(true).forEach(i -> removeConsumeCount(i, i.getCount() * layer.getCount()));
-            craftData.get().getAllOutputItems(true).forEach(i -> removeConsumeCount(i, i.getCount() * layer.getCount()));
+            //添加一次必选物品，然后移除必选和可选物品，即相当于多移除一次可选物品，这样在计算剩余物品时，就会忽略可选物品
+            craftData.get().getAllOutputItems().forEach(i -> addConsumeCount(i, i.getCount() * layer.getCount()));
+            craftData.get().getAllInputItems().forEach(i -> addConsumeCount(i, i.getCount() * layer.getCount()));
+            craftData.get().getAllInputItemsWithOptional().forEach(i -> removeConsumeCount(i, i.getCount() * layer.getCount()));
+            craftData.get().getAllOutputItemsWithOptional().forEach(i -> removeConsumeCount(i, i.getCount() * layer.getCount()));
         }
     }
 

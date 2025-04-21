@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.items;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
@@ -93,9 +95,14 @@ public class CraftGuide extends Item implements MenuProvider {
             if (serverPlayer.isShiftKeyDown()) {
                 ItemStack itemInHand = player.getItemInHand(p_41434_);
                 rollMode(itemInHand, serverPlayer);
-            } else
-                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
-                });
+            } else {
+                if (!CraftGuideData.fromItemStack(player.getItemInHand(p_41434_)).getSteps().isEmpty()) {
+                    NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+                    });
+                } else {
+                    player.sendSystemMessage(Component.translatable("interaction.no_step"));
+                }
+            }
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         } else {
             return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
@@ -111,6 +118,7 @@ public class CraftGuide extends Item implements MenuProvider {
             serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_new"));
         else
             serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_index", selectId + 1));
+        CraftGuideRenderData.recalculateItemStack(itemInHand);
     }
 
     public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer) {
@@ -127,50 +135,51 @@ public class CraftGuide extends Item implements MenuProvider {
             int selecting = craftGuideData.selecting;
 
             ResourceLocation specialType = CommonType.TYPE;
-            if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() <= 1) {
+            if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() == 0) {
                 if (craftGuideData.getType().equals(CommonType.TYPE))
                     specialType = CraftManager.getInstance().getTargetType((ServerLevel) context.getLevel(),
                             context.getClickedPos(),
                             context.getClickedFace());
             }
+            if (specialType == null) specialType = CommonType.TYPE;
             Target target = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), context.getPlayer(), context.getClickedPos(), context.getClickedFace());
             if (target == null) {
                 target = Target.virtual(context.getClickedPos(), context.getClickedFace());
             }
             if (specialType == CommonType.TYPE) {
-                if (craftGuideData.getSteps().size() == selecting)
-                    craftGuideData.getSteps().add(new CraftGuideStepData(target.withoutSide(),
-                            List.of(),
-                            List.of(),
-                            CraftManager.getInstance().getDefaultAction().type(),
-                            false,
-                            false));
-                else {
+                if (craftGuideData.getSteps().size() <= selecting) {
+                    if (!craftGuideData.getSteps().isEmpty() && !craftGuideData.getSteps().get(0).actionType.canBeCommon()) {
+                        craftGuideData.getSteps().get(0).actionType = CraftManager.getInstance().getDefaultAction();
+                        craftGuideData.getSteps().get(0).action = craftGuideData.getSteps().get(0).actionType.type();
+                    }
+                    craftGuideData.getSteps().add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), CraftManager.getInstance().getDefaultAction().type()));
+                } else {
                     CraftGuideStepData craftGuideStepData = craftGuideData.getSteps().get(selecting);
-                    Target existingTarget = craftGuideStepData.getStorage();
-                    if (existingTarget.equals(target)) {
-                        craftGuideData.getSteps().remove(selecting);
-                    } else if (existingTarget.equals(target.withoutSide())) {
-                        craftGuideStepData.storage = target;
-                    } else {
+                    if (!craftGuideStepData.actionType.canBeCommon()) {
+                        craftGuideStepData.actionType = CraftManager.getInstance().getDefaultAction();
+                        craftGuideStepData.action = craftGuideStepData.actionType.type();
+
                         craftGuideStepData.storage = target.withoutSide();
+                    } else {
+                        Target existingTarget = craftGuideStepData.getStorage();
+                        if (existingTarget.equals(target)) {
+                            craftGuideData.getSteps().remove(selecting);
+                        } else if (existingTarget.equals(target.withoutSide())) {
+                            craftGuideStepData.storage = target;
+                        } else {
+                            craftGuideStepData.storage = target.withoutSide();
+                        }
                     }
                 }
+                craftGuideData.type = specialType;
             } else {
                 List<CraftGuideStepData> steps = craftGuideData.getSteps();
                 steps.clear();
-                steps.add(new CraftGuideStepData(
-                                target.withoutSide(),
-                                List.of(),
-                                List.of(),
-                                CraftGuideStepData.SPECIAL_ACTION,
-                                false,
-                                false
-                        )
-                );
+                steps.add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), specialType));
                 craftGuideData.type = specialType;
             }
             craftGuideData.saveToItemStack(itemInHand);
+            CraftGuideRenderData.recalculateItemStack(itemInHand);
             return InteractionResult.CONSUME;
         } else {
             if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown())
@@ -186,25 +195,14 @@ public class CraftGuide extends Item implements MenuProvider {
                                 @NotNull TooltipFlag p_41424_) {
         super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
 
-        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemStack);
-        if (craftGuideData.getType() == null) return;
-        ICraftType type = CraftManager.getInstance().getType(craftGuideData.getType());
-        if (type == null) return;
-        type.getTooltip(craftGuideData, toolTip);
-    }
-
-    protected void addTooltip(CraftGuideStepData data, List<Component> toolTip) {
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.storage",
-                data.getStorage().getPos().getX(),
-                data.getStorage().getPos().getY(),
-                data.getStorage().getPos().getZ()
-        ));
-        for (int i = 0; i < data.getItems().size(); i++) {
-            if (data.getItems().get(i).isEmpty()) continue;
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.item",
-                    data.getItems().get(i).getHoverName().getString(),
-                    data.getItems().get(i).getCount()
-            ));
+        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(itemStack);
+        toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.title", data.inputs.size()).withStyle(ChatFormatting.GRAY));
+        for (ItemStack input : data.inputs) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.item", input.getHoverName(), input.getCount()).withStyle(ChatFormatting.GRAY));
+        }
+        toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.output.title", data.outputs.size()).withStyle(ChatFormatting.GRAY));
+        for (ItemStack output : data.outputs) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.output.item", output.getHoverName(), output.getCount()).withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -220,7 +218,7 @@ public class CraftGuide extends Item implements MenuProvider {
         if (craftGuideData.getType() == null) return null;
         ICraftType type = CraftManager.getInstance().getType(craftGuideData.getType());
         if (type == null) return null;
-        return type.createGui(p_39954_,p_39956_.level(), p_39956_, craftGuideData);
+        return type.createGui(p_39954_, p_39956_.level(), p_39956_, craftGuideData);
     }
 
     @Override

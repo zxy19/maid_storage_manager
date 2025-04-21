@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -11,12 +12,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftAssets;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
@@ -33,6 +34,7 @@ public final class BindingRender {
     private static final float[] colors_b = new float[]{0.10f, 0.46f, 0.82f, 1};
     private static final float[] colors_y = new float[]{0.91f, 0.73f, 0.0f, 1};
     private static final float[] colors_p = new float[]{0.37f, 0.21f, 0.69f, 1};
+    private static final float[][] colors = new float[][]{colors_b, colors_g, colors_y, colors_p};
 
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {
@@ -123,15 +125,24 @@ public final class BindingRender {
         if (mainStack.getItem() != ItemRegistry.CRAFT_GUIDE.get()) {
             return;
         }
-        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(mainStack);
-        List<CraftGuideStepData> steps = craftGuideData.getSteps();
-        for (int i = 0; i < steps.size(); i++) {
-            CraftGuideStepData step = steps.get(i);
-            BoxRenderUtil.renderStorage(step.getStorage(),
+        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(mainStack);
+        for (int i = 0; i < data.stepBindings.size(); i++) {
+            Pair<Target, ResourceLocation> step = data.stepBindings.get(i);
+            BoxRenderUtil.renderStorage(step.getA(),
+                    colors[i % colors.length],
+                    event,
+                    (i == data.selecting ? "[*]" : "") + "[" + (i + 1) + "]" + CommonCraftAssets.translationForAction(step.getB()).getString(),
+                    floating
+            );
+        }
+        if (data.selecting != -1 && data.selecting < data.stepBindings.size()) {
+            Pair<Target, ResourceLocation> step = data.stepBindings.get(data.selecting);
+            BoxRenderUtil.renderStorage(step.getA(),
                     colors_r,
                     event,
-                    Component.translatable("maid_storage_manager.craft_guide_render.output").getString(),
-                    floating);
+                    Component.translatable("maid_storage_manager.craft_guide_render.selecting").getString(),
+                    floating
+            );
         }
     }
 

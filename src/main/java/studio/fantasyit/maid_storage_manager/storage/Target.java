@@ -68,7 +68,7 @@ public class Target {
         return null;
     }
 
-    public static Target virtual(BlockPos clickedPos, Direction clickedFace) {
+    public static Target virtual(BlockPos clickedPos,@Nullable Direction clickedFace) {
         return new Target(
                 VIRTUAL_TYPE,
                 clickedPos,

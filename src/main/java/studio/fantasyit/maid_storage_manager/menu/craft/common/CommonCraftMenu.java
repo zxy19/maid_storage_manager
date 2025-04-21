@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -11,18 +11,15 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
-import studio.fantasyit.maid_storage_manager.menu.craft.base.StepDataContainer;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -31,14 +28,14 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilter, IFilterScreen, ICraftGuiPacketReceiver {
+public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
     Player player;
     ItemStack target;
     CraftGuideData craftGuideData;
-    List<StepDataContainer> steps;
+    List<CommonStepDataContainer> steps;
     List<List<FilterSlot>> pageSlots = new ArrayList<>();
-    private int page = 0;
-
+    List<NoPlaceFilterSlot> targetBlockSlots = new ArrayList<>();
+    public int page = 0;
 
     public static class SimpleSlot extends DataSlot {
         Consumer<Integer> set;
@@ -61,20 +58,25 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
     }
 
     public static class NoPlaceFilterSlot extends FilterSlot {
-        public NoPlaceFilterSlot(int x, int y, ItemStack itemStack) {
+        public int index;
+
+        public NoPlaceFilterSlot(int x, int y, ItemStack itemStack, int index) {
             super(new SimpleContainer(1), 0, x, y);
             this.container.setItem(0, itemStack);
+            this.index = index;
+            this.setActive(false);
         }
     }
 
     public CommonCraftMenu(int p_38852_, Player player) {
-        super(GuiRegistry.CRAFT_GUIDE_MENU.get(), p_38852_);
+        super(GuiRegistry.CRAFT_GUIDE_MENU_COMMON.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
         craftGuideData = CraftGuideData.fromItemStack(target);
+        steps = new ArrayList<>();
         for (int i = 0; i < craftGuideData.getSteps().size(); i++) {
             CraftGuideStepData step = craftGuideData.getSteps().get(i);
-            steps.add(new StepDataContainer(step, this));
+            steps.add(new CommonStepDataContainer(step, this));
         }
         addFilterSlots();
         addPlayerSlots();
@@ -82,25 +84,27 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
     }
 
     private static final int[] SLOT_Y = new int[]{28, 71, 114};
-    private static final int[] SLOT_X = new int[]{38, 56, 114, 131, 153};
+    private static final int[] SLOT_X = new int[]{38, 56, 74, 94, 113};
 
     private void addFilterSlots() {
         for (int i = 0; i < craftGuideData.getSteps().size(); i++) {
-            StepDataContainer stepDataContainer = steps.get(i);
+            CommonStepDataContainer commonStepDataContainer = steps.get(i);
             int index = pageSlots.size();
             pageSlots.add(new ArrayList<>());
 
             int c = 0;
-            for (int j = 0; j < Math.max(stepDataContainer.getContainerSize(), 3); j++) {
-                if (stepDataContainer.getContainerSize() <= 2 && j == 1) continue;
-                FilterSlot slot = (FilterSlot) addSlot(new FilterSlot(stepDataContainer, c++, SLOT_X[j], SLOT_Y[i % 3]));
+            for (int j = 0; j < 3; j++) {
+                FilterSlot slot = (FilterSlot) addSlot(new FilterSlot(commonStepDataContainer, c++, SLOT_X[j], SLOT_Y[i % 3]));
                 pageSlots.get(index).add(slot);
+                if (j == 1 && steps.get(i).inputCount > 0 && steps.get(i).outputCount > 0) {
+                    slot.setActive(false);
+                }
                 if (index >= 3) slot.setActive(false);
             }
 
             BlockState state = craftGuideData.getStepByIdx(i).getStorage().getBlockStateInLevel(player.level());
-            FilterSlot slot = (FilterSlot) addSlot(new NoPlaceFilterSlot(SLOT_X[4], SLOT_Y[i % 3], state.getBlock().asItem().getDefaultInstance()));
-            pageSlots.get(index).add(slot);
+            NoPlaceFilterSlot slot = (NoPlaceFilterSlot) addSlot(new NoPlaceFilterSlot(SLOT_X[4], SLOT_Y[i % 3], state.getBlock().asItem().getDefaultInstance(), i));
+            targetBlockSlots.add(slot);
             if (index >= 3) slot.setActive(false);
         }
     }
@@ -108,7 +112,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
     private void addPlayerSlots() {
         final int cellHeight = 18;
         final int cellWidth = 18;
-        final int startY = 157;
+        final int startY = 164;
         final int startX = 8;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -128,12 +132,12 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
 
     private void addSpecialSlots() {
         for (int i = 0; i < craftGuideData.getSteps().size(); i++) {
-            StepDataContainer stepDataContainer = steps.get(i);
-            for (int j = 0; j < Math.max(stepDataContainer.getContainerSize(), 3); j++) {
+            CommonStepDataContainer commonStepDataContainer = steps.get(i);
+            for (int j = 0; j < Math.max(commonStepDataContainer.getContainerSize(), 3); j++) {
                 int finalJ = j;
                 addDataSlot(new SimpleSlot(
-                        t -> stepDataContainer.setCount(finalJ, t),
-                        () -> stepDataContainer.getCount(finalJ)
+                        t -> commonStepDataContainer.setCount(finalJ, t),
+                        () -> commonStepDataContainer.getCount(finalJ)
                 ));
             }
         }
@@ -152,7 +156,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             save();
             return;
         }
-        if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs && fs.container instanceof StepDataContainer container) {
+        if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs && fs.container instanceof CommonStepDataContainer container) {
             int slot = fs.getContainerSlot();
             if (clickTypeIn == ClickType.THROW)
                 return;
@@ -177,7 +181,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 insert = held.copy();
                 insert.setCount(1);
             }
-            container.setItem(slot, insert);
+            container.setItemNoTrigger(slot, insert);
             container.setCount(slot, 1);
             getSlot(slotId).setChanged();
             save();
@@ -200,7 +204,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 fs.set(ItemStack.EMPTY);
             } else {
                 boolean found = false;
-                StepDataContainer target = null;
+                CommonStepDataContainer target = null;
                 int toPlace = 0;
                 for (int i = 0; i < steps.size(); i++) {
                     CraftGuideStepData step = steps.get(i).step;
@@ -208,7 +212,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                         if (steps.get(i).getItem(j).isEmpty()) {
                             if (target == null) {
                                 target = steps.get(i);
-                                toPlace = i;
+                                toPlace = j;
                             }
                         } else if (ItemStackUtil.isSame(steps.get(i).getItem(j), slot.getItem(), step.matchTag)) {
                             found = true;
@@ -218,7 +222,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
 
                 if (!found) {
                     if (target != null) {
-                        target.setItem(toPlace, slot.getItem().copyWithCount(1));
+                        target.setItemNoTrigger(toPlace, slot.getItem().copyWithCount(1));
                         save();
                     }
                 }
@@ -238,20 +242,12 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
     }
 
     @Override
-    public void accept(FilterSlot menu, ItemStack item) {
-        menu.set(item.copyWithCount(1));
-    }
-
-    @Override
-    public List<FilterSlot> getSlots() {
-        return this.getSlots().stream().filter(slot -> slot instanceof FilterSlot && !(slot instanceof NoPlaceFilterSlot)).toList();
-    }
-
-    @Override
     public void save() {
-        for (StepDataContainer stepDataContainer : steps)
-            stepDataContainer.save();
+        if (this.player.level().isClientSide) return;
+        for (CommonStepDataContainer commonStepDataContainer : steps)
+            commonStepDataContainer.save();
         craftGuideData.saveToItemStack(target);
+        CraftGuideRenderData.recalculateItemStack(target);
     }
 
     @Override
@@ -264,24 +260,77 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 setPage(page + 1);
             }
             case REMOVE -> {
+                pageSlots.get(key).forEach(slot -> slot.setActive(false));
                 pageSlots.remove(key);
                 steps.remove(key);
                 craftGuideData.getSteps().remove(key);
-                if (player instanceof ServerPlayer sp) {
-                    Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> sp),
-                            new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.REMOVE, key)
-                    );
-                }
+                if (page * 3 >= steps.size())
+                    setPage(page - 1);
+                save();
             }
             case DOWN -> {
+                if (key < steps.size() - 1)
+                    swapStep(key, key + 1);
+            }
+            case UP -> {
+                if (key > 0)
+                    swapStep(key, key - 1);
+            }
+            case SET_MODE -> {
+                if (data != null) {
+                    ResourceLocation action = new ResourceLocation(data.getString("ns"), data.getString("id"));
+                    steps.get(key).setAction(action);
+                    save();
+                }
+            }
+            case OPTIONAL -> {
+                steps.get(key).optional = !steps.get(key).optional;
+                save();
+            }
+            case SET_ITEM -> {
+                if (data != null) {
+                    this.getSlot(key).set(ItemStack.of(data));
+                    save();
+                }
+            }
+            case COUNT -> {
+                if (getSlot(key).container instanceof CommonStepDataContainer commonStepDataContainer) {
+                    commonStepDataContainer.setCount(getSlot(key).getContainerSlot(), value);
+                    commonStepDataContainer.setChanged();
+                }
+            }
+        }
+        recalculateSlots();
+    }
 
+    private void recalculateSlots() {
+        for (int i = 0; i < steps.size(); i++) {
+            List<FilterSlot> filterSlots = pageSlots.get(i);
+            for (FilterSlot filterSlot : filterSlots) {
+                filterSlot.y = SLOT_Y[i % 3];
+                filterSlot.setActive(isIdCurrentPage(i));
+            }
+            if (steps.get(i).inputCount > 0 && steps.get(i).outputCount > 0) {
+                pageSlots.get(i).get(1).setActive(false);
             }
         }
     }
 
     private void swapStep(int i, int j) {
         if (i == j) return;
+        CommonStepDataContainer tmpStep = steps.get(i);
+        steps.set(i, steps.get(j));
+        steps.set(j, tmpStep);
 
+        List<FilterSlot> tmpPageSlot = pageSlots.get(i);
+        pageSlots.set(i, pageSlots.get(j));
+        pageSlots.set(j, tmpPageSlot);
+
+        CraftGuideStepData tmpStepData = craftGuideData.getSteps().get(i);
+        craftGuideData.getSteps().set(i, craftGuideData.getSteps().get(j));
+        craftGuideData.getSteps().set(j, tmpStepData);
+
+        this.save();
     }
 
     private void setPage(int page) {
@@ -290,11 +339,10 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
         if (page < 0)
             page = 0;
         this.page = page;
-        for (int i = 0; i < pageSlots.size(); i++) {
-            boolean show = i < page * 3 && i >= page * 3 - 3;
-            for (FilterSlot slot : pageSlots.get(i)) {
-                slot.setActive(show);
-            }
-        }
+        recalculateSlots();
+    }
+
+    public boolean isIdCurrentPage(int id) {
+        return id >= page * 3 && id < page * 3 + 3;
     }
 }

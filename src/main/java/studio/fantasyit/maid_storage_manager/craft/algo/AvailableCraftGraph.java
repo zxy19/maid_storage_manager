@@ -10,8 +10,6 @@ import java.util.function.Consumer;
 
 public class AvailableCraftGraph {
     public static class CraftResultNode {
-
-
         public int index;
         public int count;
         public boolean related;
@@ -170,7 +168,7 @@ public class AvailableCraftGraph {
                 if (idx == -1) {
                     idx = addItemNode(item);
                 }
-                addEdge(item(idx), craft(buildIdx), item.getCount());
+                addEdge(craft(buildIdx), item(idx), item.getCount());
             }
             List<ItemStack> items2 = cgd.getAllOutputItems();
             for (int j = 0; j < items2.size(); j++) {
@@ -181,7 +179,7 @@ public class AvailableCraftGraph {
                 if (idx == -1) {
                     idx = addItemNode(item);
                 }
-                addEdge(craft(buildIdx), item(idx), item.getCount());
+                addEdge(item(idx), craft(buildIdx), item.getCount());
             }
         }
         if (contextItemIdx != -1) {
@@ -298,7 +296,7 @@ public class AvailableCraftGraph {
 
     public List<CraftLayer> getResults() {
         //影响结果的节点中，如果任何一个节点的可用数量小于实际，则不返回结果
-        if (checkNodes.stream().anyMatch(index -> counts.get(index) < totalRequire.get(index))) {
+        if (checkNodes.stream().anyMatch(index -> isItem(index) && (counts.get(index) < totalRequire.get(index)))) {
             return null;
         }
         List<CraftLayer> res = new ArrayList<>();
@@ -322,9 +320,7 @@ public class AvailableCraftGraph {
                 }
                 itemStacks.add(itemStack.copyWithCount(count));
             };
-            lastOne.getSteps().forEach(
-                    i -> i.input.forEach(addWithCountMultiple)
-            );
+            lastOne.getAllInputItemsWithOptional().forEach(addWithCountMultiple);
             res.add(new CraftLayer(
                     Optional.of(lastOne),
                     itemStacks,
@@ -334,7 +330,7 @@ public class AvailableCraftGraph {
         if (lastOne != null) {
             int finalLastOneIndex = lastOneIndex;
             ArrayList<ItemStack> list = new ArrayList<>();
-            lastOne.getAllOutputItems(false)
+            lastOne.getAllOutputItems()
                     .stream()
                     .map(itemStack -> itemStack.copyWithCount(currentRequire.get(finalLastOneIndex) * itemStack.getCount()))
                     .forEach(list::add);

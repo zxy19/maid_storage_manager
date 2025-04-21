@@ -87,9 +87,13 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
 
     @Override
     public void setItem(int p_18944_, ItemStack p_18945_) {
+        setItemNoTrigger(p_18944_, p_18945_);
+        this.setChanged();
+    }
+
+    public void setItemNoTrigger(int p_18944_, ItemStack p_18945_) {
         items[p_18944_] = p_18945_.copyWithCount(1);
         count[p_18944_].setValue(1);
-        this.setChanged();
     }
 
     @Override
@@ -122,6 +126,14 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
             tag.add(tmp);
         }
         return tag;
+    }
+
+    public void setCount(int index, int count) {
+        this.count[index].setValue(count);
+    }
+
+    public int getCount(int index) {
+        return count[index].getValue();
     }
 
     @Override

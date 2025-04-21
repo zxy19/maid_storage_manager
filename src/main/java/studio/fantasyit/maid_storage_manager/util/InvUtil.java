@@ -65,12 +65,12 @@ public class InvUtil {
         return itemStack;
     }
 
-    public static ItemStack tryExtract(IItemHandler inv, ItemStack itemStack) {
+    public static ItemStack tryExtract(IItemHandler inv, ItemStack itemStack, boolean matchTag) {
         int count = 0;
         int max = itemStack.getCount();
         for (int i = 0; i < inv.getSlots(); i++) {
             ItemStack stackInSlot = inv.getStackInSlot(i);
-            if (ItemStack.isSameItemSameTags(stackInSlot, itemStack)) {
+            if (ItemStackUtil.isSame(stackInSlot, itemStack,matchTag)) {
                 int extractCurrent = Math.min(max - count, stackInSlot.getCount());
                 ItemStack get = inv.extractItem(i, extractCurrent, false);
                 count += get.getCount();
@@ -164,10 +164,14 @@ public class InvUtil {
     }
 
     public static void throwItem(EntityMaid maid, ItemStack itemStack) {
+        Vec3 direction = Vec3.directionFromRotation(maid.getXRot(), maid.getYRot()).normalize().scale(0.5);
+        throwItem(maid, itemStack, direction);
+    }
+
+    public static void throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction) {
         Level level = maid.level();
         ItemEntity itementity = new ItemEntity(level, maid.getX(), maid.getY(), maid.getZ(), itemStack);
         maid.getMaxHeadXRot();
-        Vec3 direction = Vec3.directionFromRotation(maid.getXRot(), maid.getYRot()).normalize().scale(0.5);
         itementity.setDeltaMovement(direction);
         itementity.setUnlimitedLifetime();
         level.addFreshEntity(itementity);

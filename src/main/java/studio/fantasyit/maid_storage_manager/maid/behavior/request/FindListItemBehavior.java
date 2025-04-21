@@ -31,6 +31,8 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
+        if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting())
+            return false;
         if (Conditions.takingRequestList(maid)) {
             UUID lastWorkUUID = MemoryUtil.getRequestProgress(maid).getWorkUUID();
             return !lastWorkUUID.equals(RequestListItem.getUUID(maid.getMainHandItem()));
@@ -89,7 +91,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
 
         ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_START);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_GOT);
-        if(RequestListItem.getRepeatInterval(maid.getMainHandItem()) > 0){
+        if (RequestListItem.getRepeatInterval(maid.getMainHandItem()) > 0) {
             AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_REPEAT_GOT);
         }
     }

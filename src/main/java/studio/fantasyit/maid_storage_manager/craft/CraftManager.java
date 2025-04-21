@@ -7,15 +7,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.craft.action.AbstractCraftActionContext;
-import studio.fantasyit.maid_storage_manager.craft.action.CommonPlaceItemAction;
-import studio.fantasyit.maid_storage_manager.craft.action.CommonTakeItemAction;
-import studio.fantasyit.maid_storage_manager.craft.action.CraftingRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
+import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
+import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
+import studio.fantasyit.maid_storage_manager.craft.context.VirtualAction;
+import studio.fantasyit.maid_storage_manager.craft.context.common.*;
+import studio.fantasyit.maid_storage_manager.craft.context.special.AltarRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.context.special.AltarUseAction;
+import studio.fantasyit.maid_storage_manager.craft.context.special.CraftingRecipeAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
-import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
-import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
+import studio.fantasyit.maid_storage_manager.craft.type.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,15 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CraftManager {
-
-    public record CraftAction(ResourceLocation type, CraftActionProvider provider, boolean canBeCommon,
-                              int inputCount, int outputCount) {
-    }
-
-    @FunctionalInterface
-    public interface CraftActionProvider {
-        AbstractCraftActionContext create(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer);
-    }
 
     public static final CraftManager INSTANCE = new CraftManager();
 
@@ -61,15 +55,20 @@ public class CraftManager {
         this.actions = actions;
         this.actionsMap = new HashMap<>();
         for (CraftAction action : actions) {
-            this.actionsMap.put(action.type, action);
+            this.actionsMap.put(action.type(), action);
         }
     }
 
     private void fireInternal(CollectCraftEvent event) {
         event.addCraftType(new CommonType());
+        event.addCraftType(new CraftingType());
+        event.addCraftType(new AltarType());
+        event.addCraftType(new FurnaceType());
         event.addAction(
                 CommonPlaceItemAction.TYPE,
                 CommonPlaceItemAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
                 true,
                 3,
                 0
@@ -77,16 +76,83 @@ public class CraftManager {
         event.addAction(
                 CommonTakeItemAction.TYPE,
                 CommonTakeItemAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
                 true,
                 0,
                 3
         );
         event.addAction(
+                CommonThrowItemAction.TYPE,
+                CommonThrowItemAction::new,
+                PathTargetLocator::throwItemPos,
+                CraftAction.PathEnoughLevel.CLOSER.value,
+                true,
+                3,
+                0
+        );
+        event.addAction(
+                CommonPickupItemAction.TYPE,
+                CommonPickupItemAction::new,
+                PathTargetLocator::exactlySidedPos,
+                CraftAction.PathEnoughLevel.VERY_CLOSE.value,
+                true,
+                0,
+                3
+        );
+        event.addAction(
+                CommonUseAction.TYPE_R,
+                CommonUseAction::new,
+                PathTargetLocator::touchPos,
+                CraftAction.PathEnoughLevel.CLOSER.value,
+                true,
+                1,
+                1
+        );
+        event.addAction(
+                CommonAttackAction.TYPE_L,
+                CommonAttackAction::new,
+                PathTargetLocator::touchPos,
+                CraftAction.PathEnoughLevel.CLOSER.value,
+                true,
+                1,
+                1
+        );
+        event.addAction(
                 CraftingRecipeAction.TYPE,
                 CraftingRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
                 false,
                 9,
-                3
+                10
+        );
+        event.addAction(
+                AltarRecipeAction.TYPE,
+                AltarRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false,
+                6,
+                1
+        );
+        event.addAction(
+                AltarType.TYPE,
+                AltarUseAction::new,
+                PathTargetLocator::touchPos,
+                CraftAction.PathEnoughLevel.CLOSER.value,
+                false,
+                6,
+                1
+        );
+        event.addAction(
+                FurnaceType.TYPE,
+                VirtualAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false,
+                2,
+                1
         );
     }
 
@@ -110,11 +176,11 @@ public class CraftManager {
     public @Nullable AbstractCraftActionContext start(ResourceLocation type, EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         @Nullable CraftAction action = this.actionsMap.get(type);
         if (action == null) return null;
-        return action.provider.create(maid, craftGuideData, craftGuideStepData, layer);
+        return action.provider().create(maid, craftGuideData, craftGuideStepData, layer);
     }
 
     public List<CraftAction> getCommonActions() {
-        return this.actions.stream().filter(action -> action.canBeCommon).toList();
+        return this.actions.stream().filter(CraftAction::canBeCommon).toList();
     }
 
     public @Nullable CraftAction getAction(ResourceLocation type) {
@@ -131,6 +197,15 @@ public class CraftManager {
     }
 
     public CraftAction getDefaultAction() {
+        return this.getCommonActions().get(0);
+    }
+
+    public CraftAction getNextAction(CraftAction action) {
+        boolean found = false;
+        for (CraftAction craftAction : this.getCommonActions()) {
+            if (found) return craftAction;
+            if (craftAction.type().equals(action.type())) found = true;
+        }
         return this.getCommonActions().get(0);
     }
 }

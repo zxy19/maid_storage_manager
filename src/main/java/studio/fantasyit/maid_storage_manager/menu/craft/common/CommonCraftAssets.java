@@ -5,6 +5,9 @@ import net.minecraft.resources.ResourceLocation;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CommonCraftAssets {
     public static ImageAsset SLOT_L = new ImageAsset(
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
@@ -60,19 +63,19 @@ public class CommonCraftAssets {
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             192, 16, 16, 16
     );
-    public static ImageAsset BUTTON_OPTIONAL_NEGI = new ImageAsset(
+    public static ImageAsset BUTTON_OPTIONAL_POSI = new ImageAsset(
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             208, 0, 16, 16
     );
-    public static ImageAsset BUTTON_OPTIONAL_NEGI_HOVER = new ImageAsset(
+    public static ImageAsset BUTTON_OPTIONAL_POSI_HOVER = new ImageAsset(
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             208, 16, 16, 16
     );
-    public static ImageAsset BUTTON_OPTIONAL_POSI = new ImageAsset(
+    public static ImageAsset BUTTON_OPTIONAL_NEGI = new ImageAsset(
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             224, 0, 16, 16
     );
-    public static ImageAsset BUTTON_OPTIONAL_POSI_HOVER = new ImageAsset(
+    public static ImageAsset BUTTON_OPTIONAL_NEGI_HOVER = new ImageAsset(
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             224, 16, 16, 16
     );
@@ -102,11 +105,19 @@ public class CommonCraftAssets {
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             198, 122, 16, 8
     );
+    public static ImageAsset SEPARATOR = new ImageAsset(
+            new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
+            1, 246, 129, 2
+    );
+
+    public static Map<ResourceLocation, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();
 
     public static ImageAsset imageForAction(ResourceLocation location) {
-        return new ImageAsset(
-                new ResourceLocation(location.getNamespace(), "textures/gui/craft/action/" + location.getPath()),
-                0, 0, 16, 16
+        return ACTION_IMAGE_MAP.computeIfAbsent(location, (key) ->
+                new ImageAsset(
+                        new ResourceLocation(location.getNamespace(), "textures/gui/craft/action/" + location.getPath() + ".png"),
+                        0, 0, 11, 11, 11, 11
+                )
         );
     }
 

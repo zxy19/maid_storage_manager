@@ -18,9 +18,10 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class ItemHandlerStorage implements IMaidStorage {
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "item_handler");
     @Override
     public ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "item_handler");
+        return TYPE;
     }
 
     @Override

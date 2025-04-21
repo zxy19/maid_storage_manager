@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PosUtil {
+
     static public @Nullable <T> T findAroundUpAndDown(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
         return findAroundUpAndDown(pos, consumer, 4);
     }

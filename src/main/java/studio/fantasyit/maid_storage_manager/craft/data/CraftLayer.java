@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
-import studio.fantasyit.maid_storage_manager.craft.action.AbstractCraftActionContext;
+import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,8 @@ public class CraftLayer {
             ).apply(instance, CraftLayer::new)
     );
     protected CraftGuideData craftData;
+    protected List<CraftGuideStepData> steps;
+
     protected List<ItemStack> items;
     protected List<Integer> collectedCounts;
     protected List<Integer> currentStepCounts;
@@ -41,6 +43,7 @@ public class CraftLayer {
                       List<Integer> currentStepCounts,
                       int step) {
         this.craftData = craftData.orElse(null);
+        this.steps = new ArrayList<>(craftData.map(CraftGuideData::getTransformedSteps).orElse(new ArrayList<>()));
         this.items = new ArrayList<>(items);
         this.collectedCounts = new ArrayList<>(collectedCounts);
         this.count = count;
@@ -51,6 +54,7 @@ public class CraftLayer {
 
     public CraftLayer(Optional<CraftGuideData> craftData, List<ItemStack> items, Integer count) {
         this.craftData = craftData.orElse(null);
+        this.steps = new ArrayList<>(craftData.map(CraftGuideData::getTransformedSteps).orElse(new ArrayList<>()));
         this.items = new ArrayList<>(items);
         this.collectedCounts = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) {
@@ -82,6 +86,9 @@ public class CraftLayer {
         return Optional.ofNullable(craftData);
     }
 
+    public void addStep(CraftGuideStepData stepData){
+        steps.add(stepData);
+    }
     /**
      * 尝试记忆合成物品，返回应该拿取多少该种物品。
      */
@@ -107,7 +114,7 @@ public class CraftLayer {
         currentStepCounts = new ArrayList<>();
         if (doneCount >= count) return;
         step++;
-        if (step == 3) {
+        if (step == steps.size()) {
             doneCount++;
             step = 0;
         }
@@ -123,18 +130,13 @@ public class CraftLayer {
 
     public CraftGuideStepData getStepData() {
         if (craftData == null) return null;
-        return craftData.getStepByIdx(step);
+        return steps.get(step);
     }
 
     public AbstractCraftActionContext startStep(EntityMaid maid) {
         if (craftData == null) return null;
         return CraftManager.getInstance().startCurrentStep(this, maid);
     }
-
-    public boolean isOutput() {
-        return step >= craftData.getInput().size();
-    }
-
     public boolean hasCollectedAll() {
         for (int i = 0; i < collectedCounts.size(); i++) {
             if (collectedCounts.get(i) < items.get(i).getCount()) {
@@ -173,5 +175,9 @@ public class CraftLayer {
         while (currentStepCounts.size() <= id)
             currentStepCounts.add(0);
         currentStepCounts.set(id, currentStepCounts.get(id) + count);
+    }
+
+    public int getTotalStep() {
+        return steps.size();
     }
 }

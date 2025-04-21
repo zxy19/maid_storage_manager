@@ -20,7 +20,6 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
 import java.util.Objects;
 
@@ -82,7 +81,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             return true;
         }
         Target storage = step.getStorage();
-        if (storage == null) {
+        if (storage == null || step.actionType == null) {
             //当前合成不存在，直接进行下一步
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]No current step. Next.");
             layer.nextStep();
@@ -101,7 +100,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                             storage
                     )
             );
-            BlockPos blockPos = MoveUtil.selectPosForTarget(level, maid, storage.getPos());
+            BlockPos blockPos = step.actionType.pathFindingTargetProvider().find(maid, layer.getCraftData().get(), step, layer);
             if (blockPos != null) {
                 MemoryUtil.setTarget(maid, blockPos, (float) Config.craftWorkSpeed);
                 MemoryUtil.getCrafting(maid).setTarget(storage);

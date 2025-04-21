@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.action;
+package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -22,10 +23,11 @@ import java.util.List;
 import java.util.function.Function;
 
 public class CommonTakeItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"take");
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "extract");
     IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
+
     public CommonTakeItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
@@ -52,6 +54,7 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
 
     @Override
     public Result tick() {
+        if (allDone()) return Result.SUCCESS;
         MutableBoolean hasChange = new MutableBoolean(false);
         List<ItemStack> allItems = craftGuideStepData.getOutput();
         Function<ItemStack, ItemStack> taker = itemStack -> {
@@ -81,7 +84,10 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
             isic.tick(taker);
         }
         if (storageContext.isDone())
-            storageContext.reset();
+            if (craftGuideStepData.isOptional())
+                return Result.SUCCESS;
+            else
+                storageContext.reset();
         return hasChange.getValue() ? Result.CONTINUE : Result.NOT_DONE;
     }
 
@@ -90,5 +96,17 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
         if (storageContext != null) {
             storageContext.finish();
         }
+    }
+
+
+    private boolean allDone() {
+        if (craftGuideStepData == null) return false;
+        List<ItemStack> items = craftGuideStepData.getOutput();
+        for (int i = 0; i < items.size(); i++) {
+            if (craftLayer.getCurrentStepCount(i) < items.get(i).getCount()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

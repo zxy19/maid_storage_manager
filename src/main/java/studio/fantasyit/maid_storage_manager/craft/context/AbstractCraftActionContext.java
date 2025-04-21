@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.action;
+package studio.fantasyit.maid_storage_manager.craft.context;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;

@@ -109,6 +109,7 @@ public class CraftMemory extends AbstractTargetMemory {
         if (this.currentLayer >= this.layers.size()) {
             this.currentLayer = this.layers.size();
         }
+        this.isSwappingHandWhenCrafting = false;
         this.startWorking(false);
         if (layer != null && hasCurrent() && layer.getCraftData().isPresent()) {
             @Nullable CraftLayer nextLayer = getCurrentLayer();
@@ -271,5 +272,15 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public List<ItemStack> getRemainMaterials() {
         return remainMaterials;
+    }
+
+    boolean isSwappingHandWhenCrafting = false;
+
+    public boolean isSwappingHandWhenCrafting() {
+        return isSwappingHandWhenCrafting;
+    }
+
+    public void setSwappingHandWhenCrafting(boolean isSwappingHandWhenCrafting) {
+        this.isSwappingHandWhenCrafting = isSwappingHandWhenCrafting;
     }
 }

@@ -27,6 +27,6 @@ public class ImageAsset {
     }
 
     public void blit(GuiGraphics graphics, int x, int y) {
-        graphics.blit(location, x, y, u, v, w, h, 256, 256);
+        graphics.blit(location, x, y, u, v, w, h, iw, ih);
     }
 }

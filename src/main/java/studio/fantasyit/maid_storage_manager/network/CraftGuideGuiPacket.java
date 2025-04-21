@@ -12,8 +12,9 @@ public class CraftGuideGuiPacket {
         UP,
         DOWN,
         REMOVE,
-        SKIP,
-        MATCH_TAG, PAGE_DOWN, PAGE_UP,
+        SET_ITEM,
+        SET_ALL_INPUT,
+        MATCH_TAG, PAGE_DOWN, PAGE_UP, OPTIONAL,
     }
 
     public final Type type;

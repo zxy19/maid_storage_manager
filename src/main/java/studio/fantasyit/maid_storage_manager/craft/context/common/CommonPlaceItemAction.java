@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.action;
+package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
@@ -8,6 +8,7 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -17,8 +18,10 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
+import java.util.List;
+
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"place");
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"insert");
     IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
@@ -38,7 +41,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         if (storageType == null) {
             return Result.FAIL;
         }
-        storageContext = storageType.onStartCollect(level, maid, validTarget);
+        storageContext = storageType.onStartPlace(level, maid, validTarget);
         if (storageContext == null) {
             return Result.FAIL;
         }
@@ -48,6 +51,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
 
     @Override
     public Result tick() {
+        if (allDone()) return Result.SUCCESS;
         boolean hasChange = false;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
@@ -106,5 +110,16 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         if (storageContext != null) {
             storageContext.finish();
         }
+    }
+
+    private boolean allDone() {
+        if (craftGuideStepData == null) return false;
+        List<ItemStack> items = craftGuideStepData.getInput();
+        for (int i = 0; i < items.size(); i++) {
+            if (craftLayer.getCurrentStepCount(i) < items.get(i).getCount()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
@@ -125,8 +125,8 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                              @NotNull MultiBufferSource multiBufferSource,
                              int light,
                              int overlay) {
-        CraftGuideData data = CraftGuideData.fromItemStack(itemStack);
-        List<ItemStack> items = data.getOutput().stream().filter(e -> !e.isEmpty()).toList();
+        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(itemStack);
+        List<ItemStack> items = data.outputs;
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
                 new ModelResourceLocation(MaidStorageManager.MODID, items.isEmpty() ? "craft_guide_base" : "craft_guide_base_blank", "inventory")
         );
@@ -135,7 +135,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
             Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
         }
 
-        if (data.available() && !items.isEmpty()) {
+        if (!items.isEmpty()) {
             int i = (Minecraft.getInstance().player.tickCount / 20) % items.size();
             ItemStack item = items.get(i);
             if (!item.isEmpty()) {
@@ -161,6 +161,40 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                         overlay,
                         Minecraft.getInstance().getItemRenderer().getModel(
                                 item,
+                                null,
+                                null,
+                                0
+                        )
+                );
+                pose.popPose();
+            }
+        }
+
+        if (!data.icon.isEmpty()) {
+            ItemStack icon = data.icon;
+            if (icon != null) {
+                pose.pushPose();
+                if (context != ItemDisplayContext.FIXED) {
+                    pose.translate(0.22, 0.22, 0.54);
+                } else {
+                    Quaternionf rotation = new Quaternionf();
+                    rotation.rotateAxis((float) Math.PI, 0, 1, 0);
+                    pose.mulPose(rotation);
+                    pose.translate(-0.78, 0.23, -0.46);
+                }
+                pose.translate(0.2F, -0.2F, 0.02F);
+                pose.scale(0.55f, 0.55f, 0.01F);
+                pose.translate(0.5F, 0.5F, 0.5F);
+                Minecraft.getInstance().getItemRenderer().render(
+                        icon,
+                        ItemDisplayContext.GUI,
+                        true,
+                        pose,
+                        multiBufferSource,
+                        light,
+                        overlay,
+                        Minecraft.getInstance().getItemRenderer().getModel(
+                                icon,
                                 null,
                                 null,
                                 0

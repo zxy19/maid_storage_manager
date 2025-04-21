@@ -202,7 +202,7 @@ public class Network {
                     @Nullable Player sender = context.get().getSender();
                     if (sender == null) sender = Minecraft.getInstance().player;
                     if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
-                        icgpr.handleGuiPacket(msg.type, msg.key, msg.value,msg.data);
+                        icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
                     }
                 }
         );

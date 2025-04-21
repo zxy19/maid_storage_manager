@@ -3,10 +3,9 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.craft.action.AbstractCraftActionContext;
+import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -17,7 +16,6 @@ import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
-import java.util.List;
 import java.util.Map;
 
 public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
@@ -49,13 +47,15 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return false;
         if (!MemoryUtil.getCrafting(maid).hasCurrent()) return false;
         if (!MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) return false;
-        return Conditions.hasReachedValidTargetOrReset(maid);
+        CraftGuideStepData stepData = MemoryUtil.getCrafting(maid).getCurrentLayer().getStepData();
+        return Conditions.hasReachedValidTargetOrReset(maid, stepData.actionType.pathCloseEnoughThreshold());
     }
 
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         fail = false;
+        tryTick = 0;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) {
             fail = done = true;
             return;
@@ -97,9 +97,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
         tryTick++;
-        if (allDone(maid)) {
-            done = true;
-        } else if (tryTick > Config.maxCraftTries) {
+        if (tryTick > Config.maxCraftTries) {
             fail = true;
             done = true;
             return;
@@ -119,17 +117,6 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             default -> {
             }
         }
-    }
-
-    private boolean allDone(EntityMaid maid) {
-        if (craftGuideStepData == null) return false;
-        List<ItemStack> items = craftGuideStepData.getItems();
-        for (int i = 0; i < items.size(); i++) {
-            if (layer.getCurrentStepCount(i) < items.get(i).getCount()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

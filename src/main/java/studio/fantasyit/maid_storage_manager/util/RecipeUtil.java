@@ -1,6 +1,10 @@
 package studio.fantasyit.maid_storage_manager.util;
 
+import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
+import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
+import com.github.tartaricacid.touhoulittlemaid.inventory.AltarRecipeInventory;
 import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -8,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -89,11 +94,11 @@ public class RecipeUtil {
         }
     }
 
-    public static CraftingContainer wrapContainer(List<ItemStack> items, int w, int h) {
+    public static CraftingContainer wrapCraftingContainer(List<ItemStack> items, int w, int h) {
         return new ReadonlyCraftingContainer(items, w, h);
     }
 
-    public static CraftingContainer wrapContainer(Container items, int w, int h) {
+    public static CraftingContainer wrapCraftingContainer(Container items, int w, int h) {
         List<ItemStack> itemList = new ArrayList<>();
         for (int i = 0; i < items.getContainerSize(); i++) {
             itemList.add(items.getItem(i));
@@ -101,11 +106,37 @@ public class RecipeUtil {
         return new ReadonlyCraftingContainer(itemList, w, h);
     }
 
-    public static Optional<CraftingRecipe> getRecipe(Level level, CraftingContainer container) {
+    public static Optional<CraftingRecipe> getCraftingRecipe(Level level, CraftingContainer container) {
         RecipeManager recipeManager = level.getRecipeManager();
         return recipeManager.getRecipeFor(
                 RecipeType.CRAFTING,
                 container,
+                level
+        );
+    }
+
+    public static AltarRecipeInventory wrapAltarRecipeInventory(List<ItemStack> items) {
+        AltarRecipeInventory inventory = new AltarRecipeInventory();
+        for (int i = 0; i < Math.min(6, items.size()); i++) {
+            inventory.setItem(i, items.get(i));
+        }
+        return inventory;
+    }
+
+    public static Optional<AltarRecipe> getAltarRecipe(Level level, AltarRecipeInventory container) {
+        RecipeManager recipeManager = level.getRecipeManager();
+        return recipeManager.getRecipeFor(
+                InitRecipes.ALTAR_CRAFTING,
+                container,
+                level
+        );
+    }
+
+    public static Optional<SmeltingRecipe> getSmeltingRecipe(Level level, ItemStack itemStack) {
+        RecipeManager recipeManager = level.getRecipeManager();
+        return recipeManager.getRecipeFor(
+                RecipeType.SMELTING,
+                new SimpleContainer(itemStack),
                 level
         );
     }

@@ -14,6 +14,10 @@ import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import java.util.function.Function;
 
 public class SelectButtonWidget<T> extends AbstractWidget {
+    public T getData() {
+        return option.data;
+    }
+
     public record Option<T>(T data, ImageAsset image, ImageAsset hoverImage, Component tooltip) {
     }
 
@@ -31,6 +35,8 @@ public class SelectButtonWidget<T> extends AbstractWidget {
         this.option = getNext.apply(null);
         this.active = true;
         this.screen = screen;
+        this.width = option.image.w;
+        this.height = option.image.h;
     }
 
     @Override
@@ -40,6 +46,14 @@ public class SelectButtonWidget<T> extends AbstractWidget {
         else option.image.blit(guiGraphics, getX(), getY());
     }
 
+    public void setOption(Option<T> option) {
+        this.option = option;
+        if (this.option == null)
+            this.option = getNext.apply(null);
+        this.width = this.option.image.w;
+        this.height = this.option.image.h;
+    }
+
     @Override
     protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
         p_259858_.add(NarratedElementType.HINT, Component.translatable("narration.button", option.tooltip));
@@ -47,7 +61,14 @@ public class SelectButtonWidget<T> extends AbstractWidget {
 
     @Override
     protected boolean isValidClickButton(int p_93652_) {
+        if(!visible) return false;
         return true;
+    }
+
+    @Override
+    public boolean isMouseOver(double p_93672_, double p_93673_) {
+        if (!visible) return false;
+        return super.isMouseOver(p_93672_, p_93673_);
     }
 
     @Override
@@ -62,8 +83,11 @@ public class SelectButtonWidget<T> extends AbstractWidget {
 
     @Override
     public void onClick(double p_93634_, double p_93635_) {
+        if (!visible) return;
         super.onClick(p_93634_, p_93635_);
         option = getNext.apply(option.data);
+        height = option.image.h;
+        width = option.image.w;
     }
 
     @Nullable
@@ -75,7 +99,8 @@ public class SelectButtonWidget<T> extends AbstractWidget {
     public Component getTooltipComponent() {
         return option.tooltip;
     }
-    public void setVisible(boolean visible){
+
+    public void setVisible(boolean visible) {
         this.visible = visible;
     }
 }

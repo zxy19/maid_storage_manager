@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.data;
 
+import com.google.common.collect.ImmutableCollection;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
@@ -9,11 +10,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CraftGuideStepData {
     public static final ResourceLocation SPECIAL_ACTION = new ResourceLocation(MaidStorageManager.MODID, "special");
@@ -39,7 +42,7 @@ public class CraftGuideStepData {
     public List<ItemStack> input;
     public List<ItemStack> output;
     public ResourceLocation action;
-    public CraftManager.CraftAction actionType;
+    public CraftAction actionType;
     public boolean optional;
     public boolean matchTag;
 
@@ -50,17 +53,37 @@ public class CraftGuideStepData {
                               boolean optional,
                               boolean matchTag) {
         this.storage = storage;
-        this.input = input;
-        this.output = output;
         this.action = action;
         this.optional = optional;
         this.matchTag = matchTag;
         this.actionType = CraftManager.getInstance().getAction(action);
         if (this.actionType == null) {
-            this.actionType = CraftManager.getInstance().getCommonActions().get(0);
+            this.actionType = CraftManager.getInstance().getDefaultAction();
             this.action = actionType.type();
         }
+        if (input.size() < this.actionType.inputCount())
+            input = new ArrayList<>(input);
+        while (input.size() < this.actionType.inputCount())
+            input.add(ItemStack.EMPTY);
+        if (output.size() < this.actionType.outputCount())
+            output = new ArrayList<>(output);
+        while (output.size() < this.actionType.outputCount())
+            output.add(ItemStack.EMPTY);
+        this.input = input;
+        this.output = output;
     }
+
+    public static CraftGuideStepData createFromTypeStorage(Target storage, ResourceLocation action) {
+        CraftAction action1 = Objects.requireNonNull(CraftManager.getInstance().getAction(action));
+        List<ItemStack> inputs = new ArrayList<>();
+        for (int i = 0; i < action1.inputCount(); i++)
+            inputs.add(ItemStack.EMPTY);
+        List<ItemStack> outputs = new ArrayList<>();
+        for (int i = 0; i < action1.outputCount(); i++)
+            outputs.add(ItemStack.EMPTY);
+        return new CraftGuideStepData(storage, inputs, outputs, action, false, false);
+    }
+
     public static CraftGuideStepData fromCompound(CompoundTag tag) {
         Target storage = null;
         ResourceLocation action = null;
@@ -96,6 +119,7 @@ public class CraftGuideStepData {
             matchTag = tag.getBoolean(CraftGuide.TAG_OP_MATCH_TAG);
         return new CraftGuideStepData(storage, inputs, outputs, action, optional, matchTag);
     }
+
     public CompoundTag toCompound() {
         CompoundTag tag = new CompoundTag();
         tag.put(CraftGuide.TAG_OP_STORAGE, storage.toNbt());
@@ -124,6 +148,7 @@ public class CraftGuideStepData {
         tag.putBoolean(CraftGuide.TAG_OP_MATCH_TAG, matchTag);
         return tag;
     }
+
     public Target getStorage() {
         return storage;
     }
@@ -143,8 +168,8 @@ public class CraftGuideStepData {
 
     public List<ItemStack> getItems() {
         ArrayList<ItemStack> items = new ArrayList<>();
-        items.addAll(input);
-        items.addAll(output);
+        items.addAll(getInput());
+        items.addAll(getOutput());
         return items;
     }
 
@@ -153,7 +178,19 @@ public class CraftGuideStepData {
     }
 
     public List<ItemStack> getInput() {
-        return input.subList(0,actionType.inputCount());
+        return input.subList(0, actionType.inputCount());
+    }
+
+    public void setInput(int i, ItemStack itemStack) {
+        if (input instanceof ImmutableCollection<?>)
+            input = new ArrayList<>(input);
+        input.set(i, itemStack);
+    }
+
+    public void clearInput() {
+        if (input instanceof ImmutableCollection<?>)
+            input = new ArrayList<>(input);
+        input.clear();
     }
 
     public List<ItemStack> getNonEmptyInput() {
@@ -161,7 +198,19 @@ public class CraftGuideStepData {
     }
 
     public List<ItemStack> getOutput() {
-        return output.subList(0,actionType.outputCount());
+        return output.subList(0, actionType.outputCount());
+    }
+
+    public void setOutput(int i, ItemStack itemStack) {
+        if (output instanceof ImmutableCollection<?>)
+            output = new ArrayList<>(output);
+        output.set(i, itemStack);
+    }
+
+    public void clearOutput() {
+        if (output instanceof ImmutableCollection<?>)
+            output = new ArrayList<>(output);
+        output.clear();
     }
 
     public List<ItemStack> getNonEmptyOutput() {
@@ -187,4 +236,22 @@ public class CraftGuideStepData {
     }
 
 
+    public void setAction(ResourceLocation action) {
+        this.action = action;
+        this.actionType = CraftManager.getInstance().getAction(action);
+        if (input.size() < actionType.inputCount()) {
+            if (input instanceof ImmutableCollection<?>)
+                input = new ArrayList<>(input);
+            for (int i = input.size(); i < actionType.inputCount(); i++) {
+                input.add(ItemStack.EMPTY);
+            }
+        }
+        if (output.size() < actionType.outputCount()) {
+            if (output instanceof ImmutableCollection<?>)
+                output = new ArrayList<>(output);
+            for (int i = output.size(); i < actionType.outputCount(); i++) {
+                output.add(ItemStack.EMPTY);
+            }
+        }
+    }
 }
