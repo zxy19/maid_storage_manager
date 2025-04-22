@@ -7,10 +7,12 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -82,6 +84,7 @@ public class CraftGuideData {
             tag.remove("input1");
             tag.remove("input2");
             tag.remove("output");
+            data.buildInputAndOutputs();
             data.saveToItemStack(craftGuide);
             CraftGuideRenderData.recalculateItemStack(craftGuide);
             return data;
@@ -107,9 +110,9 @@ public class CraftGuideData {
     }
 
     private static void compatibleToV1TypeAddStep(CompoundTag compound, CraftGuideData craftGuideData, boolean optional, ResourceLocation type, boolean output) {
-        if (compound.contains(CraftGuide.TAG_OP_STORAGE)) {
+        if (compound.contains("side")) {
             List<ItemStack> items = new ArrayList<>();
-            Target target = Target.fromNbt(compound.getCompound(CraftGuide.TAG_OP_STORAGE));
+            Target target = Target.fromNbt(compound.getCompound("side"));
             ListTag list = compound.getList("items", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 items.add(
@@ -136,11 +139,50 @@ public class CraftGuideData {
         }
     }
 
+    private static void compatibleToV1TypeAddCraftStep(CraftGuideData craftGuideData, CompoundTag input1, CompoundTag input2) {
+        if (input1.contains("side") && input2.contains("side")) {
+            List<ItemStack> inputs = new ArrayList<>();
+            List<ItemStack> outputs = new ArrayList<>();
+            Target target = Target.fromNbt(input1.getCompound("side"));
+            ListTag inputsList = input1.getList("items", Tag.TAG_COMPOUND);
+            for (int i = 0; i < inputsList.size(); i++) {
+                inputs.add(
+                        ItemStack.of(inputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                                .copyWithCount(inputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                );
+            }
+            ListTag outputsList = input2.getList("items", Tag.TAG_COMPOUND);
+            for (int i = 0; i < outputsList.size(); i++) {
+                outputs.add(
+                        ItemStack.of(outputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                                .copyWithCount(outputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                );
+            }
+            craftGuideData.type = CraftingType.TYPE;
+            craftGuideData.steps.add(new CraftGuideStepData(target,
+                    inputs,
+                    outputs,
+                    CraftingType.TYPE,
+                    false,
+                    false,
+                    new CompoundTag()));
+        }
+    }
+
     /**
      * 旧版本数据兼容
      */
     private static CraftGuideData compatibleToV1Type(CompoundTag tag) {
         CraftGuideData craftGuideData = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
+        if (tag.contains("input1")) {
+            if (tag.getCompound("input1").contains("side")) {
+                Target target = Target.fromNbt(tag.getCompound("input1").getCompound("side"));
+                if (target.getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
+                    compatibleToV1TypeAddCraftStep(craftGuideData, tag.getCompound("input1"), tag.getCompound("output"));
+                    return craftGuideData;
+                }
+            }
+        }
         if (tag.contains("input1")) {
             compatibleToV1TypeAddStep(tag.getCompound("input1"), craftGuideData, false, CommonPlaceItemAction.TYPE, false);
         }
@@ -148,7 +190,7 @@ public class CraftGuideData {
             compatibleToV1TypeAddStep(tag.getCompound("input2"), craftGuideData, true, CommonPlaceItemAction.TYPE, false);
         }
         if (tag.contains("output")) {
-            compatibleToV1TypeAddStep(tag.getCompound("output"), craftGuideData, true, CommonTakeItemAction.TYPE, true);
+            compatibleToV1TypeAddStep(tag.getCompound("output"), craftGuideData, false, CommonTakeItemAction.TYPE, true);
         }
         return craftGuideData;
     }

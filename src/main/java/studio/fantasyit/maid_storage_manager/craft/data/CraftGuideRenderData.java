@@ -20,7 +20,7 @@ public class CraftGuideRenderData {
     public int selecting = -1;
 
     public CraftGuideRenderData(List<Pair<Target, ResourceLocation>> stepBindings, List<ItemStack> inputs, List<ItemStack> outputs, ItemStack icon) {
-        this(stepBindings, inputs,outputs, icon, -1);
+        this(stepBindings, inputs, outputs, icon, -1);
     }
 
     public CraftGuideRenderData(List<Pair<Target, ResourceLocation>> stepBindings, List<ItemStack> inputs, List<ItemStack> outputs, ItemStack icon, int selecting) {
@@ -65,6 +65,10 @@ public class CraftGuideRenderData {
 
     public static CraftGuideRenderData fromItemStack(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
+        if (tag.contains("input1")) {
+            CraftGuideData.fromItemStack(itemStack);
+            return fromItemStack(itemStack);
+        }
         if (tag.contains("renderData")) {
             CompoundTag renderData = tag.getCompound("renderData");
             ItemStack icon = ItemStack.of(renderData.getCompound("icon"));

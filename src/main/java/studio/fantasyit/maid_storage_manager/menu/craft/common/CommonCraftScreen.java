@@ -166,8 +166,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     value,
                     value ? CommonCraftAssets.BUTTON_OPTIONAL_POSI : CommonCraftAssets.BUTTON_OPTIONAL_NEGI,
                     value ? CommonCraftAssets.BUTTON_OPTIONAL_POSI_HOVER : CommonCraftAssets.BUTTON_OPTIONAL_NEGI_HOVER,
-                    value ? Component.translatable("gui.maid_storage_manager.craft_guide.common.optional")
-                            : Component.translatable("gui.maid_storage_manager.craft_guide.common.required")
+                    value ? Component.translatable("gui.maid_storage_manager.craft_guide.common.required") : Component.translatable("gui.maid_storage_manager.craft_guide.common.optional")
             );
 
         }, this)));
