@@ -197,6 +197,7 @@ public class CraftingTableCraftMenu extends AbstractContainerMenu implements ISa
     @Override
     public void save() {
         if (stepDataContainer == null) return;
+        if (player.level().isClientSide) return;
         recalculateRecipe();
         stepDataContainer.save();
         craftGuideData.saveToItemStack(target);

@@ -194,6 +194,7 @@ public class AltarCraftMenu extends AbstractContainerMenu implements ISaveFilter
     @Override
     public void save() {
         if (stepDataContainer == null) return;
+        if (player.level().isClientSide) return;
         recalculateRecipe();
         stepDataContainer.save();
         craftGuideData.saveToItemStack(target);

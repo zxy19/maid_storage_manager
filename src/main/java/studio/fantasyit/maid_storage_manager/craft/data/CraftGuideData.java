@@ -106,24 +106,33 @@ public class CraftGuideData {
         return craftGuideData;
     }
 
-    private static void compatibleToV1TypeAddStep(CompoundTag compound, CraftGuideData craftGuideData, boolean optional, ResourceLocation type) {
+    private static void compatibleToV1TypeAddStep(CompoundTag compound, CraftGuideData craftGuideData, boolean optional, ResourceLocation type, boolean output) {
         if (compound.contains(CraftGuide.TAG_OP_STORAGE)) {
             List<ItemStack> items = new ArrayList<>();
             Target target = Target.fromNbt(compound.getCompound(CraftGuide.TAG_OP_STORAGE));
-            ListTag list = compound.getList("input1", Tag.TAG_COMPOUND);
+            ListTag list = compound.getList("items", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 items.add(
                         ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
-            craftGuideData.steps.add(new CraftGuideStepData(target,
-                    items,
-                    new ArrayList<>(),
-                    type,
-                    optional,
-                    false,
-                    new CompoundTag()));
+            if (output)
+                craftGuideData.steps.add(new CraftGuideStepData(target,
+                        new ArrayList<>(),
+                        items,
+                        type,
+                        optional,
+                        false,
+                        new CompoundTag()));
+            else
+                craftGuideData.steps.add(new CraftGuideStepData(target,
+                        items,
+                        new ArrayList<>(),
+                        type,
+                        optional,
+                        false,
+                        new CompoundTag()));
         }
     }
 
@@ -133,13 +142,13 @@ public class CraftGuideData {
     private static CraftGuideData compatibleToV1Type(CompoundTag tag) {
         CraftGuideData craftGuideData = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
         if (tag.contains("input1")) {
-            compatibleToV1TypeAddStep(tag.getCompound("input1"), craftGuideData, false, CommonPlaceItemAction.TYPE);
+            compatibleToV1TypeAddStep(tag.getCompound("input1"), craftGuideData, false, CommonPlaceItemAction.TYPE, false);
         }
         if (tag.contains("input2")) {
-            compatibleToV1TypeAddStep(tag.getCompound("input2"), craftGuideData, true, CommonPlaceItemAction.TYPE);
+            compatibleToV1TypeAddStep(tag.getCompound("input2"), craftGuideData, true, CommonPlaceItemAction.TYPE, false);
         }
         if (tag.contains("output")) {
-            compatibleToV1TypeAddStep(tag.getCompound("output"), craftGuideData, true, CommonTakeItemAction.TYPE);
+            compatibleToV1TypeAddStep(tag.getCompound("output"), craftGuideData, true, CommonTakeItemAction.TYPE, true);
         }
         return craftGuideData;
     }

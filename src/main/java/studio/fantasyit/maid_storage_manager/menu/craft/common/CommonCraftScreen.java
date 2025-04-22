@@ -411,7 +411,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+    public boolean mouseScrolled(double x, double y, double p_94688_) {
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof CommonStepDataContainer sdc) {
             MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
@@ -431,16 +431,26 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                             count.getValue()
                     )
             );
+            return true;
         }
-        Optional<GuiEventListener> child = this.getChildAt(p_94686_, p_94687_);
+        Optional<GuiEventListener> child = this.getChildAt(x, y);
         if (child.isPresent() && child.get() instanceof EditBox eb && eb.isVisible()) {
             int dv = (int) (Math.abs(p_94688_) / p_94688_);
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
                 dv *= 10;
             Integer ov = Integer.valueOf(eb.getValue());
             eb.setValue(String.valueOf(ov + dv));
+            return true;
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        if (x - getGuiLeft() > 14 && y - getGuiTop() > 18 && x - getGuiLeft() < 158 && y - getGuiTop() < 145) {
+            if (p_94688_ < 0 && menu.page < (menu.steps.size() + 2) / 3 - 1) {
+                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_DOWN, 0));
+            }
+            if (p_94688_ > 0 && menu.page > 0) {
+                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_UP, 0));
+            }
+        }
+        return super.mouseScrolled(x, y, p_94688_);
     }
 
     @Override

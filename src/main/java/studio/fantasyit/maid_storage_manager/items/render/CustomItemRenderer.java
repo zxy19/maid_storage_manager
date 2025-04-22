@@ -182,8 +182,8 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.mulPose(rotation);
                     pose.translate(-0.78, 0.23, -0.46);
                 }
-                pose.translate(0.2F, -0.2F, 0.02F);
-                pose.scale(0.55f, 0.55f, 0.01F);
+                pose.translate(0.3F, -0.2F, 0.02F);
+                pose.scale(0.40f, 0.40f, 0.01F);
                 pose.translate(0.5F, 0.5F, 0.5F);
                 Minecraft.getInstance().getItemRenderer().render(
                         icon,

@@ -64,6 +64,7 @@ public class CraftManager {
         event.addCraftType(new FurnaceType());
         event.addCraftType(new SmithingType());
         event.addCraftType(new AnvilType());
+        event.addCraftType(new StoneCuttingType());
         event.addAction(
                 CommonPlaceItemAction.TYPE,
                 CommonPlaceItemAction::new,
@@ -179,6 +180,15 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false,
                 2,
+                1
+        );
+        event.addAction(
+                StoneCuttingType.TYPE,
+                StoneCuttingRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false,
+                1,
                 1
         );
     }

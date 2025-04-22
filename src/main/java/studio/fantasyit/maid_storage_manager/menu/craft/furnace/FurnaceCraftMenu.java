@@ -212,6 +212,7 @@ public class FurnaceCraftMenu extends AbstractContainerMenu implements ISaveFilt
     @Override
     public void save() {
         if (stepDataContainer == null) return;
+        if (player.level().isClientSide) return;
         recalculateRecipe();
         stepDataContainer.save();
         craftGuideData.saveToItemStack(target);

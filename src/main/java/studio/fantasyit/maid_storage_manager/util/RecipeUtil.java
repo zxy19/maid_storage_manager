@@ -149,6 +149,14 @@ public class RecipeUtil {
                 level
         );
     }
+    public static List<StonecutterRecipe> getStonecuttingRecipe(Level level, ItemStack itemStack) {
+        RecipeManager recipeManager = level.getRecipeManager();
+        return recipeManager.getRecipesFor(
+                RecipeType.STONECUTTING,
+                new SimpleContainer(itemStack),
+                level
+        );
+    }
 
     public static List<CraftingRecipe> getAllRecipes(Level level) {
         RecipeManager recipeManager = level.getRecipeManager();

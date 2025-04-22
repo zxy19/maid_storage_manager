@@ -1,14 +1,15 @@
-package studio.fantasyit.maid_storage_manager.menu.craft.smithing;
+package studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -23,16 +24,22 @@ import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-public class SmithingCraftMenu extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
+public class StoneCutterCraftMenu extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
     Player player;
     ItemStack target;
     CraftGuideData craftGuideData;
     StepDataContainer stepDataContainer = null;
+    SimpleContainer displayOnlySlots = new SimpleContainer(15);
+    List<ItemStack> availableItems = new ArrayList<>();
+    public int page = 0;
+    public int maxPage = 1;
 
-    public SmithingCraftMenu(int p_38852_, Player player) {
-        super(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), p_38852_);
+    public StoneCutterCraftMenu(int p_38852_, Player player) {
+        super(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
         craftGuideData = CraftGuideData.fromItemStack(target);
@@ -40,28 +47,20 @@ public class SmithingCraftMenu extends AbstractContainerMenu implements ISaveFil
         addFilterSlots();
         addPlayerSlots();
         addSpecialSlots();
+        revalidRecipe();
     }
+
 
     private void addFilterSlots() {
         this.addSlot(new FilterSlot(stepDataContainer,
                 0,
-                34,
-                69
+                47,
+                39
         ));
         this.addSlot(new FilterSlot(stepDataContainer,
                 1,
-                52,
-                69
-        ));
-        this.addSlot(new FilterSlot(stepDataContainer,
-                2,
-                70,
-                69
-        ));
-        this.addSlot(new FilterSlot(stepDataContainer,
-                3,
-                126,
-                69
+                109,
+                39
         ));
     }
 
@@ -87,6 +86,7 @@ public class SmithingCraftMenu extends AbstractContainerMenu implements ISaveFil
     }
 
     private void addSpecialSlots() {
+
     }
 
     @Override
@@ -176,8 +176,12 @@ public class SmithingCraftMenu extends AbstractContainerMenu implements ISaveFil
     @Override
     public void save() {
         if (stepDataContainer == null) return;
-        if (player.level().isClientSide) return;
-        recalculateRecipe();
+        if (player.level().isClientSide) {
+            if (Minecraft.getInstance().screen instanceof StoneCutterCraftScreen screen) {
+                screen.handleGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, 0, 0, new CompoundTag());
+            }
+        }
+        revalidRecipe();
         stepDataContainer.save();
         craftGuideData.saveToItemStack(target);
         CraftGuideRenderData.recalculateItemStack(target);
@@ -186,31 +190,60 @@ public class SmithingCraftMenu extends AbstractContainerMenu implements ISaveFil
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
-            case SET_ALL_INPUT -> {
-                ListTag list = data.getList("inputs", 10);
-                for (int i = 0; i < list.size(); i++) {
-                    CompoundTag tag = list.getCompound(i);
-                    ItemStack stack = ItemStack.of(tag);
-                    stepDataContainer.setItem(i, stack);
-                }
-                save();
-            }
             case SET_ITEM -> {
                 if (data != null) {
                     this.getSlot(key).set(ItemStack.of(data));
+                    revalidRecipe();
                     save();
                 }
+            }
+            case PAGE_UP, PAGE_DOWN -> {
+                page = value;
+                reArrangeSlotItem();
+            }
+            case COUNT -> {
+                stepDataContainer.setCount(key, value);
+                stepDataContainer.setChanged();
             }
         }
     }
 
-    public void recalculateRecipe() {
-        Optional<SmithingRecipe> recipe = RecipeUtil.getSmithingRecipe(player.level(), stepDataContainer.step.getInput());
-        recipe.ifPresentOrElse(smithingRecipe -> {
-            ItemStack resultItem = smithingRecipe.getResultItem(player.level().registryAccess());
-            stepDataContainer.setItemNoTrigger(3, resultItem);
-        }, () -> {
-            stepDataContainer.setItemNoTrigger(3, ItemStack.EMPTY);
-        });
+    private void reArrangeSlotItem() {
+        if (page >= maxPage) {
+            page = maxPage - 1;
+        }
+        for (int i = 0; i < 15; i++) {
+            int index = page * 5 + i;
+            if (index < availableItems.size()) {
+                this.displayOnlySlots.setItem(i, availableItems.get(index));
+            } else {
+                this.displayOnlySlots.setItem(i, ItemStack.EMPTY);
+            }
+        }
+    }
+
+
+    private void revalidRecipe() {
+        if (!stepDataContainer.getItem(0).isEmpty()) {
+            List<StonecutterRecipe> recipe = RecipeUtil.getStonecuttingRecipe(player.level(), stepDataContainer.getItem(0));
+            if (!recipe.isEmpty()) {
+                availableItems = recipe.stream().map(re -> re.getResultItem(player.level().registryAccess())).toList();
+                Optional<ItemStack> first = availableItems.stream().filter(
+                        itemStack -> ItemStackUtil.isSame(stepDataContainer.getItem(1), itemStack, stepDataContainer.matchTag)
+                ).findAny();
+                if (first.isEmpty()) {
+                    stepDataContainer.setItemNoTrigger(1, ItemStack.EMPTY);
+                } else {
+                    stepDataContainer.setCount(1, stepDataContainer.getCount(0) * first.get().getCount());
+                }
+
+                maxPage = (Math.max(availableItems.size() - 15, 0) + 4) / 5 + 1;
+                reArrangeSlotItem();
+                return;
+            }
+        }
+        availableItems = new ArrayList<>();
+        maxPage = 1;
+        reArrangeSlotItem();
     }
 }

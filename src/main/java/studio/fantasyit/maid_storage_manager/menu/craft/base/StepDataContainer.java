@@ -22,9 +22,11 @@ public class StepDataContainer extends FilterContainer implements ISaveFilter {
         outputCount = step.actionType.outputCount();
         for (int i = 0; i < inputCount; i++) {
             setItemNoTrigger(i, step.getInput().get(i));
+            setCount(i, step.getInput().get(i).getCount());
         }
         for (int i = 0; i < outputCount; i++) {
             setItemNoTrigger(inputCount + i, step.getOutput().get(i));
+            setCount(inputCount + i, step.getOutput().get(i).getCount());
         }
         matchTag = step.isMatchTag();
     }

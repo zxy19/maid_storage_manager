@@ -23,7 +23,6 @@ public class AvailableCraftGraph {
 
     private int taskPerTick = 32;
     List<ItemStack> items;
-    List<Boolean> noMatchNbt;
     List<Integer> counts;
     List<CraftGuideData> craftGuideData;
     List<List<Pair<Integer, Integer>>> edges;
@@ -56,21 +55,11 @@ public class AvailableCraftGraph {
 
     private int getItemIndex(ItemStack itemStack) {
         for (int i = 0; i < this.items.size(); i++) {
-            if (noMatchNbt.get(i)) continue;
             if (ItemStack.isSameItem(this.items.get(i), itemStack))
                 return i;
         }
         return -1;
     }
-    private int getItemIndexNoMatchingNBT(ItemStack itemStack) {
-        for (int i = 0; i < this.items.size(); i++) {
-            if (!noMatchNbt.get(i)) continue;
-            if (ItemStack.isSameItem(this.items.get(i), itemStack))
-                return i;
-        }
-        return -1;
-    }
-
     public AvailableCraftGraph(List<Pair<ItemStack, Integer>> items,
                                List<CraftGuideData> craftGuideData) {
         this.items = new ArrayList<>();
