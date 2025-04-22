@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.type;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -78,7 +79,8 @@ public class FurnaceType implements ICraftType {
                 List.of(),
                 CommonPlaceItemAction.TYPE,
                 false,
-                craftGuideStepData.matchTag
+                craftGuideStepData.matchTag,
+                new CompoundTag()
         ));
         ret.add(new CraftGuideStepData(
                 target.sameType(craftGuideStepData.getStorage().getPos(), Direction.EAST),
@@ -86,7 +88,8 @@ public class FurnaceType implements ICraftType {
                 List.of(),
                 CommonPlaceItemAction.TYPE,
                 true,
-                craftGuideStepData.matchTag
+                craftGuideStepData.matchTag,
+                new CompoundTag()
         ));
         ret.add(new CraftGuideStepData(
                 target.sameType(craftGuideStepData.getStorage().getPos(), Direction.DOWN),
@@ -94,7 +97,8 @@ public class FurnaceType implements ICraftType {
                 List.of(craftGuideStepData.getOutput().get(0)),
                 CommonTakeItemAction.TYPE,
                 false,
-                craftGuideStepData.matchTag
+                craftGuideStepData.matchTag,
+                new CompoundTag()
         ));
         return ret;
     }

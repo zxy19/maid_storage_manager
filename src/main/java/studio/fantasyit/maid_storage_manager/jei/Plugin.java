@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarRecipeHandler
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingTableRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceRecipeHandler;
+import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingRecipeHandler;
 
 @JeiPlugin
 public class Plugin implements IModPlugin {
@@ -37,6 +38,7 @@ public class Plugin implements IModPlugin {
         registration.addRecipeTransferHandler(new CraftingTableRecipeHandler(), RecipeTypes.CRAFTING);
         registration.addRecipeTransferHandler(new FurnaceRecipeHandler(), RecipeTypes.SMELTING);
         registration.addRecipeTransferHandler(new AltarRecipeHandler(), AltarRecipeCategory.ALTAR);
+        registration.addRecipeTransferHandler(new SmithingRecipeHandler(), RecipeTypes.SMITHING);
     }
 
     @Override

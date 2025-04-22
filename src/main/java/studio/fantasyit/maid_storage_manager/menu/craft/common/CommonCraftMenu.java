@@ -299,6 +299,12 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     commonStepDataContainer.setChanged();
                 }
             }
+            case EXTRA -> {
+                if (data != null) {
+                    steps.get(key).step.setExtraData(data);
+                    save();
+                }
+            }
         }
         recalculateSlots();
     }

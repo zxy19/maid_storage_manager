@@ -1,16 +1,14 @@
-package studio.fantasyit.maid_storage_manager.menu.craft.crafting_table;
+package studio.fantasyit.maid_storage_manager.menu.craft.anvil;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -23,66 +21,43 @@ import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonStepDataCon
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-public class CraftingTableCraftMenu extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
+public class AnvilCraftMenu extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
     Player player;
     ItemStack target;
     CraftGuideData craftGuideData;
     StepDataContainer stepDataContainer = null;
+    AnvilMenu anvilMenu;
+    public int xpCost = -1;
 
-    public static class SimpleSlot extends DataSlot {
-        Consumer<Integer> set;
-        Supplier<Integer> get;
-
-        public SimpleSlot(Consumer<Integer> set, Supplier<Integer> get) {
-            this.set = set;
-            this.get = get;
-        }
-
-        @Override
-        public int get() {
-            return get.get();
-        }
-
-        @Override
-        public void set(int p_39402_) {
-            set.accept(p_39402_);
-        }
-    }
-
-    public CraftingTableCraftMenu(int p_38852_, Player player) {
-        super(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), p_38852_);
+    public AnvilCraftMenu(int p_38852_, Player player) {
+        super(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
         craftGuideData = CraftGuideData.fromItemStack(target);
         stepDataContainer = new StepDataContainer(craftGuideData.getSteps().get(0), this);
+        anvilMenu = new AnvilMenu(p_38852_, player.getInventory());
         addFilterSlots();
         addPlayerSlots();
         addSpecialSlots();
+        recalculateRecipe();
     }
 
     private void addFilterSlots() {
-        int sx = 31;
-        int sy = 50;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                this.addSlot(new FilterSlot(stepDataContainer,
-                        i * 3 + j,
-                        sx + j * 18,
-                        sy + i * 18));
-            }
-        }
         this.addSlot(new FilterSlot(stepDataContainer,
-                9,
-                120 + 4,
-                64 + 4
+                0,
+                28,
+                73
+        ));
+        this.addSlot(new FilterSlot(stepDataContainer,
+                1,
+                77,
+                73
+        ));
+        this.addSlot(new FilterSlot(stepDataContainer,
+                2,
+                135,
+                73
         ));
     }
 
@@ -108,6 +83,7 @@ public class CraftingTableCraftMenu extends AbstractContainerMenu implements ISa
     }
 
     private void addSpecialSlots() {
+
     }
 
     @Override
@@ -221,26 +197,21 @@ public class CraftingTableCraftMenu extends AbstractContainerMenu implements ISa
                     save();
                 }
             }
+            case EXTRA -> {
+                stepDataContainer.step.setExtraData(data);
+                save();
+            }
         }
     }
 
     public void recalculateRecipe() {
-        Optional<CraftingRecipe> recipe = RecipeUtil.getCraftingRecipe(player.level(), RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3));
-        recipe.ifPresentOrElse(craftingRecipe -> {
-            List<ItemStack> result = new ArrayList<>();
-            result.add(craftingRecipe.getResultItem(player.level().registryAccess()));
-            NonNullList<ItemStack> remain = craftingRecipe.getRemainingItems(RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3));
-            remain.forEach(i -> ItemStackUtil.addToList(result, i, true));
-            for (int i = 0; i < stepDataContainer.outputCount; i++) {
-                if (i < result.size())
-                    stepDataContainer.setItemNoTrigger(i + stepDataContainer.inputCount, result.get(i));
-                else
-                    stepDataContainer.setItemNoTrigger(i + stepDataContainer.inputCount, ItemStack.EMPTY);
-            }
-        }, () -> {
-            for (int i = 0; i < stepDataContainer.outputCount; i++) {
-                stepDataContainer.setItemNoTrigger(i + stepDataContainer.inputCount, ItemStack.EMPTY);
-            }
-        });
+        CompoundTag extra = stepDataContainer.step.getExtraData();
+        String name = extra.getString("name");
+        anvilMenu.setItem(0, 0, stepDataContainer.getItem(0));
+        anvilMenu.setItem(1, 0, stepDataContainer.getItem(1));
+        anvilMenu.setItemName(name);
+        anvilMenu.createResult();
+        stepDataContainer.setItemNoTrigger(2, anvilMenu.getSlot(2).getItem());
+        xpCost = anvilMenu.getCost();
     }
 }

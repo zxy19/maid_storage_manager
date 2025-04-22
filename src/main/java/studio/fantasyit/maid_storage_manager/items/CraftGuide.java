@@ -51,6 +51,7 @@ public class CraftGuide extends Item implements MenuProvider {
     public static final String TAG_OP_OPTIONAL = "optional";
     public static final String TAG_OP_INPUT = "input";
     public static final String TAG_OP_OUTPUT = "output";
+    public static final String TAG_OP_EXTRA = "extra";
 
 
     public CraftGuide() {

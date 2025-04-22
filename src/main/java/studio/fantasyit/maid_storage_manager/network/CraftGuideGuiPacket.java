@@ -14,7 +14,7 @@ public class CraftGuideGuiPacket {
         REMOVE,
         SET_ITEM,
         SET_ALL_INPUT,
-        MATCH_TAG, PAGE_DOWN, PAGE_UP, OPTIONAL,
+        MATCH_TAG, PAGE_DOWN, PAGE_UP, OPTIONAL,EXTRA
     }
 
     public final Type type;

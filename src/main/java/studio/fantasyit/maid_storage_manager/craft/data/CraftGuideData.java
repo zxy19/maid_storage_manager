@@ -117,7 +117,13 @@ public class CraftGuideData {
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
-            craftGuideData.steps.add(new CraftGuideStepData(target, items, new ArrayList<>(), type, optional, false));
+            craftGuideData.steps.add(new CraftGuideStepData(target,
+                    items,
+                    new ArrayList<>(),
+                    type,
+                    optional,
+                    false,
+                    new CompoundTag()));
         }
     }
 
@@ -215,5 +221,22 @@ public class CraftGuideData {
         ICraftType type1 = CraftManager.getInstance().getType(type);
         if (type1 == null) return false;
         return type1.available(this);
+    }
+
+    public boolean isCircular() {
+        List<ItemStack> allInputs = getInput();
+        List<ItemStack> allOutputs = getOutput();
+
+        for (CraftGuideStepData step : steps) {
+            List<ItemStack> output = step.getOutput();
+            for (ItemStack outputItem : output) {
+                if (allInputs.stream().anyMatch(item -> ItemStackUtil.isSame(item, outputItem, step.matchTag))) {
+                    if (allOutputs.stream().anyMatch(item -> ItemStackUtil.isSame(item, outputItem, true))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

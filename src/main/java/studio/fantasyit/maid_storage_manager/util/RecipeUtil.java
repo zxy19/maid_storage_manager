@@ -9,10 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -111,6 +108,18 @@ public class RecipeUtil {
         return recipeManager.getRecipeFor(
                 RecipeType.CRAFTING,
                 container,
+                level
+        );
+    }
+    public static Optional<SmithingRecipe> getSmithingRecipe(Level level, List<ItemStack> items) {
+        SimpleContainer simpleContainer = new SimpleContainer(3);
+        for (int i = 0; i < Math.min(3, items.size()); i++) {
+            simpleContainer.setItem(i, items.get(i));
+        }
+        RecipeManager recipeManager = level.getRecipeManager();
+        return recipeManager.getRecipeFor(
+                RecipeType.SMITHING,
+                simpleContainer,
                 level
         );
     }

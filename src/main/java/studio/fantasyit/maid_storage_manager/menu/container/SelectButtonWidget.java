@@ -18,6 +18,10 @@ public class SelectButtonWidget<T> extends AbstractWidget {
         return option.data;
     }
 
+    public boolean isVisible() {
+        return visible;
+    }
+
     public record Option<T>(T data, ImageAsset image, ImageAsset hoverImage, Component tooltip) {
     }
 

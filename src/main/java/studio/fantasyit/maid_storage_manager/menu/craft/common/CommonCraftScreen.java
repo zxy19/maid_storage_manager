@@ -4,6 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,12 +14,14 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
+import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
@@ -27,10 +31,8 @@ import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
@@ -40,14 +42,15 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         SORT_UP,
         SORT_REMOVE,
         SORT_DOWN,
-        OPTIONAL
+        OPTIONAL,
+        TIME,
     }
 
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
 
     public final List<HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>>> buttonsByRow = new ArrayList<>();
+    public final List<EditBox> editBoxes = new ArrayList<>();
     public final List<List<Integer>> buttonYOffset = new ArrayList<>();
-
     SelectButtonWidget<?> pageUpBtn;
     SelectButtonWidget<?> pageDownBtn;
 
@@ -70,6 +73,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private void addButtons() {
         buttonsByRow.clear();
         buttonYOffset.clear();
+        editBoxes.clear();
         //TODO:目前配方树计算需要使用准确物品进行匹配，暂时不支持模糊物品作为配方拓扑的节点。
         // 所以忽略NBT功能暂时不能实现。也许节点中的ItemStack应该被更换?
 
@@ -79,11 +83,54 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             addActionButton(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
             addSortButtons(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
             addOptionButtons(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
+            addTimeButton(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
             buttonsByRow.add(objects);
             buttonYOffset.add(yOffsets);
         }
         addPageButton();
         updateButtons();
+    }
+
+    private void addTimeButton(HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> objects, ArrayList<Integer> yOffsets, int sy, int i1) {
+        int dy = 26;
+        yOffsets.add(dy);
+        objects.put(BUTTON_TYPE_COMMON.TIME, addRenderableWidget(new SelectButtonWidget<Integer>(121, sy + dy - 1, (value) -> {
+            int v;
+            CompoundTag extraData = menu.steps.get(i1).step.getExtraData();
+            if (menu.steps.get(i1).actionType.type().equals(CommonIdleAction.TYPE)) {
+                if (extraData.contains("u"))
+                    v = extraData.getInt("u");
+                else
+                    v = 0;
+            } else
+                v = 0;
+            if (value != null) {
+                v = (value == 0 ? 1 : 0);
+                editBoxes.get(i1).setFocused(true);
+                int finalV = v;
+                sendExtra(i1, t -> t.putInt("u", finalV));
+            }
+
+
+            return new SelectButtonWidget.Option<>(
+                    v,
+                    CommonCraftAssets.SMALL_BUTTON,
+                    CommonCraftAssets.SMALL_BUTTON_HOVER,
+                    v == 0 ? Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_tick") : Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_second")
+            );
+        }, this)));
+
+        EditBox editBox = addRenderableWidget(new EditBox(font,
+                getGuiLeft() + 90,
+                getGuiTop() + sy + dy,
+                30,
+                8,
+                Component.literal("")));
+        editBox.setValue("0");
+        editBox.setBordered(false);
+        editBox.setFilter(StringUtils::isNumeric);
+        editBox.setResponder(t -> sendExtra(i1, c -> c.putInt("time", Integer.parseInt(t))));
+        editBoxes.add(editBox);
     }
 
     private void addActionButton(Map<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons, List<Integer> yOffsets, int sy, int i) {
@@ -312,8 +359,22 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                                 cab.getX() + 2,
                                 cab.getY() + 2
                         );
+
+                SelectButtonWidget<Integer> timeBtn = (SelectButtonWidget<Integer>) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.TIME);
+                if (timeBtn.isVisible()) {
+                    graphics.pose().pushPose();
+                    graphics.pose().translate(timeBtn.getX() + 2, timeBtn.getY() + 2, 0);
+                    graphics.pose().scale(0.7f, 0.7f, 1);
+                    graphics.drawString(this.font,
+                            timeBtn.getData() == 0 ? "T" : "S",
+                            0,
+                            0,
+                            0xFFFFFF);
+                    graphics.pose().popPose();
+                }
             }
         }
+
 
         graphics.pose().popPose();
     }
@@ -371,6 +432,14 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     )
             );
         }
+        Optional<GuiEventListener> child = this.getChildAt(p_94686_, p_94687_);
+        if (child.isPresent() && child.get() instanceof EditBox eb && eb.isVisible()) {
+            int dv = (int) (Math.abs(p_94688_) / p_94688_);
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
+                dv *= 10;
+            Integer ov = Integer.valueOf(eb.getValue());
+            eb.setValue(String.valueOf(ov + dv));
+        }
         return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
     }
 
@@ -410,8 +479,32 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons = buttonsByRow.get(i);
             int finalI = i;
             buttons.values().forEach(button -> button.setVisible(menu.isIdCurrentPage(finalI)));
+            if (menu.steps.get(i).actionType.type() == CommonIdleAction.TYPE) {
+                buttons.get(BUTTON_TYPE_COMMON.TIME).setVisible(menu.isIdCurrentPage(i));
+                buttons.get(BUTTON_TYPE_COMMON.TIME).setOption(null);
+                String newTime = String.valueOf(menu.steps.get(i).step.extraData.getInt("time"));
+                if (!newTime.equals(editBoxes.get(i).getValue()))
+                    editBoxes.get(i).setValue(newTime);
+                editBoxes.get(i).visible = menu.isIdCurrentPage(i);
+                editBoxes.get(i).active = menu.isIdCurrentPage(i);
+            } else {
+                buttons.get(BUTTON_TYPE_COMMON.TIME).setVisible(false);
+                editBoxes.get(i).visible = false;
+                editBoxes.get(i).active = false;
+            }
         }
         pageUpBtn.setVisible(menu.page > 0);
         pageDownBtn.setVisible(menu.page < (menu.steps.size() + 2) / 3 - 1);
+    }
+
+    private void sendExtra(int i, @Nullable Consumer<CompoundTag> transformer) {
+        CompoundTag tag = new CompoundTag();
+        if (menu.steps.get(i).actionType.type().equals(CommonIdleAction.TYPE)) {
+            tag.putInt("time", Integer.parseInt(editBoxes.get(i).getValue()));
+            tag.putInt("u", (int) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.TIME).getData());
+        }
+        if (transformer != null)
+            transformer.accept(tag);
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.EXTRA, i, 0, tag));
     }
 }

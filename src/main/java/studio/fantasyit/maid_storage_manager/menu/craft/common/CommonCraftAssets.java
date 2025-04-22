@@ -109,6 +109,14 @@ public class CommonCraftAssets {
             new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
             1, 246, 129, 2
     );
+    public static ImageAsset SMALL_BUTTON = new ImageAsset(
+            new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
+            192, 86, 10, 10
+    );
+    public static ImageAsset SMALL_BUTTON_HOVER = new ImageAsset(
+            new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
+            192, 102, 10, 10
+    );
 
     public static Map<ResourceLocation, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();
 

@@ -10,9 +10,11 @@ import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfi
 import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftScreen;
+import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingTableCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftScreen;
+import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftScreen;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientGuiRegistry {
@@ -27,6 +29,8 @@ public class ClientGuiRegistry {
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), CraftingTableCraftScreen::new);
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_ALTAR.get(), AltarCraftScreen::new);
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_FURNACE.get(), FurnaceCraftScreen::new);
+            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), SmithingCraftScreen::new);
+            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), AnvilCraftScreen::new);
         });
     }
 }

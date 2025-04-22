@@ -131,8 +131,9 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(step.getA(),
                     colors[i % colors.length],
                     event,
-                    (i == data.selecting ? "[*]" : "") + "[" + (i + 1) + "]" + CommonCraftAssets.translationForAction(step.getB()).getString(),
-                    floating
+                    "[" + (i + 1) + "]" + CommonCraftAssets.translationForAction(step.getB()).getString(),
+                    floating,
+                    (i == data.selecting ? 0xe91e63 : 0xffffff)
             );
         }
         if (data.selecting != -1 && data.selecting < data.stepBindings.size()) {
@@ -140,7 +141,7 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(step.getA(),
                     colors_r,
                     event,
-                    Component.translatable("maid_storage_manager.craft_guide_render.selecting").getString(),
+                    Component.translatable("interaction.craft_guide_selecting").getString(),
                     floating
             );
         }

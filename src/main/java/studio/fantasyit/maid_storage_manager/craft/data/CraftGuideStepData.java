@@ -35,7 +35,9 @@ public class CraftGuideStepData {
                     Codec.BOOL.fieldOf(CraftGuide.TAG_OP_MATCH_TAG)
                             .forGetter(CraftGuideStepData::isMatchTag),
                     Codec.BOOL.optionalFieldOf(CraftGuide.TAG_OP_OPTIONAL, false)
-                            .forGetter(CraftGuideStepData::isOptional)
+                            .forGetter(CraftGuideStepData::isOptional),
+                    CompoundTag.CODEC.fieldOf(CraftGuide.TAG_OP_EXTRA)
+                            .forGetter(CraftGuideStepData::getExtraData)
             ).apply(instance, CraftGuideStepData::new)
     );
     public Target storage;
@@ -45,13 +47,15 @@ public class CraftGuideStepData {
     public CraftAction actionType;
     public boolean optional;
     public boolean matchTag;
+    public CompoundTag extraData;
 
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
                               ResourceLocation action,
                               boolean optional,
-                              boolean matchTag) {
+                              boolean matchTag,
+                              CompoundTag extraData) {
         this.storage = storage;
         this.action = action;
         this.optional = optional;
@@ -71,6 +75,7 @@ public class CraftGuideStepData {
             output.add(ItemStack.EMPTY);
         this.input = input;
         this.output = output;
+        this.extraData = extraData;
     }
 
     public static CraftGuideStepData createFromTypeStorage(Target storage, ResourceLocation action) {
@@ -81,7 +86,7 @@ public class CraftGuideStepData {
         List<ItemStack> outputs = new ArrayList<>();
         for (int i = 0; i < action1.outputCount(); i++)
             outputs.add(ItemStack.EMPTY);
-        return new CraftGuideStepData(storage, inputs, outputs, action, false, false);
+        return new CraftGuideStepData(storage, inputs, outputs, action, false, false, new CompoundTag());
     }
 
     public static CraftGuideStepData fromCompound(CompoundTag tag) {
@@ -89,6 +94,7 @@ public class CraftGuideStepData {
         ResourceLocation action = null;
         boolean optional = false;
         boolean matchTag = false;
+        CompoundTag extraData = new CompoundTag();
         if (tag.contains(CraftGuide.TAG_OP_STORAGE))
             storage = Target.fromNbt(tag.getCompound(CraftGuide.TAG_OP_STORAGE));
         List<ItemStack> inputs = new ArrayList<>();
@@ -117,7 +123,9 @@ public class CraftGuideStepData {
             optional = tag.getBoolean(CraftGuide.TAG_OP_OPTIONAL);
         if (tag.contains(CraftGuide.TAG_OP_MATCH_TAG))
             matchTag = tag.getBoolean(CraftGuide.TAG_OP_MATCH_TAG);
-        return new CraftGuideStepData(storage, inputs, outputs, action, optional, matchTag);
+        if (tag.contains(CraftGuide.TAG_OP_EXTRA))
+            extraData = tag.getCompound(CraftGuide.TAG_OP_EXTRA);
+        return new CraftGuideStepData(storage, inputs, outputs, action, optional, matchTag, extraData);
     }
 
     public CompoundTag toCompound() {
@@ -146,6 +154,7 @@ public class CraftGuideStepData {
         tag.putString(CraftGuide.TAG_OP_ACTION, action.toString());
         tag.putBoolean(CraftGuide.TAG_OP_OPTIONAL, optional);
         tag.putBoolean(CraftGuide.TAG_OP_MATCH_TAG, matchTag);
+        tag.put(CraftGuide.TAG_OP_EXTRA, extraData);
         return tag;
     }
 
@@ -253,5 +262,13 @@ public class CraftGuideStepData {
                 output.add(ItemStack.EMPTY);
             }
         }
+    }
+
+    public CompoundTag getExtraData() {
+        return extraData;
+    }
+
+    public void setExtraData(CompoundTag extraData) {
+        this.extraData = extraData;
     }
 }

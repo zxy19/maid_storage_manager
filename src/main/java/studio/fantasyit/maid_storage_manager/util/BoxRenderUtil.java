@@ -21,6 +21,10 @@ import java.util.Map;
 @OnlyIn(Dist.CLIENT)
 public class BoxRenderUtil {
     public static void renderStorage(Target storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating) {
+        renderStorage(storage, colors, event, key, floating, 0xffffff);
+    }
+
+    public static void renderStorage(Target storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating, int textColor) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
@@ -77,7 +81,7 @@ public class BoxRenderUtil {
             guiGraphics.pose().mulPose(Axis.XP.rotationDegrees(event.getCamera().getXRot()));
             guiGraphics.pose().scale(-0.025f, -0.025f, -1f);
             guiGraphics.pose().translate(-mc.font.width(key) / 2f, 0, 0);
-            guiGraphics.drawString(mc.font, key, 0, 0, 0xffffff);
+            guiGraphics.drawString(mc.font, key, 0, 0, textColor);
             guiGraphics.pose().popPose();
         }
     }

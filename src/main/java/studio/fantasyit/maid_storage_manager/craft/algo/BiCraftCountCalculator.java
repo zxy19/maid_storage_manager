@@ -2,8 +2,10 @@ package studio.fantasyit.maid_storage_manager.craft.algo;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class BiCraftCountCalculator {
     private final ItemStack item;
     int currentRequire = 0;
     int maxRequire = 0;
+    boolean circularTree = false;
     List<CraftLayer> results = new ArrayList<>();
 
     public BiCraftCountCalculator(AvailableCraftGraph availableCraftGraph, ItemStack item, int requireCount, int availableSlots) {
@@ -41,11 +44,22 @@ public class BiCraftCountCalculator {
             }
         }
         if (currentResults != null && !currentResults.isEmpty()) {
+            if (!circularTree && currentRequire != 1 && currentResults.stream().anyMatch(layer -> layer.getCraftData().map(CraftGuideData::isCircular).orElse(false))) {
+                circularTree = true;
+                currentRequire = 1;
+                return true;
+            }
             //当前数量可以进行合成。那么先记录结果层。
             results.addAll(currentResults);
             maxRequire -= currentRequire;
             currentRequire = maxRequire;
+            if (circularTree) currentRequire = 1;
+            //背包剩余的加入合成树
             context.forEachRemaining(availableCraftGraph::addCount);
+            //当前合成结束后，不属于产物的物品也应该加入合成树
+            currentResults.get(currentResults.size() - 1).getItems().stream()
+                    .filter(itemStack -> !ItemStackUtil.isSame(itemStack, this.item, false))
+                    .forEach(t -> availableCraftGraph.addCount(t, t.getCount()));
             if (maxRequire <= 0) return false;
             availableCraftGraph.startContext(this.item, currentRequire);
             fullGroupFails = List.of();

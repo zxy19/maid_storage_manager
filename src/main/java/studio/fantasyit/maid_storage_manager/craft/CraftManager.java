@@ -12,9 +12,7 @@ import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.context.VirtualAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.*;
-import studio.fantasyit.maid_storage_manager.craft.context.special.AltarRecipeAction;
-import studio.fantasyit.maid_storage_manager.craft.context.special.AltarUseAction;
-import studio.fantasyit.maid_storage_manager.craft.context.special.CraftingRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -64,6 +62,8 @@ public class CraftManager {
         event.addCraftType(new CraftingType());
         event.addCraftType(new AltarType());
         event.addCraftType(new FurnaceType());
+        event.addCraftType(new SmithingType());
+        event.addCraftType(new AnvilType());
         event.addAction(
                 CommonPlaceItemAction.TYPE,
                 CommonPlaceItemAction::new,
@@ -119,6 +119,15 @@ public class CraftManager {
                 1
         );
         event.addAction(
+                CommonIdleAction.TYPE,
+                CommonIdleAction::new,
+                PathTargetLocator::touchPos,
+                CraftAction.PathEnoughLevel.CLOSER.value,
+                true,
+                0,
+                3
+        );
+        event.addAction(
                 CraftingRecipeAction.TYPE,
                 CraftingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
@@ -148,6 +157,24 @@ public class CraftManager {
         event.addAction(
                 FurnaceType.TYPE,
                 VirtualAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false,
+                2,
+                1
+        );
+        event.addAction(
+                SmithingType.TYPE,
+                SmithingRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false,
+                3,
+                1
+        );
+        event.addAction(
+                AnvilType.TYPE,
+                AnvilRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false,
