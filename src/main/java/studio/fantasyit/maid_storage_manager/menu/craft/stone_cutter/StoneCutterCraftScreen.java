@@ -1,8 +1,5 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -11,20 +8,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
-import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
-import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
-import studio.fantasyit.maid_storage_manager.menu.craft.base.StepDataContainer;
+import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftScreen;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
@@ -33,8 +24,8 @@ import java.util.List;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
-public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraftMenu> implements ICraftGuiPacketReceiver {
-    private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/stone_cutter.png");
+public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraftMenu> {
+    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/stone_cutter.png");
 
     private final ImageAsset SLOT = new ImageAsset(background, 176, 16, 18, 18);
     private final ImageAsset SLOT_SELECTED = new ImageAsset(background, 176, 34, 18, 18);
@@ -47,7 +38,7 @@ public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraf
     private int scrollTop = 0;
 
     public StoneCutterCraftScreen(StoneCutterCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
-        super(p_97741_, p_97742_, p_97743_);
+        super(p_97741_, p_97742_, p_97743_, background, true);
         this.imageWidth = 176;
         this.imageHeight = 245;
         this.inventoryLabelY = this.imageHeight - 94;
@@ -63,11 +54,11 @@ public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraf
     @Override
     protected void init() {
         super.init();
-        this.addButtons();
         updateButtons();
     }
 
-    private void addButtons() {
+    @Override
+    protected void addButtons() {
         buttons.clear();
         int sx = 39;
         int sy = 68;
@@ -111,50 +102,10 @@ public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraf
         }
     }
 
-    private void sendAndTriggerLocalPacket(CraftGuideGuiPacket packet) {
-        Network.INSTANCE.send(
-                PacketDistributor.SERVER.noArg(),
-                packet);
-        menu.handleGuiPacket(packet.type, packet.key, packet.value, packet.data);
-        this.handleGuiPacket(packet.type, packet.key, packet.value, packet.data);
-    }
-
-    @Override
-    protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
-        renderBackground(guiGraphics);
-        int relX = (this.width - this.imageWidth) / 2;
-        int relY = (this.height - this.imageHeight) / 2;
-
-        guiGraphics.blit(background,
-                relX,
-                relY,
-                0,
-                0,
-                0,
-                this.imageWidth,
-                this.imageHeight,
-                256,
-                256);
-    }
 
     @Override
     protected void renderTooltip(@NotNull GuiGraphics graphics, int x, int y) {
         if (this.menu.getCarried().isEmpty()) {
-            int inGuiX = x - this.getGuiLeft();
-            int inGuiY = y - this.getGuiTop();
-            for (Slot slot : this.getMenu().slots) {
-                if (slot.x <= inGuiX && slot.x + 16 >= inGuiX && slot.y <= inGuiY && slot.y + 16 >= inGuiY) {
-                    if (slot instanceof FilterSlot filterSlot && filterSlot.isActive()) {
-                        if (!filterSlot.getItem().isEmpty())
-                            graphics.renderTooltip(this.font,
-                                    filterSlot.getItem(),
-                                    x,
-                                    y
-                            );
-                        return;
-                    }
-                }
-            }
             for (int i = 0; i < buttons.size(); i++) {
                 ItemStack itemStack = menu.displayOnlySlots.getItem(i);
                 if (buttons.get(i).isMouseOver(x, y)) {
@@ -174,15 +125,8 @@ public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraf
     @Override
     public void render(GuiGraphics graphics, int p_283661_, int p_281248_, float p_281886_) {
         super.render(graphics, p_283661_, p_281248_, p_281886_);
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 2000);
-        renderTooltip(graphics, p_283661_, p_281248_);
-        graphics.pose().popPose();
-        RenderSystem.disableDepthTest();
-        renderNumberLabel(graphics);
         renderIcons(graphics);
         renderScrollbar(graphics);
-        RenderSystem.enableDepthTest();
     }
 
     private void renderScrollbar(GuiGraphics graphics) {
@@ -206,49 +150,6 @@ public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraf
             }
         }
     }
-
-    private void renderNumberLabel(@NotNull GuiGraphics graphics) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 1000);
-        int relX = (this.width - this.imageWidth) / 2;
-        int relY = (this.height - this.imageHeight) / 2;
-        for (Slot slot : this.getMenu().slots) {
-            if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc && filterSlot.isActive()) {
-                if (filterSlot.hasItem()) {
-                    int count = sdc.getCount(filterSlot.getContainerSlot());
-                    String text = String.valueOf(count);
-                    if (count == -1) {
-                        text = "*";
-                    }
-                    graphics.pose().pushPose();
-                    graphics.pose().scale(0.6f, 0.6f, 1);
-                    graphics.drawString(this.font, text,
-                            (int) ((relX + filterSlot.x + 16 - this.font.width(text) * 0.6) / 0.6f),
-                            (int) ((relY + filterSlot.y + 16 - this.font.lineHeight * 0.6) / 0.6f),
-                            0xffffff);
-                    graphics.pose().popPose();
-                }
-            }
-        }
-
-        graphics.pose().popPose();
-    }
-
-    @Override
-    public void accept(FilterSlot slot, ItemStack item) {
-        if (!slot.isActive()) return;
-        slot.set(item);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, item.save(new CompoundTag())));
-    }
-
-    @Override
-    public List<FilterSlot> getSlots() {
-        return this.menu.slots.stream()
-                .filter(slot -> slot instanceof FilterSlot)
-                .map(slot -> (FilterSlot) slot)
-                .toList();
-    }
-
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
@@ -266,26 +167,6 @@ public class StoneCutterCraftScreen extends AbstractFilterScreen<StoneCutterCraf
 
     @Override
     public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
-        @Nullable Slot slot = this.getSlotUnderMouse();
-        if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc) {
-            MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
-            int dv = (int) (Math.abs(p_94688_) / p_94688_);
-            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
-                dv *= 10;
-
-            if (dv > 0) {
-                if (count.addAndGet(dv) == 0) count.addAndGet(1);
-            } else {
-                if (count.addAndGet(dv) <= 0) count.setValue(1);
-            }
-            sendAndTriggerLocalPacket(
-                    new CraftGuideGuiPacket(
-                            CraftGuideGuiPacket.Type.COUNT,
-                            filterSlot.getContainerSlot(),
-                            count.getValue()
-                    )
-            );
-        }
         double inGuiX = p_94686_ - getGuiLeft();
         double inGuiY = p_94687_ - getGuiTop();
         if (inGuiX < 129 && inGuiY < 122 && inGuiX > 39 && inGuiY > 68) {

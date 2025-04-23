@@ -261,6 +261,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             }
             case REMOVE -> {
                 pageSlots.get(key).forEach(slot -> slot.setActive(false));
+                targetBlockSlots.remove(key);
                 pageSlots.remove(key);
                 steps.remove(key);
                 craftGuideData.getSteps().remove(key);
@@ -316,6 +317,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 filterSlot.y = SLOT_Y[i % 3];
                 filterSlot.setActive(isIdCurrentPage(i));
             }
+            targetBlockSlots.get(i).y = SLOT_Y[i % 3];
             if (steps.get(i).inputCount > 0 && steps.get(i).outputCount > 0) {
                 pageSlots.get(i).get(1).setActive(false);
             }

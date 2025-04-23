@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -200,12 +201,17 @@ public class Network {
                 CraftGuideGuiPacket::new,
                 (msg, context) -> {
                     @Nullable Player sender = context.get().getSender();
-                    if (sender == null) sender = Minecraft.getInstance().player;
+                    if (sender == null) sender = getLocalPlayer();
                     if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
                         icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
                     }
                 }
         );
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static Player getLocalPlayer() {
+        return Minecraft.getInstance().player;
     }
 
     @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.DEDICATED_SERVER)

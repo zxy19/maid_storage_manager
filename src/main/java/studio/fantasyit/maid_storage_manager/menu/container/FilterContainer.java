@@ -129,7 +129,13 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
     }
 
     public void setCount(int index, int count) {
-        this.count[index].setValue(count);
+        if (count != this.count[index].getValue()) {
+            this.count[index].setValue(count);
+        }
+    }
+
+    public MutableInt getCountMutable(int index) {
+        return count[index];
     }
 
     public int getCount(int index) {

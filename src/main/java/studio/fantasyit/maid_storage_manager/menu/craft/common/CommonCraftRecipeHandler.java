@@ -42,14 +42,14 @@ public class CommonCraftRecipeHandler implements IUniversalRecipeTransferHandler
                 .stream()
                 .map(e -> e.getItemStacks().findFirst().orElse(ItemStack.EMPTY))
                 .filter(i -> !i.isEmpty())
-                .forEach(i -> ItemStackUtil.addToList(outputs, i, true));
+                .forEach(i -> ItemStackUtil.addToList(outputs, i.copy(), true));
 
         List<ItemStack> inputs = new ArrayList<>();
         recipeSlots.getSlotViews(RecipeIngredientRole.INPUT)
                 .stream()
                 .map(e -> e.getItemStacks().findFirst().orElse(ItemStack.EMPTY))
                 .filter(i -> !i.isEmpty())
-                .forEach(i -> ItemStackUtil.addToList(inputs, i, true));
+                .forEach(i -> ItemStackUtil.addToList(inputs, i.copy(), true));
 
         int inputId = 0;
         int outputId = 0;
