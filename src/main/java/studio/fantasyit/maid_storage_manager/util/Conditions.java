@@ -35,6 +35,8 @@ public class Conditions {
     }
 
     public static boolean listNotDone(EntityMaid maid) {
+        if (RequestListItem.isBlackMode(maid.getMainHandItem()))
+            return !RequestListItem.isBlackModeDone(maid.getMainHandItem());
         return RequestListItem.getItemStacksNotDone(maid.getMainHandItem()).size() != 0;
     }
 
@@ -43,6 +45,8 @@ public class Conditions {
     }
 
     public static boolean listAllStored(EntityMaid maid) {
+        if (RequestListItem.isBlackMode(maid.getMainHandItem()))
+            return false;
         return RequestListItem.isAllStored(maid.getMainHandItem());
     }
 
@@ -104,16 +108,10 @@ public class Conditions {
         return maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).noSortPlacement();
     }
 
-    public static boolean canTempPickUp(EntityMaid entityMaid, ItemStack item) {
-        return entityMaid.getBrain().hasMemoryValue(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get()) &&
-                ItemStack.isSameItemSameTags(entityMaid.getBrain().getMemory(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get()).get(), item);
-    }
-
-    public static void setTempPickUp(EntityMaid entityMaid, ItemStack item) {
-        entityMaid.getBrain().setMemory(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get(), item);
-    }
-
-    public static void clearTempPickUp(EntityMaid entityMaid) {
-        entityMaid.getBrain().eraseMemory(MemoryModuleRegistry.TEMP_PICKUP_ITEM.get());
+    public static boolean shouldCheckStock(EntityMaid maid) {
+        ItemStack mainHandItem = maid.getMainHandItem();
+        if (RequestListItem.getStorageBlock(mainHandItem) == null) return false;
+        if (!RequestListItem.isStockMode(mainHandItem)) return false;
+        return !RequestListItem.hasCheckedStock(mainHandItem);
     }
 }

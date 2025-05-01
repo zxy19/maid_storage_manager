@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -175,5 +176,20 @@ public class InvUtil {
         itementity.setDeltaMovement(direction);
         itementity.setUnlimitedLifetime();
         level.addFreshEntity(itementity);
+    }
+    public static int getTargetIndex(EntityMaid maid, ItemStack itemStack,boolean matchTag){
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        for (int i = 0; i < inv.getSlots(); i++) {
+            if (ItemStackUtil.isSame(inv.getStackInSlot(i), itemStack, matchTag)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    public static void swapHandAndSlot(EntityMaid maid, int slot){
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        ItemStack hand = maid.getMainHandItem();
+        maid.setItemInHand(InteractionHand.MAIN_HAND, inv.getStackInSlot(slot));
+        inv.setStackInSlot(slot, hand);
     }
 }

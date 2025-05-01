@@ -48,6 +48,7 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
     @Override
     protected void slotClicked(Slot p_97778_, int p_97779_, int p_97780_, ClickType p_97781_) {
         super.slotClicked(p_97778_, p_97779_, p_97780_, p_97781_);
+        buttons.forEach(b -> b.setOption(null));
         updateButtons();
     }
 
@@ -150,6 +151,7 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
             }
         }
     }
+
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
@@ -157,13 +159,12 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
                 if (!isScrolling)
                     scrollTop = (int) (40.0 / Math.max(1, menu.maxPage - 1) * menu.page);
             }
-            case SET_ITEM -> {
+            case SET_ITEM, SET_ALL_INPUT -> {
                 buttons.forEach(b -> b.setOption(null));
             }
         }
         updateButtons();
     }
-
 
     @Override
     public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {

@@ -127,7 +127,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
-
+        if (!MemoryUtil.getCrafting(maid).hasCurrent()) return;
         if (fail) {
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]crafting fail");
             MemoryUtil.getCrafting(maid).failCurrent(maid, craftGuideStepData.getItems());

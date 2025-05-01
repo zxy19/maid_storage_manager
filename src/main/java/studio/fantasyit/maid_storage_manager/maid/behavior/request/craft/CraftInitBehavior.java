@@ -62,6 +62,12 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             success = 0;
             return;
         }
+        if(RequestListItem.isBlackMode(maid.getMainHandItem())){
+            DebugData.getInstance().sendMessage("[REQUEST_CRAFT]No Calculator found");
+            done = true;
+            success = 0;
+            return;
+        }
         DebugData.getInstance().sendMessage("[REQUEST_CRAFT]Start. Calculate tree");
         notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
         if (notDone.isEmpty()) {

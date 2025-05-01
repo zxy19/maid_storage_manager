@@ -3,6 +3,7 @@
   "values": [
     "#forge:chests",
     "#forge:barrels",
+    "minecraft:shulker_box",
     {"required": false,"id":"ae2:cable_bus"},
     {"required": false,"id":"sophisticatedstorage:barrel"},
     {"required": false,"id":"sophisticatedstorage:copper_barrel"},

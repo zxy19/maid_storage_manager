@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.maid.behavior.request.ret;
+package studio.fantasyit.maid_storage_manager.maid.behavior.request.stock;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
@@ -17,16 +17,15 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
-import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 
 import java.util.Map;
 
 /**
  * 当女仆背包装满或者任务完成，计划回到存储标记点
  */
-public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
+public class StockCheckMoveBehavior extends Behavior<EntityMaid> {
 
-    public RequestRetMoveBehavior() {
+    public StockCheckMoveBehavior() {
         super(Map.of(
                 MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
                 InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
@@ -38,46 +37,25 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!Conditions.takingRequestList(maid)) return false;
 
-        //由其他模式发起的返回存储请求。
-        if (MemoryUtil.getRequestProgress(maid).isReturning()) return true;
-
-
-        if (MemoryUtil.getRequestProgress(maid).isCheckingStock()) return false;
-        if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
-        return Conditions.listAllDone(maid) || Conditions.inventoryFull(maid);
+        return Conditions.shouldCheckStock(maid);
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         @Nullable Target target = RequestListItem.getStorageBlock(maid.getMainHandItem());
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
-        //如果没有绑定存储方块位置，那么直接停止任务，扔掉或者存储清单，三十秒后进行日常工作
         if (target == null || storage == null) {
-            if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) {
-                DebugData.getInstance().sendMessage("[REQUEST_RET] No target");
-                RequestListItem.markAllDone(maid.getMainHandItem());
-                RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null);
-                MemoryUtil.setReturnToScheduleAt(maid, level.getServer().getTickCount() + 600);
-                return;
-            } else {
-                MemoryUtil.getRequestProgress(maid).setReturn(false);
-                MemoryUtil.getRequestProgress(maid).clearTarget();
-                MemoryUtil.getCrafting(maid).clearTarget();
-                MemoryUtil.clearTarget(maid);
+            DebugData.getInstance().sendMessage("[STOCK_CHECK] No target");
+        } else {
+            BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
+            if (goal == null) {
+                DebugData.getInstance().sendMessage("[STOCK_CHECK] Unavailable target, waiting");
                 return;
             }
+            DebugData.getInstance().sendMessage("[STOCK_CHECK] Return target %s", storage);
+            MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
+            MemoryUtil.getRequestProgress(maid).setCheckingStock(true);
+            MemoryUtil.getRequestProgress(maid).setTarget(storage);
         }
-        //寻找落脚点
-        BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
-
-        if (goal == null) {
-            DebugData.getInstance().sendMessage("[REQUEST_RET] Unavailable target, waiting");
-            return;
-        }
-        DebugData.getInstance().sendMessage("[REQUEST_RET] Return target %s", storage);
-
-        MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
-        MemoryUtil.getRequestProgress(maid).setReturn();
-        MemoryUtil.getRequestProgress(maid).setTarget(storage);
     }
 }

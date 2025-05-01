@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.maid.task;
 
 import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.init.InitSounds;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -35,13 +36,14 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestF
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestFindMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.RequestRetBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.ret.RequestRetMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.stock.StockCheckBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.stock.StockCheckMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.WriteInventoryListBehavior;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
-import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
@@ -78,7 +80,7 @@ public class StorageManageTask implements IMaidTask {
     @Nullable
     @Override
     public SoundEvent getAmbientSound(@NotNull EntityMaid entityMaid) {
-        return null;
+        return InitSounds.MAID_IDLE.get();
     }
 
     @Override
@@ -91,6 +93,8 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(10, new RequestFindMoveBehavior()));
         list.add(Pair.of(10, new RequestRetMoveBehavior()));
         list.add(Pair.of(10, new RequestRetBehavior()));
+        list.add(Pair.of(10, new StockCheckMoveBehavior()));
+        list.add(Pair.of(10, new StockCheckBehavior()));
         //合成
         list.add(Pair.of(9, new RequestCraftGatherBehavior()));
         list.add(Pair.of(9, new RequestCraftGatherMoveBehavior()));

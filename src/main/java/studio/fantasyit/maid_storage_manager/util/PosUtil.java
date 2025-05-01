@@ -7,6 +7,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +15,15 @@ import java.util.*;
 import java.util.function.Function;
 
 public class PosUtil {
+    static public @Nullable <T> T findAround(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
+        T tmp;
+        if ((tmp = consumer.apply(pos)) != null) return tmp;
+        if ((tmp = consumer.apply(pos.north())) != null) return tmp;
+        if ((tmp = consumer.apply(pos.east())) != null) return tmp;
+        if ((tmp = consumer.apply(pos.south())) != null) return tmp;
+        if ((tmp = consumer.apply(pos.west())) != null) return tmp;
+        return null;
+    }
 
     static public @Nullable <T> T findAroundUpAndDown(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
         return findAroundUpAndDown(pos, consumer, 4);
@@ -64,10 +74,18 @@ public class PosUtil {
         return blockEntity.getBlockPos();
     }
 
+    static protected boolean isEmptyBlockPos(Level level, BlockPos pos) {
+        return level.getBlockState(pos).isAir() || level.getBlockState(pos).getCollisionShape(
+                level,
+                pos,
+                CollisionContext.empty()
+        ).isEmpty();
+    }
+
     static public boolean isSafePos(Level level, BlockPos pos) {
-        return level.getBlockState(pos).isAir()
-                && level.getBlockState(pos.above()).isAir()
-                && !level.getBlockState(pos.below()).isAir();
+        return isEmptyBlockPos(level, pos)
+                && isEmptyBlockPos(level, pos.above())
+                && !isEmptyBlockPos(level, pos.below());
     }
 
     static public boolean hasSightLine(Level level, BlockPos pos1, BlockPos pos2) {

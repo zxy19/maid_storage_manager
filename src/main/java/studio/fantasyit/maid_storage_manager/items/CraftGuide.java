@@ -113,7 +113,7 @@ public class CraftGuide extends Item implements MenuProvider {
     public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
         CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
         int selectId = getSelectId(itemInHand);
-        selectId = (selectId + 1) % (craftGuideData.getSteps().size() + 1);
+        selectId = (selectId + value + craftGuideData.getSteps().size() + 1) % (craftGuideData.getSteps().size() + 1);
         setSelectId(itemInHand, selectId);
         if (selectId == craftGuideData.getSteps().size())
             serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_new"));
@@ -136,6 +136,13 @@ public class CraftGuide extends Item implements MenuProvider {
             int selecting = craftGuideData.selecting;
 
             ResourceLocation specialType = CommonType.TYPE;
+            if (craftGuideData.getSteps().size() == 1 && craftGuideData.selecting == 0) {
+                if (!craftGuideData.getSteps().get(0).storage.getPos().equals(context.getClickedPos())) {
+                    craftGuideData.getSteps().remove(0);
+                    craftGuideData.type = CommonType.TYPE;
+                }
+            }
+
             if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() == 0) {
                 if (craftGuideData.getType().equals(CommonType.TYPE))
                     specialType = CraftManager.getInstance().getTargetType((ServerLevel) context.getLevel(),
@@ -165,7 +172,7 @@ public class CraftGuide extends Item implements MenuProvider {
                         Target existingTarget = craftGuideStepData.getStorage();
                         if (existingTarget.equals(target)) {
                             craftGuideData.getSteps().remove(selecting);
-                        } else if (existingTarget.equals(target.withoutSide())) {
+                        } else if (existingTarget.withoutSide().equals(target.withoutSide())) {
                             craftGuideStepData.storage = target;
                         } else {
                             craftGuideStepData.storage = target.withoutSide();

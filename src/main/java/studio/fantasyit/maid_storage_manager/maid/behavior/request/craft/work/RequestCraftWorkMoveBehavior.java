@@ -21,6 +21,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -105,6 +106,14 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.setTarget(maid, blockPos, (float) Config.craftWorkSpeed);
                 MemoryUtil.getCrafting(maid).setTarget(storage);
                 MemoryUtil.setLookAt(maid, storage.getPos());
+                MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
+            } else {
+                MemoryUtil.getCrafting(maid).addPathFindingFailCount();
+                if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
+                    DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]Path finding fail.");
+                    MemoryUtil.getCrafting(maid).failCurrent(maid, List.of());
+                    MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
+                }
             }
         }
         return true;

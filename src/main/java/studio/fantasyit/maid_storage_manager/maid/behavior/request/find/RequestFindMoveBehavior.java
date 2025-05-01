@@ -44,6 +44,8 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
         if (!Conditions.takingRequestList(owner)) return false;
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (MemoryUtil.getRequestProgress(owner).isTryCrafting()) return false;
+        if (MemoryUtil.getRequestProgress(owner).isCheckingStock()) return false;
+        if (Conditions.shouldCheckStock(owner)) return false;
         return Conditions.inventoryNotFull(owner) && !Conditions.listAllDone(owner);
     }
 
@@ -53,7 +55,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
         MemoryUtil.getRequestProgress(maid).clearCheckItem();
         checkItem = null;
         if (!priorityTarget(level, maid))
-            if (Conditions.useScanTarget(maid))
+            if (Conditions.useScanTarget(maid) || RequestListItem.isBlackMode(maid.getMainHandItem()))
                 this.searchForDestination(level, maid);
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
@@ -80,6 +82,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
 
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
         if (!Conditions.usePriorityTarget(maid)) return false;
+        if (RequestListItem.isBlackMode(maid.getMainHandItem())) return false;
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
         boolean matchTag = RequestListItem.matchNbt(maid.getMainHandItem());
         Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();

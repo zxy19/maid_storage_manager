@@ -13,6 +13,7 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
     public boolean optional;
     public boolean matchTag;
     public int inputCount = 0;
+    public int padCount = 0;
     public int outputCount = 0;
 
     public CommonStepDataContainer(CraftGuideStepData step, AbstractContainerMenu menu) {
@@ -21,6 +22,9 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         actionType = step.actionType;
         inputCount = step.actionType.inputCount();
         outputCount = step.actionType.outputCount();
+        if (inputCount + outputCount < 3)
+            padCount = 3 - inputCount - outputCount;
+        else padCount = 0;
         if (inputCount + outputCount > 3)
             outputCount = 3 - inputCount;
         if (outputCount < 0) {
@@ -29,10 +33,12 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         }
         for (int i = 0; i < inputCount; i++) {
             setItemNoTrigger(i, step.getInput().get(i));
+            setCount(i, step.getInput().get(i).getCount());
         }
         int inputOffset = inputCount == 0 ? 0 : Math.max(inputCount, 2);
         for (int i = 0; i < outputCount; i++) {
             setItemNoTrigger(inputOffset + i, step.getOutput().get(i));
+            setCount(inputOffset + i, step.getOutput().get(i).getCount());
         }
         optional = step.isOptional();
         matchTag = step.isMatchTag();
@@ -40,7 +46,7 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
 
     @Override
     public int getContainerSize() {
-        return actionType.inputCount() + actionType.outputCount();
+        return actionType.inputCount() + actionType.outputCount() + padCount;
     }
 
     public void setAction(ResourceLocation action) {
@@ -49,6 +55,9 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         actionType = step.actionType;
         inputCount = step.actionType.inputCount();
         outputCount = step.actionType.outputCount();
+        if (inputCount + outputCount < 3)
+            padCount = 3 - inputCount - outputCount;
+        else padCount = 0;
         if (inputCount + outputCount > 3)
             outputCount = 3 - inputCount;
         if (outputCount < 0) {
@@ -67,10 +76,10 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         else
             step.clearInput();
 
-        int inputOffset = inputCount == 0 ? 0 : Math.max(inputCount, 2);
+        int inputOffset = inputCount + padCount;
         if (outputCount != 0)
             for (int i = 0; i < outputCount; i++) {
-                int count = this.count[inputCount + i].getValue();
+                int count = this.count[inputOffset + i].getValue();
                 step.setOutput(i, getItem(inputOffset + i).copyWithCount(count));
             }
         else

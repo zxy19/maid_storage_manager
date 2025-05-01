@@ -89,7 +89,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
         if (itemStackStream != null && !itemStackStream.isEmpty()) {
             tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items").withStyle(ChatFormatting.RED));
             for (ItemStack itemStack : itemStackStream) {
-                tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items_item", itemStack.getHoverName(),itemStack.getCount()));
+                tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items_item", itemStack.getHoverName(), itemStack.getCount()));
             }
         }
 
@@ -100,7 +100,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
 
     private void addButtons() {
         this.addRenderableWidget(new ButtonWidget(
-                135, 60, 16, 16,
+                118, 70, 16, 16,
                 background,
                 (widget) -> {
                     if (this.getMenu().matchTag) {
@@ -123,9 +123,71 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                 this
         ));
         this.addRenderableWidget(new ButtonWidget(
-                134, 81, 18, 18,
+                148, 70, 16, 16,
                 background,
-                (widget) -> new Pair<>(176, widget.isHovered() ? 50 : 32),
+                (widget) -> {
+                    if (this.getMenu().stockMode) {
+                        return new Pair<>(176, widget.isHovered() ? 48 : 32);
+                    } else {
+                        return new Pair<>(192, widget.isHovered() ? 48 : 32);
+                    }
+                },
+                () -> this.getMenu().stockMode ?
+                        Component.translatable("gui.maid_storage_manager.request_list.stock_mode_on") :
+                        Component.translatable("gui.maid_storage_manager.request_list.stock_mode_off"),
+                () -> {
+                    this.getMenu().stockMode = !this.getMenu().stockMode;
+                    if (this.getMenu().stockMode) {
+                        this.getMenu().blackmode = false;
+                        Network.sendItemSelectorGuiPacket(
+                                ItemSelectorGuiPacket.SlotType.BLACKLIST,
+                                0,
+                                0
+                        );
+                    }
+                    Network.sendItemSelectorGuiPacket(
+                            ItemSelectorGuiPacket.SlotType.STOCKMODE,
+                            0,
+                            this.getMenu().stockMode ? 1 : 0
+                    );
+                },
+                this
+        ));
+        this.addRenderableWidget(new ButtonWidget(
+                118, 91, 16, 16,
+                background,
+                (widget) -> {
+                    if (this.getMenu().blackmode) {
+                        return new Pair<>(192, widget.isHovered() ? 16 : 0);
+                    } else {
+                        return new Pair<>(176, widget.isHovered() ? 16 : 0);
+                    }
+                },
+                () -> this.getMenu().blackmode ?
+                        Component.translatable("gui.maid_storage_manager.request_list.blackmode_on") :
+                        Component.translatable("gui.maid_storage_manager.request_list.blackmode_off"),
+                () -> {
+                    this.getMenu().blackmode = !this.getMenu().blackmode;
+                    if (this.getMenu().blackmode) {
+                        this.getMenu().stockMode = false;
+                        Network.sendItemSelectorGuiPacket(
+                                ItemSelectorGuiPacket.SlotType.STOCKMODE,
+                                0,
+                                0
+                        );
+                    }
+                    Network.sendItemSelectorGuiPacket(
+                            ItemSelectorGuiPacket.SlotType.BLACKLIST,
+                            0,
+                            this.getMenu().blackmode ? 1 : 0
+                    );
+                },
+                this
+        ));
+        this.addRenderableWidget(new ButtonWidget(
+                148, 91, 16, 16,
+                background,
+                (widget) -> new Pair<>(208, widget.isHovered() ? 48 : 32),
                 () -> Component.translatable("gui.maid_storage_manager.request_list.clear"),
                 () -> {
                     this.getMenu().shouldClear = true;
@@ -300,13 +362,13 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                     graphics.pose().popPose();
 
                     if (done.getValue() != 0) {
-                        if (collected.getValue() < count.getValue() && count.getValue() != -1) {
+                        if (collected.getValue() < count.getValue() && count.getValue() != -1 && !menu.blackmode) {
                             graphics.blit(background,
                                     relX + filterSlot.x + 20,
                                     relY + filterSlot.y + 4,
                                     0,
-                                    180,
-                                    86,
+                                    179,
+                                    83,
                                     10, 10,
                                     256, 256
                             );
@@ -315,8 +377,8 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                                     relX + filterSlot.x + 20,
                                     relY + filterSlot.y + 4,
                                     0,
-                                    180,
-                                    72,
+                                    179,
+                                    67,
                                     10, 10,
                                     256, 256
                             );

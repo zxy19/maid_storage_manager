@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 
-import java.util.Stack;
 import java.util.UUID;
 
 public class RequestProgressMemory extends AbstractTargetMemory {
@@ -19,6 +18,8 @@ public class RequestProgressMemory extends AbstractTargetMemory {
                             .forGetter(RequestProgressMemory::isTryCrafting),
                     Codec.BOOL.fieldOf("isReturning")
                             .forGetter(RequestProgressMemory::isReturning),
+                    Codec.BOOL.optionalFieldOf("isCheckingStock", false)
+                            .forGetter(RequestProgressMemory::isCheckingStock),
                     UUIDUtil.CODEC.fieldOf("workUUID")
                             .forGetter(RequestProgressMemory::getWorkUUID),
                     Codec.INT.fieldOf("tries")
@@ -28,16 +29,18 @@ public class RequestProgressMemory extends AbstractTargetMemory {
     public boolean tryCrafting;
     public UUID workUUID;
     public boolean isReturning;
+    private boolean isCheckingStock;
     public CompoundTag context;
     private int tries;
 
-    public RequestProgressMemory(TargetData targetData, CompoundTag context, boolean tryCrafting, boolean isReturning, UUID workUUID, int tries) {
+    public RequestProgressMemory(TargetData targetData, CompoundTag context, boolean tryCrafting, boolean isReturning, boolean isCheckingStock, UUID workUUID, int tries) {
         super(targetData);
         this.context = context;
         this.isReturning = isReturning;
         this.workUUID = workUUID;
         this.tries = tries;
         this.tryCrafting = tryCrafting;
+        this.isCheckingStock = isCheckingStock;
     }
 
     public RequestProgressMemory() {
@@ -47,6 +50,7 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         this.workUUID = UUID.randomUUID();
         this.tries = 0;
         this.tryCrafting = false;
+        this.isCheckingStock = false;
     }
 
     public CompoundTag getContext() {
@@ -59,6 +63,10 @@ public class RequestProgressMemory extends AbstractTargetMemory {
 
     public boolean isTryCrafting() {
         return tryCrafting;
+    }
+
+    public boolean isCheckingStock() {
+        return isCheckingStock;
     }
 
     public UUID getWorkUUID() {
@@ -99,5 +107,9 @@ public class RequestProgressMemory extends AbstractTargetMemory {
 
     public int getTries() {
         return this.tries;
+    }
+
+    public void setCheckingStock(boolean isCheckingStock) {
+        this.isCheckingStock = isCheckingStock;
     }
 }

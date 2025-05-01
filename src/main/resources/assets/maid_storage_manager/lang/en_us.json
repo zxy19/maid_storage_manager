@@ -47,6 +47,7 @@
   "craft_guide.action.maid_storage_manager.craft": "Crafting",
   "craft_guide.action.maid_storage_manager.furnace": "Furnace",
   "craft_guide.action.maid_storage_manager.altar": "Altar",
+  "craft_guide.action.maid_storage_manager.smithing": "Smithing",
   "craft_guide.action.maid_storage_manager.stone_cutting": "Stone Cutter",
   "craft_guide.action.maid_storage_manager.anvil": "Anvil",
   "gui.maid_storage_manager.config.bool.disable": "Disable",
@@ -178,5 +179,9 @@
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
   "interaction.craft_guide_selecting": "Selecting",
-  "gui.maid_storage_manager.craft_guide.anvil_xp_cost": "Cost %d"
+  "gui.maid_storage_manager.craft_guide.anvil_xp_cost": "Cost %d",
+  "gui.maid_storage_manager.request_list.blackmode_on": "Use BlackMode",
+  "gui.maid_storage_manager.request_list.blackmode_off": "Use WhiteMode",
+  "gui.maid_storage_manager.request_list.stock_mode_on": "Use Stock Mode",
+  "gui.maid_storage_manager.request_list.stock_mode_off": "Use Gather Mode"
 }

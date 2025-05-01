@@ -92,7 +92,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void addTimeButton(HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> objects, ArrayList<Integer> yOffsets, int sy, int i1) {
-        int dy = 26;
+        int dy = 24;
         yOffsets.add(dy);
         objects.put(BUTTON_TYPE_COMMON.TIME, addRenderableWidget(new SelectButtonWidget<Integer>(121, sy + dy - 1, (value) -> {
             int v;
@@ -128,7 +128,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 Component.literal("")));
         editBox.setValue("0");
         editBox.setBordered(false);
-        editBox.setFilter(StringUtils::isNumeric);
+        editBox.setFilter(s -> StringUtils.isNumeric(s) && Integer.parseInt(s) <= 999);
         editBox.setResponder(t -> sendExtra(i1, c -> c.putInt("time", Integer.parseInt(t))));
         editBoxes.add(editBox);
     }
@@ -272,6 +272,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     @Override
     protected void renderTooltip(@NotNull GuiGraphics graphics, int x, int y) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 5000);
         if (this.menu.getCarried().isEmpty()) {
             int inGuiX = x - this.getGuiLeft();
             int inGuiY = y - this.getGuiTop();
@@ -301,20 +303,40 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             });
         }
         super.renderTooltip(graphics, x, y);
+        graphics.pose().popPose();
     }
 
     @Override
     public void render(GuiGraphics graphics, int p_283661_, int p_281248_, float p_281886_) {
         super.render(graphics, p_283661_, p_281248_, p_281886_);
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 2000);
-        renderTooltip(graphics, p_283661_, p_281248_);
-        graphics.pose().popPose();
         RenderSystem.disableDepthTest();
         renderNumberLabel(graphics);
         renderButtonIcon(graphics);
         renderBlockIndicator(graphics);
+        renderUnderLine(graphics);
+        renderArrow(graphics);
+        renderTooltip(graphics, p_283661_, p_281248_);
         RenderSystem.enableDepthTest();
+    }
+
+    private void renderUnderLine(@NotNull GuiGraphics graphics) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 1000);
+        for (EditBox editBox : editBoxes) {
+            if (editBox.isVisible())
+                graphics.blit(background, editBox.getX(), editBox.getY() + editBox.getHeight(), 197, 100, editBox.getWidth(), 1);
+        }
+        graphics.pose().popPose();
+    }
+
+    private void renderArrow(@NotNull GuiGraphics graphics) {
+        for (int i = 0; i < menu.steps.size(); i++) {
+            if (menu.isIdCurrentPage(i)) {
+                if (menu.steps.get(i).inputCount > 0 && menu.steps.get(i).outputCount > 0) {
+                    CommonCraftAssets.ARROW.blit(graphics, getGuiLeft() + 60, getGuiTop() + SLOT_Y[i % 3] + 6);
+                }
+            }
+        }
     }
 
     private void renderNumberLabel(@NotNull GuiGraphics graphics) {
@@ -362,7 +384,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 SelectButtonWidget<Integer> timeBtn = (SelectButtonWidget<Integer>) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.TIME);
                 if (timeBtn.isVisible()) {
                     graphics.pose().pushPose();
-                    graphics.pose().translate(timeBtn.getX() + 2, timeBtn.getY() + 2, 0);
+                    graphics.pose().translate(timeBtn.getX() + 3, timeBtn.getY() + 3, 0);
                     graphics.pose().scale(0.7f, 0.7f, 1);
                     graphics.drawString(this.font,
                             timeBtn.getData() == 0 ? "T" : "S",
@@ -463,7 +485,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     @Override
     public List<FilterSlot> getSlots() {
         return this.menu.slots.stream()
-                .filter(slot -> slot instanceof FilterSlot && !(slot instanceof CommonCraftMenu.NoPlaceFilterSlot) && slot.isActive())
+                .filter(slot -> slot instanceof FilterSlot fs && !(slot instanceof CommonCraftMenu.NoPlaceFilterSlot) && slot.isActive())
                 .map(slot -> (FilterSlot) slot)
                 .toList();
     }
@@ -504,6 +526,17 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         }
         pageUpBtn.setVisible(menu.page > 0);
         pageDownBtn.setVisible(menu.page < (menu.steps.size() + 2) / 3 - 1);
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        for (EditBox eb : editBoxes) {
+            String value = eb.getValue() + "_";
+            int width1 = Math.max(Math.min(font.width(value), 30), 8);
+            eb.setWidth(width1);
+            eb.setX(getGuiLeft() + 90 + 30 - width1);
+        }
     }
 
     private void sendExtra(int i, @Nullable Consumer<CompoundTag> transformer) {

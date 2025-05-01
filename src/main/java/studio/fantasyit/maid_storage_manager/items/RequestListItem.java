@@ -40,6 +40,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_STORAGE = "storage";
     public static final String TAG_ITEMS = "items";
     public static final String TAG_ITEMS_ITEM = "item";
+    public static final String TAG_BLACKMODE = "blackmode";
     public static final String TAG_ITEMS_REQUESTED = "requested";
     public static final String TAG_ITEMS_COLLECTED = "collected";
     public static final String TAG_ITEMS_MISSING = "missing";
@@ -48,6 +49,9 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_IGNORE_TASK = "ignore_task";
     public static final String TAG_COOLING_DOWN = "cooling";
     public static final String TAG_REPEAT_INTERVAL = "interval";
+    public static final String TAG_STOCK_MODE = "stock_mode";
+    public static final String TAG_HAS_CHECK_STOCK = "has_checked_stock";
+    private static final String TAG_BLACKMODE_DONE = "blackmode_done";
 
     public RequestListItem() {
         super(new Properties().stacksTo(1));
@@ -105,6 +109,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
+        tag.putBoolean(RequestListItem.TAG_HAS_CHECK_STOCK, false);
+        tag.putBoolean(RequestListItem.TAG_BLACKMODE_DONE, false);
         target.setTag(tag);
     }
 
@@ -150,6 +156,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         tag.put(TAG_ITEMS, items);
         mainHandItem.setTag(tag);
     }
+
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
@@ -273,7 +280,9 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static List<Pair<ItemStack, Integer>> getItemStacksNotDone(ItemStack stack, boolean includingNoRequest) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return List.of();
         if (!stack.hasTag()) return List.of();
+
         CompoundTag tag = stack.getTag();
+        if (tag.getBoolean(TAG_BLACKMODE)) return List.of();
         ListTag list = Objects.requireNonNull(tag).getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         return list.stream().filter(t -> !((CompoundTag) t).getBoolean(TAG_ITEMS_DONE)).filter(t -> ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED) != -1 || includingNoRequest).map(t -> {
             ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(TAG_ITEMS_ITEM));
@@ -301,14 +310,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStack.EMPTY;
         if (!stack.hasTag()) return ItemStack.EMPTY;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
         //如果最大收集量要比物品栈数量小，那么有一部分不算入计算
         int nonCalc = Math.max(0, collected.getCount() - maxCollect);
-
         //从剩余的数量中进行计算
         int rest = collected.getCount() - nonCalc;
         int available = collected.getCount();
 
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
@@ -316,6 +324,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             //获取每一组被需求的物品
             ItemStack requested = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
             if (ItemStackUtil.isSame(collected, requested, tag.getBoolean(TAG_MATCH_TAG))) {
+                //如果黑名单，那么匹配的物品是不用收集的
+                if (tag.getBoolean(TAG_BLACKMODE)) return collected;
                 int requestedCount = tmp.getInt(TAG_ITEMS_REQUESTED);
                 //如果指定了需要多少某种物品，那么最大值请求的数值
                 int maxToStore = requestedCount;
@@ -343,6 +353,10 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }
         tag.put(TAG_ITEMS, list);
         stack.setTag(tag);
+        //黑名单情况，如果
+        if (tag.getBoolean(TAG_BLACKMODE)) {
+            rest = 0;
+        }
         return collected.copyWithCount(nonCalc + rest);
     }
 
@@ -362,6 +376,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int stored = tmp.getInt(TAG_ITEMS_STORED);
             if (stored >= collected) continue;
             if (ItemStackUtil.isSame(toStore, target, tag.getBoolean(TAG_MATCH_TAG))) {
+                //黑名单物品不进行存储
+                if (tag.getBoolean(TAG_BLACKMODE)) return rest;
                 int maxToStore = collected - stored;
                 maxToStore = Math.min(maxToStore, rest);
                 if (maxToStore > 0) {
@@ -374,6 +390,9 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }
         tag.put(TAG_ITEMS, list);
         stack.setTag(tag);
+        if (tag.getBoolean(TAG_BLACKMODE)) {
+            rest = 0;
+        }
         return rest;
     }
 
@@ -410,6 +429,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tmp.putBoolean(TAG_ITEMS_DONE, true);
             list.set(i, tmp);
         }
+        tag.putBoolean(TAG_BLACKMODE_DONE, true);
         tag.put(TAG_ITEMS, list);
     }
 
@@ -455,6 +475,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!stack.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        if (tag.getBoolean(TAG_BLACKMODE)) return tag.getBoolean(TAG_BLACKMODE_DONE);
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
@@ -465,6 +486,38 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         return true;
     }
 
+    public static boolean isStockMode(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!stack.hasTag()) return false;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        return tag.getBoolean(TAG_STOCK_MODE);
+    }
+
+    public static boolean hasCheckedStock(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!stack.hasTag()) return false;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        return tag.getBoolean(TAG_HAS_CHECK_STOCK);
+    }
+
+    public static void setHasCheckedStock(ItemStack stack, boolean has) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putBoolean(TAG_HAS_CHECK_STOCK, has);
+    }
+
+    public static boolean isBlackMode(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!stack.hasTag()) return false;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        return tag.getBoolean(TAG_BLACKMODE);
+    }
+    public static boolean isBlackModeDone(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        if (!stack.hasTag()) return false;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        return tag.getBoolean(TAG_BLACKMODE_DONE);
+    }
     @Override
     public @NotNull Component getDisplayName() {
         return Component.literal("");

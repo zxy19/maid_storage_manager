@@ -22,10 +22,6 @@ public abstract class MaidCheckPickupItem {
 
     @Inject(method = "pickupItem", at = @At("HEAD"), cancellable = true, remap = false)
     public void maid_storage_manager$pickupItem(ItemEntity entityItem, boolean simulate, CallbackInfoReturnable<Boolean> cir) {
-        if (Conditions.canTempPickUp((EntityMaid) (Object) this, entityItem.getItem())) {
-            Conditions.clearTempPickUp((EntityMaid) (Object) this);
-            return;
-        }
         if (Conditions.takingRequestList((EntityMaid) (Object) this)) {
             cir.setReturnValue(false);
             return;

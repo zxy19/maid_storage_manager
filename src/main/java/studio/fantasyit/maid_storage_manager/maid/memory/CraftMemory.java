@@ -51,6 +51,7 @@ public class CraftMemory extends AbstractTargetMemory {
     public boolean isFinishCurrent;
     public boolean isLastSuccess;
     private boolean startWorking;
+    private int pathFindingFailCount = 0;
 
     public CraftMemory(TargetData targetData,
                        List<CraftLayer> layers,
@@ -68,6 +69,7 @@ public class CraftMemory extends AbstractTargetMemory {
         this.currentLayer = currentLayer;
         this.isFinishCurrent = isFinishCurrent;
         this.isLastSuccess = isLastSuccess;
+        this.startWorking = startWorking;
     }
 
     public CraftMemory() {
@@ -282,5 +284,15 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void setSwappingHandWhenCrafting(boolean isSwappingHandWhenCrafting) {
         this.isSwappingHandWhenCrafting = isSwappingHandWhenCrafting;
+    }
+
+    public int getPathFindingFailCount() {
+        return pathFindingFailCount;
+    }
+    public void addPathFindingFailCount() {
+        this.pathFindingFailCount++;
+    }
+    public void resetPathFindingFailCount() {
+        this.pathFindingFailCount = 0;
     }
 }

@@ -5,12 +5,16 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
+import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -53,21 +57,34 @@ public class CommonCraftRecipeHandler implements IUniversalRecipeTransferHandler
 
         int inputId = 0;
         int outputId = 0;
+        CompoundTag data = new CompoundTag();
+        ListTag inputTag = new ListTag();
+        ListTag outputTag = new ListTag();
         for (CommonStepDataContainer step : container.steps) {
             for (int i = 0; i < step.step.actionType.inputCount(); i++) {
                 if (inputId < inputs.size()) {
                     if (doTransfer)
-                        step.setItem(i, inputs.get(inputId));
+                        inputTag.add(inputs.get(inputId).save(new CompoundTag()));
                     inputId++;
                 }
             }
             for (int i = 0; i < step.step.actionType.outputCount(); i++) {
                 if (outputId < outputs.size()) {
                     if (doTransfer)
-                        step.setItem(i + step.step.actionType.inputCount(), outputs.get(outputId));
+                        outputTag.add(outputs.get(outputId).save(new CompoundTag()));
                     outputId++;
                 }
             }
+        }
+        if(doTransfer) {
+            data.put("inputs", inputTag);
+            data.put("outputs", outputTag);
+            Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+                    CraftGuideGuiPacket.Type.SET_ALL_INPUT,
+                    0,
+                    0,
+                    data
+            ));
         }
         if (inputId != inputs.size() || outputId != outputs.size()) {
             return new ExceedError();

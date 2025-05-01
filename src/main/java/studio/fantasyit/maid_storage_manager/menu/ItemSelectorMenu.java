@@ -10,7 +10,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -28,6 +27,8 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     public FilterContainer filteredItems;
     public SimpleContainer storageHandler;
     public boolean matchTag = false;
+    public boolean blackmode = false;
+    public boolean stockMode = false;
     public boolean shouldClear = false;
     public int repeat = 0;
 
@@ -40,6 +41,8 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         filteredItems.deserializeNBT(tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
         matchTag = tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
         repeat = tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL);
+        blackmode = tag.getBoolean(RequestListItem.TAG_BLACKMODE);
+        stockMode = tag.getBoolean(RequestListItem.TAG_STOCK_MODE);
         storageHandler = new SimpleContainer(1) {
             @Override
             public void setChanged() {
@@ -75,6 +78,8 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putBoolean(RequestListItem.TAG_MATCH_TAG, matchTag);
         tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat);
+        tag.putBoolean(RequestListItem.TAG_BLACKMODE, blackmode);
+        tag.putBoolean(RequestListItem.TAG_STOCK_MODE, stockMode);
         tag.put(StorageDefineBauble.TAG_STORAGE_DEFINE, storageHandler.getItem(0).serializeNBT());
         target.setTag(tag);
     }
@@ -84,8 +89,8 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         final int cellHeight = 18;
         final int startY = 18;
         for (int i = 0; i < 5; i++) {
-            this.addSlot(new FilterSlot(filteredItems, i, 46, startY + i * cellHeight));
-            this.addSlot(new FilterSlot(filteredItems, i + 5, 81, startY + i * cellHeight));
+            this.addSlot(new FilterSlot(filteredItems, i, 40, startY + i * cellHeight));
+            this.addSlot(new FilterSlot(filteredItems, i + 5, 75, startY + i * cellHeight));
             this.addDataSlot(new CountSlot(filteredItems.count[i], filteredItems));
             this.addDataSlot(new CountSlot(filteredItems.count[i + 5], filteredItems));
             this.addDataSlot(new BasicData(filteredItems.done[i]));
@@ -164,6 +169,30 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         addDataSlot(new DataSlot() {
             @Override
             public int get() {
+                return blackmode ? 1 : 0;
+            }
+
+            @Override
+            public void set(int p_40208_) {
+                blackmode = p_40208_ == 1;
+                save();
+            }
+        });
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return stockMode ? 1 : 0;
+            }
+
+            @Override
+            public void set(int p_40208_) {
+                stockMode = p_40208_ == 1;
+                save();
+            }
+        });
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
                 return 0;
             }
 
@@ -233,6 +262,14 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 break;
             case REPEAT:
                 repeat = value;
+                save();
+                break;
+            case BLACKLIST:
+                blackmode = value == 1;
+                save();
+                break;
+            case STOCKMODE:
+                stockMode = value == 1;
                 save();
                 break;
         }

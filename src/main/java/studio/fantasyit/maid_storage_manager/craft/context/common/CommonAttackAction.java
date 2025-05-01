@@ -1,23 +1,27 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -27,10 +31,10 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.WrappedMaidFakePlayer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
@@ -47,8 +51,15 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
     @Override
     public Result start() {
-        fakePlayer = FakePlayerFactory.get((ServerLevel) maid.level(), new GameProfile(UUID.randomUUID(), maid.getName().getString()));
+        fakePlayer = WrappedMaidFakePlayer.get(maid);
         maid.getNavigation().stop();
+
+        ItemStack targetItem = craftGuideStepData.getInput().get(0);
+        MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
+        storedSlot = InvUtil.getTargetIndex(maid, targetItem, craftGuideStepData.matchTag);
+        if (storedSlot == -1) return Result.FAIL;
+        InvUtil.swapHandAndSlot(maid, storedSlot);
+
         return Result.CONTINUE;
     }
 
@@ -59,7 +70,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         }
         if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE;
         maid.swing(InteractionHand.MAIN_HAND);
-        @Nullable List<ItemStack> ret = interactWithItemAndGetReturn(craftGuideStepData.getInput().get(0));
+        @Nullable List<ItemStack> ret = interactWithItemAndGetReturn();
 
         if (ret == null) {
             if (startDestroyBlock) return Result.CONTINUE;
@@ -78,6 +89,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
             }
         }
         if (startDestroyBlock) return Result.CONTINUE;
+
         if (resultPlaced >= craftGuideStepData.getOutput().get(0).getCount()) {
             return Result.SUCCESS;
         } else {
@@ -87,46 +99,43 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
     private Result tickDestroyBlock() {
         maid.swing(InteractionHand.MAIN_HAND);
-        ItemStack tool = ItemStack.EMPTY;
-        if (!craftGuideStepData.getNonEmptyInput().isEmpty())
-            tool = craftGuideStepData.getNonEmptyInput().get(0);
-
         BlockPos target = craftGuideStepData.getStorage().pos;
         BlockState targetBs = maid.level().getBlockState(target);
-        fakePlayer.setItemInHand(InteractionHand.MAIN_HAND, tool);
-        float speed = fakePlayer.getDigSpeed(targetBs, craftGuideStepData.getStorage().pos) / tool.getDestroySpeed(targetBs);
         if (fakePlayer.hasCorrectToolForDrops(targetBs)) {
-            progress += speed;
+            progress += targetBs.getDestroyProgress(fakePlayer, maid.level(), target);
+        } else {
+            return Result.FAIL;
         }
         if (progress >= 1.0f) {
-            List<ItemStack> items = new ArrayList<>();
-            List<ItemStack> original = new ArrayList<>();
-            CombinedInvWrapper availableInv = maid.getAvailableInv(false);
-            for (int i = 0; i < availableInv.getSlots(); i++) {
-                original.add(availableInv.getStackInSlot(i).copy());
-            }
-            maid.destroyBlock(target, true);
-            for (int i = 0; i < availableInv.getSlots(); i++) {
-                if (!availableInv.getStackInSlot(i).isEmpty()) {
-                    ItemStackUtil.addToList(items, availableInv.getStackInSlot(i).copy(), true);
-                }
-            }
-            for (ItemStack itemStack : original) {
-                ItemStackUtil.removeIsMatchInList(items, itemStack, true);
-            }
-            int totalGet = 0;
-            for (ItemStack itemStack : items) {
-                if (ItemStackUtil.isSame(itemStack, craftGuideStepData.getOutput().get(0), craftGuideStepData.matchTag)) {
-                    totalGet += itemStack.getCount();
-                }
-            }
-            ItemStack tmpSwap = maid.getItemInHand(InteractionHand.MAIN_HAND);
-            tmpSwap.hurt(1, maid.level().random, fakePlayer);
-            maid.setItemInHand(InteractionHand.MAIN_HAND, maid.getAvailableInv(true).getStackInSlot(storedSlot));
-            maid.getAvailableInv(true).setStackInSlot(storedSlot, tmpSwap);
+            ServerLevel level = (ServerLevel) maid.level();
 
-            MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(false);
-            if (totalGet >= craftGuideStepData.getOutput().get(0).getCount()) {
+            FluidState fluidState = level.getFluidState(target);
+            if (!(targetBs.getBlock() instanceof BaseFireBlock)) {
+                level.levelEvent(2001, target, Block.getId(targetBs));
+            }
+            MutableInt totalGet = new MutableInt(0);
+            BlockEntity blockEntity = targetBs.hasBlockEntity() ? level.getBlockEntity(target) : null;
+            //改用MainHandItem来roll loot
+            CombinedInvWrapper availableInv = maid.getAvailableInv(false);
+            Block.getDrops(targetBs, level, target, blockEntity, maid, maid.getMainHandItem()).forEach((stack) -> {
+                ItemStack originalStack = stack.copy();
+                ItemStack remindItemStack = ItemHandlerHelper.insertItemStacked(availableInv, stack, false);
+                if (ItemStackUtil.isSame(originalStack, craftGuideStepData.getOutput().get(0), craftGuideStepData.matchTag)) {
+                    totalGet.add(originalStack.getCount() - remindItemStack.getCount());
+                }
+                if (!remindItemStack.isEmpty()) {
+                    Block.popResource(level, target, remindItemStack);
+                }
+            });
+            targetBs.spawnAfterBreak(level, target, maid.getMainHandItem(), true);
+            maid.getMainHandItem().hurtAndBreak(1, fakePlayer, (p_186374_) -> {
+                p_186374_.broadcastBreakEvent(InteractionHand.MAIN_HAND);
+            });
+            boolean setResult = level.setBlock(target, fluidState.createLegacyBlock(), 3);
+            if (setResult) {
+                level.gameEvent(GameEvent.BLOCK_DESTROY, target, GameEvent.Context.of(maid, targetBs));
+            }
+            if (totalGet.getValue() >= craftGuideStepData.getOutput().get(0).getCount()) {
                 return Result.SUCCESS;
             } else {
                 return Result.FAIL;
@@ -136,11 +145,9 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         return Result.CONTINUE;
     }
 
-    private @Nullable List<ItemStack> interactWithItemAndGetReturn(ItemStack itemStack) {
+    private @Nullable List<ItemStack> interactWithItemAndGetReturn() {
         BlockPos target = craftGuideStepData.getStorage().getPos();
         ServerLevel level = (ServerLevel) maid.level();
-
-        fakePlayer.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         ClipContext rayTraceContext =
                 new ClipContext(maid.getPosition(0).add(0, maid.getEyeHeight(), 0),
                         target.getCenter(),
@@ -165,29 +172,10 @@ public class CommonAttackAction extends AbstractCraftActionContext {
                 ItemStackUtil.addToList(items, inventory.getItem(i), true);
             }
         }
-        inventory.clearContent();
-        if (!fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-            ItemStackUtil.addToList(items, fakePlayer.getItemInHand(InteractionHand.MAIN_HAND), true);
-        }
         return items;
     }
 
     private void onStartDestroyBlock(ServerLevel level, BlockPos target) {
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
-        for (int i = 0; i < inv.getSlots(); i++) {
-            if (inv.getStackInSlot(i).isEmpty()) {
-                storedSlot = i;
-                break;
-            }
-        }
-        if (storedSlot == -1) return;
-
-        //假人手上的应当就是需要使用的物品吧？交换到女仆主手
-        inv.setStackInSlot(storedSlot, maid.getMainHandItem());
-        maid.setItemInHand(InteractionHand.MAIN_HAND, fakePlayer.getItemInHand(InteractionHand.MAIN_HAND));
-        fakePlayer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
-
         level.getBlockState(target).attack(level, target, fakePlayer);
         this.startDestroyBlock = true;
         this.progress = 0.0f;
@@ -195,6 +183,9 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
     @Override
     public void stop() {
-        fakePlayer.remove(Entity.RemovalReason.DISCARDED);
+        if (storedSlot != -1) {
+            InvUtil.swapHandAndSlot(maid, storedSlot);
+        }
+        MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(false);
     }
 }

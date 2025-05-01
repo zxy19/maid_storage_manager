@@ -34,7 +34,7 @@ public final class BindingRender {
     private static final float[] colors_b = new float[]{0.10f, 0.46f, 0.82f, 1};
     private static final float[] colors_y = new float[]{0.91f, 0.73f, 0.0f, 1};
     private static final float[] colors_p = new float[]{0.37f, 0.21f, 0.69f, 1};
-    private static final float[][] colors = new float[][]{colors_b, colors_g, colors_y, colors_p};
+    private static final float[][] colors = new float[][]{colors_b, colors_g, colors_y};
 
     @SubscribeEvent
     public static void onRender(RenderLevelStageEvent event) {

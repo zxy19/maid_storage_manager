@@ -33,8 +33,9 @@ public class PathTargetLocator {
     public static BlockPos touchPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         List<BlockPos> posList = new ArrayList<>();
         BlockPos pos = craftGuideStepData.getStorage().getPos();
-        if (craftGuideStepData.getStorage().side != null) {
-            posList = List.of(pos.relative(craftGuideStepData.getStorage().side, 2));
+        Direction side = craftGuideStepData.getStorage().side;
+        if (side != null) {
+            posList = List.of(pos.relative(side, 2));
         } else {
             posList = Arrays.stream(Direction.values()).map(d -> pos.relative(d, 2)).toList();
         }
@@ -42,14 +43,19 @@ public class PathTargetLocator {
         Stream<Pair<BlockPos, Integer>> allPos = posList.stream().map(finalPos ->
                         PosUtil.gatherAroundUpAndDown(pos, (pos1) -> {
                             if (!PosUtil.isSafePos(maid.level(), pos1)) return null;
-                            if (maid.isWithinRestriction(pos1) && hasLineOfSight(maid, finalPos.getCenter(), pos1.getCenter())) {
-                                Path path = maid.getNavigation().createPath(pos1, 0);
-                                if (path != null && path.canReach())
-                                    return new Pair<>(pos1, path.getNodeCount());
-                                return null;
-                            } else {
-                                return null;
+                            Vec3 eyePos = pos1.getCenter().add(0, maid.getEyeHeight() - 0.5, 0);
+                            for (Direction direction : Direction.values()) {
+                                if (side != null && direction != side) continue;
+                                for (float f = 0.5f; f > 0.0f; f -= 0.1f) {
+                                    Vec3 offseted = pos.getCenter().relative(direction, f);
+                                    if (maid.isWithinRestriction(pos1) && hasLineOfSight(maid, offseted, eyePos)) {
+                                        Path path = maid.getNavigation().createPath(pos1, 0);
+                                        if (path != null && path.canReach())
+                                            return new Pair<>(pos1, path.getNodeCount());
+                                    }
+                                }
                             }
+                            return null;
                         }))
                 .filter(s -> !s.isEmpty())
                 .map(s -> s.stream().min(Comparator.comparingInt(Pair::getB)))
@@ -89,5 +95,19 @@ public class PathTargetLocator {
                 return true;
         }
         return false;
+    }
+
+    public static BlockPos besidePosOrExactlyPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer craftLayer) {
+        BlockPos center = craftGuideStepData.getStorage().getPos();
+        if (craftGuideStepData.getStorage().side != null)
+            center = center.relative(craftGuideStepData.getStorage().side, 1);
+
+        return PosUtil.findAround(center, (pos) -> {
+            if (PosUtil.isSafePos(maid.level(), pos) && maid.isWithinRestriction(pos) && maid.canPathReach(pos)) {
+                return pos;
+            } else {
+                return null;
+            }
+        });
     }
 }

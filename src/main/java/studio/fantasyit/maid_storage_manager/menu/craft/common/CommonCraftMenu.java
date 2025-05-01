@@ -1,6 +1,8 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -133,7 +135,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
     private void addSpecialSlots() {
         for (int i = 0; i < craftGuideData.getSteps().size(); i++) {
             CommonStepDataContainer commonStepDataContainer = steps.get(i);
-            for (int j = 0; j < Math.max(commonStepDataContainer.getContainerSize(), 3); j++) {
+            for (int j = 0; j < 3; j++) {
                 int finalJ = j;
                 addDataSlot(new SimpleSlot(
                         t -> commonStepDataContainer.setCount(finalJ, t),
@@ -304,6 +306,31 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 if (data != null) {
                     steps.get(key).step.setExtraData(data);
                     save();
+                }
+            }
+            case SET_ALL_INPUT -> {
+                ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
+                ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
+                int inputId = 0;
+                int outputId = 0;
+                for (CommonStepDataContainer step : steps) {
+                    for (int i = 0; i < step.step.actionType.inputCount(); i++) {
+                        if (inputId < inputTag.size()) {
+                            ItemStack tmp = ItemStack.of(inputTag.getCompound(inputId));
+                            step.setItemNoTrigger(i, tmp);
+                            step.setCount(i, tmp.getCount());
+                            inputId++;
+                        }
+                    }
+                    for (int i = 0; i < step.step.actionType.outputCount(); i++) {
+                        if (outputId < outputTag.size()) {
+                            int inputOffset = step.padCount + step.inputCount;
+                            ItemStack tmp = ItemStack.of(outputTag.getCompound(outputId));
+                            step.setItemNoTrigger(inputOffset + i, tmp);
+                            step.setCount(inputOffset + i, tmp.getCount());
+                            outputId++;
+                        }
+                    }
                 }
             }
         }

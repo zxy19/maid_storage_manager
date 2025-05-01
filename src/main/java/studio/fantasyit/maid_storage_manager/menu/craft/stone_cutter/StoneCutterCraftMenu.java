@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -58,6 +59,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
             if (Minecraft.getInstance().screen instanceof StoneCutterCraftScreen screen) {
                 screen.handleGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, 0, 0, new CompoundTag());
             }
+            recalculateRecipe();
         }
         super.save();
     }
@@ -72,6 +74,16 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
                     save();
                 }
             }
+            case SET_ALL_INPUT -> {
+                if (data != null) {
+                    ListTag list = data.getList("inputs", 10);
+                    for (int i = 0; i < 2; i++) {
+                        stepDataContainer.setItem(i, ItemStack.of(list.getCompound(i)));
+                    }
+                    recalculateRecipe();
+                    save();
+                }
+            }
             case PAGE_UP, PAGE_DOWN -> {
                 page = value;
                 reArrangeSlotItem();
@@ -82,6 +94,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
             }
         }
     }
+
 
     private void reArrangeSlotItem() {
         if (page >= maxPage) {
@@ -119,6 +132,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
                 return;
             }
         }
+        stepDataContainer.setItemNoTrigger(1, ItemStack.EMPTY);
         availableItems = new ArrayList<>();
         maxPage = 1;
         reArrangeSlotItem();

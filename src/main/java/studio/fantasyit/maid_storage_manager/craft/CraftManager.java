@@ -95,7 +95,7 @@ public class CraftManager {
         event.addAction(
                 CommonPickupItemAction.TYPE,
                 CommonPickupItemAction::new,
-                PathTargetLocator::exactlySidedPos,
+                PathTargetLocator::besidePosOrExactlyPos,
                 CraftAction.PathEnoughLevel.VERY_CLOSE.value,
                 true,
                 0,
@@ -138,7 +138,7 @@ public class CraftManager {
                 10
         );
         event.addAction(
-                AltarRecipeAction.TYPE,
+                AltarType.TYPE,
                 AltarRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
@@ -147,7 +147,7 @@ public class CraftManager {
                 1
         );
         event.addAction(
-                AltarType.TYPE,
+                AltarUseAction.TYPE,
                 AltarUseAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,

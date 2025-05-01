@@ -65,6 +65,7 @@ public class AnvilCraftMenu extends AbstractCraftMenu<AnvilCraftMenu> {
     }
 
     public void recalculateRecipe() {
+        if(this.anvilMenu == null) return;
         CompoundTag extra = stepDataContainer.step.getExtraData();
         String name = extra.getString("name");
         anvilMenu.setItem(0, 0, stepDataContainer.getItem(0));

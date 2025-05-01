@@ -43,7 +43,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long p_22547_) {
         if (!Conditions.takingRequestList(maid)) return false;
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
-        if (!InvUtil.hasAnyFree(maid.getMaidInv())) return false;
+        if (!InvUtil.hasAnyFree(maid.getAvailableInv(false))) return false;
         if (!canPick) return true;
         return context != null && !context.isDone();
     }
@@ -54,6 +54,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return false;
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
+        if (MemoryUtil.getRequestProgress(maid).isCheckingStock()) return false;
         return Conditions.hasReachedValidTargetOrReset(maid);
     }
 
@@ -156,6 +157,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
     }
+
     @Override
     protected boolean timedOut(long p_22537_) {
         return false;
