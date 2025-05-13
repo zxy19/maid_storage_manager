@@ -39,6 +39,6 @@ public class ItemStackUtil {
                 return;
             }
         }
-        list.add(itemStack);
+        list.add(itemStack.copy());
     }
 }
