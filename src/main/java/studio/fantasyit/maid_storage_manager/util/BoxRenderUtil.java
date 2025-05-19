@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -85,4 +86,34 @@ public class BoxRenderUtil {
             guiGraphics.pose().popPose();
         }
     }
+
+    public static void renderEntity(Entity entity, float[] colors, RenderLevelStageEvent event, String key) {
+        renderEntity(entity, colors, event, key, 0xffffff);
+    }
+
+    public static void renderEntity(Entity entity, float[] colors, RenderLevelStageEvent event, String key, int textColor) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return;
+        }
+        Vec3 position = event.getCamera().getPosition().reverse();
+        AABB aabb = entity.getBoundingBox().move(entity.getPosition(event.getPartialTick()));
+        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+        LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
+        if (!Strings.isBlank(key)) {
+            final GuiGraphics guiGraphics = ((IGuiGraphicsGetter) Minecraft.getInstance()).getGuiGraphics(event.getPoseStack());
+            Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick());
+            Vec3 livingFrom = entity.getPosition(event.getPartialTick()).add(0, entity.getBbHeight() + 0.2f, 0);
+            Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
+            guiGraphics.pose().mulPose(Axis.YP.rotationDegrees(-event.getCamera().getYRot()));
+            guiGraphics.pose().mulPose(Axis.XP.rotationDegrees(event.getCamera().getXRot()));
+            guiGraphics.pose().scale(-0.025f, -0.025f, -1f);
+            guiGraphics.pose().translate(-mc.font.width(key) / 2f, 0, 0);
+            guiGraphics.drawString(mc.font, key, 0, 0, textColor);
+            guiGraphics.pose().popPose();
+        }
+    }
+
 }

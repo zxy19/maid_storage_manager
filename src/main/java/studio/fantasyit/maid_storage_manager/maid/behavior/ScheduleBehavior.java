@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -18,7 +19,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
         PLACE,
         VIEW,
         REQUEST,
-        CO_WORK, RESORT
+        CO_WORK, LOGISTICS, RESORT
     }
 
     public ScheduleBehavior() {
@@ -46,6 +47,11 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 next = Schedule.PLACE;
         } else if (Conditions.takingRequestList(maid) && (last == Schedule.REQUEST || InvUtil.hasAnyFree(maid.getAvailableInv(false)))) {
             next = Schedule.REQUEST;
+        } else if (MemoryUtil.getLogistics(maid).shouldWork()) {
+            if (MemoryUtil.getLogistics(maid).getStage() == LogisticsMemory.Stage.FINISH && !Conditions.isNothingToPlace(maid))
+                next = Schedule.PLACE;
+            else
+                next = Schedule.LOGISTICS;
         } else if (!Conditions.isNothingToPlace(maid))
             next = Schedule.PLACE;
         else if (MemoryUtil.getResorting(maid).hasTarget())

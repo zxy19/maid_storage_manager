@@ -7,7 +7,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+
+import java.util.List;
 
 public interface IMaidStorage {
     ResourceLocation getType();
@@ -22,5 +26,11 @@ public interface IMaidStorage {
 
     default @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Target storage) {
         return null;
+    }
+
+    default boolean isCraftGuideProvider(List<ViewedInventoryMemory.ItemCount> blockPos) {
+        return blockPos
+                .stream()
+                .anyMatch(i -> i.getItem().is(ItemRegistry.CRAFT_GUIDE.get()));
     }
 }

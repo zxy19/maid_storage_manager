@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.items;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -24,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -38,6 +41,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_ITEMS_DONE = "done";
     public static final String TAG_ITEMS_STORED = "stored";
     public static final String TAG_STORAGE = "storage";
+
+    public static final String TAG_STORAGE_ENTITY = "storage_entity";
     public static final String TAG_ITEMS = "items";
     public static final String TAG_ITEMS_ITEM = "item";
     public static final String TAG_BLACKMODE = "blackmode";
@@ -52,10 +57,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_STOCK_MODE = "stock_mode";
     public static final String TAG_HAS_CHECK_STOCK = "has_checked_stock";
     private static final String TAG_BLACKMODE_DONE = "blackmode_done";
+    public static final String TAG_VIRTUAL = "virtual";
 
     public RequestListItem() {
         super(new Properties().stacksTo(1));
     }
+
 
     public static boolean isIgnored(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
@@ -160,13 +167,40 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
+        if (player.isShiftKeyDown()) return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
-            });
+            if (!isVirtual(serverPlayer.getMainHandItem()))
+                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+                });
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
-        } else {
-            return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
         }
+        return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
+    }
+
+    @Override
+    public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player player, LivingEntity entity, InteractionHand p_41401_) {
+        if (!player.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND) {
+            if (player.isShiftKeyDown()) {
+                CompoundTag tag = itemStack.getOrCreateTag();
+                if(tag.contains(TAG_STORAGE_ENTITY)){
+                    tag.remove(TAG_STORAGE_ENTITY);
+                }else {
+                    if (tag.contains(TAG_STORAGE))
+                        tag.remove(TAG_STORAGE);
+                    tag.putUUID(TAG_STORAGE_ENTITY, entity.getUUID());
+                }
+                player.getMainHandItem().setTag(tag);
+                return InteractionResult.SUCCESS;
+            } else if (entity instanceof EntityMaid) {
+                if (!hasAnyStorage(itemStack)) {
+                    CompoundTag tag = itemStack.getOrCreateTag();
+                    if (tag.contains(TAG_STORAGE))
+                        tag.remove(TAG_STORAGE);
+                    tag.putUUID(TAG_STORAGE_ENTITY, player.getUUID());
+                }
+            }
+        }
+        return super.interactLivingEntity(itemStack, player, entity, p_41401_);
     }
 
     @Override
@@ -178,6 +212,9 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
                 CompoundTag tag = item.getOrCreateTag();
+                if(tag.contains(TAG_STORAGE_ENTITY)){
+                    tag.remove(TAG_STORAGE_ENTITY);
+                }
                 if (tag.contains(TAG_STORAGE)) {
                     Target storage = Target.fromNbt(tag.getCompound(TAG_STORAGE));
                     if (storage.getPos().equals(clickedPos) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
@@ -292,12 +329,28 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
+    public static @Nullable UUID getStorageEntity(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
+        if (!stack.hasTag()) return null;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        if (!tag.contains(TAG_STORAGE_ENTITY)) return null;
+        return tag.getUUID(TAG_STORAGE_ENTITY);
+    }
+
     public static @Nullable Target getStorageBlock(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
         if (!stack.hasTag()) return null;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         if (!tag.contains(TAG_STORAGE)) return null;
         return Target.fromNbt(tag.getCompound(TAG_STORAGE));
+    }
+
+    public static boolean hasAnyStorage(ItemStack stack) {
+        Target storageBlock = getStorageBlock(stack);
+        if (storageBlock != null && storageBlock.getType() != AbstractTargetMemory.TargetData.NO_TARGET) {
+            return true;
+        }
+        return getStorageEntity(stack) != null;
     }
 
     /**
@@ -506,18 +559,25 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         tag.putBoolean(TAG_HAS_CHECK_STOCK, has);
     }
 
+    public static boolean isVirtual(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
+        return stack.getOrCreateTag().getBoolean(TAG_VIRTUAL);
+    }
+
     public static boolean isBlackMode(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!stack.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         return tag.getBoolean(TAG_BLACKMODE);
     }
+
     public static boolean isBlackModeDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!stack.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         return tag.getBoolean(TAG_BLACKMODE_DONE);
     }
+
     @Override
     public @NotNull Component getDisplayName() {
         return Component.literal("");
@@ -526,6 +586,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int p_39954_, Inventory p_39955_, Player p_39956_) {
+        if (isVirtual(p_39956_.getItemInHand(InteractionHand.MAIN_HAND)))
+            return null;
         return new ItemSelectorMenu(p_39954_, p_39956_);
     }
 

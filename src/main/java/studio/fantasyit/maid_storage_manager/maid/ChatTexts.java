@@ -87,4 +87,6 @@ public class ChatTexts {
     public static final String CHAT_CHECK_MARK_CHANGED = "chat_bubbles.maid_storage_manager.check_mark_changed";
     public static final String CHAT_COWORK_ENABLE = "chat_bubbles.maid_storage_manager.cowork_enable";
     public static final String CHAT_COWORK_DISABLE = "chat_bubbles.maid_storage_manager.cowork_disable";
+    public static final String CHAT_MOVING = "chat_bubbles.maid_storage_manager.moving";
+    public static final String CHAT_MOVING_TAKEN = "chat_bubbles.maid_storage_manager.moving_taken";
 }

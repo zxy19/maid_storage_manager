@@ -12,11 +12,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Ae2Storage implements IMaidStorage {
     @Override
@@ -56,5 +58,10 @@ public class Ae2Storage implements IMaidStorage {
     @Override
     public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target block) {
         return new Ae2ViewContext();
+    }
+
+    @Override
+    public boolean isCraftGuideProvider(List<ViewedInventoryMemory.ItemCount> blockPos) {
+        return true;
     }
 }

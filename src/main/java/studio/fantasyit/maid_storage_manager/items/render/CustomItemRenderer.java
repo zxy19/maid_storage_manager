@@ -59,7 +59,24 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderFilter(itemStack, context, pose, multiBufferSource, light, overlay);
         if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()))
             renderCraft(itemStack, context, pose, multiBufferSource, light, overlay);
+        if (itemStack.is(ItemRegistry.LOGISTICS_GUIDE.get()))
+            renderLogistics(itemStack, context, pose, multiBufferSource, light, overlay);
         pose.popPose();
+    }
+
+    private void renderLogistics(@NotNull ItemStack itemStack,
+                                 @NotNull ItemDisplayContext context,
+                                 @NotNull PoseStack pose,
+                                 @NotNull MultiBufferSource multiBufferSource,
+                                 int light,
+                                 int overlay) {
+        BakedModel model = Minecraft.getInstance().getModelManager().getModel(
+                new ModelResourceLocation(MaidStorageManager.MODID, "logistics_guide", "inventory")
+        );
+        for (var rendertype : model.getRenderTypes(itemStack, false)) {
+            VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
+            Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
+        }
     }
 
     private void renderFilter(@NotNull ItemStack itemStack,
@@ -148,6 +165,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.mulPose(rotation);
                     pose.translate(-0.78, 0.23, -0.46);
                 }
+                pose.translate(0, -0.05, 0);
 //                pose.translate(0.04, 0.2, 0.45F);
                 pose.scale(0.55f, 0.55f, 0.01F);
                 pose.translate(0.5F, 0.5F, 0.5F);

@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid;
 
+import com.github.tartaricacid.touhoulittlemaid.ai.service.function.FunctionCallRegister;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
@@ -9,6 +10,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.data.TaskDataRegister;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -28,6 +30,7 @@ public class MaidExtension implements ILittleMaid {
     @Override
     public void bindMaidBauble(BaubleManager manager) {
         manager.bind(ItemRegistry.STORAGE_DEFINE_BAUBLE.get(), (IMaidBauble) ItemRegistry.STORAGE_DEFINE_BAUBLE.get());
+        manager.bind(ItemRegistry.LOGISTICS_GUIDE.get(), (IMaidBauble) ItemRegistry.LOGISTICS_GUIDE.get());
         manager.bind(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), (IMaidBauble) ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get());
     }
 
@@ -43,6 +46,7 @@ public class MaidExtension implements ILittleMaid {
                         MemoryModuleRegistry.REQUEST_PROGRESS.get(),
                         MemoryModuleRegistry.RESORTING.get(),
                         MemoryModuleRegistry.CRAFTING.get(),
+                        MemoryModuleRegistry.LOGISTICS.get(),
                         MemoryModuleRegistry.CURRENTLY_WORKING.get(),
                         MemoryModuleRegistry.INTERACTION_RESULT.get(),
                         MemoryModuleRegistry.CO_WORK_MODE.get(),
@@ -56,5 +60,10 @@ public class MaidExtension implements ILittleMaid {
     @Override
     public void registerTaskData(TaskDataRegister register) {
         StorageManagerConfigData.KEY = register.register(new StorageManagerConfigData());
+    }
+
+    @Override
+    public void registerAIFunctionCall(FunctionCallRegister register) {
+        register.register(new StorageFetchFunction());
     }
 }

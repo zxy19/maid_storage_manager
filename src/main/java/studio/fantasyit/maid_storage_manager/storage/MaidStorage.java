@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
@@ -69,5 +70,11 @@ public class MaidStorage {
             }
         }
         return null;
+    }
+
+    public boolean isCraftGuideProvider(Target target, List<ViewedInventoryMemory.ItemCount> blockPos) {
+        IMaidStorage storage = getStorage(target.type);
+        if (storage == null) return false;
+        return storage.isCraftGuideProvider(blockPos);
     }
 }

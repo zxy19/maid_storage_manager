@@ -68,7 +68,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         }
         //背包已满，停止工作，将清单丢掉
         if (Conditions.inventoryFull(maid)) {
-            RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null);
+            RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null,null);
             return;
         }
 

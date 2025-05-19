@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -13,8 +14,10 @@ import net.minecraftforge.fml.common.Mod;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
+import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
+import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftAssets;
@@ -49,7 +52,44 @@ public final class BindingRender {
             renderForCraftGuide(event, mc, floating);
             renderForFlag(event, mc, floating);
             renderForInv(event, mc, floating);
+            renderForLogistics(event, mc, floating);
+            renderForEntity(event, mc);
         }
+    }
+    private static void renderForLogistics(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
+        ItemStack mainStack = mc.player.getMainHandItem();
+        if (mainStack.getItem() != ItemRegistry.LOGISTICS_GUIDE.get()) {
+            return;
+        }
+        Target input = LogisticsGuide.getInput(mainStack);
+        if(input != null){
+            BoxRenderUtil.renderStorage(input,
+                    colors_b,
+                    event,
+                    Component.translatable("maid_storage_manager.logistics_guide_binding_input").getString(),
+                    floating);
+        }
+
+        Target output = LogisticsGuide.getOutput(mainStack);
+        if(output != null){
+            BoxRenderUtil.renderStorage(output,
+                    colors_g,
+                    event,
+                    Component.translatable("maid_storage_manager.logistics_guide_binding_output").getString(),
+                    floating);
+        }
+    }
+
+    private static void renderForEntity(RenderLevelStageEvent event, Minecraft mc) {
+        if (mc.level == null) return;
+        BindingData.getEntityIds().forEach(id -> {
+            Entity entity = mc.level.getEntity(id);
+            if (entity == null) {
+                return;
+            }
+            BoxRenderUtil.renderEntity(entity, colors_p, event,
+                    Component.translatable("maid_storage_manager.request_list_binding_render").getString());
+        });
     }
 
     private static void renderForRequest(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
@@ -58,11 +98,10 @@ public final class BindingRender {
             return;
         }
         Target storage = RequestListItem.getStorageBlock(mainStack);
-        if (storage == null) {
-            return;
+        if (storage != null) {
+            BoxRenderUtil.renderStorage(storage, colors_p, event, Component.translatable("maid_storage_manager.request_list_binding_render").getString(),
+                    floating);
         }
-        BoxRenderUtil.renderStorage(storage, colors_p, event, Component.translatable("maid_storage_manager.request_list_binding_render").getString(),
-                floating);
     }
 
     private static void renderForStorage(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {

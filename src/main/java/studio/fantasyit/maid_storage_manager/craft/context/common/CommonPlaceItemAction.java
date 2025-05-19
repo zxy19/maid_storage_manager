@@ -22,7 +22,7 @@ import java.util.List;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
     public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"insert");
-    IStorageContext storageContext;
+    protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
     public CommonPlaceItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {

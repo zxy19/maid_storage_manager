@@ -3,8 +3,10 @@ package studio.fantasyit.maid_storage_manager.util;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
+import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.*;
@@ -59,6 +61,11 @@ public class MemoryUtil {
         BehaviorUtils.setWalkAndLookTargetMemories(maid, goal, collectSpeed, 0);
     }
 
+    public static void setTarget(EntityMaid maid, Entity entity, float collectSpeed) {
+        maid.getBrain().setMemory(InitEntities.TARGET_POS.get(), new EntityTracker(entity, true));
+        BehaviorUtils.setWalkAndLookTargetMemories(maid, entity, collectSpeed, 0);
+    }
+
     public static ScheduleBehavior.Schedule getCurrentlyWorking(EntityMaid maid) {
         return maid.getBrain().getMemory(MemoryModuleRegistry.CURRENTLY_WORKING.get()).orElse(ScheduleBehavior.Schedule.NO_SCHEDULE);
     }
@@ -67,6 +74,11 @@ public class MemoryUtil {
         if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.CRAFTING.get()))
             maid.getBrain().setMemory(MemoryModuleRegistry.CRAFTING.get(), new CraftMemory());
         return maid.getBrain().getMemory(MemoryModuleRegistry.CRAFTING.get()).orElse(null);
+    }
+    public static LogisticsMemory getLogistics(EntityMaid maid) {
+        if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.LOGISTICS.get()))
+            maid.getBrain().setMemory(MemoryModuleRegistry.LOGISTICS.get(), new LogisticsMemory());
+        return maid.getBrain().getMemory(MemoryModuleRegistry.LOGISTICS.get()).orElse(null);
     }
 
     public static void setLookAt(EntityMaid maid, BlockPos pos) {
@@ -92,4 +104,5 @@ public class MemoryUtil {
     public static boolean isCoWorking(EntityMaid maid) {
         return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.CO_WORK_MODE.get());
     }
+
 }

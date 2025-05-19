@@ -25,6 +25,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleActi
 import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
+import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
@@ -476,7 +477,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     @Override
     public void accept(FilterSlot slot, ItemStack item) {
-        if (slot instanceof CommonCraftMenu.NoPlaceFilterSlot) return;
+        if (slot instanceof NoPlaceFilterSlot) return;
         if (!slot.isActive()) return;
         slot.set(item);
         sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, item.save(new CompoundTag())));
@@ -485,7 +486,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     @Override
     public List<FilterSlot> getSlots() {
         return this.menu.slots.stream()
-                .filter(slot -> slot instanceof FilterSlot fs && !(slot instanceof CommonCraftMenu.NoPlaceFilterSlot) && slot.isActive())
+                .filter(slot -> slot instanceof FilterSlot fs && !(slot instanceof NoPlaceFilterSlot) && slot.isActive())
                 .map(slot -> (FilterSlot) slot)
                 .toList();
     }

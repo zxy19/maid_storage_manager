@@ -4,7 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class RequestProgressMemory extends AbstractTargetMemory {
@@ -23,7 +27,9 @@ public class RequestProgressMemory extends AbstractTargetMemory {
                     UUIDUtil.CODEC.fieldOf("workUUID")
                             .forGetter(RequestProgressMemory::getWorkUUID),
                     Codec.INT.fieldOf("tries")
-                            .forGetter(RequestProgressMemory::getTries)
+                            .forGetter(RequestProgressMemory::getTries),
+                    UUIDUtil.CODEC.optionalFieldOf("targetEntity")
+                            .forGetter(RequestProgressMemory::getTargetEntityUUID)
             ).apply(instance, RequestProgressMemory::new)
     );
     public boolean tryCrafting;
@@ -32,8 +38,17 @@ public class RequestProgressMemory extends AbstractTargetMemory {
     private boolean isCheckingStock;
     public CompoundTag context;
     private int tries;
+    private UUID targetEntity;
 
-    public RequestProgressMemory(TargetData targetData, CompoundTag context, boolean tryCrafting, boolean isReturning, boolean isCheckingStock, UUID workUUID, int tries) {
+    public RequestProgressMemory(TargetData targetData,
+                                 CompoundTag context,
+                                 boolean tryCrafting,
+                                 boolean isReturning,
+                                 boolean isCheckingStock,
+                                 UUID workUUID,
+                                 int tries,
+                                 Optional<UUID> targetEntity
+    ) {
         super(targetData);
         this.context = context;
         this.isReturning = isReturning;
@@ -41,6 +56,7 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         this.tries = tries;
         this.tryCrafting = tryCrafting;
         this.isCheckingStock = isCheckingStock;
+        this.targetEntity = targetEntity.orElse(null);
     }
 
     public RequestProgressMemory() {
@@ -51,6 +67,7 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         this.tries = 0;
         this.tryCrafting = false;
         this.isCheckingStock = false;
+        this.targetEntity = null;
     }
 
     public CompoundTag getContext() {
@@ -80,13 +97,16 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         this.isReturning = false;
         this.tryCrafting = false;
         this.clearTarget();
+        this.clearTargetEntity();
         this.resetVisitedPos();
+        this.resetFailCount();
         this.tries = 0;
     }
 
     public void stopWork() {
         this.workUUID = UUID.randomUUID();
         this.clearTarget();
+        this.clearTargetEntity();
     }
 
     public void setReturn() {
@@ -99,6 +119,27 @@ public class RequestProgressMemory extends AbstractTargetMemory {
 
     public void setTryCrafting(boolean tryCrafting) {
         this.tryCrafting = tryCrafting;
+    }
+
+    @Override
+    public void setTarget(Target target) {
+        this.clearTargetEntity();
+        super.setTarget(target);
+    }
+
+    public Entity getTargetEntity(ServerLevel level){
+        return level.getEntity(this.targetEntity);
+    }
+
+    public Optional<UUID> getTargetEntityUUID() {
+        return Optional.ofNullable(this.targetEntity);
+    }
+    public void setTargetEntity(UUID targetEntity) {
+        this.targetEntity = targetEntity;
+        clearTarget();
+    }
+    public void clearTargetEntity(){
+        this.targetEntity = null;
     }
 
     public void addTries() {

@@ -130,6 +130,11 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return result;
     }
 
+    public List<ItemCount> getItemsAt(Target target) {
+        return viewedInventory.getOrDefault(target.toStoreString(), Collections.emptyMap())
+                .values().stream().flatMap(List::stream).toList();
+    }
+
     public List<InventoryItem> flatten() {
         List<InventoryItem> result = new ArrayList<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> blockEntry : viewedInventory.entrySet()) {
@@ -200,13 +205,13 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         for (int i = 0; i < list.size(); i++) {
             ItemCount itemCount = list.get(i);
             if (ItemStack.isSameItemSameTags(itemCount.getFirst(), itemStack)) {
-                list.set(i, new ItemCount(itemStack, itemCount.getSecond() + itemStack.getCount()));
+                list.set(i, new ItemCount(itemStack, (int) Math.min((long) itemCount.getSecond() + (long) itemStack.getCount(), Integer.MAX_VALUE / 2)));
                 found = true;
                 break;
             }
         }
         if (!found)
-            list.add(new ItemCount(itemStack.copyWithCount(1), itemStack.getCount()));
+            list.add(new ItemCount(itemStack.copyWithCount(1), Math.min(itemStack.getCount(), Integer.MAX_VALUE / 2)));
         map.put(itemKey, list);
         viewedInventory.put(pos.toStoreString(), map);
     }
@@ -247,6 +252,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     }
 
     int failTime = 0;
+
     public void resetMarkFailTime() {
         failTime = 0;
     }

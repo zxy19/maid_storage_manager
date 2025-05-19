@@ -41,6 +41,7 @@ import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSele
 @IPNIgnore
 public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/item_selector.png");
+    AbstractWidget abstractWidget;
 
     public ItemSelectorScreen(ItemSelectorMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
@@ -100,7 +101,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
 
     private void addButtons() {
         this.addRenderableWidget(new ButtonWidget(
-                118, 70, 16, 16,
+                119, 70, 16, 16,
                 background,
                 (widget) -> {
                     if (this.getMenu().matchTag) {
@@ -154,7 +155,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                 this
         ));
         this.addRenderableWidget(new ButtonWidget(
-                118, 91, 16, 16,
+                119, 91, 16, 16,
                 background,
                 (widget) -> {
                     if (this.getMenu().blackmode) {
@@ -202,13 +203,14 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
     }
 
     private void addRepeatControl() {
-        this.addRenderableWidget(new AbstractWidget(
-                128,
-                30,
-                32,
+        abstractWidget = this.addRenderableWidget(new AbstractWidget(
+                116,
+                26,
+                52,
                 28,
                 Component.translatable("gui.maid_storage_manager.request_list.repeat")
         ) {
+
             @Override
             public int getX() {
                 return getGuiLeft() + super.getX();
@@ -223,8 +225,8 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
             protected void renderWidget(GuiGraphics graphics, int p_268034_, int p_268009_, float p_268085_) {
                 graphics.drawString(Minecraft.getInstance().font,
                         Component.translatable("gui.maid_storage_manager.request_list.repeat"),
-                        this.getX() + 1,
-                        this.getY() + 1,
+                        this.getX() + 6,
+                        this.getY() + 4,
                         0xFFFFFF,
                         false
                 );
@@ -234,8 +236,8 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                 }
                 graphics.drawString(Minecraft.getInstance().font,
                         repeatDesc,
-                        this.getX() + 1,
-                        this.getY() + 12,
+                        this.getX() + 5,
+                        this.getY() + 15,
                         0x2e7d32,
                         false
                 );
@@ -314,6 +316,12 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                     if (renderable instanceof ButtonWidget buttonWidget) {
                         graphics.renderTooltip(this.font,
                                 buttonWidget.getTooltipComponent(),
+                                x,
+                                y
+                        );
+                    } else if (abstractWidget == renderable) {
+                        graphics.renderTooltip(this.font,
+                                Component.translatable("gui.maid_storage_manager.request_list.scroll_to_adjust"),
                                 x,
                                 y
                         );

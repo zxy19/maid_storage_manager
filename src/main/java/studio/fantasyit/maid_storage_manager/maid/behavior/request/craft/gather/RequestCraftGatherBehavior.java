@@ -89,6 +89,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                 return itemStack;
             });
         } else if (context instanceof IStorageExtractableContext isec) {
+            //TODO:MATCH NBT
             isec.extract(layer.getUnCollectedItems(),
                     true,
                     itemStack -> {

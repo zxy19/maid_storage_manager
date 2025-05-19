@@ -21,7 +21,10 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
@@ -73,6 +76,10 @@ public class SimulateTargetInteractHelper {
         maids.remove(maid.getUUID());
     }
 
+    public static boolean isMaidOpening(EntityMaid maid) {
+        return maidUsingPos.containsKey(maid.getUUID());
+    }
+
     public static int openCount(BlockPos pos) {
         if (!counter.containsKey(pos)) return 0;
         return counter.get(pos).size();
@@ -89,6 +96,7 @@ public class SimulateTargetInteractHelper {
     final Player opener;
     int currentSlot = 0;
     int restTick = 0;
+    boolean notOpener = false;
 
     public SimulateTargetInteractHelper(EntityMaid maid, BlockPos targetPos, @Nullable Direction side, ServerLevel level) {
         this.maid = maid;
@@ -174,14 +182,18 @@ public class SimulateTargetInteractHelper {
     public void open() {
         if (blockEntity == null) return;
         maid.swing(InteractionHand.MAIN_HAND);
-        trySeekCounter(blockEntity).ifPresent(containerOpenersCounter -> {
-            containerOpenersCounter.incrementOpeners(opener,
-                    level,
-                    target,
-                    level.getBlockState(target));
-        });
+        if (!isMaidOpening(maid)) {
+            trySeekCounter(blockEntity).ifPresent(containerOpenersCounter -> {
+                containerOpenersCounter.incrementOpeners(opener,
+                        level,
+                        target,
+                        level.getBlockState(target));
+            });
+            addCounter(maid, target);
+        } else {
+            notOpener = true;
+        }
         currentSlot = 0;
-        addCounter(maid, target);
     }
 
     public void takeItemTick(Function<ItemStack, ItemStack> cb) {
@@ -220,15 +232,17 @@ public class SimulateTargetInteractHelper {
     }
 
     public void stop() {
-        if (blockEntity != null && opener != null && isStillValid()) {
-            trySeekCounter(blockEntity).ifPresent(containerOpenersCounter -> {
-                containerOpenersCounter.decrementOpeners(opener,
-                        level,
-                        target,
-                        level.getBlockState(target));
-            });
+        if (!notOpener) {
+            if (blockEntity != null && opener != null && isStillValid()) {
+                trySeekCounter(blockEntity).ifPresent(containerOpenersCounter -> {
+                    containerOpenersCounter.decrementOpeners(opener,
+                            level,
+                            target,
+                            level.getBlockState(target));
+                });
+            }
+            removeCounter(maid, target);
         }
-        removeCounter(maid, target);
     }
 
     public static class ChestOpener {

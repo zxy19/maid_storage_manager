@@ -10,6 +10,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftMenu;
@@ -24,6 +25,8 @@ public class GuiRegistry {
             () -> IForgeMenuType.create((windowId, inv, data) -> new ItemSelectorMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<FilterMenu>> FILTER_MENU = MENU_TYPES.register("filter_menu",
             () -> IForgeMenuType.create((windowId, inv, data) -> new FilterMenu(windowId, inv.player)));
+    public static final RegistryObject<MenuType<LogisticsGuideMenu>> LOGISTICS_GUIDE_MENU = MENU_TYPES.register("logistics_guide",
+            () -> IForgeMenuType.create((windowId, inv, data) -> new LogisticsGuideMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<CommonCraftMenu>> CRAFT_GUIDE_MENU_COMMON = MENU_TYPES.register("craft_guide_menu_common",
             () -> IForgeMenuType.create((windowId, inv, data) -> new CommonCraftMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<CraftingTableCraftMenu>> CRAFT_GUIDE_MENU_CRAFTING_TABLE = MENU_TYPES.register("craft_guide_menu_crafting_table",

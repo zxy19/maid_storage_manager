@@ -7,9 +7,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -101,6 +104,8 @@ public class MoveUtil {
         List<Target> result = new ArrayList<>();
         if (Config.useAllStorageByDefault || level.getBlockState(target.getPos()).is(allowTag)) {
             result.add(target);
+        } else {
+            result.addAll(markedTargetOf(level, target));
         }
         if (itemStack.isEmpty()) return result;
         for (ItemStack stack : itemStack) {
@@ -122,5 +127,22 @@ public class MoveUtil {
             }
         }
         return result;
+    }
+
+    private static List<Target> markedTargetOf(ServerLevel level, Target target) {
+        List<Target> list = new ArrayList<>();
+        AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);
+        List<ItemFrame> frames = level.getEntities(
+                EntityTypeTest.forClass(ItemFrame.class),
+                aabb,
+                itemFrame -> true
+        );
+        for (ItemFrame frame : frames) {
+            if (frame.getItem() != null && frame.getItem().is(ItemRegistry.ALLOW_ACCESS.get())) {
+                BlockPos relative = frame.blockPosition().relative(frame.getDirection(), -1);
+                list.add(target.sameType(relative, frame.getDirection()));
+            }
+        }
+        return list;
     }
 }

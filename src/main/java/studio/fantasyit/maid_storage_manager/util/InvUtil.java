@@ -170,11 +170,18 @@ public class InvUtil {
     }
 
     public static void throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction) {
+        throwItem(maid, itemStack, direction,false);
+    }
+
+    public static void throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction,boolean noPickUpDelay) {
         Level level = maid.level();
         ItemEntity itementity = new ItemEntity(level, maid.getX(), maid.getY(), maid.getZ(), itemStack);
         maid.getMaxHeadXRot();
         itementity.setDeltaMovement(direction);
         itementity.setUnlimitedLifetime();
+        if (noPickUpDelay) {
+            itementity.setNoPickUpDelay();
+        }
         level.addFreshEntity(itementity);
     }
     public static int getTargetIndex(EntityMaid maid, ItemStack itemStack,boolean matchTag){

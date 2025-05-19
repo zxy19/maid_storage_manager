@@ -5,7 +5,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -20,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
+import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
@@ -59,16 +59,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
         }
     }
 
-    public static class NoPlaceFilterSlot extends FilterSlot {
-        public int index;
 
-        public NoPlaceFilterSlot(int x, int y, ItemStack itemStack, int index) {
-            super(new SimpleContainer(1), 0, x, y);
-            this.container.setItem(0, itemStack);
-            this.index = index;
-            this.setActive(false);
-        }
-    }
 
     public CommonCraftMenu(int p_38852_, Player player) {
         super(GuiRegistry.CRAFT_GUIDE_MENU_COMMON.get(), p_38852_);

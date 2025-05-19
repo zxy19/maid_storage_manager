@@ -104,6 +104,7 @@ public class CraftLayer {
         return ItemStack.EMPTY;
     }
 
+
     /**
      * 下一个合成阶段。行为如下描述
      * 如果当前已经在合成，那么尝试进行下一步骤的合成。

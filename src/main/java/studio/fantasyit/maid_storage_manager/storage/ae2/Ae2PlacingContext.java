@@ -1,44 +1,19 @@
 package studio.fantasyit.maid_storage_manager.storage.ae2;
 
 import appeng.api.config.Actionable;
-import appeng.api.networking.IGridNode;
 import appeng.api.networking.security.IActionSource;
-import appeng.api.parts.IPart;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.storage.MEStorage;
-import appeng.blockentity.networking.CableBusBlockEntity;
-import appeng.parts.reporting.AbstractTerminalPart;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
-import java.util.Arrays;
-import java.util.Optional;
-
-public class Ae2PlacingContext implements IStorageInsertableContext {
-    private MEStorage inv;
+public class Ae2PlacingContext extends Ae2BaseContext implements IStorageInsertableContext {
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
-        if (level.getBlockEntity(target.pos) instanceof CableBusBlockEntity cbbe) {
-            Optional<Direction> first = Arrays.stream(Direction
-                            .orderedByNearest(maid))
-                    .filter(direction -> {
-                        IPart part = cbbe.getCableBus().getPart(direction);
-                        return part instanceof AbstractTerminalPart atp;
-                    })
-                    .findFirst();
-
-            if (first.isEmpty()) return;
-
-            IGridNode terminal = cbbe.getGridNode(first.get());
-            if (terminal != null && terminal.getGrid() != null) {
-                this.inv = terminal.getGrid().getStorageService().getInventory();
-            }
-        }
+        this.init(maid, level, target);
     }
 
     @Override

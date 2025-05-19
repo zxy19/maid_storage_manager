@@ -1,65 +1,43 @@
 package studio.fantasyit.maid_storage_manager.storage.ae2;
 
 import appeng.api.config.Actionable;
-import appeng.api.networking.IGridNode;
 import appeng.api.networking.security.IActionSource;
-import appeng.api.parts.IPart;
 import appeng.api.stacks.AEItemKey;
-import appeng.api.storage.MEStorage;
-import appeng.blockentity.networking.CableBusBlockEntity;
-import appeng.parts.reporting.AbstractTerminalPart;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
-public class Ae2ViewContext implements IStorageInteractContext {
-    private MEStorage inv;
+public class Ae2ViewContext extends Ae2BaseContext implements IStorageInteractContext {
     int current = 0;
     private List<AEItemKey> keys;
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
-        if (level.getBlockEntity(target.pos) instanceof CableBusBlockEntity cbbe) {
-            Optional<Direction> first = Arrays.stream(Direction
-                            .orderedByNearest(maid))
-                    .filter(direction -> {
-                        IPart part = cbbe.getCableBus().getPart(direction);
-                        return part instanceof AbstractTerminalPart atp;
-                    })
-                    .findFirst();
+        if (this.init(maid, level, target))
+            this.keys = inv
+                    .getAvailableStacks()
+                    .keySet()
+                    .stream()
+                    .filter(key -> key instanceof AEItemKey)
+                    .map(key -> (AEItemKey) key)
+                    .toList();
 
-            if (first.isEmpty()) return;
-
-            IGridNode terminal = cbbe.getGridNode(first.get());
-            if (terminal != null && terminal.getGrid() != null) {
-                this.inv = terminal.getGrid().getStorageService().getInventory();
-                this.keys = inv
-                        .getAvailableStacks()
-                        .keySet()
-                        .stream()
-                        .filter(key -> key instanceof AEItemKey)
-                        .map(key -> (AEItemKey) key)
-                        .toList();
-            }
-        }
     }
 
     @Override
     public boolean isDone() {
-        return keys == null || current >= keys.size();
+        return keys == null || current >= keys.size() || super.isDone();
     }
 
     @Override
     public void reset() {
         current = 0;
+        setDone(false);
     }
 
     @Override

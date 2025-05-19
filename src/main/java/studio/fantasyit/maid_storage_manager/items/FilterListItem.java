@@ -12,7 +12,6 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -29,7 +28,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class FilterListItem extends Item implements MenuProvider {
+public class FilterListItem extends HangUpItem implements MenuProvider {
     public static final String TAG_ITEMS = "items";
     public static final String TAG_ITEMS_ITEM = "item";
     public static final String TAG_MATCH_TAG = "match_tag";
@@ -55,8 +54,9 @@ public class FilterListItem extends Item implements MenuProvider {
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
-            });
+            if (!serverPlayer.isShiftKeyDown())
+                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+                });
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         } else {
             return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
@@ -76,7 +76,7 @@ public class FilterListItem extends Item implements MenuProvider {
         }
         CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
 
-        if(tag.getBoolean(FilterListItem.TAG_BLACK_MODE))
+        if (tag.getBoolean(FilterListItem.TAG_BLACK_MODE))
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.filter_list.black_mode"));
         else
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.filter_list.white_mode"));

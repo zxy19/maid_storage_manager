@@ -25,13 +25,16 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
+import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
+import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
@@ -85,6 +88,8 @@ public class Network {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
                         } else if (sender.containerMenu instanceof FilterMenu ifm) {
                             ifm.handleUpdate(msg.type, msg.key, msg.value);
+                        } else if (sender.containerMenu instanceof LogisticsGuideMenu lgm) {
+                            lgm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
                     context.get().setPacketHandled(true);
@@ -139,6 +144,7 @@ public class Network {
                             context.get().getSender().getServer().overworld().getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY)
                                     .ifPresent(inventoryListData -> inventoryListData.sendTo(msg.key, context.get().getSender()));
                         }
+                        context.get().setPacketHandled(true);
                     });
                 }
         );
@@ -155,9 +161,12 @@ public class Network {
                             if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
                                 CraftGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                             } else if (item.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
-                                StorageDefineBauble.rollMode(item, sender, msg.value);
+                                StorageDefineBauble.rollMode(item, sender, msg.value > 0 ? -1 : 1);
+                            } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
+                                LogisticsGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                             }
                         }
+                        context.get().setPacketHandled(true);
                     });
                 }
         );
@@ -193,6 +202,7 @@ public class Network {
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
+                    context.get().setPacketHandled(true);
                 }
         );
         Network.INSTANCE.registerMessage(6,
@@ -200,11 +210,25 @@ public class Network {
                 CraftGuideGuiPacket::toBytes,
                 CraftGuideGuiPacket::new,
                 (msg, context) -> {
-                    @Nullable Player sender = context.get().getSender();
-                    if (sender == null) sender = getLocalPlayer();
-                    if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
-                        icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
-                    }
+                    context.get().enqueueWork(() -> {
+                        @Nullable Player sender = context.get().getSender();
+                        if (sender == null) sender = getLocalPlayer();
+                        if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
+                            icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
+                        }
+                        context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(7,
+                RenderEntityPacket.class,
+                RenderEntityPacket::toBytes,
+                RenderEntityPacket::new,
+                (msg, context) -> {
+                    context.get().enqueueWork(() -> {
+                        BindingData.setEntityIds(msg.entityIds);
+                        context.get().setPacketHandled(true);
+                    });
                 }
         );
     }

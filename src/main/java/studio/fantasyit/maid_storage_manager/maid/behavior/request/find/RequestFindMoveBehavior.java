@@ -17,7 +17,6 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -99,23 +98,19 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
                                     )
                     )
                     .findFirst();
-            Optional<ViewedInventoryMemory.ItemCount> targetCraftGuide = blockPos
-                    .getValue()
-                    .stream()
-                    .filter(i -> i.getItem().is(ItemRegistry.CRAFT_GUIDE.get()))
-                    .findFirst();
-            if (targetItem.isEmpty() && targetCraftGuide.isEmpty()) {
+
+            @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
+            if(storage == null) continue;
+            boolean craftGuideProvider = MaidStorage.getInstance().isCraftGuideProvider(storage, blockPos.getValue());
+            if (targetItem.isEmpty() && craftGuideProvider) {
                 continue;
             }
             @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
             if (targetPos != null) {
-                @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
-                if (storage != null) {
-                    if (!MoveUtil.isValidTarget(level, maid, storage)) continue;
-                    chestPos = storage;
-                    MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
-                    DebugData.getInstance().sendMessage("[REQUEST_FIND]Priority By Filter %s", storage);
-                }
+                if (!MoveUtil.isValidTarget(level, maid, storage)) continue;
+                chestPos = storage;
+                MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
+                DebugData.getInstance().sendMessage("[REQUEST_FIND]Priority By Filter %s", storage);
                 targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
                 return true;
             }

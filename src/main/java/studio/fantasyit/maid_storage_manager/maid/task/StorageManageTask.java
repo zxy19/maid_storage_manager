@@ -22,6 +22,15 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.CoWorkChestVie
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowActionBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowDisableBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowEnableBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.LogisticsSwitchTask;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.craft.LogisticCraftWorkBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.craft.LogisticCraftWorkMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.input.LogisticsInputBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.input.LogisticsInputMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.LogisticsOutputBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.LogisticsOutputMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.FindListItemBehavior;
@@ -59,6 +68,7 @@ public class StorageManageTask implements IMaidTask {
             default -> false;
         };
     }
+
     @Override
     public boolean enableLookAndRandomWalk(@NotNull EntityMaid maid) {
         return switch (MemoryUtil.getCurrentlyWorking(maid)) {
@@ -121,6 +131,16 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(5, new FollowActionBehavior()));
         list.add(Pair.of(5, new FollowEnableBehavior()));
         list.add(Pair.of(5, new FollowDisableBehavior()));
+        //物流模式
+        list.add(Pair.of(5, new LogisticsSwitchTask()));
+        list.add(Pair.of(5, new LogisticsOutputMoveBehavior()));
+        list.add(Pair.of(5, new LogisticsOutputBehavior()));
+        list.add(Pair.of(5, new LogisticsInputMoveBehavior()));
+        list.add(Pair.of(5, new LogisticsInputBehavior()));
+        list.add(Pair.of(5, new LogisticCraftWorkMoveBehavior()));
+        list.add(Pair.of(5, new LogisticCraftWorkBehavior()));
+        list.add(Pair.of(5, new LogisticsRecycleBehavior()));
+        list.add(Pair.of(5, new LogisticsRecycleMoveBehavior()));
         return list;
     }
 

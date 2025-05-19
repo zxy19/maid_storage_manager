@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 public class CommonTakeItemAction extends AbstractCraftActionContext {
     public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "extract");
-    IStorageContext storageContext;
+    protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
 

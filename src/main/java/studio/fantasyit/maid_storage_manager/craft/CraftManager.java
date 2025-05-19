@@ -6,7 +6,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -191,6 +193,19 @@ public class CraftManager {
                 1,
                 1
         );
+
+        if (ModList.get().isLoaded("ae2") && Config.enableAe2Sup) {
+            event.addCraftType(new AE2Type());
+            event.addAction(
+                    AE2Type.TYPE,
+                    AeCraftingAction::new,
+                    PathTargetLocator::commonNearestAvailablePos,
+                    CraftAction.PathEnoughLevel.NORMAL.value,
+                    false,
+                    0,
+                    1
+            );
+        }
     }
 
     public @Nullable ICraftType getType(ResourceLocation type) {

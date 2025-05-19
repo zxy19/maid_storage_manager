@@ -15,6 +15,7 @@ import java.util.Optional;
 
 public abstract class AbstractTargetMemory {
     private int failCount;
+    private int pathFindingFailCount;
 
     public static class TargetData {
         public static final Codec<TargetData> CODEC = RecordCodecBuilder.create(instance ->

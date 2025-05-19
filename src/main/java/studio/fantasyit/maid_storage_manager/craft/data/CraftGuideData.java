@@ -35,8 +35,11 @@ public class CraftGuideData {
     public ResourceLocation type;
     public List<ItemStack> inputs;
     public List<ItemStack> inputsWithOptional;
+
+    public List<ItemStack> inputsNoCircular;
     public List<ItemStack> outputs;
     public List<ItemStack> outputsWithOptional;
+    public List<ItemStack> outputsNoCircular;
     public Integer selecting;
 
     public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type) {
@@ -228,6 +231,36 @@ public class CraftGuideData {
 
     public List<ItemStack> getOutput() {
         return this.outputs;
+    }
+
+    protected void calculateNoCircular() {
+        if (inputsNoCircular != null && outputsNoCircular != null)
+            return;
+        inputsNoCircular = inputs.stream().map(ItemStack::copy).toList();
+        outputsNoCircular = outputs.stream().map(ItemStack::copy).toList();
+        for (ItemStack input : inputsNoCircular) {
+            if (input.isEmpty()) continue;
+            for (ItemStack output : outputsNoCircular) {
+                if (output.isEmpty()) continue;
+                if (ItemStackUtil.isSame(input, output, false)) {
+                    int count = Math.min(input.getCount(), output.getCount());
+                    input.shrink(count);
+                    output.shrink(count);
+                }
+                if (input.isEmpty()) break;
+            }
+        }
+        inputsNoCircular = inputsNoCircular.stream().filter(itemStack -> !itemStack.isEmpty()).toList();
+        outputsNoCircular = outputsNoCircular.stream().filter(itemStack -> !itemStack.isEmpty()).toList();
+    }
+
+    public List<ItemStack> getInputsNoCircular() {
+
+        return inputsNoCircular;
+    }
+
+    public List<ItemStack> getOutputsNoCircular() {
+        return outputsNoCircular;
     }
 
     public CraftGuideStepData getStepByIdx(int idx) {

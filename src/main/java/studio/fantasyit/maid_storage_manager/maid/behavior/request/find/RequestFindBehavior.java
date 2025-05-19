@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -13,10 +14,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
+import studio.fantasyit.maid_storage_manager.storage.base.*;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -61,7 +59,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
-        IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(MemoryUtil.getRequestProgress(maid).getTarget().getType()));
+        @Nullable IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(MemoryUtil.getRequestProgress(maid).getTarget().getType()));
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return;
         target = MemoryUtil.getRequestProgress(maid).getTarget();
         checkItem = MemoryUtil.getRequestProgress(maid).getCheckItem();
@@ -116,7 +114,11 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     private void tickPick(ServerLevel level, EntityMaid maid, long p_22550_) {
         if (!breath.breathTick()) return;
-        if (context instanceof IStorageInteractContext isic) {
+        if (context instanceof IStorageCraftDataProvider ispcp) {
+            ispcp.getCraftGuideData().forEach(craftGuideData -> {
+                MemoryUtil.getCrafting(maid).addCraftGuide(craftGuideData);
+            });
+        } else if (context instanceof IStorageInteractContext isic) {
             isic.tick(itemStack -> {
                 MemoryUtil.getViewedInventory(maid).addItem(target, itemStack);
                 if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {

@@ -31,8 +31,15 @@ public abstract class MaidCheckPickupItem {
             return;
         }
         if (entityItem.getItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            if (!InvUtil.hasAnyFree(getAvailableInv(false))) {
-                cir.setReturnValue(false);
+            if(!((EntityMaid) (Object) this).level().isClientSide) {
+                int tickCount = ((EntityMaid) (Object) this).level().getServer().getTickCount();
+                Integer restartAt = MemoryUtil.getReturnToScheduleAt((EntityMaid) (Object) this);
+                if (restartAt != null && tickCount < restartAt) {
+                    cir.setReturnValue(false);
+                }
+                if (!InvUtil.hasAnyFree(getAvailableInv(false))) {
+                    cir.setReturnValue(false);
+                }
             }
         }
     }

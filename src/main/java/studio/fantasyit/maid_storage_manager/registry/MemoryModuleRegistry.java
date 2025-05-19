@@ -33,6 +33,8 @@ public class MemoryModuleRegistry {
             = REGISTER.register("working", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<CraftMemory>> CRAFTING
             = REGISTER.register("crafting", () -> new MemoryModuleType<>(Optional.of(CraftMemory.CODEC)));
+    public static final RegistryObject<MemoryModuleType<LogisticsMemory>> LOGISTICS
+            = REGISTER.register("logistics", () -> new MemoryModuleType<>(Optional.of(LogisticsMemory.CODEC)));
     public static final RegistryObject<MemoryModuleType<BlockPos>> INTERACTION_RESULT
             = REGISTER.register("interact_result", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<Boolean>> CO_WORK_MODE

@@ -18,6 +18,7 @@ public class MaidStorageManager {
         MemoryModuleRegistry.register(modEventBus);
         CreativeTabRegistry.register(modEventBus);
         RecipesRegistry.register(modEventBus);
+        EntityRegistry.init(modEventBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 }
