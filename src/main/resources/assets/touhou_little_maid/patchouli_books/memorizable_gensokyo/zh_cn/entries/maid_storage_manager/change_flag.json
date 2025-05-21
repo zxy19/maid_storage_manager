@@ -1,0 +1,17 @@
+{
+  "sortnum": 10,
+  "name": "存储更新旗",
+  "icon": "maid_storage_manager:change_flag",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:change_flag",
+      "text": "作为仓管，女仆会不时地检查所有她管辖的箱子，但当你向箱子中新放入/取出了一些物品的时候，女仆不一定会立刻发现。$(br)使用存储更新旗潜行右键需要检查的箱子，再右键女仆，女仆会优先检查一遍这些箱子。"
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:change_flag"
+    }
+  ]
+}

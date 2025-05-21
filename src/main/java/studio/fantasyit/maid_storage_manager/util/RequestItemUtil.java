@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -76,6 +77,7 @@ public class RequestItemUtil {
      * @param reqList
      */
     private static void sendToolResponseB(EntityMaid maid, ItemStack reqList) {
+        if (!Config.twoStepAiResponse) return;
         MaidAIChatManager aiChatManager = maid.getAiChatManager();
         LLMSite llmSite = aiChatManager.getLLMSite();
         ServerPlayer owner = (ServerPlayer) maid.getOwner();

@@ -1,0 +1,38 @@
+{
+    "sortnum": 4,
+    "name": "库存清单",
+    "icon": "maid_storage_manager:inventory_list",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:inventory_list",
+            "text": "库存清单可以让你清楚地知道仓库里面有些什么、存在哪里。$(br2)合成一个空的库存清单，或在工作台上重置一个写过的库存清单，再将它交给女仆（丢给她，右键她，甚至打开背包放进去！）$(br)写好后，女仆会将库存清单丢出来。"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/inventory.png"
+            ],
+            "title": "记录过的库存清单",
+            "text": ""
+        },
+                {
+            "type": "text",
+            "title": "寻找物品",
+            "text": "在查看库存清单时，你可以点击某一物品来让它存储的位置被标记，在寻找物品时非常方便。"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/inventory2.png"
+            ],
+            "title": "存着番茄的箱子",
+            "text": ""
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:inventory_list"
+        }
+    ]
+}

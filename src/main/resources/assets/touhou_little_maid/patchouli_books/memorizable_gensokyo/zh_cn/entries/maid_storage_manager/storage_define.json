@@ -1,0 +1,17 @@
+{
+    "sortnum": 11,
+    "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define",
+    "icon": "maid_storage_manager:storage_define_bauble",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:storage_define_bauble",
+            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define.pages.0.1.text"
+        },
+        {
+            "type": "text",
+            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define.pages.0.2.text"
+        }
+    ]
+}

@@ -93,7 +93,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     public static String getTranslationKey(FastSort memoryAssistant) {
         return "gui.maid_storage_manager.config.fast_sort." + switch (memoryAssistant) {
             case NORMAL -> "normal";
-            case KEEP_FILTER -> "enable";
+            case KEEP_FILTER -> "filter";
             case KEEP_ALL -> "all";
         };
     }

@@ -1,0 +1,44 @@
+{
+  "sortnum": 5,
+  "name": "请求列表",
+  "icon": "maid_storage_manager:request_list",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:request_list",
+      "text": "不想自己去翻找仓库？用请求列表吧！右键绑定物品交付的地方，然后填写列表，再把它交给女仆。$(br)女仆会将找到的物品和请求列表一起放到这个箱子里。"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request.png"
+      ],
+      "title": "绑定好的箱子",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "配置请求列表",
+      "text": "列表主体中的一三列是请求的物品，二四列是请求物品的完成状态。物品可以从jei或背包拖入以标记，滚轮以调节请求数量。$(br2)如果想要合成某样物品，点击jei配方的加号可以自动将配方所需原料填入请求列表。$(br2)其余更多的配置项详见$(l:maid_storage_manager/request_list_settings)“请求列表高级配置”$(/l)"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request2.png"
+      ],
+      "title": "请求列表GUI",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "anchor": "finish_task",
+      "title": "工作完成后",
+      "text": "工作完成后，你可以在目标箱子找到请求的物品（如果有的话）和请求列表（不论是否完成），打开列表可以看见任务完成进度。$(br2)小提示：再次使用列表前，一定要点击右下角的“清除工作状态”按钮。"
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:request_list"
+    }
+  ]
+}

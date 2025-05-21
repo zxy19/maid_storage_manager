@@ -51,6 +51,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue USING_VISIBLE_FRAME = BUILDER
             .comment("Use visible frame when placing allow access/no access/enable.")
             .define("using_visible_frame", true);
+    private static final ForgeConfigSpec.BooleanValue TWO_STEP_AI_RESPONSE = BUILDER
+            .comment("Allow Maid call AI two times when doing some request.")
+            .define("two_step_ai_response", true);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
@@ -65,6 +68,7 @@ public class Config {
     public static boolean useAllStorageByDefault;
     public static double followSpeed;
     public static boolean usingVisibleFrame;
+    public static boolean twoStepAiResponse;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -80,5 +84,6 @@ public class Config {
         useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
         viewChangeSpeed = VIEW_CHANGE_SPEED.get();
         followSpeed = FOLLOW_SPEED.get();
+        twoStepAiResponse = TWO_STEP_AI_RESPONSE.get();
     }
 }

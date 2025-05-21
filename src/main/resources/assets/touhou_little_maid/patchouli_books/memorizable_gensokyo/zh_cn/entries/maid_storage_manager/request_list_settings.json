@@ -1,0 +1,60 @@
+{
+  "sortnum": 6,
+  "name": "请求列表高级配置",
+  "icon": "maid_storage_manager:request_list",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "title": "请求列表高级配置 其一",
+      "text": "列表右上方的“重复”用以调整女仆每隔多少时间执行一次任务，默认为不重复。该配置项需要用鼠标滚轮调节。$(br2)使用示例：用列表请求一个番茄布丁，将重复设置为20t时，女仆会每20t（1秒）向目标箱子放一个番茄布丁。$(br)（准确来说是在上一次任务完成后开始计时）"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request_setting.png"
+      ],
+      "title": "重复配置项",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "请求列表高级配置 其二",
+      "text": "右下方的四个按钮的功能如下：$(br)1.切换请求时是否匹配NBT标签（如耐久度，附魔等）。$(br2)2.切换请求时采用黑名单/白名单。$(br)白名单：只收集列表中的物品。$(br)黑名单：除了列表中的物品都收集。$(br2)3.用于清除工作状态，详见$(l:maid_storage_manager/request_list#finish_task)“工作完成后”$(/l)"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request_setting2.png"
+      ],
+      "title": "按钮配置一",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "请求列表配置 其三",
+      "text": "最后一个按钮可以切换请求物品的模式，默认为“收集模式”，意为收集列表上的物品。若切为“库存模式”，女仆将会补齐目标箱子相对于请求列表缺少的物品。$(br2)$(7)例：列表绑定的箱子中有8个番茄，请求列表请求了16个番茄，若模式为“收集模式”，女仆将会向箱子放16个番茄，若模式为“库存模式”，女仆只会向箱子放入8个番茄，使箱子总共有16个。$()"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request_setting3.png"
+      ],
+      "title": "按钮配置二",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "请求列表配置 其三",
+      "text": "最后，列表左下角的位置可以放入$(l:maid_storage_manager/storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request_setting4.png"
+      ],
+      "title": "存储定义槽",
+      "text": ""
+    }
+  ]
+}

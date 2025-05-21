@@ -1,0 +1,41 @@
+{
+    "sortnum": 7,
+    "name": "自动合成",
+    "icon": "minecraft:crafting_table",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "text",
+            "title": "女仆自动合成",
+            "text": "自动合成是本模组最核心最实用的功能，想要教会女仆自动合成，首先需要造一个$(l:maid_storage_manager/craft#calculator)“便携式合成计算器”$(/l)，并将它放到女仆的饰品栏。"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/craft.png"
+            ],
+            "title": "饰品配置",
+            "text": ""
+        },
+        {
+            "type": "text",
+            "title": "合成方案",
+            "text": "在开始自动合成前，你还需要把物品的配方教给女仆（写ae样板.jpg）。$(br)拿出$(l:maid_storage_manager/craft_guide)合成指南$(/l)，绑定一个工作方块，然后填充配方。把填写好的合成指南放入女仆能访问到的某个箱子中，女仆在检查该箱子后便会记住这个配方。"
+        },
+        {
+            "type": "text",
+            "title": "请求自动合成",
+            "text": "一切准备就绪！现在你可以用$(l:maid_storage_manager/request_list)请求列表$(/l)请求仓库里没有的物品，如果仓库里有这个物品的所有原材料和对应的合成指南，女仆便会一步步合成该物品再交付给你。"
+        },
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:portable_craft_calculator_bauble",
+            "anchor": "calculator",
+            "text": "帮助女仆计算合成配方，学会自动合成。$(br2)$(7)$(o)“小到可以随身携带！”$()$()"
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:portable_craft_calculator_bauble"
+        }
+    ]
+}
