@@ -39,6 +39,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.LOGISTICS) return false;
         if (!MemoryUtil.getLogistics(maid).shouldWork()) return false;
         if (MemoryUtil.getLogistics(maid).getStage() != LogisticsMemory.Stage.OUTPUT) return false;
+        if (layer == null || layer.hasCollectedAll()) return false;
         if (currentSlot >= maid.getAvailableInv(false).getSlots())
             return false;
         return (context != null && !context.isDone());
@@ -77,8 +78,6 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
         for (int i = 0; i < 5 && currentSlot < availableInv.getSlots(); i++)
             if (availableInv.getStackInSlot(currentSlot).isEmpty())
                 currentSlot++;
-        if (availableInv.getStackInSlot(currentSlot) == maid.getMainHandItem())
-            currentSlot++;
         if (currentSlot < availableInv.getSlots()) {
             ItemStack stack = availableInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty())
@@ -90,6 +89,13 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
                 }
             currentSlot++;
         }
+        if (context != null)
+            if (currentSlot >= availableInv.getSlots() || context.isDone()) {
+                if (!MemoryUtil.getLogistics(maid).hasMultipleGuide(maid)) {
+                    if (currentSlot >= availableInv.getSlots()) currentSlot = 0;
+                    if (context.isDone()) context.reset();
+                }
+            }
     }
 
     @Override
@@ -107,4 +113,5 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
     protected boolean timedOut(long p_22537_) {
         return false;
     }
+
 }

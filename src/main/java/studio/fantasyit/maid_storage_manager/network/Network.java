@@ -200,6 +200,13 @@ public class Network {
                             );
                             data.coWorkMode(msg.value == 1);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        }else if (msg.type == MaidDataSyncPacket.Type.FastSort) {
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.fastSort(StorageManagerConfigData.FastSort.values()[msg.value]);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
                     context.get().setPacketHandled(true);

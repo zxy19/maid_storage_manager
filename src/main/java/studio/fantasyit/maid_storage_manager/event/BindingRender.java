@@ -66,7 +66,7 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(input,
                     colors_b,
                     event,
-                    Component.translatable("maid_storage_manager.logistics_guide_binding_input").getString(),
+                    Component.translatable("maid_storage_manager.logistics_guide_binding_extract").getString(),
                     floating);
         }
 
@@ -75,7 +75,7 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(output,
                     colors_g,
                     event,
-                    Component.translatable("maid_storage_manager.logistics_guide_binding_output").getString(),
+                    Component.translatable("maid_storage_manager.logistics_guide_binding_store").getString(),
                     floating);
         }
     }

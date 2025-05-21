@@ -9,6 +9,7 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -115,8 +116,14 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
         }
+        if (!changed) {
+            if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() != StorageManagerConfigData.FastSort.NORMAL) {
+                MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);
+            }
+        }
         MemoryUtil.clearTarget(maid);
     }
+
     @Override
     protected boolean timedOut(long p_22537_) {
         return false;

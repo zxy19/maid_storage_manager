@@ -8,7 +8,9 @@ import java.util.Objects;
 public class MaidDataSyncPacket {
     public enum Type {
         MemoryAssistant,
-        CoWork, NoPlaceSort
+        CoWork,
+        FastSort,
+        NoPlaceSort
     }
     public final Type type;
     public final int id;

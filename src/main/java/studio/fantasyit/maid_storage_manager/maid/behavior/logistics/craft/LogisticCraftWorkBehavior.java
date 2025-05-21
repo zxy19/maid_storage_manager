@@ -84,15 +84,16 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
             done = true;
         }
 
-        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
-                layer
-                        .getCraftData()
-                        .map(CraftGuideData::getAllOutputItems)
-                        .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
-                        .orElse(""),
-                layer.getDoneCount().toString(),
-                layer.getCount().toString()
-        );
+        if (layer.getCraftData().map(CraftGuideData::getAllOutputItems).map(l -> l.size() > 0).orElse(false))
+            ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
+                    layer
+                            .getCraftData()
+                            .map(CraftGuideData::getAllOutputItems)
+                            .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
+                            .orElse(""),
+                    String.valueOf((layer.getDoneCount() + 1)),
+                    layer.getCount().toString()
+            );
     }
 
     @Override

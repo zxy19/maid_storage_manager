@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkHooks;
@@ -26,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
+import java.util.List;
 import java.util.Objects;
 
 public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IMaidBauble {
@@ -60,9 +63,9 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
         selectId = selectId == 0 ? 1 : 0;
         setSelectId(itemInHand, selectId);
         if (selectId == 0)
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_input"));
+            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_extract"));
         else
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_output"));
+            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_store"));
         CraftGuideRenderData.recalculateItemStack(itemInHand);
     }
 
@@ -181,5 +184,41 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     @Override
     public AbstractContainerMenu createMenu(int p_39954_, Inventory p_39955_, Player p_39956_) {
         return new LogisticsGuideMenu(p_39954_, p_39956_);
+    }
+
+    @Override
+    public void appendHoverText(@NotNull ItemStack itemStack,
+                                @Nullable Level p_41422_,
+                                @NotNull List<Component> toolTip,
+                                @NotNull TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
+        toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.desc").withStyle(ChatFormatting.GRAY));
+        if (!itemStack.hasTag()) {
+            return;
+        }
+        @Nullable Target input = getInput(itemStack);
+        if (input != null) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.input",
+                    input.pos.getX(),
+                    input.pos.getY(),
+                    input.pos.getZ()
+            ));
+        }
+
+        @Nullable Target output = getOutput(itemStack);
+        if (output != null) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.output",
+                    output.pos.getX(),
+                    output.pos.getY(),
+                    output.pos.getZ()
+            ));
+        }
+
+        ItemStack itemStack1 = getItemStack(itemStack);
+        if (itemStack1.is(ItemRegistry.CRAFT_GUIDE.get())) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.craft_guide").withStyle(ChatFormatting.YELLOW));
+        } else if (itemStack1.is(ItemRegistry.FILTER_LIST.get())) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.filter").withStyle(ChatFormatting.YELLOW));
+        }
     }
 }

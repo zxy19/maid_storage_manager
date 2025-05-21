@@ -129,6 +129,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 Component.literal("")));
         editBox.setValue("0");
         editBox.setBordered(false);
+        editBox.setMaxLength(3);
         editBox.setFilter(s -> StringUtils.isNumeric(s) && Integer.parseInt(s) <= 999);
         editBox.setResponder(t -> sendExtra(i1, c -> c.putInt("time", Integer.parseInt(t))));
         editBoxes.add(editBox);
@@ -325,7 +326,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.pose().translate(0, 0, 1000);
         for (EditBox editBox : editBoxes) {
             if (editBox.isVisible())
-                graphics.blit(background, editBox.getX(), editBox.getY() + editBox.getHeight(), 197, 100, editBox.getWidth(), 1);
+                graphics.blit(background, editBox.getX(), editBox.getY() + editBox.getHeight(), 197, 100, editBox.getWidth() + 1, 1);
         }
         graphics.pose().popPose();
     }
@@ -334,7 +335,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         for (int i = 0; i < menu.steps.size(); i++) {
             if (menu.isIdCurrentPage(i)) {
                 if (menu.steps.get(i).inputCount > 0 && menu.steps.get(i).outputCount > 0) {
-                    CommonCraftAssets.ARROW.blit(graphics, getGuiLeft() + 60, getGuiTop() + SLOT_Y[i % 3] + 6);
+                    CommonCraftAssets.ARROW.blit(graphics, getGuiLeft() + 59, getGuiTop() + SLOT_Y[i % 3] + 5);
                 }
             }
         }
@@ -533,7 +534,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     protected void containerTick() {
         super.containerTick();
         for (EditBox eb : editBoxes) {
-            String value = eb.getValue() + "_";
+            String value = eb.getValue();
+            if (value.length() < 3) value += "_";
             int width1 = Math.max(Math.min(font.width(value), 30), 8);
             eb.setWidth(width1);
             eb.setX(getGuiLeft() + 90 + 30 - width1);

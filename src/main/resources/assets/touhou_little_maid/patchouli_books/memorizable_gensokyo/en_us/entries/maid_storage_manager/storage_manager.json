@@ -1,20 +1,16 @@
 {
   "sortnum": 1,
-  "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager",
+  "name": "成为仓管的第一步",
   "icon": "minecraft:chest",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
       "type": "text",
-      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager.pages.0.1.text"
+      "text": "欢迎使用女仆仓管:)$(br2)女仆仓管提供了一种新的职业“仓库管理员”。在合理的配置下，该职业的女仆可以完成寻找物品，分类存储，自动合成，物流搬运等多项工作。"
     },
     {
       "type": "text",
-      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager.pages.0.2.text"
-    },
-    {
-      "type": "text",
-      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_manager.pages.0.3.text"
+      "text": "当女仆被安排为仓库管理员时，她会自动捡起附近的掉落物并存放进周围的箱子中。$(br2)默认情况下，女仆会扫描多个箱子，来保证同种物品尽可能存在一个箱子中。"
     }
   ]
 }

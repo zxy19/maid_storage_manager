@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.logistics;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -39,9 +40,10 @@ public class LogisticsSwitchTask extends Behavior<EntityMaid> {
         else {
             logistics.switchCurrentLogisticsGuideItem(maid);
             if (logistics.shouldWork()) {
+                AdvancementTypes.triggerForMaid(maid, AdvancementTypes.LOGISTICS);
                 logistics.clearTarget();
                 logistics.setStage(LogisticsMemory.Stage.INPUT);
-            }else{
+            } else {
                 logistics.clearTarget();
                 logistics.setStage(LogisticsMemory.Stage.FINISH);
             }

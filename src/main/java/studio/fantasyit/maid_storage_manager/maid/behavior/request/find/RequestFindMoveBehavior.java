@@ -102,7 +102,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
             @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
             if(storage == null) continue;
             boolean craftGuideProvider = MaidStorage.getInstance().isCraftGuideProvider(storage, blockPos.getValue());
-            if (targetItem.isEmpty() && craftGuideProvider) {
+            if (targetItem.isEmpty() && !craftGuideProvider) {
                 continue;
             }
             @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());

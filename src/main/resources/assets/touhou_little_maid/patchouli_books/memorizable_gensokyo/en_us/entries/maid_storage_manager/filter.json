@@ -1,19 +1,38 @@
 {
-    "sortnum": 4,
-    "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.filter",
+    "sortnum": 2,
+    "name": "过滤器",
     "icon": "maid_storage_manager:filter_list",
     "category": "touhou_little_maid:maid_storage_manager",
     "pages": [
-        
         {
             "type": "spotlight",
             "item": "maid_storage_manager:filter_list",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.filter.pages.0.1.text"
+            "text": "过滤器决定了女仆能往箱子里放什么、不能放什么。过滤器需要放在贴在箱子上的物品展示框里才能生效。"
         },
         {
-            "type": "spotlight",
-            "item": "maid_storage_manager:no_access",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.filter.pages.0.2.text"
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/filter.png"
+            ],
+            "title": "物品展示框里的过滤器",
+            "text": ""
+        },
+        {
+            "type": "text",
+            "title": "配置过滤器",
+            "text": "右键打开过滤器进行配置，列表物品可以从背包或jei拖入添加。$(br2)第一个按钮切换黑白名单，白名单只能放列表有的物品，黑名单除了列表物品都可以存放。$(br2)第二个按钮切换是否精确匹配NBT标签，如耐久，物品命名等"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/filter2.png"
+            ],
+            "title": "存放所有原木的过滤器配置",
+            "text": ""
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:filter_list"
         }
     ]
 }

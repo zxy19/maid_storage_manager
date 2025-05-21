@@ -1,17 +1,9 @@
 package studio.fantasyit.maid_storage_manager;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 
 // An example config class. This is not required, but it's a good idea to have one to keep your config organized.
 // Demonstrates how to use Forge's config APIs
@@ -56,10 +48,9 @@ public class Config {
             .comment("Enable maid from visiting all storages.")
             .define("use_all_storage", false);
 
-
-    //    private static final ForgeConfigSpec.ConfigValue<String> DEBUG = BUILDER
-//            .comment("Debug values")
-//            .define("debug", "0.5,0.5,0");
+    private static final ForgeConfigSpec.BooleanValue USING_VISIBLE_FRAME = BUILDER
+            .comment("Use visible frame when placing allow access/no access/enable.")
+            .define("using_visible_frame", true);
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
@@ -69,11 +60,11 @@ public class Config {
     public static double placeSpeed;
     public static double viewChangeSpeed;
     public static double craftWorkSpeed;
-    public static List<Float> debug;
     public static int maxStoreTries;
     public static int maxCraftTries;
     public static boolean useAllStorageByDefault;
     public static double followSpeed;
+    public static boolean usingVisibleFrame;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -85,7 +76,7 @@ public class Config {
         maxStoreTries = MAX_STORE_TRIES.get();
         maxCraftTries = MAX_CRAFT_TRIES.get();
         craftWorkSpeed = CRAFT_WORK_SPEED.get();
-//        debug = Arrays.stream(DEBUG.get().split(",")).map(Float::parseFloat).toList();
+        usingVisibleFrame = USING_VISIBLE_FRAME.get();
         useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
         viewChangeSpeed = VIEW_CHANGE_SPEED.get();
         followSpeed = FOLLOW_SPEED.get();

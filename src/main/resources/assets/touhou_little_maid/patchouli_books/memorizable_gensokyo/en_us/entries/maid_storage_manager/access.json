@@ -1,0 +1,38 @@
+{
+    "sortnum": 3,
+    "name": "访问权限",
+    "icon": "maid_storage_manager:no_access",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:no_access",
+            "text": "女仆将不会访问任何被禁止访问标记的容器。禁止访问同样需要放在贴在箱子上的物品展示框里才能生效。"
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:no_access"
+        },
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:no_access",
+            "text": "相反，被贴上允许访问的容器会被女仆视为仓库的一部分来存取物品，多用于访问一些未被兼容的存储容器。$(br2)原版的木桶，箱子，陷阱箱，潜影盒以及它们的精妙存储版本会默认被女仆视为可访问。"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/filter2.png"
+            ],
+            "title": "贴上允许访问后的漏斗",
+            "text": ""
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:filter_list"
+        },
+                {
+            "type": "text",
+            "text": "禁止访问和允许访问可以在工作台中合成以互相转换。"
+        }
+    ]
+}

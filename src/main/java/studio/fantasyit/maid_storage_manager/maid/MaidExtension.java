@@ -5,12 +5,16 @@ import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.ai.IExtraMaidBrain;
+import com.github.tartaricacid.touhoulittlemaid.client.overlay.MaidTipsOverlay;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.data.TaskDataRegister;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import studio.fantasyit.maid_storage_manager.ai.CoWorkSwitchFunction;
+import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
+import studio.fantasyit.maid_storage_manager.items.MaidInteractItem;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -65,5 +69,16 @@ public class MaidExtension implements ILittleMaid {
     @Override
     public void registerAIFunctionCall(FunctionCallRegister register) {
         register.register(new StorageFetchFunction());
+        register.register(new GetStorageFunction());
+        register.register(new CoWorkSwitchFunction());
+    }
+
+    @Override
+    public void addMaidTips(MaidTipsOverlay maidTipsOverlay) {
+        ItemRegistry.ITEMS.getEntries().forEach(item -> {
+            if (item.get() instanceof MaidInteractItem) {
+                maidTipsOverlay.addTips("tip.maid_storage_manager.interact_maid", item.get());
+            }
+        });
     }
 }

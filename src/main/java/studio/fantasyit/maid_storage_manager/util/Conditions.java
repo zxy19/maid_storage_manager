@@ -17,9 +17,13 @@ import java.util.Optional;
 
 public class Conditions {
     public static boolean takingRequestList(EntityMaid maid) {
-        if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting())
+        if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting() && MemoryUtil.getCrafting(maid).hasCurrent())
             return true;
-        return maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get());
+        if (!maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return false;
+        if (RequestListItem.isIgnored(maid.getMainHandItem()) || RequestListItem.isCoolingDown(maid.getMainHandItem()))
+            return false;
+        return true;
     }
 
     public static boolean inventoryNotFull(EntityMaid maid) {

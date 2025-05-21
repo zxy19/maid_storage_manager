@@ -4,22 +4,22 @@ import com.github.tartaricacid.touhoulittlemaid.api.entity.data.TaskDataKey;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.Objects;
-
 public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfigData.Data> {
     public static final class Data {
         private boolean coWorkMode;
         private MemoryAssistant memoryAssistant;
         private boolean noSortPlacement = false;
+        private FastSort fastSort = FastSort.NORMAL;
 
-        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode) {
+        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode, FastSort fastSort) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
             this.coWorkMode = coWorkMode;
+            this.fastSort = fastSort;
         }
 
         public static Data getDefault() {
-            return new Data(MemoryAssistant.MEMORY_FIRST, false, false);
+            return new Data(MemoryAssistant.MEMORY_FIRST, false, false, FastSort.NORMAL);
         }
 
         public MemoryAssistant memoryAssistant() {
@@ -45,6 +45,14 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         public void coWorkMode(boolean coWorkMode) {
             this.coWorkMode = coWorkMode;
         }
+
+        public FastSort fastSort() {
+            return fastSort;
+        }
+
+        public void fastSort(FastSort fastSort) {
+            this.fastSort = fastSort;
+        }
     }
 
     public static TaskDataKey<Data> KEY = null;
@@ -59,6 +67,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     public CompoundTag writeSaveData(Data data) {
         CompoundTag tag = new CompoundTag();
         tag.putString("memoryAssistant", data.memoryAssistant().name());
+        tag.putString("fastSortMode", data.fastSort().name());
         tag.putBoolean("noSortPlacement", data.noSortPlacement());
         tag.putBoolean("coWorkMode", data.coWorkMode());
         return tag;
@@ -67,9 +76,10 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     @Override
     public Data readSaveData(CompoundTag compound) {
         MemoryAssistant memoryAssistant = MemoryAssistant.valueOf(compound.getString("memoryAssistant"));
+        FastSort fastSort = compound.contains("fastSortMode") ? FastSort.valueOf(compound.getString("fastSortMode")) : FastSort.NORMAL;
         boolean noSortPlacement = compound.getBoolean("noSortPlacement");
         boolean coWorkMode = compound.getBoolean("coWorkMode");
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode);
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, fastSort);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {
@@ -80,6 +90,15 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         };
     }
 
+    public static String getTranslationKey(FastSort memoryAssistant) {
+        return "gui.maid_storage_manager.config.fast_sort." + switch (memoryAssistant) {
+            case NORMAL -> "normal";
+            case KEEP_FILTER -> "enable";
+            case KEEP_ALL -> "all";
+        };
+    }
+
+
     public static String getTranslationKey(boolean enable) {
         return "gui.maid_storage_manager.config.bool." + (enable ? "enable" : "disable");
     }
@@ -88,5 +107,11 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         MEMORY_ONLY,
         MEMORY_FIRST,
         ALWAYS_SCAN,
+    }
+
+    public enum FastSort {
+        NORMAL,
+        KEEP_FILTER,
+        KEEP_ALL
     }
 }

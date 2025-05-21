@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -49,12 +50,25 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         super.start(level, maid, p_22542_);
 
+        if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() == StorageManagerConfigData.FastSort.NORMAL) {
+            MemoryUtil.getPlacingInv(maid).clearSuppressedPos();
+        }
+
         if (!this.priorityTarget(level, maid))
             this.searchForDestination(level, maid);
 
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
             if (!MemoryUtil.getPlacingInv(maid).isAnySuccess()) {
                 MemoryUtil.getPlacingInv(maid).addFailCount();
+
+                //快速放置-保留全部记录模式，没有目标几次后重置所有suppressed
+                if (MemoryUtil.getPlacingInv(maid).getFailCount() >= 2 && MemoryUtil.getPlacingInv(maid).anySuppressed()) {
+                    if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() == StorageManagerConfigData.FastSort.KEEP_ALL) {
+                        MemoryUtil.getPlacingInv(maid).clearSuppressedPos();
+                        MemoryUtil.getPlacingInv(maid).resetFailCount();
+                    }
+                }
+
                 if (MemoryUtil.getPlacingInv(maid).getFailCount() >= 5)
                     ChatTexts.send(maid, ChatTexts.CHAT_CHEST_FULL);
             } else {
@@ -101,8 +115,9 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
                 if (!MoveUtil.isValidTarget(level, maid, validTarget)) continue;
 
             if (validTarget != null) {
-                if (MemoryUtil.getPlacingInv(maid).isVisitedPos(validTarget))
+                if (MemoryUtil.getPlacingInv(maid).isVisitedPosOrSuppressed(validTarget))
                     continue;
+
                 @Nullable IStorageContext context = MaidStorage
                         .getInstance()
                         .getStorage(validTarget.getType())
@@ -150,6 +165,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             }
         }
 
+
         if (targetFilter != null) {
             PlacingInventoryMemory placingInv = MemoryUtil.getPlacingInv(maid);
             placingInv.setArrangeItems(targetFilterList);
@@ -164,6 +180,11 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             MemoryUtil.setTarget(maid, targetContentPos, (float) Config.placeSpeed);
             DebugData.getInstance().sendMessage("[PLACE]Priority By Content %s", targetContent);
             return true;
+        } else if (MemoryUtil.getPlacingInv(maid).anySuppressed()) {//对于没查到的情况，可能有之前已经被标记为不可用的箱子
+            if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() == StorageManagerConfigData.FastSort.KEEP_FILTER) {
+                MemoryUtil.getPlacingInv(maid).clearSuppressedPos();
+                return priorityTarget(level, maid);
+            }
         }
         return false;
     }

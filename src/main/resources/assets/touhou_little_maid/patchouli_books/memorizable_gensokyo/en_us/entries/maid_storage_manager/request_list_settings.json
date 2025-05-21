@@ -1,0 +1,60 @@
+{
+  "sortnum": 6,
+  "name": "请求列表高级配置",
+  "icon": "maid_storage_manager:request_list",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:request_list",
+      "text": "不想自己去翻找仓库？用请求列表吧！右键绑定物品交付的地方，然后填写列表，再把它交给女仆。$(br)女仆会将找到的物品和请求列表一起放到这个箱子里。"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request.png"
+      ],
+      "title": "绑定好的箱子",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "请求列表配置 其一",
+      "text": "列表主体中的一三列是请求的物品，二四列是请求物品的完成状态。物品可以从jei或背包拖入以标记，滚轮以调节请求数量。$(br2)列表右上方的“重复”用以调整女仆每隔多少时间执行一次任务，默认不重复。该配置项同样用鼠标滚轮调节。"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request2.png"
+      ],
+      "title": "请求列表GUI",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "请求列表配置 其二",
+      "text": "右下方的四个按钮的功能如下：$(br)1.左上的按钮切换是否匹配NBT标签。$(br)2.右上的按钮切换收集物品的模式，收集模式会按照列表的需求收齐物品，而库存模式会尝试补齐目标箱子相对于列表缺少的物品。$(br)3.左下的按钮切换黑白名单。$(br)4.右下的按钮清除工作状态，详见后页中的$(l:request_list#request1)“工作完成后”$(/l)"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request3.png"
+      ],
+      "title": "按钮配置",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "请求列表配置 其三",
+      "text": "最后，列表左下角的位置可以放入$(l:maid_storage_manager/storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/request4.png"
+      ],
+      "title": "存储定义槽",
+      "text": ""
+    }
+  ]
+}

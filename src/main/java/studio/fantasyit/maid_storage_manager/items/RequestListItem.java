@@ -58,6 +58,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_HAS_CHECK_STOCK = "has_checked_stock";
     private static final String TAG_BLACKMODE_DONE = "blackmode_done";
     public static final String TAG_VIRTUAL = "virtual";
+    public static final String TAG_VIRTUAL_SOURCE = "virtual_source";
 
     public RequestListItem() {
         super(new Properties().stacksTo(1));
@@ -182,9 +183,9 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (!player.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND) {
             if (player.isShiftKeyDown()) {
                 CompoundTag tag = itemStack.getOrCreateTag();
-                if(tag.contains(TAG_STORAGE_ENTITY)){
+                if (tag.contains(TAG_STORAGE_ENTITY)) {
                     tag.remove(TAG_STORAGE_ENTITY);
-                }else {
+                } else {
                     if (tag.contains(TAG_STORAGE))
                         tag.remove(TAG_STORAGE);
                     tag.putUUID(TAG_STORAGE_ENTITY, entity.getUUID());
@@ -212,7 +213,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
                 CompoundTag tag = item.getOrCreateTag();
-                if(tag.contains(TAG_STORAGE_ENTITY)){
+                if (tag.contains(TAG_STORAGE_ENTITY)) {
                     tag.remove(TAG_STORAGE_ENTITY);
                 }
                 if (tag.contains(TAG_STORAGE)) {
@@ -252,12 +253,18 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             return;
         }
         CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (!tag.contains(RequestListItem.TAG_STORAGE)) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
-        } else {
+        if (tag.contains(RequestListItem.TAG_VIRTUAL) && tag.getBoolean(RequestListItem.TAG_VIRTUAL)) {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.virtual").withStyle(ChatFormatting.RED));
+        }
+        if (tag.contains(RequestListItem.TAG_STORAGE_ENTITY)) {
+            String tuuid = tag.getUUID(RequestListItem.TAG_STORAGE_ENTITY).toString().substring(0, 8);
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.entity", tuuid));
+        } else if (tag.contains(RequestListItem.TAG_STORAGE)) {
             Target storage = Target.fromNbt(tag.getCompound(RequestListItem.TAG_STORAGE));
             BlockPos storagePos = storage.getPos();
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.storage", storagePos.getX(), storagePos.getY(), storagePos.getZ()));
+        } else {
+            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
         }
 
         if (!tag.contains(RequestListItem.TAG_ITEMS)) {
@@ -294,7 +301,6 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (tag.getInt(RequestListItem.TAG_COOLING_DOWN) > 0) {
                 toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", tag.getInt(RequestListItem.TAG_COOLING_DOWN)).withStyle(ChatFormatting.GREEN));
             }
-
         }
     }
 

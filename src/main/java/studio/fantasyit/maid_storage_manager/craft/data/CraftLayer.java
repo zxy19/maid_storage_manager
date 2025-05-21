@@ -86,9 +86,10 @@ public class CraftLayer {
         return Optional.ofNullable(craftData);
     }
 
-    public void addStep(CraftGuideStepData stepData){
+    public void addStep(CraftGuideStepData stepData) {
         steps.add(stepData);
     }
+
     /**
      * 尝试记忆合成物品，返回应该拿取多少该种物品。
      */
@@ -96,7 +97,7 @@ public class CraftLayer {
         for (int i = 0; i < items.size(); i++) {
             if (ItemStack.isSameItem(items.get(i), itemStack)) {
                 int restNeed = items.get(i).getCount() - collectedCounts.get(i);
-                int toTake = Math.min(restNeed, maxStore);
+                int toTake = Math.min(Math.min(restNeed, maxStore), itemStack.getCount());
                 collectedCounts.set(i, collectedCounts.get(i) + toTake);
                 return itemStack.copyWithCount(toTake);
             }
@@ -138,6 +139,7 @@ public class CraftLayer {
         if (craftData == null) return null;
         return CraftManager.getInstance().startCurrentStep(this, maid);
     }
+
     public boolean hasCollectedAll() {
         for (int i = 0; i < collectedCounts.size(); i++) {
             if (collectedCounts.get(i) < items.get(i).getCount()) {

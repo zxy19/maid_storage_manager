@@ -128,4 +128,16 @@ public class LogisticsMemory extends AbstractTargetMemory {
     public Stage getStage() {
         return stage;
     }
+
+    public boolean hasMultipleGuide(EntityMaid maid) {
+        BaubleItemHandler maidBauble = maid.getMaidBauble();
+        int count = 0;
+        for (int i = 0; i < maidBauble.getSlots(); i++) {
+            ItemStack stack = maidBauble.getStackInSlot(i);
+            if (stack.is(ItemRegistry.LOGISTICS_GUIDE.get())) {
+                count++;
+            }
+        }
+        return count > 1;
+    }
 }

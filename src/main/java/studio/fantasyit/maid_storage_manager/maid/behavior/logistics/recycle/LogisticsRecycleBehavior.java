@@ -79,8 +79,6 @@ public class LogisticsRecycleBehavior extends Behavior<EntityMaid> {
         for (int i = 0; i < 5 && currentSlot < availableInv.getSlots(); i++)
             if (availableInv.getStackInSlot(currentSlot).isEmpty())
                 currentSlot++;
-        if (availableInv.getStackInSlot(currentSlot) == maid.getMainHandItem())
-            currentSlot++;
         if (currentSlot < availableInv.getSlots()) {
             ItemStack stack = availableInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty() && inInput(stack))
@@ -90,6 +88,8 @@ public class LogisticsRecycleBehavior extends Behavior<EntityMaid> {
                 }
             currentSlot++;
         }
+
+
     }
 
     protected boolean inInput(ItemStack stack) {

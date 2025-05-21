@@ -28,6 +28,8 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
     public SimpleContainer container;
     public boolean single_mode = false;
     Slot slotGuide;
+    public static final int SLOT_GUIDE_OFFSET_Y = 1;
+    public static final int SLOT_GUIDE_OFFSET_X = 8;
     List<Slot> playerSlots = new ArrayList<>();
 
     public LogisticsGuideMenu(int p_38852_, Player player) {
@@ -38,6 +40,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
         container = new SimpleContainer(1);
         container.setItem(0, ItemStack.of(tag.getCompound(LogisticsGuide.TAG_ITEM)));
         container.addListener((e) -> save());
+        single_mode = tag.getBoolean(LogisticsGuide.TAG_SINGLE_MODE);
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
@@ -51,7 +54,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
     }
 
     private void addFilterSlots() {
-        slotGuide = this.addSlot(new Slot(container, 0, 36, 24));
+        slotGuide = this.addSlot(new Slot(container, 0, 40, 24));
         Target input = LogisticsGuide.getInput(target);
         if (input != null)
             addSlot(new NoPlaceFilterSlot(
