@@ -1,13 +1,17 @@
 {
-  "sortnum": 5,
-  "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.change_flag",
-  "icon": "minecraft:bone_meal",
+  "sortnum": 10,
+  "name": "Change Flag",
+  "icon": "maid_storage_manager:change_flag",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
       "type": "spotlight",
       "item": "maid_storage_manager:change_flag",
-      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.change_flag.pages.0.1.text"
+      "text": "As the storage manager, the maid will check all the chests under her control from time to time, but when you've put in/taken out some new items into a chest, the maid won't always notice immediately. $(br) Use the change flag and sneak right-click on the chests that need to be checked, then right-click on the maid, and the maid will check those chests once more as a priority."
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:change_flag"
     }
   ]
 }

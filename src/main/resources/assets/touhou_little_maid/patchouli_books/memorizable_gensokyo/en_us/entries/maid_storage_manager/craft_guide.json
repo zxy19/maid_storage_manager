@@ -1,26 +1,84 @@
 {
-    "sortnum": 5,
-    "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide",
-    "icon": "maid_storage_manager:craft_guide",
-    "category": "touhou_little_maid:maid_storage_manager",
-    "pages": [
-        {
-            "type": "spotlight",
-            "item": "maid_storage_manager:portable_craft_calculator_bauble",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.1.text"
-        },
-        {
-            "type": "spotlight",
-            "item": "maid_storage_manager:craft_guide",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.2.text"
-        },
-        {
-            "type": "text",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.3.text"
-        },
-        {
-            "type": "text",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.craft_guide.pages.0.4.text"
-        }
-    ]
+  "sortnum": 8,
+  "name": "Craft Guide",
+  "icon": "maid_storage_manager:craft_guide",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "title": "Craft Guide",
+      "item": "maid_storage_manager:craft_guide",
+      "text": "The Craft Guide requires a bind work block to continue  configure. With this item in hand, sneak right-click on a supported work block to bind the recipe type. $(br2) Recipe types currently supported: $(br) Crafting Table, Furnace, Stone Cutter, Smithing Table, Anvil, and Touhou Little Maid's Multi-Block Altar (sneak-right-click anywhere on the altar to bind)."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/craft_guide.png"
+      ],
+      "title": "Binding Craft Guide to a Crafting Table.",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "Fill in the recipe",
+      "text": "After binding the work block, you can then open the GUI and fill the recipe manually or select a recipe from the jei. Once the recipe is filled, the Craft Guide will render the appropriate products and work blocks. (Anvil recipes are not available at the moment due to the fact that recognising NBT tags in crafting is not yet possible) $(br2)Tips: the experience required for anvil recipes and the P-points required for altar recipes will be deducted from the experience on the maid accordingly, and if the maid does not have enough experience, the crafting will fail."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/craft_guide2.png"
+      ],
+      "title": "A Crafting-Table recipe filled with the recipe of Gohei",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "Advanced Crafting",
+      "text": "If the binding block is not a working block, or if you click again on a binded working block, the Craft Guide will switch to a more advanced custom configuration mode. In this mode, you can toggle between ‘Bind Block’, ‘Bind Side’ and ‘Unbind’ with the sneak right-click, sneak rolling wheel to select the current step."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/craft_guide3.png"
+      ],
+      "title": "A custom crafting configuration that's setting the 3rd step in Craft Guide.",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "Configure custom crafting",
+      "text": "Each line of information in the GUI represents a step in a custom recipe: $(br)The buttons on the left move the step up and down and delete it. $(br)The item grid in the middle represents the items used/acquired by that step.$(br)The right side of the item grid represents the $(l:maid_storage_manager/craft_guide#craft_mode) working mode $(/l) of the current step.$(br)Binded blocks are rendered to the right of the working mode.$(br)The button to the far right controls whether the step can be ignored and skipped."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/craft_guide4.png"
+      ],
+      "title": "Custom crafting configure GUI",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "Working modes in Custom crafting step",
+      "anchor": "craft_mode",
+      "text": "1.Place, place items into target block.$(br)2.Extract, extract item from target block.$(br)3.Throw, throw item as an entity item to target position.$(br)4.Pick Up, pick up item entity from target position.$(br)5.Use, use the item in the left slot on the target block and take back the item in the right grid.(Both can be empty)$(br)6.Destroy, use the item in the left slot to destroy(Simulate the left click) target block and try to take back the item in the right slot.(Both can be empty)$(br)7.Idle, wait for a while at the target position. Click 's' or 't' to switch unit and use mouse wheel to adjust."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/craft_guide5.png"
+      ],
+      "title": "Multiple Work Modes",
+      "text": "Tips: Item mark in idle mode will be considered as 'Acquired' when maid was waiting. Sometimes maybe useful to solve some recipe."
+    },
+    {
+      "type": "text",
+      "title": "Optional/Required Step",
+      "text": "Sometimes a part of a recipe is unpredictable (probable output, side-products) and the maid will wait without the specified output until the recipe times out. In cases of uncertainty such as these, the step can be made ‘optional’ and the maid will perform the corresponding action and move on to the next crafting step, regardless of whether it is successful or not."
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:craft_guide"
+    }
+  ]
 }

@@ -1,0 +1,41 @@
+{
+    "sortnum": 7,
+    "name": "Auto Craft",
+    "icon": "minecraft:crafting_table",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "text",
+            "title": "Auto Craft with Maid",
+            "text": "Auto-crafting is the core and most useful function of this mod, if you want to teach your maid to auto-craft, you first need to craft a $(l:maid_storage_manager/craft#calculator) ‘Portable Crafting Calculator’ $(/l) and put it into your maid's bauble bar."
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/craft.png"
+            ],
+            "title": "Bauble configuration",
+            "text": ""
+        },
+        {
+            "type": "text",
+            "title": "Crafting Plans",
+            "text": "Before you start auto-crafting, you also need to teach the maid the recipe for the item (Just Another AE2 Patten). $(br) Take a $(l:maid_storage_manager/craft_guide) craft guide $(/l), bind a work block, and fill it with the recipe. Place the filled craft guide in one of the chests the maid has access to, and the maid will remember the recipe once she checks that chest."
+        },
+        {
+            "type": "text",
+            "title": "Request",
+            "text": "Everything is ready! Now you can use the $(l:maid_storage_manager/request_list) request list $(/l) to request an item that is not available in the warehouse, and if the warehouse has all the ingredients and corresponding craft guides for that item, the maid will craft the item step by step and then deliver it to you."
+        },
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:portable_craft_calculator_bauble",
+            "anchor": "calculator",
+            "text": "Help the maid calculate recipes and learn to auto-crafting.$(br2)$(7)$(o)\"Portable enough to take your brain substitute anywhere!\"$()$()"
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:portable_craft_calculator_bauble"
+        }
+    ]
+}

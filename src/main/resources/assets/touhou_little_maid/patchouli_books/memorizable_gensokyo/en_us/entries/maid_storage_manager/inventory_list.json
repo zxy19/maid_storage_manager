@@ -1,33 +1,33 @@
 {
     "sortnum": 4,
-    "name": "库存清单",
+    "name": "Inventory List",
     "icon": "maid_storage_manager:inventory_list",
     "category": "touhou_little_maid:maid_storage_manager",
     "pages": [
         {
             "type": "spotlight",
             "item": "maid_storage_manager:inventory_list",
-            "text": "库存清单可以让你清楚地知道仓库里面有些什么、存在哪里。$(br2)合成一个空的库存清单，或在工作台上重置一个写过的库存清单，再将它交给女仆（丢给她，右键她，甚至打开背包放进去！）$(br)写好后，女仆会将库存清单丢出来。"
+            "text": "Inventory lists show you exactly what's inside the warehouse and where it is stored. $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
         },
         {
             "type": "image",
             "images": [
                 "maid_storage_manager:textures/book/inventory.png"
             ],
-            "title": "记录过的库存清单",
+            "title": "Recorded inventory list",
             "text": ""
         },
                 {
             "type": "text",
-            "title": "寻找物品",
-            "text": "在查看库存清单时，你可以点击某一物品来让它存储的位置被标记，在寻找物品时非常方便。"
+            "title": "Looking for something",
+            "text": "When viewing the inventory list, you can click on an item to have its storage location marked, which is very handy when looking for items."
         },
         {
             "type": "image",
             "images": [
                 "maid_storage_manager:textures/book/inventory2.png"
             ],
-            "title": "存着番茄的箱子",
+            "title": "Chest with tomatoes",
             "text": ""
         },
         {

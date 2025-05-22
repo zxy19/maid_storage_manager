@@ -1,0 +1,31 @@
+{
+    "sortnum": 9,
+    "name": "Logistics Guide",
+    "icon": "maid_storage_manager:logistics_guide",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "spotlight",
+            "title": "Logistics Guide",
+            "item": "maid_storage_manager:logistics_guide",
+            "text": "Use the Logistics Guide to teach maids to move items! Sneak right click binds the location where items are extract/stored for the logistics guide, and the sneak wheel modifies the current bindings. $(br2) opens the GUI, the maid's left and right will render containers to access, and the button in the lower right corner sets whether the maid will carry one item or a stack of items at a time."
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/logistics.png"
+            ],
+            "title": "Logistics Guide",
+            "text": "(Remember to put it in your maid's bauble inventory after finish configuring)"
+        },
+        {
+            "type": "text",
+            "title": "Smarter Logistics",
+            "text": "Putting a Filter or Craft Guide in the top left of the GUI grid will enable these extra features: $(br)$(l:maid_storage_manager/filter)Filter $(/l): the maid will follow the Filter instructions when moving items.$(br)$(l:maid_storage_manager/craft_guide)Craft Guide$(/l): The maid will take ingredients from the container in the ‘extract’ position, and then craft the corresponding product into the container in the ‘store’ position. $(br2)Tips: If the maid has more than one logistics guide, she will take turns performing each task."
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:logistics_guide"
+        }
+    ]
+}

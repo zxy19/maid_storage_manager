@@ -26,6 +26,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContex
 import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class LogisticsInputBehavior extends Behavior<EntityMaid> {
     public LogisticsInputBehavior() {
@@ -216,45 +217,28 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
      * @param p_22553_
      */
     protected void tickGathering(ServerLevel level, EntityMaid maid, long p_22553_) {
+        Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
+            int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
+            if (maxStore > 0) {
+                ItemStack copy = itemStack.copy();
+                ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
+                if (toTake.getCount() > 0)
+                    ChatTexts.send(maid, ChatTexts.CHAT_MOVING_TAKEN,
+                            ChatTexts.fromComponent(itemStack.getHoverName()),
+                            String.valueOf(toTake.getCount())
+                    );
+                copy.shrink(toTake.getCount());
+                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
+                InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
+                return copy;
+            }
+            return itemStack;
+        };
         if (context instanceof IStorageInteractContext isic) {
-            isic.tick(itemStack -> {
-                int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
-                if (maxStore > 0) {
-                    ItemStack copy = itemStack.copy();
-                    ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
-                    if (toTake.getCount() > 0)
-                        ChatTexts.send(maid, ChatTexts.CHAT_MOVING_TAKEN,
-                                ChatTexts.fromComponent(itemStack.getHoverName()),
-                                String.valueOf(toTake.getCount())
-                        );
-                    copy.shrink(toTake.getCount());
-                    MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
-                    InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
-                    return copy;
-                }
-                return itemStack;
-            });
+            isic.tick(taker);
         } else if (context instanceof IStorageExtractableContext isec) {
             //TODO:MATCH NBT
-            isec.extract(layer.getUnCollectedItems(),
-                    true,
-                    itemStack -> {
-                        int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
-                        if (maxStore > 0) {
-                            ItemStack copy = itemStack.copy();
-                            ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
-                            if (toTake.getCount() > 0)
-                                ChatTexts.send(maid, ChatTexts.CHAT_MOVING_TAKEN,
-                                        ChatTexts.fromComponent(itemStack.getHoverName()),
-                                        String.valueOf(toTake.getCount())
-                                );
-                            copy.shrink(toTake.getCount());
-                            MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
-                            InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
-                            return copy;
-                        }
-                        return itemStack;
-                    });
+            isec.extract(layer.getUnCollectedItems(), true, taker);
         }
     }
 

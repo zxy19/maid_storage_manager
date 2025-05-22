@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "maid_storage_manager:allow_access",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "maid_storage_manager:no_access",
+    "count": 1
+  },
+  "show_notification": true
+}

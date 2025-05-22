@@ -1,59 +1,59 @@
 {
   "sortnum": 6,
-  "name": "请求列表高级配置",
+  "name": "Request List Advanced Configuration",
   "icon": "maid_storage_manager:request_list",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
-      "type": "spotlight",
-      "item": "maid_storage_manager:request_list",
-      "text": "不想自己去翻找仓库？用请求列表吧！右键绑定物品交付的地方，然后填写列表，再把它交给女仆。$(br)女仆会将找到的物品和请求列表一起放到这个箱子里。"
+      "type": "text",
+      "title": "Request List Advanced Configuration Ⅰ",
+      "text": "‘Repeat’ at the top right of the list is used to adjust how often the maid performs a task, the default is no repeat. You need to use the mouse wheel to adjust this option. $(br2)Usage example: request a tomato pudding with request list, set repeat to 20t, and the maid will place a tomato pudding in the target chest every 20t (1 second). $(br) (to be precise, start the timer after the last task is finished)"
     },
     {
       "type": "image",
       "images": [
-          "maid_storage_manager:textures/book/request.png"
+          "maid_storage_manager:textures/book/request_setting.png"
       ],
-      "title": "绑定好的箱子",
+      "title": "the Repeat option",
       "text": ""
     },
     {
       "type": "text",
-      "title": "请求列表配置 其一",
-      "text": "列表主体中的一三列是请求的物品，二四列是请求物品的完成状态。物品可以从jei或背包拖入以标记，滚轮以调节请求数量。$(br2)列表右上方的“重复”用以调整女仆每隔多少时间执行一次任务，默认不重复。该配置项同样用鼠标滚轮调节。"
+      "title": "Request List Advanced Configuration Ⅱ",
+      "text": "The four buttons on the bottom right have the following functions: $(br)1. Toggle whether to match NBT tags (e.g. durability, enchantment, etc.) when requesting. $(br2)2. Toggle request with blacklist/whitelist. $(br)Whitelist: only collect items in the list. $(br)blacklist: collect all items except those in the list. $(br2)3. Used to clear the work status, see $(l:maid_storage_manager/request_list#finish_task) ‘After After finishing the task’ $(/l) for details"
     },
     {
       "type": "image",
       "images": [
-          "maid_storage_manager:textures/book/request2.png"
+          "maid_storage_manager:textures/book/request_setting2.png"
       ],
-      "title": "请求列表GUI",
+      "title": "Button Configure Ⅰ",
       "text": ""
     },
     {
       "type": "text",
-      "title": "请求列表配置 其二",
-      "text": "右下方的四个按钮的功能如下：$(br)1.左上的按钮切换是否匹配NBT标签。$(br)2.右上的按钮切换收集物品的模式，收集模式会按照列表的需求收齐物品，而库存模式会尝试补齐目标箱子相对于列表缺少的物品。$(br)3.左下的按钮切换黑白名单。$(br)4.右下的按钮清除工作状态，详见后页中的$(l:request_list#request1)“工作完成后”$(/l)"
+      "title": "Request List Advanced Configuration Ⅲ",
+      "text": "The last button toggles the mode when requesting items. The default is ‘Collect Mode’, which means collecting the items on the list. If you switch to ‘Stock Mode’, the maid will fill in the missing items in the target chest relative to the request list. $(br2)$(7)Example: There are 8 tomatoes in the chest bound to the list, and the request list asks for 16 tomatoes, if the mode is ‘collect mode’, the maid will put 16 tomatoes into the chest, if the mode is ‘stock mode’, the maid will only put 8 tomatoes into the chest. $()"
     },
     {
       "type": "image",
       "images": [
-          "maid_storage_manager:textures/book/request3.png"
+          "maid_storage_manager:textures/book/request_setting3.png"
       ],
-      "title": "按钮配置",
+      "title": "Button Configure Ⅱ",
       "text": ""
     },
     {
       "type": "text",
-      "title": "请求列表配置 其三",
-      "text": "最后，列表左下角的位置可以放入$(l:maid_storage_manager/storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
+      "title": "Request List Advanced Configuration Ⅳ",
+      "text": "Finally, the bottom left corner of the list is a place to put the $(l:maid_storage_manager/storage_define) storage define $(/l).If a storage define is placed, the maid will follow the instructions of the storage define."
     },
     {
       "type": "image",
       "images": [
-          "maid_storage_manager:textures/book/request4.png"
+          "maid_storage_manager:textures/book/request_setting4.png"
       ],
-      "title": "存储定义槽",
+      "title": "Storage Define slot",
       "text": ""
     }
   ]

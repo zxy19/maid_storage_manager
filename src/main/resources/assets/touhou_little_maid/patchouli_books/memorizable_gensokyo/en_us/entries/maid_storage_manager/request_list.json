@@ -1,39 +1,40 @@
 {
   "sortnum": 5,
-  "name": "请求列表",
+  "name": "Request List",
   "icon": "maid_storage_manager:request_list",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
       "type": "spotlight",
       "item": "maid_storage_manager:request_list",
-      "text": "不想自己去翻找仓库？用请求列表吧！右键绑定物品交付的地方，然后填写列表，再把它交给女仆。$(br)女仆会将找到的物品和请求列表一起放到这个箱子里。"
+      "text": "Don't want to rummage through the warehouse yourself? Use the request list! Sneak right-click to bind the place where the item was delivered, then fill out the list, then give it to the maid. $(br) The maid will place the found items in this chest along with the request list."
     },
     {
       "type": "image",
       "images": [
           "maid_storage_manager:textures/book/request.png"
       ],
-      "title": "绑定好的箱子",
+      "title": "Binded chest",
       "text": ""
     },
     {
       "type": "text",
-      "title": "配置请求列表",
-      "text": "列表主体中的一三列是请求的物品，二四列是请求物品的完成状态。物品可以从jei或背包拖入以标记，滚轮以调节请求数量。$(br2)如果想要合成某样物品，点击jei配方的加号可以自动将配方所需原料填入请求列表。$(br2)其余更多的配置项详见$(l:storage_define)“请求列表高级配置”$(/l)"
+      "title": "Configure the Request List",
+      "text": "Columns one and three in the list are the requested items, and columns two and four are the completion status of the requested items.Items can be dragged in from the jei or backpack to mark them, and the wheel to adjust the number of requests.$(br2) If you want to craft an item, clicking on the plus sign for a jei recipe will automatically fill the request list with the ingredients needed for the recipe.$(br2)See $(l:maid_storage_manager/request_list_settings) ‘Request List Advanced Configuration’ $(/l) for the rest of the configuration items."
     },
     {
       "type": "image",
       "images": [
           "maid_storage_manager:textures/book/request2.png"
       ],
-      "title": "请求列表GUI",
+      "title": "Request List GUI",
       "text": ""
     },
     {
       "type": "text",
-      "title": "工作完成后",
-      "text": "工作完成后，你可以在目标箱子找到请求的物品（如果有的话）和请求列表（不论是否完成），打开列表可以看见任务完成进度。$(br2)再次使用列表前，一定要点击右下角的“清除工作状态”按钮。"
+      "anchor": "finish_task",
+      "title": "After finishing the task",
+      "text": "Once the job is finished, you can find the requested item (if any) and the request list (whether completed or not) in the target chest, and open the list to see the progress of the job. Tip: Before using the list again, be sure to click the ‘Clear Working Status’ button in the bottom right corner."
     },
     {
       "type": "altar_recipe",
