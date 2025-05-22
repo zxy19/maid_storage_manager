@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +22,7 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
@@ -70,45 +72,34 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
         if (!breath.breathTick()) return;
         CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
+        Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
+            int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
+            if (maxStore > 0) {
+                ItemStack copy = itemStack.copy();
+                ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
+                if (toTake.getCount() > 0)
+                    ChatTexts.send(maid,
+                            Component.translatable(
+                                    ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
+                                    itemStack.getHoverName(),
+                                    String.valueOf(toTake.getCount())
+                            )
+                    );
+                copy.shrink(toTake.getCount());
+                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
+                InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
+                return copy;
+            }
+            return itemStack;
+        };
         if (context instanceof IStorageInteractContext isic) {
-            isic.tick(itemStack -> {
-                int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
-                if (maxStore > 0) {
-                    ItemStack copy = itemStack.copy();
-                    ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
-                    if (toTake.getCount() > 0)
-                        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
-                                ChatTexts.fromComponent(itemStack.getHoverName()),
-                                String.valueOf(toTake.getCount())
-                        );
-                    copy.shrink(toTake.getCount());
-                    MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
-                    InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
-                    return copy;
-                }
-                return itemStack;
-            });
+            isic.tick(taker);
         } else if (context instanceof IStorageExtractableContext isec) {
             //TODO:MATCH NBT
-            isec.extract(layer.getUnCollectedItems(),
-                    true,
-                    itemStack -> {
-                        int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
-                        if (maxStore > 0) {
-                            ItemStack copy = itemStack.copy();
-                            ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
-                            if (toTake.getCount() > 0)
-                                ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
-                                        ChatTexts.fromComponent(itemStack.getHoverName()),
-                                        String.valueOf(toTake.getCount())
-                                );
-                            copy.shrink(toTake.getCount());
-                            MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
-                            InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
-                            return copy;
-                        }
-                        return itemStack;
-                    });
+            if (isec.hasTask())
+                isec.tick(taker);
+            else
+                isec.setExtract(layer.getUnCollectedItems(), true);
         }
     }
 

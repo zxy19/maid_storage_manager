@@ -79,7 +79,10 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
             return itemStack;
         };
         if (storageContext instanceof IStorageExtractableContext isec) {
-            isec.extract(allItems, true, taker);
+            if (isec.hasTask())
+                isec.tick(taker);
+            else
+                isec.setExtract(allItems, craftGuideStepData.matchTag);
         } else if (storageContext instanceof IStorageInteractContext isic) {
             isic.tick(taker);
         }

@@ -20,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ResortBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
@@ -67,33 +68,27 @@ public class ResortBehavior extends Behavior<EntityMaid> {
         super.tick(p_22551_, maid, p_22553_);
         if (!breath.breathTick()) return;
         CombinedInvWrapper maidInv = maid.getAvailableInv(false);
+        Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
+            if (!((IFilterable) context).isAvailable(itemStack)) {
+                int maxStore = InvUtil.maxCanPlace(maidInv, itemStack);
+                if (maxStore > 0) {
+                    int store = Math.min(itemStack.getCount(), maxStore);
+                    ItemStack copy = itemStack.copyWithCount(store);
+                    InvUtil.tryPlace(maidInv, copy);
+                    return itemStack.copyWithCount(itemStack.getCount() - store);
+                }
+            }
+            return itemStack;
+        };
         if (context instanceof IStorageInteractContext isic) {
-            isic.tick(itemStack -> {
-                if (!((IFilterable) isic).isAvailable(itemStack)) {
-                    int maxStore = InvUtil.maxCanPlace(maidInv, itemStack);
-                    if (maxStore > 0) {
-                        int store = Math.min(itemStack.getCount(), maxStore);
-                        ItemStack copy = itemStack.copyWithCount(store);
-                        InvUtil.tryPlace(maidInv, copy);
-                        return itemStack.copyWithCount(itemStack.getCount() - store);
-                    }
-                }
-                return itemStack;
-            });
+            isic.tick(taker);
         } else if (context instanceof IStorageExtractableContext isec) {
-            List<ItemStack> filterMismatch = MemoryUtil.getResorting(maid).getNeedToResort();
-            isec.extract(filterMismatch, true, itemStack -> {
-                if (!((IFilterable) isec).isAvailable(itemStack)) {
-                    int maxStore = InvUtil.maxCanPlace(maidInv, itemStack);
-                    if (maxStore > 0) {
-                        int store = Math.min(itemStack.getCount(), maxStore);
-                        ItemStack copy = itemStack.copyWithCount(store);
-                        InvUtil.tryPlace(maidInv, copy);
-                        return itemStack.copyWithCount(itemStack.getCount() - store);
-                    }
-                }
-                return itemStack;
-            });
+            if (isec.hasTask())
+                isec.tick(taker);
+            else {
+                List<ItemStack> filterMismatch = MemoryUtil.getResorting(maid).getNeedToResort();
+                isec.setExtract(filterMismatch, true);
+            }
         }
     }
 
@@ -112,6 +107,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
         }
         MemoryUtil.clearTarget(maid);
     }
+
     @Override
     protected boolean timedOut(long p_22537_) {
         return false;

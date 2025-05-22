@@ -22,7 +22,6 @@ import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -66,7 +65,6 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
             serverPlayer.sendSystemMessage(Component.translatable("interaction.select_extract"));
         else
             serverPlayer.sendSystemMessage(Component.translatable("interaction.select_store"));
-        CraftGuideRenderData.recalculateItemStack(itemInHand);
     }
 
     public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer) {

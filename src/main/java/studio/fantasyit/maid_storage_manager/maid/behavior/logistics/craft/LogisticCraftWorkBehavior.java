@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.logistics.craft;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
@@ -85,14 +86,16 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
         }
 
         if (layer.getCraftData().map(CraftGuideData::getAllOutputItems).map(l -> l.size() > 0).orElse(false))
-            ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
-                    layer
-                            .getCraftData()
-                            .map(CraftGuideData::getAllOutputItems)
-                            .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
-                            .orElse(""),
-                    String.valueOf((layer.getDoneCount() + 1)),
-                    layer.getCount().toString()
+            ChatTexts.send(maid,
+                    Component.translatable(ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
+                            layer
+                                    .getCraftData()
+                                    .map(CraftGuideData::getAllOutputItems)
+                                    .map(l -> l.get(0).getHoverName())
+                                    .orElse(Component.empty()),
+                            String.valueOf((layer.getDoneCount() + 1)),
+                            layer.getCount().toString()
+                    )
             );
     }
 

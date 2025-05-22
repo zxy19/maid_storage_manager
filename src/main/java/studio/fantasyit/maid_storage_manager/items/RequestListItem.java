@@ -56,6 +56,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_REPEAT_INTERVAL = "interval";
     public static final String TAG_STOCK_MODE = "stock_mode";
     public static final String TAG_HAS_CHECK_STOCK = "has_checked_stock";
+    public static final String TAG_UNIT_SECOND = "unit_second";
     private static final String TAG_BLACKMODE_DONE = "blackmode_done";
     public static final String TAG_VIRTUAL = "virtual";
     public static final String TAG_VIRTUAL_SOURCE = "virtual_source";
@@ -297,9 +298,15 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }
 
         if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL)));
+            if (tag.getBoolean(RequestListItem.TAG_UNIT_SECOND))
+                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_second", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) / 20));
+            else
+                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_tick", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL)));
             if (tag.getInt(RequestListItem.TAG_COOLING_DOWN) > 0) {
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", tag.getInt(RequestListItem.TAG_COOLING_DOWN)).withStyle(ChatFormatting.GREEN));
+                int cd = tag.getInt(RequestListItem.TAG_COOLING_DOWN);
+                if (tag.getBoolean(RequestListItem.TAG_UNIT_SECOND))
+                    cd /= 20;
+                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", cd).withStyle(ChatFormatting.GREEN));
             }
         }
     }

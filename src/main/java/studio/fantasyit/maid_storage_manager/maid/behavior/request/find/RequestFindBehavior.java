@@ -105,10 +105,12 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (context instanceof IStorageInteractContext isic) {
             isic.tick(takeItem);
         } else if (context instanceof IStorageExtractableContext isec) {
-            List<Pair<ItemStack, Integer>> itemStacksNotDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
-            isec.extract(itemStacksNotDone.stream().map(Pair::getA).toList(),
-                    RequestListItem.matchNbt(maid.getMainHandItem()),
-                    takeItem);
+            if (isec.hasTask())
+                isec.tick(takeItem);
+            else {
+                List<Pair<ItemStack, Integer>> itemStacksNotDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
+                isec.setExtract(itemStacksNotDone.stream().map(c -> c.getA().copyWithCount(c.getB() == -1 ? Integer.MAX_VALUE : c.getB())).toList(), RequestListItem.matchNbt(maid.getMainHandItem()));
+            }
         }
     }
 
@@ -127,14 +129,15 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 return itemStack;
             });
         } else if (context instanceof IStorageExtractableContext isec) {
-            isec.extract(List.of(ItemRegistry.CRAFT_GUIDE.get().getDefaultInstance()),
-                    false,
-                    itemStack -> {
-                        if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                            MemoryUtil.getCrafting(maid).addCraftGuide(CraftGuideData.fromItemStack(itemStack));
-                        }
-                        return itemStack;
-                    });
+            if (isec.hasTask())
+                isec.tick(itemStack -> {
+                    if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
+                        MemoryUtil.getCrafting(maid).addCraftGuide(CraftGuideData.fromItemStack(itemStack));
+                    }
+                    return itemStack;
+                });
+            else
+                isec.setExtract(List.of(ItemRegistry.CRAFT_GUIDE.get().getDefaultInstance()), false);
         }
     }
 

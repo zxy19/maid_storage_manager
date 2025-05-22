@@ -210,6 +210,15 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                 28,
                 Component.translatable("gui.maid_storage_manager.request_list.repeat")
         ) {
+            @Override
+            public void onClick(double p_93634_, double p_93635_) {
+                menu.unitSecond = !menu.unitSecond;
+                Network.sendItemSelectorGuiPacket(
+                        ItemSelectorGuiPacket.SlotType.UNITSECOND,
+                        0,
+                        menu.unitSecond ? 1 : 0
+                );
+            }
 
             @Override
             public int getX() {
@@ -232,7 +241,10 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                 );
                 MutableComponent repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.never");
                 if (getMenu().repeat != 0) {
-                    repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.repeat_desc", String.valueOf(getMenu().repeat));
+                    if (getMenu().unitSecond)
+                        repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.repeat_desc_s", String.valueOf(getMenu().repeat));
+                    else
+                        repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.repeat_desc_t", String.valueOf(getMenu().repeat));
                 }
                 graphics.drawString(Minecraft.getInstance().font,
                         repeatDesc,
@@ -321,7 +333,10 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                         );
                     } else if (abstractWidget == renderable) {
                         graphics.renderTooltip(this.font,
-                                Component.translatable("gui.maid_storage_manager.request_list.scroll_to_adjust"),
+                                List.of(Component.translatable("gui.maid_storage_manager.request_list.scroll_to_adjust"),
+                                        Component.translatable("gui.maid_storage_manager.request_list.click_to_switch")),
+                                Optional.empty(),
+                                ItemStack.EMPTY,
                                 x,
                                 y
                         );

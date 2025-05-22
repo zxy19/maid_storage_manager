@@ -1,73 +1,34 @@
 package studio.fantasyit.maid_storage_manager.maid;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleManger;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatText;
-import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.MaidChatBubbles;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.implement.TextChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.google.common.cache.Cache;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.function.Consumer;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatTexts {
-
-    @FunctionalInterface
-    interface fAddInnerCharTextWithParam {
-        void accept(EntityMaid maid, String key, String... param);
-    }
-
-    static Consumer<Consumer<Cache<Integer, ChatText>>> innerChatTextCache = null;
-    static fAddInnerCharTextWithParam addInnerCharTextWithParam = null;
-
-    static {
-        try {
-            Field field = ChatBubbleManger.class.getDeclaredField("INNER_CHAT_TEXT_CACHE");
-            field.setAccessible(true);
-            innerChatTextCache = (consumer) -> {
-                try {
-                    Cache<Integer, ChatText> cache = (Cache<Integer, ChatText>) field.get(null);
-                    consumer.accept(cache);
-                } catch (IllegalAccessException e) {
-                }
-            };
-        } catch (NoSuchFieldException e) {
-
-        }
-        try {
-            Method method = ChatBubbleManger.class.getDeclaredMethod("maid_storage_manager$addInnerChatText", EntityMaid.class, String.class, String[].class);
-            method.setAccessible(true);
-            addInnerCharTextWithParam = (maid, key, param) -> {
-                try {
-                    method.invoke(null, maid, key, param);
-                } catch (InvocationTargetException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        } catch (NoSuchMethodException e) {
-
-        }
-    }
+    protected static final ConcurrentHashMap<UUID, Long> chatTexts = new ConcurrentHashMap<>();
 
     public static void send(EntityMaid maid, String key) {
-        innerChatTextCache.accept(cache -> cache.invalidate(maid.getId()));
-        maid.setChatBubble(new MaidChatBubbles(MaidChatBubbles.EMPTY, MaidChatBubbles.EMPTY, MaidChatBubbles.EMPTY));
-        ChatBubbleManger.addInnerChatText(maid, key);
+        send(maid, Component.translatable(key));
     }
 
-    public static void send(EntityMaid maid, String key, String... param) {
-        innerChatTextCache.accept(cache -> cache.invalidate(maid.getId()));
-        maid.setChatBubble(new MaidChatBubbles(MaidChatBubbles.EMPTY, MaidChatBubbles.EMPTY, MaidChatBubbles.EMPTY));
-        addInnerCharTextWithParam.accept(maid, key, param);
-    }
-
-    public static String fromComponent(Component component) {
-        if (component instanceof TranslatableContents tc)
-            return "{" + tc.getKey() + "}";
-        return component.getString();
+    public static void send(EntityMaid maid, Component component) {
+        if (chatTexts.containsKey(maid.getUUID())) {
+            // TODO:怎么不能调时间🤡删除重置计时器
+//            IChatBubbleData chatBubble = maid.getChatBubbleManager().getChatBubble(chatTexts.get(maid.getUUID()));
+//            if(chatBubble instanceof TextChatBubbleData textChatBubbleData){
+//                textChatBubbleData.setText(component);
+//                maid.getChatBubbleManager().forceUpdateChatBubble();
+//            }
+            if (maid.getChatBubbleManager().getChatBubble(chatTexts.get(maid.getUUID())) != null)
+                maid.getChatBubbleManager().removeChatBubble(chatTexts.get(maid.getUUID()));
+            chatTexts.remove(maid.getUUID());
+        }
+        TextChatBubbleData textChatBubbleData = TextChatBubbleData.create(70, component, TextChatBubbleData.TYPE_1, 999);
+        long l = maid.getChatBubbleManager().addChatBubble(textChatBubbleData);
+        chatTexts.put(maid.getUUID(), l);
     }
 
     public static final String CHAT_CHEST_FULL = "chat_bubbles.maid_storage_manager.chest_full";

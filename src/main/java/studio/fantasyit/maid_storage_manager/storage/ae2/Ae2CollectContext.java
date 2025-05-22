@@ -26,11 +26,40 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
                     .filter(key -> key instanceof AEItemKey)
                     .map(key -> (AEItemKey) key)
                     .toList();
+    }
 
+    List<ItemStack> itemList = null;
+    boolean matchNbt = false;
+    boolean lastDone = false;
+
+    @Override
+    public void setExtract(List<ItemStack> itemList, boolean matchNbt) {
+        this.itemList = itemList;
+        this.matchNbt = matchNbt;
+        this.current = 0;
+        setDone(false);
+        lastDone = false;
     }
 
     @Override
-    public void extract(List<ItemStack> itemList, boolean matchNbt, Function<ItemStack, ItemStack> process) {
+    public void reset() {
+        current = 0;
+        setDone(false);
+    }
+
+
+    @Override
+    public boolean hasTask() {
+        return itemList != null;
+    }
+
+    @Override
+    public void clearTask() {
+        itemList = null;
+    }
+
+    @Override
+    public void tick(Function<ItemStack, ItemStack> process) {
         if (inv == null) return;
         for (; current < itemList.size(); current++) {
             ItemStack item = itemList.get(current);
@@ -63,14 +92,7 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
                     break;
             }
         }
-        if (current >= itemList.size()) {
-            setDone(true);
-        }
-    }
-
-    @Override
-    public void reset() {
-        current = 0;
-        setDone(false);
+        lastDone = true;
+        setDone(true);
     }
 }

@@ -56,13 +56,14 @@ public final class BindingRender {
             renderForEntity(event, mc);
         }
     }
+
     private static void renderForLogistics(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.LOGISTICS_GUIDE.get()) {
             return;
         }
         Target input = LogisticsGuide.getInput(mainStack);
-        if(input != null){
+        if (input != null) {
             BoxRenderUtil.renderStorage(input,
                     colors_b,
                     event,
@@ -71,7 +72,7 @@ public final class BindingRender {
         }
 
         Target output = LogisticsGuide.getOutput(mainStack);
-        if(output != null){
+        if (output != null) {
             BoxRenderUtil.renderStorage(output,
                     colors_g,
                     event,
@@ -161,8 +162,16 @@ public final class BindingRender {
 
     private static void renderForCraftGuide(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
+        boolean noRenderSelecting = false;
         if (mainStack.getItem() != ItemRegistry.CRAFT_GUIDE.get()) {
-            return;
+            if (mainStack.getItem() == ItemRegistry.LOGISTICS_GUIDE.get()) {
+                mainStack = LogisticsGuide.getCraftGuideItemStack(mainStack);
+                noRenderSelecting = true;
+                if (mainStack.isEmpty())
+                    return;
+            } else {
+                return;
+            }
         }
         CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(mainStack);
         for (int i = 0; i < data.stepBindings.size(); i++) {
@@ -172,18 +181,19 @@ public final class BindingRender {
                     event,
                     "[" + (i + 1) + "]" + CommonCraftAssets.translationForAction(step.getB()).getString(),
                     floating,
-                    (i == data.selecting ? 0xe91e63 : 0xffffff)
+                    (i == data.selecting && !noRenderSelecting ? 0xe91e63 : 0xffffff)
             );
         }
-        if (data.selecting != -1 && data.selecting < data.stepBindings.size()) {
-            Pair<Target, ResourceLocation> step = data.stepBindings.get(data.selecting);
-            BoxRenderUtil.renderStorage(step.getA(),
-                    colors_r,
-                    event,
-                    Component.translatable("interaction.craft_guide_selecting").getString(),
-                    floating
-            );
-        }
+        if (!noRenderSelecting)
+            if (data.selecting != -1 && data.selecting < data.stepBindings.size()) {
+                Pair<Target, ResourceLocation> step = data.stepBindings.get(data.selecting);
+                BoxRenderUtil.renderStorage(step.getA(),
+                        colors_r,
+                        event,
+                        Component.translatable("interaction.craft_guide_selecting").getString(),
+                        floating
+                );
+            }
     }
 
     private static void renderForInv(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {

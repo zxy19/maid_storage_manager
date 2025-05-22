@@ -30,6 +30,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     public boolean blackmode = false;
     public boolean stockMode = false;
     public boolean shouldClear = false;
+    public boolean unitSecond = false;
     public int repeat = 0;
 
     public ItemSelectorMenu(int p_38852_, Player player) {
@@ -43,6 +44,9 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         repeat = tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL);
         blackmode = tag.getBoolean(RequestListItem.TAG_BLACKMODE);
         stockMode = tag.getBoolean(RequestListItem.TAG_STOCK_MODE);
+        unitSecond = tag.getBoolean(RequestListItem.TAG_UNIT_SECOND);
+        if (unitSecond)
+            repeat /= 20;
         storageHandler = new SimpleContainer(1) {
             @Override
             public void setChanged() {
@@ -77,9 +81,13 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         }
         tag.put(RequestListItem.TAG_ITEMS, list);
         tag.putBoolean(RequestListItem.TAG_MATCH_TAG, matchTag);
-        tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat);
+        if (unitSecond)
+            tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat * 20);
+        else
+            tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat);
         tag.putBoolean(RequestListItem.TAG_BLACKMODE, blackmode);
         tag.putBoolean(RequestListItem.TAG_STOCK_MODE, stockMode);
+        tag.putBoolean(RequestListItem.TAG_UNIT_SECOND, unitSecond);
         tag.put(StorageDefineBauble.TAG_STORAGE_DEFINE, storageHandler.getItem(0).serializeNBT());
         target.setTag(tag);
     }
@@ -154,6 +162,18 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
 
     private void addSpecialSlots() {
         addSlot(new Slot(storageHandler, 0, 8, 71));
+        addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return unitSecond ? 1 : 0;
+            }
+
+            @Override
+            public void set(int p_40208_) {
+                unitSecond = p_40208_ == 1;
+                save();
+            }
+        });
         addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -270,6 +290,16 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 break;
             case STOCKMODE:
                 stockMode = value == 1;
+                save();
+                break;
+            case UNITSECOND:
+                if (unitSecond != (value == 1)) {
+                    if (unitSecond)
+                        repeat *= 20;
+                    else
+                        repeat /= 20;
+                }
+                unitSecond = value == 1;
                 save();
                 break;
         }

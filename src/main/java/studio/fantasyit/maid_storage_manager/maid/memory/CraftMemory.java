@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -176,12 +177,15 @@ public class CraftMemory extends AbstractTargetMemory {
         if (this.hasCurrent()) {
             CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
             if (layer.hasCollectedAll()) {
-                ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK,
-                        layer.getCraftData().map(t -> ChatTexts.fromComponent(t
-                                        .getOutput()
-                                        .get(0)
-                                        .getHoverName()))
-                                .orElse("")
+                ChatTexts.send(maid,
+                        Component.translatable(
+                                ChatTexts.CHAT_CRAFT_WORK,
+                                layer.getCraftData().map(t -> t
+                                                .getOutput()
+                                                .get(0)
+                                                .getHoverName())
+                                        .orElse(Component.empty())
+                        )
                 );
                 layer.resetStep();
                 startWorking(true);
@@ -194,12 +198,15 @@ public class CraftMemory extends AbstractTargetMemory {
     public void failCurrent(EntityMaid maid, List<ItemStack> missing) {
         CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
         ChatTexts.send(
-                maid, ChatTexts.CHAT_CRAFTING_FAIL,
-                layer
-                        .getCraftData()
-                        .map(CraftGuideData::getOutput)
-                        .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
-                        .orElse("")
+                maid,
+                Component.translatable(
+                        ChatTexts.CHAT_CRAFTING_FAIL,
+                        layer
+                                .getCraftData()
+                                .map(CraftGuideData::getOutput)
+                                .map(l -> l.get(0).getHoverName())
+                                .orElse(Component.empty())
+                )
         );
         List<ItemStack> targets = null;
         //跳过合成直到一个根任务（表示树完全失败）
@@ -289,9 +296,11 @@ public class CraftMemory extends AbstractTargetMemory {
     public int getPathFindingFailCount() {
         return pathFindingFailCount;
     }
+
     public void addPathFindingFailCount() {
         this.pathFindingFailCount++;
     }
+
     public void resetPathFindingFailCount() {
         this.pathFindingFailCount = 0;
     }

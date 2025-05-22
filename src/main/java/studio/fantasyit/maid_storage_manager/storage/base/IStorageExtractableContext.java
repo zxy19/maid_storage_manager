@@ -5,6 +5,6 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.function.Function;
 
-public interface IStorageExtractableContext extends IStorageContext {
-    void extract(List<ItemStack> itemList, boolean matchNbt, Function<ItemStack, ItemStack> process);
+public interface IStorageExtractableContext extends IStorageContext,IAsyncContext<Function<ItemStack, ItemStack>> {
+    void setExtract(List<ItemStack> itemList, boolean matchNbt);
 }

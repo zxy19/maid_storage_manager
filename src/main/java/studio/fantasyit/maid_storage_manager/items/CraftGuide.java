@@ -93,16 +93,11 @@ public class CraftGuide extends Item implements MenuProvider {
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            if (serverPlayer.isShiftKeyDown()) {
-                ItemStack itemInHand = player.getItemInHand(p_41434_);
-                rollMode(itemInHand, serverPlayer);
+            if (!CraftGuideData.fromItemStack(player.getItemInHand(p_41434_)).getSteps().isEmpty()) {
+                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+                });
             } else {
-                if (!CraftGuideData.fromItemStack(player.getItemInHand(p_41434_)).getSteps().isEmpty()) {
-                    NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
-                    });
-                } else {
-                    player.sendSystemMessage(Component.translatable("interaction.no_step"));
-                }
+                player.sendSystemMessage(Component.translatable("interaction.no_step"));
             }
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         } else {

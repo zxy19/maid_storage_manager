@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -59,8 +60,11 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         CraftGuideStepData step = layer.getStepData();
         if (step == null) {
             if (!layer.getItems().isEmpty())
-                ChatTexts.send(maid, ChatTexts.CHAT_CRAFTING_SUCCESS,
-                        ChatTexts.fromComponent(layer.getItems().get(0).getHoverName())
+                ChatTexts.send(maid,
+                        Component.translatable(
+                                ChatTexts.CHAT_CRAFTING_SUCCESS,
+                                layer.getItems().get(0).getHoverName()
+                        )
                 );
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
             //根层

@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
@@ -62,7 +63,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             success = 0;
             return;
         }
-        if(RequestListItem.isBlackMode(maid.getMainHandItem())){
+        if (RequestListItem.isBlackMode(maid.getMainHandItem())) {
             DebugData.getInstance().sendMessage("[REQUEST_CRAFT]No Calculator found");
             done = true;
             success = 0;
@@ -147,7 +148,11 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         }
         if (p_22553_ % 2 == 0) {
             int restSteps = futureSteps.get(count) + biCalc.getWorstRestSteps();
-            ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE, String.valueOf(totalSteps - restSteps), String.valueOf(totalSteps));
+            ChatTexts.send(maid, Component.translatable(
+                    ChatTexts.CHAT_CRAFT_CALCULATE,
+                    String.valueOf(totalSteps - restSteps),
+                    String.valueOf(totalSteps)
+            ));
         }
         boolean finish = false;
         for (int i = 0; i < 5; i++) {

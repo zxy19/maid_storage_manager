@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
@@ -62,14 +63,17 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         layer = MemoryUtil.getCrafting(maid).getCurrentLayer();
         craftGuideStepData = layer.getStepData();
-        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
-                layer
-                        .getCraftData()
-                        .map(CraftGuideData::getAllOutputItems)
-                        .map(l -> ChatTexts.fromComponent(l.get(0).getHoverName()))
-                        .orElse(""),
-                layer.getDoneCount().toString(),
-                layer.getCount().toString()
+        ChatTexts.send(maid,
+                Component.translatable(
+                        ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
+                        layer
+                                .getCraftData()
+                                .map(CraftGuideData::getAllOutputItems)
+                                .map(l -> l.get(0).getHoverName())
+                                .orElse(Component.empty()),
+                        layer.getDoneCount().toString(),
+                        layer.getCount().toString()
+                )
         );
         if (craftGuideStepData == null) {
             MemoryUtil.getCrafting(maid).lastSuccess();

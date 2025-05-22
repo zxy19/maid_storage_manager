@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.logistics.input;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
@@ -223,9 +224,12 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
                 ItemStack copy = itemStack.copy();
                 ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                 if (toTake.getCount() > 0)
-                    ChatTexts.send(maid, ChatTexts.CHAT_MOVING_TAKEN,
-                            ChatTexts.fromComponent(itemStack.getHoverName()),
-                            String.valueOf(toTake.getCount())
+                    ChatTexts.send(maid,
+                            Component.translatable(
+                                    ChatTexts.CHAT_MOVING_TAKEN,
+                                    itemStack.getHoverName(),
+                                    String.valueOf(toTake.getCount())
+                            )
                     );
                 copy.shrink(toTake.getCount());
                 MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
@@ -238,7 +242,10 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             isic.tick(taker);
         } else if (context instanceof IStorageExtractableContext isec) {
             //TODO:MATCH NBT
-            isec.extract(layer.getUnCollectedItems(), true, taker);
+            if (isec.hasTask())
+                isec.tick(taker);
+            else
+                isec.setExtract(layer.getUnCollectedItems(), true);
         }
     }
 
@@ -265,11 +272,11 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             if (layer.getCraftData().isPresent()) {
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.CRAFT);
                 if (!layer.getItems().isEmpty())
-                    ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_WORK, layer.getItems().get(0).getDisplayName().getString());
+                    ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK,layer.getItems().get(0).getHoverName()));
             } else {
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
                 if (!layer.getItems().isEmpty())
-                    ChatTexts.send(maid, ChatTexts.CHAT_MOVING, layer.getItems().get(0).getDisplayName().getString());
+                    ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK, layer.getItems().get(0).getHoverName()));
             }
         } else {
             MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);

@@ -11,6 +11,7 @@ public class ItemSelectorGuiPacket {
         REPEAT,
         CLEAR,
         BLACKLIST,
+        UNITSECOND,
         STOCKMODE
     }
     public final SlotType type;
