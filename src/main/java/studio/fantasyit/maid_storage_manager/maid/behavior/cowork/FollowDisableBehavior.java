@@ -35,7 +35,7 @@ public class FollowDisableBehavior extends MaidCheckRateTask {
     @Override
     protected void start(ServerLevel p_22540_, EntityMaid maid, long p_22542_) {
         maid.getBrain().eraseMemory(MemoryModuleRegistry.CO_WORK_MODE.get());
-        DebugData.getInstance().sendMessage("[CO_WORK]Disable");
+        DebugData.sendDebug("[CO_WORK]Disable");
         ChatTexts.send(maid, ChatTexts.CHAT_COWORK_DISABLE);
     }
 

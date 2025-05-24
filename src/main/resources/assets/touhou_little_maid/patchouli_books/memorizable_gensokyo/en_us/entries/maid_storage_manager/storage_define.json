@@ -1,17 +1,30 @@
 {
     "sortnum": 11,
-    "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define",
+    "name": "Storage Define",
     "icon": "maid_storage_manager:storage_define_bauble",
     "category": "touhou_little_maid:maid_storage_manager",
     "pages": [
         {
             "type": "spotlight",
             "item": "maid_storage_manager:storage_define_bauble",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define.pages.0.1.text"
+            "text": "Storage define can be used to accurately ‘define’ the range of warehouses the maid can access, it has four modes: Append, Delete, Replace, Update. The modes are toggled by scrolling with the wheel, and sneak right-clicking to toggle between ‘mark a container’, ‘mark a surface’, and ‘unmark’. $(br2) Below is a description of the four modes:"
         },
         {
             "type": "text",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define.pages.0.2.text"
+            "text": "$(li)The add mode makes all tagged containers accessible to maids, even those labelled ‘no access’.$(li)The delete mode disables the maid's access to all labelled containers, including those labelled ‘allow access’."
+        },
+        {
+            "type": "text",
+            "text": "$(li)Replacement mode will clear all maid access to the warehouse (whether given by another Storage Define or not) before adding the marked containers to this list of accesses, which means that the ones you marked are all the accessible containers. $(li)The update mode updates the side accesses to maids for that container as marked. \nYou can also consider this as removing all marked containers from the maid's access list, and then adding the marked containers back in, at which point the accessible sides of the containers may have changed."
+        },
+        {
+            "type": "text",
+            "title": "Usage",
+            "text": "Storage Defines can be used in two ways.One is as a trinket in the maid's bauble slots, and the other is as a configuration in the lower left corner of the request list, so that the maid will follow the access of the storage define when performing the request list tasks.Multiple Storage Defines can be in effect at the same time. The order of effect is ‘Bauble 1’ ➡--- ➡ ‘Bauble 9’ ➡ ‘Storage Define in Request List’. $(br)$(7) Example: access to chest 1 is added to the bauble slot, and access to chest 1 is removed from the request list, so the maid does not have access to chest 1 when she performs the request list task. $()"
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:storage_define_bauble"
         }
     ]
 }

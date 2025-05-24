@@ -1,13 +1,13 @@
 {
   "sortnum": 6,
-  "name": "Request List Advanced Configuration",
+  "name": "Advanced Configuration",
   "icon": "maid_storage_manager:request_list",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
       "type": "text",
-      "title": "Request List Advanced Configuration Ⅰ",
-      "text": "‘Repeat’ at the top right of the list is used to adjust how often the maid performs a task, the default is no repeat. You need to use the mouse wheel to adjust this option. $(br2)Usage example: request a tomato pudding with request list, set repeat to 20t, and the maid will place a tomato pudding in the target chest every 20t (1 second). $(br) (to be precise, start the timer after the last task is finished)"
+      "title": "Advanced Configuration Ⅰ",
+      "text": "‘Repeat’ at the top right of the list is used to adjust how often the maid performs a task, the default is no repeat. You can left click it to switch unit and  use the mouse wheel to adjust time number. $(br2)Usage example: request a tomato pudding with request list, set repeat to 20t, and the maid will place a tomato pudding in the target chest every 20t (1 second). $(br) (to be precise, start the timer after the last task is finished)"
     },
     {
       "type": "image",
@@ -19,7 +19,7 @@
     },
     {
       "type": "text",
-      "title": "Request List Advanced Configuration Ⅱ",
+      "title": "Advanced Configuration Ⅱ",
       "text": "The four buttons on the bottom right have the following functions: $(br)1. Toggle whether to match NBT tags (e.g. durability, enchantment, etc.) when requesting. $(br2)2. Toggle request with blacklist/whitelist. $(br)Whitelist: only collect items in the list. $(br)blacklist: collect all items except those in the list. $(br2)3. Used to clear the work status, see $(l:maid_storage_manager/request_list#finish_task) ‘After After finishing the task’ $(/l) for details"
     },
     {
@@ -32,7 +32,7 @@
     },
     {
       "type": "text",
-      "title": "Request List Advanced Configuration Ⅲ",
+      "title": "Advanced Configuration Ⅲ",
       "text": "The last button toggles the mode when requesting items. The default is ‘Collect Mode’, which means collecting the items on the list. If you switch to ‘Stock Mode’, the maid will fill in the missing items in the target chest relative to the request list. $(br2)$(7)Example: There are 8 tomatoes in the chest bound to the list, and the request list asks for 16 tomatoes, if the mode is ‘collect mode’, the maid will put 16 tomatoes into the chest, if the mode is ‘stock mode’, the maid will only put 8 tomatoes into the chest. $()"
     },
     {
@@ -45,7 +45,7 @@
     },
     {
       "type": "text",
-      "title": "Request List Advanced Configuration Ⅳ",
+      "title": "Advanced Configuration Ⅳ",
       "text": "Finally, the bottom left corner of the list is a place to put the $(l:maid_storage_manager/storage_define) storage define $(/l).If a storage define is placed, the maid will follow the instructions of the storage define."
     },
     {

@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.find;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
@@ -14,6 +13,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.behavior.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
@@ -28,7 +28,7 @@ import java.util.Optional;
 /**
  * 手上持有物品清单，尝试前往附近所有的箱子
  */
-public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
+public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     public RequestFindMoveBehavior() {
         super((float) Config.collectSpeed, 3);
         this.verticalSearchStart = 1;
@@ -59,7 +59,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
             if (MemoryUtil.getRequestProgress(maid).confirmNoTarget()) {
-                DebugData.getInstance().sendMessage("[REQUEST_FIND]No More Target");
+                DebugData.sendDebug("[REQUEST_FIND]No More Target");
                 MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
                 //立刻安排返回存储
                 MemoryUtil.getRequestProgress(maid).setReturn();
@@ -100,17 +100,17 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
                     .findFirst();
 
             @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
-            if(storage == null) continue;
+            if (storage == null) continue;
             boolean craftGuideProvider = MaidStorage.getInstance().isCraftGuideProvider(storage, blockPos.getValue());
             if (targetItem.isEmpty() && !craftGuideProvider) {
                 continue;
             }
             @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
             if (targetPos != null) {
-                if (!MoveUtil.isValidTarget(level, maid, storage)) continue;
+                if (!MoveUtil.isValidTarget(level, maid, storage, false)) continue;
                 chestPos = storage;
                 MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
-                DebugData.getInstance().sendMessage("[REQUEST_FIND]Priority By Filter %s", storage);
+                DebugData.sendDebug("[REQUEST_FIND]Priority By Filter %s", storage);
                 targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
                 return true;
             }
@@ -128,7 +128,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTask {
         Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress);
         if (canTouchChest != null) {
             chestPos = canTouchChest;
-            DebugData.getInstance().sendMessage("[REQUEST_FIND]Target %s", canTouchChest);
+            DebugData.sendDebug("[REQUEST_FIND]Target %s", canTouchChest);
         }
         return canTouchChest != null;
     }

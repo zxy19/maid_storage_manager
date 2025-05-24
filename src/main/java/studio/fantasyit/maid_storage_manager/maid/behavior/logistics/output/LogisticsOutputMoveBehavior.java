@@ -38,7 +38,6 @@ public class LogisticsOutputMoveBehavior extends Behavior<EntityMaid> {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         @Nullable Target target = LogisticsGuide.getOutput(MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem());
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
-
         if (target != null && storage != null) {
             //寻找落脚点
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);

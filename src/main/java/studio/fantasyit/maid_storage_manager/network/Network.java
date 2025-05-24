@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.network;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +26,6 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
-import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
@@ -39,7 +37,6 @@ import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketRece
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class Network {
@@ -61,10 +58,6 @@ public class Network {
 
     public static void sendItemSelectorSetItemPacket(Integer slot, ItemStack item) {
         sendItemSelectorSetItemPacket(List.of(Pair.of(slot, item)));
-    }
-
-    public static void sendDebugDataPacket(String type, CompoundTag data) {
-        INSTANCE.send(PacketDistributor.ALL.noArg(), new DebugDataPacket(type, data));
     }
 
     public static void sendRequestListPacket(UUID uuid) {
@@ -122,12 +115,9 @@ public class Network {
                 (msg, context) -> {
                     context.get().enqueueWork(() -> {
                         if (!Config.enableDebug) return;
-                        if (Objects.equals(msg.type, DebugData.TYPE_DEBUG_MSG)) {
-                            if (Minecraft.getInstance().player != null) {
-                                Minecraft.getInstance().player.sendSystemMessage(Component.literal(msg.data.getString("msg")));
-                            }
-                        } else
-                            DebugData.getInstance().setData(msg.type, msg.data);
+                        if (Minecraft.getInstance().player != null) {
+                            Minecraft.getInstance().player.sendSystemMessage(Component.literal(msg.data));
+                        }
                     });
                     context.get().setPacketHandled(true);
                 }
@@ -200,12 +190,12 @@ public class Network {
                             );
                             data.coWorkMode(msg.value == 1);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
-                        }else if (msg.type == MaidDataSyncPacket.Type.FastSort) {
+                        } else if (msg.type == MaidDataSyncPacket.Type.FastSort) {
                             StorageManagerConfigData.Data data = maid.getOrCreateData(
                                     StorageManagerConfigData.KEY,
                                     StorageManagerConfigData.Data.getDefault()
                             );
-                            data.fastSort(StorageManagerConfigData.FastSort.values()[msg.value]);
+                            data.suppressStrategy(StorageManagerConfigData.SuppressStrategy.values()[msg.value]);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }

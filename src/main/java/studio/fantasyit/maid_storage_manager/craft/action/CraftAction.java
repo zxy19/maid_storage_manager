@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.action;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -21,7 +22,7 @@ public record CraftAction(ResourceLocation type, CraftActionProvider provider,
 
     @FunctionalInterface
     public interface CraftActionPathFindingTargetProvider {
-        BlockPos find(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer);
+        BlockPos find(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding);
     }
 
     public enum PathEnoughLevel {

@@ -272,7 +272,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             if (layer.getCraftData().isPresent()) {
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.CRAFT);
                 if (!layer.getItems().isEmpty())
-                    ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK,layer.getItems().get(0).getHoverName()));
+                    ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK, layer.getItems().get(0).getHoverName()));
             } else {
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
                 if (!layer.getItems().isEmpty())
@@ -280,6 +280,9 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             }
         } else {
             MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);
+        }
+        if (MoveUtil.findTargetRewrite(level, maid, target, false).isEmpty()) {
+            MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
         }
         MemoryUtil.getLogistics(maid).clearTarget();
         MemoryUtil.clearTarget(maid);

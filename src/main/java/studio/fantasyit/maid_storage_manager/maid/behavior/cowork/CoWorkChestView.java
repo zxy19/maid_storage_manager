@@ -11,7 +11,6 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
@@ -52,7 +51,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
             context = null;
             return;
         }
-        List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
+        List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide(), false);
         if (possibleTargets.contains(interactedTarget))
             target = interactedTarget;
         else if (possibleTargets.size() > 0)
@@ -79,14 +78,6 @@ public class CoWorkChestView extends MaidCheckRateTask {
             }
         }
         context.start(maid, level, target);
-        if (context instanceof IFilterable ift) {
-            if (ift.isRequestOnly()) {
-                context.finish();
-                maid.getBrain().eraseMemory(MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get());
-                context = null;
-                return;
-            }
-        }
         MemoryUtil.setLookAt(maid, target.pos);
     }
 

@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.ai;
 
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.IFunctionCall;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.function.response.KeepToolResponse;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.response.ToolResponse;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.parameter.ObjectParameter;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.parameter.Parameter;
@@ -69,7 +68,7 @@ public class GetStorageFunction implements IFunctionCall<GetStorageFunction.Filt
 
     @Override
     public String getDescription(EntityMaid entityMaid) {
-        return "如果你需要获取仓库里存储的所有的物品ID，可以调用这个工具。这个工具需要传入一个过滤器参数，你可以传入想要查找的物品的ID或者名字的关键字，或者将其留空来获取所有物品。工具将会把物品ID按照`[物品ID]:物品名字 * 库存数量`的格式发送给你。如果数量后面有(合成)的字样，如`[物品ID]:物品名字 * 库存数量(合成)`，说明这个物品在请求的时候可以被合成，可以请求超过库存数量的物品。请注意，和玩家对话时应该始终使用物品名而不是物品ID来称呼物品。";
+        return "If you need to retrieve all item IDs stored in the warehouse, you can call this tool. The tool requires a filter parameter - you can input an item ID, a keyword from the item's name, or leave it blank to get all items. The results will be returned in the format: [Item ID]: Item Name * Stock Quantity. If there is a \"(Craftable)\" suffix after the quantity (e.g., [ItemID]:ItemName * 5(Craftable)), it indicates the item can be synthesized upon request, allowing you to request quantities exceeding current stock. When communicating with players, always use item names rather than item IDs to reference items.";
     }
 
     @Override
@@ -102,17 +101,17 @@ public class GetStorageFunction implements IFunctionCall<GetStorageFunction.Filt
                         .append(" * ")
                         .append(ik.count);
                 if (ik.craftable.getValue())
-                    message.append("(合成)");
+                    message.append("(Craftable)");
                 message.append("\n");
                 anyMatch.setTrue();
             }
         });
         if (!anyMatch.getValue()) {
-            message.append("没有找到任何符合条件的物品");
+            message.append("No result that matches the filter.");
         } else {
-            message.append("请始终用物品名称而不是物品ID来称呼物品。");
+            message.append("Please always refer to items by their name and not their ID.");
         }
-        return new KeepToolResponse(message.toString());
+        return new ToolResponse(message.toString());
     }
 
     protected record ItemInfo(String id, String name, MutableInt count, MutableBoolean craftable) {

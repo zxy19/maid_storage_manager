@@ -15,15 +15,15 @@
     },
     {
       "type": "spotlight",
-      "item": "maid_storage_manager:no_access",
+      "item": "maid_storage_manager:allow_access",
       "text": "On the contrary, containers labelled as accessible will be treated by the Maid as part of the warehouse to access items, mostly used to access the containers that are not integrated by default.$(br2)Vanilla barrels, chests, trapped chests, shulker boxes, and their Sophisticated versions are considered accessible by the maid by default."
     },
     {
       "type": "image",
       "images": [
-        "maid_storage_manager:textures/book/filter2.png"
+        "maid_storage_manager:textures/book/access.png"
       ],
-      "title": "Hopper with Allow Access label",
+      "title": "Hopper with Allow Access",
       "text": ""
     },
     {

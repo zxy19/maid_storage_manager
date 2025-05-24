@@ -8,10 +8,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -34,9 +31,9 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
 
     public enum Mode {
         APPEND,
+        REMOVE,
         REPLACE,
-        REPLACE_SPEC,
-        REMOVE
+        REPLACE_SPEC
     }
 
     public StorageDefineBauble() {
@@ -62,6 +59,12 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
         int dv = value > 0 ? 1 : Mode.values().length - 1;
         Mode newMode = Mode.values()[(Mode.valueOf(tag.getString(TAG_MODE)).ordinal() + dv) % Mode.values().length];
         tag.putString(TAG_MODE, newMode.name());
+        sender.sendSystemMessage(Component.translatable("interaction.mode_" + switch (newMode) {
+            case APPEND -> "append";
+            case REMOVE -> "remove";
+            case REPLACE -> "replace";
+            case REPLACE_SPEC -> "replace_spec";
+        }));
         stack.setTag(tag);
     }
 
@@ -90,9 +93,9 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
-        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
+        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer && serverPlayer.isShiftKeyDown()) {
             BlockPos clickedPos = context.getClickedPos();
-            Direction side = serverPlayer.isShiftKeyDown() ? null : context.getClickedFace();
+            Direction side = context.getClickedFace();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
@@ -108,31 +111,19 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
                         list.remove(i);
                         found = true;
                         break;
+                    } else if (storage.pos.equals(validTarget.pos)) {
+                        list.set(i, validTarget.toNbt());
+                        found = true;
+                        break;
                     }
                 }
                 if (!found) {
-                    list.add(validTarget.toNbt());
+                    list.add(validTarget.withoutSide().toNbt());
                 }
             }
             return InteractionResult.CONSUME;
         } else {
             return InteractionResult.CONSUME;
-        }
-    }
-
-    @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            Mode mode = rollMode(player.getItemInHand(p_41434_));
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.mode_" + switch (mode) {
-                case APPEND -> "append";
-                case REMOVE -> "remove";
-                case REPLACE -> "replace";
-                case REPLACE_SPEC -> "replace_spec";
-            }));
-            return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
-        } else {
-            return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         }
     }
 

@@ -73,7 +73,7 @@ public class LogisticsRecycleBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         CombinedInvWrapper availableInv = maid.getAvailableInv(true);
 
         for (int i = 0; i < 5 && currentSlot < availableInv.getSlots(); i++)

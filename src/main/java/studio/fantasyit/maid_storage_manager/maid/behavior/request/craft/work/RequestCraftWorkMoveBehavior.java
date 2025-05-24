@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
@@ -66,7 +67,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                                 layer.getItems().get(0).getHoverName()
                         )
                 );
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
+            DebugData.sendDebug("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
             //根层
             for (int i = 0; i < layer.getItems().size(); i++) {
                 ItemStack itemStack = layer.getItems().get(i);
@@ -88,7 +89,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         Target storage = step.getStorage();
         if (storage == null || step.actionType == null) {
             //当前合成不存在，直接进行下一步
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]No current step. Next.");
+            DebugData.sendDebug("[REQUEST_CRAFT_WORK]No current step. Next.");
             layer.nextStep();
             if (layer.isDone()) {
                 MemoryUtil.getCrafting(maid).nextLayer();
@@ -97,7 +98,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             //遇到这种情况需要重新选择
             return false;
         } else {
-            DebugData.getInstance().sendMessage(
+            DebugData.sendDebug(
                     String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
                             layer.getStep(),
                             layer.getDoneCount(),
@@ -105,7 +106,8 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                             storage
                     )
             );
-            BlockPos blockPos = step.actionType.pathFindingTargetProvider().find(maid, layer.getCraftData().get(), step, layer);
+            MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
+            BlockPos blockPos = step.actionType.pathFindingTargetProvider().find(maid, layer.getCraftData().get(), step, layer, pathFinding);
             if (blockPos != null) {
                 MemoryUtil.setTarget(maid, blockPos, (float) Config.craftWorkSpeed);
                 MemoryUtil.getCrafting(maid).setTarget(storage);
@@ -114,7 +116,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             } else {
                 MemoryUtil.getCrafting(maid).addPathFindingFailCount();
                 if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
-                    DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]Path finding fail.");
+                    DebugData.sendDebug("[REQUEST_CRAFT_WORK]Path finding fail.");
                     MemoryUtil.getCrafting(maid).failCurrent(maid, List.of());
                     MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
                 }

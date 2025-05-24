@@ -53,7 +53,11 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
             else
                 next = Schedule.LOGISTICS;
         } else if (!Conditions.isNothingToPlace(maid))
-            next = Schedule.PLACE;
+            //没捡满的话优先捡东西
+            if (maid.getBrain().hasMemoryValue(InitEntities.VISIBLE_PICKUP_ENTITIES.get()) && InvUtil.hasAnyFree(maid.getAvailableInv(false)))
+                next = Schedule.NO_SCHEDULE;
+            else
+                next = Schedule.PLACE;
         else if (MemoryUtil.getResorting(maid).hasTarget())
             next = Schedule.RESORT;
         else if (!MemoryUtil.getViewedInventory(maid).getMarkChanged().isEmpty())
@@ -68,7 +72,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
         if (last != next) {
             maid.getBrain().setMemory(MemoryModuleRegistry.CURRENTLY_WORKING.get(), next);
             MemoryUtil.clearTarget(maid);
-            DebugData.getInstance().sendMessage("Schedule Change %s -> %s", last.toString(), next.toString());
+            DebugData.sendDebug("Schedule Change %s -> %s", last.toString(), next.toString());
         }
     }
 }

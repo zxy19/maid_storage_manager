@@ -37,7 +37,7 @@ public class FollowEnableBehavior extends MaidCheckRateTask {
     protected void start(ServerLevel p_22540_, EntityMaid maid, long p_22542_) {
         maid.getBrain().setMemory(MemoryModuleRegistry.CO_WORK_MODE.get(), true);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.COWORK);
-        DebugData.getInstance().sendMessage("[CO_WORK]Enable");
+        DebugData.sendDebug("[CO_WORK]Enable");
         ChatTexts.send(maid, ChatTexts.CHAT_COWORK_ENABLE);
     }
 

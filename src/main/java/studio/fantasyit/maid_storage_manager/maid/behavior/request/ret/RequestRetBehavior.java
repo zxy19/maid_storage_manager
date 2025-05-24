@@ -70,7 +70,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         super.tick(p_22551_, maid, p_22553_);
         if (context != null) this.tickStorageContext(maid);
         if (targetEntity != null) this.tickTargetEntity(maid);

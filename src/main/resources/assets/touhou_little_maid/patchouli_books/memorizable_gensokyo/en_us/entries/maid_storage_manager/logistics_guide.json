@@ -6,7 +6,6 @@
     "pages": [
         {
             "type": "spotlight",
-            "title": "Logistics Guide",
             "item": "maid_storage_manager:logistics_guide",
             "text": "Use the Logistics Guide to teach maids to move items! Sneak right click binds the location where items are extract/stored for the logistics guide, and the sneak wheel modifies the current bindings. $(br2) opens the GUI, the maid's left and right will render containers to access, and the button in the lower right corner sets whether the maid will carry one item or a stack of items at a time."
         },

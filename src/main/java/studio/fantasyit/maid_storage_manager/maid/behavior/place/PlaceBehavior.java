@@ -7,9 +7,11 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
+import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -68,36 +70,38 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         super.tick(p_22551_, maid, p_22553_);
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
-        if (count >= inv.getSlots()) {
-            return;
-        }
-        @NotNull ItemStack item = inv.getStackInSlot(count);
-        int oCount = item.getCount();
-        if (context instanceof IStorageInsertableContext isic) {
-            List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
-            if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
-                if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                    if (RequestListItem.isIgnored(item)) {
-                        CompoundTag tag = item.getOrCreateTag();
-                        tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
-                        item.setTag(tag);
+        for (int _i = 0; _i < inv.getSlots() / 3; _i++) {
+            if (count >= inv.getSlots()) {
+                return;
+            }
+            @NotNull ItemStack item = inv.getStackInSlot(count);
+            int oCount = item.getCount();
+            if (context instanceof IStorageInsertableContext isic) {
+                List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
+                if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
+                    if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                        if (RequestListItem.isIgnored(item)) {
+                            CompoundTag tag = item.getOrCreateTag();
+                            tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
+                            item.setTag(tag);
+                            ItemStack insert = isic.insert(item);
+                            MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
+                            inv.setStackInSlot(count, insert);
+                        }
+                    } else {
                         ItemStack insert = isic.insert(item);
                         MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
                         inv.setStackInSlot(count, insert);
                     }
-                } else {
-                    ItemStack insert = isic.insert(item);
-                    MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
-                    inv.setStackInSlot(count, insert);
                 }
             }
+            if (inv.getStackInSlot(count).getCount() != oCount) {
+                changed = true;
+            }
+            count++;
         }
-        if (inv.getStackInSlot(count).getCount() != oCount) {
-            changed = true;
-        }
-        count++;
     }
 
 
@@ -117,8 +121,10 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             });
         }
         if (!changed) {
-            if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() != StorageManagerConfigData.FastSort.NORMAL) {
-                MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);
+            if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
+                PlacingInventoryMemory.Suppressed.Type targetSuppressType = MemoryUtil.getPlacingInv(maid).getTargetSuppressType();
+                MemoryUtil.getPlacingInv(maid).addSuppressedPos(target, targetSuppressType);
+                DebugData.sendDebug("[PLACE]Suppress set at %s", target);
             }
         }
         MemoryUtil.clearTarget(maid);

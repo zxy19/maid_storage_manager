@@ -1,6 +1,6 @@
 {
   "sortnum": 999,
   "name": "Maid Storage Manager",
-  "description": "It's time for maid to manage your storages！",
+  "description": "It's time for maid to manage your storages！$(br2)Thanks to Yuia for contributing to the materials, copywriting and some of the planning. ",
   "icon": "minecraft:chest"
 }

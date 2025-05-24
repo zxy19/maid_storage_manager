@@ -86,7 +86,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     }
 
     private void tickGather(ServerLevel level, EntityMaid maid, long p22553) {
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         Function<ItemStack, ItemStack> takeItem = (itemStack) -> {
             if (checkItem != null && ItemStack.isSameItemSameTags(itemStack, checkItem))
                 checkItem = null;
@@ -115,7 +115,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     }
 
     private void tickPick(ServerLevel level, EntityMaid maid, long p_22550_) {
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         if (context instanceof IStorageCraftDataProvider ispcp) {
             ispcp.getCraftGuideData().forEach(craftGuideData -> {
                 MemoryUtil.getCrafting(maid).addCraftGuide(craftGuideData);

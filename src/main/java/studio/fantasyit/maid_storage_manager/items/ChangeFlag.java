@@ -49,7 +49,7 @@ public class ChangeFlag extends Item {
     public InteractionResult useOn(UseOnContext context) {
         if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
             BlockPos clickedPos = context.getClickedPos();
-            Direction side = serverPlayer.isShiftKeyDown() ? null : context.getClickedFace();
+            Direction side = context.getClickedFace();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
@@ -65,10 +65,14 @@ public class ChangeFlag extends Item {
                         list.remove(i);
                         found = true;
                         break;
+                    } else if (storage.pos.equals(validTarget.pos)) {
+                        list.set(i, validTarget.toNbt());
+                        found = true;
+                        break;
                     }
                 }
                 if (!found) {
-                    list.add(validTarget.toNbt());
+                    list.add(validTarget.withoutSide().toNbt());
                 }
             }
             return InteractionResult.CONSUME;
@@ -90,13 +94,15 @@ public class ChangeFlag extends Item {
                 }
                 storages.forEach(interactedTarget -> {
                     Target target;
-                    List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide());
+                    List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide(), false);
                     if (possibleTargets.contains(interactedTarget))
                         target = interactedTarget;
                     else if (possibleTargets.size() > 0)
                         target = possibleTargets.get(0);
-                    else
+                    else {
+                        clearVisForMemories((ServerLevel) player.level(), maid, interactedTarget);
                         return;
+                    }
                     Target storage = MemoryUtil.getViewedInventory(maid).ambitiousPos(level, target);
                     clearVisForMemories((ServerLevel) player.level(), maid, storage);
                     MemoryUtil.getViewedInventory(maid).addMarkChanged(storage);

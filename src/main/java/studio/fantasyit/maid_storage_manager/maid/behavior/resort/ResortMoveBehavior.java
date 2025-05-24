@@ -35,19 +35,18 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
 
         //整理消失
         if (target == null || storage == null) {
-            DebugData.getInstance().sendMessage("[RESORT]No Target");
+            DebugData.sendDebug("[RESORT]No Target");
             MemoryUtil.getResorting(maid).clearNeedToResort();
             MemoryUtil.getResorting(maid).clearTarget();
             return;
         }
 
         if (!storage.getType().equals(MemoryUtil.getResorting(maid).getTarget().getType())) {
-            DebugData.getInstance().sendMessage("[RESORT]Target Changed");
+            DebugData.sendDebug("[RESORT]Target Changed");
             MemoryUtil.getResorting(maid).clearNeedToResort();
             MemoryUtil.getResorting(maid).clearTarget();
             return;
         }
-
         //寻找落脚点
         BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.getPos());
 
@@ -55,7 +54,7 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
             return;
         }
 
-        DebugData.getInstance().sendMessage("[RESORT]Target %s", goal.toShortString());
+        DebugData.sendDebug("[RESORT]Target %s", goal.toShortString());
         MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
     }
 

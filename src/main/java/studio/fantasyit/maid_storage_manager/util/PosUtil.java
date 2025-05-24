@@ -112,9 +112,9 @@ public class PosUtil {
 
     public static boolean canTouch(ServerLevel serverLevel, BlockPos standPos, BlockPos touchPos) {
         if (standPos.equals(touchPos)) return true;
-        int xOffset = touchPos.getX() - standPos.getX();
-        int zOffset = touchPos.getZ() - standPos.getZ();
-        int yOffset = touchPos.getY() - standPos.getY();
+        int xOffset = touchPos.getX() > standPos.getX() ? 1 : -1;
+        int zOffset = touchPos.getZ() > standPos.getZ() ? 1 : -1;
+        int yOffset = touchPos.getY() > standPos.getY() ? 1 : -1;
         Set<BlockPos> vis = new HashSet<>();
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(standPos);

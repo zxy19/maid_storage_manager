@@ -135,11 +135,11 @@ public class CraftMemory extends AbstractTargetMemory {
                 if (nextLayer.getCraftData().isEmpty()) {
                     remainMaterials.clear();
                 }
-                DebugData.getInstance().sendMessage(
+                DebugData.sendDebug(
                         "[REQUEST_CRAFT]Next Layer,%s", nextLayer.getCraftData().map(e -> "Normal").orElse("TreeRoot")
                 );
                 for (int i = 0; i < nextLayer.getItems().size(); i++) {
-                    DebugData.getInstance().sendMessage(
+                    DebugData.sendDebug(
                             "[REQUEST_CRAFT] + %s [%d/%d]",
                             nextLayer.getItems().get(i).getDisplayName().getString(),
                             nextLayer.getCollectedCounts().get(i),
@@ -271,10 +271,10 @@ public class CraftMemory extends AbstractTargetMemory {
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
             addVisitedPos(storageBlock);
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT]initial vis %s", storageBlock);
+            DebugData.sendDebug("[REQUEST_CRAFT]initial vis %s", storageBlock);
             InvUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
                 addVisitedPos(storageBlock.sameType(pos, null));
-                DebugData.getInstance().sendMessage("[REQUEST_CRAFT]initial vis %s", pos.toShortString());
+                DebugData.sendDebug("[REQUEST_CRAFT]initial vis %s", pos.toShortString());
             });
         }
     }

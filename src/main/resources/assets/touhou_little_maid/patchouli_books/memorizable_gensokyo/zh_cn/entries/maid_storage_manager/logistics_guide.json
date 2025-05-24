@@ -6,7 +6,6 @@
     "pages": [
         {
             "type": "spotlight",
-            "title": "物流指南",
             "item": "maid_storage_manager:logistics_guide",
             "text": "用物流指南来教会女仆搬运物品！潜行右键为物流指南绑定物品取出/存入的位置，潜行滚轮修改当前绑定项。$(br2)打开物品GUI，女仆的左右会渲染物品存取的容器，右下角的按钮可以设置女仆一次搬运一个物品还是一组物品。"
         },

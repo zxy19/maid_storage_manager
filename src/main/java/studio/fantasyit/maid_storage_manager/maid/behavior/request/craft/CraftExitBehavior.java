@@ -28,7 +28,7 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        DebugData.getInstance().sendMessage("[REQUEST_CRAFT]Exit");
+        DebugData.sendDebug("[REQUEST_CRAFT]Exit");
         RequestListItem.markAllDone(maid.getMainHandItem());
         MemoryUtil.getCrafting(maid).clearCraftGuides();
         MemoryUtil.getCrafting(maid).clearLayers();

@@ -58,18 +58,18 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         if (PortableCraftCalculatorBauble.getCalculator(maid).isEmpty()) {
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT]No Calculator found");
+            DebugData.sendDebug("[REQUEST_CRAFT]No Calculator found");
             done = true;
             success = 0;
             return;
         }
         if (RequestListItem.isBlackMode(maid.getMainHandItem())) {
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT]No Calculator found");
+            DebugData.sendDebug("[REQUEST_CRAFT]No Calculator found");
             done = true;
             success = 0;
             return;
         }
-        DebugData.getInstance().sendMessage("[REQUEST_CRAFT]Start. Calculate tree");
+        DebugData.sendDebug("[REQUEST_CRAFT]Start. Calculate tree");
         notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
         if (notDone.isEmpty()) {
             done = true;
@@ -81,7 +81,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getViewedInventory(maid).positionFlatten()
                 .forEach((pos, itemStacks) -> {
                     if (pos.equals(storage)) return;
-                    if (MoveUtil.findTargetRewrite(level, maid, pos).isEmpty()) return;
+                    if (MoveUtil.findTargetRewrite(level, maid, pos, false).isEmpty()) return;
                     for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
                         boolean flag = false;
                         for (int i = 0; i < items.size(); i++) {
@@ -108,9 +108,9 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getCrafting(maid).getCraftGuides()
         );
 
-        DebugData.getInstance().sendMessage(String.format("[REQUEST_CRAFT] %d items in memory",
+        DebugData.sendDebug(String.format("[REQUEST_CRAFT] %d items in memory",
                 MemoryUtil.getViewedInventory(maid).flatten().size()));
-        DebugData.getInstance().sendMessage(String.format("[REQUEST_CRAFT] %d recipes prefetched",
+        DebugData.sendDebug(String.format("[REQUEST_CRAFT] %d recipes prefetched",
                 MemoryUtil.getCrafting(maid).getCraftGuides().size()));
         count = 0;
         success = 0;
@@ -148,11 +148,11 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         }
         if (p_22553_ % 2 == 0) {
             int restSteps = futureSteps.get(count) + biCalc.getWorstRestSteps();
-            ChatTexts.send(maid, Component.translatable(
+            ChatTexts.progress(maid, Component.translatable(
                     ChatTexts.CHAT_CRAFT_CALCULATE,
                     String.valueOf(totalSteps - restSteps),
                     String.valueOf(totalSteps)
-            ));
+            ), (double) totalSteps / (totalSteps - restSteps));
         }
         boolean finish = false;
         for (int i = 0; i < 5; i++) {
@@ -164,7 +164,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
 
         List<CraftLayer> results = biCalc.getResults();
         if (results.isEmpty()) {
-            DebugData.getInstance().sendMessage(
+            DebugData.sendDebug(
                     "[REQUEST_CRAFT] Failed to find recipe for %s",
                     notDone.get(count).getA().getHoverName().getString()
             );
@@ -173,7 +173,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getCrafting(maid).addLayer(craftLayer);
             });
 
-            DebugData.getInstance().sendMessage(
+            DebugData.sendDebug(
                     "[REQUEST_CRAFT] %s tree with %d layers",
                     notDone.get(count).getA().getHoverName().getString(),
                     results.size()
@@ -201,7 +201,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             RequestListItem.markAllDone(maid.getMainHandItem());
             MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
             MemoryUtil.getRequestProgress(maid).setReturn(true);
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT] Failed to find recipe for any items");
+            DebugData.sendDebug("[REQUEST_CRAFT] Failed to find recipe for any items");
         }
         MemoryUtil.clearTarget(maid);
     }

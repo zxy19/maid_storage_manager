@@ -6,7 +6,6 @@
     "pages": [
         {
             "type": "text",
-            "title": "Auto Craft with Maid",
             "text": "Auto-crafting is the core and most useful function of this mod, if you want to teach your maid to auto-craft, you first need to craft a $(l:maid_storage_manager/craft#calculator) ‘Portable Crafting Calculator’ $(/l) and put it into your maid's bauble bar."
         },
         {

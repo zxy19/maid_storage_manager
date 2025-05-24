@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 
 public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManagerMaidConfigGui.Container> {
     private StorageManagerConfigData.Data currentMAData;
+    private PatchedConfigButton configButton;
 
     public StorageManagerMaidConfigGui(Container screenContainer, Inventory inv, Component titleIn) {
         super(screenContainer, inv, titleIn);
@@ -58,11 +59,13 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     this.currentMAData.noSortPlacement(false);
                     button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.NoPlaceSort, this.maid.getId(), 0);
+                    configButton.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.suppressStrategy())));
                 },
                 button -> {
                     this.currentMAData.noSortPlacement(true);
                     button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.NoPlaceSort, this.maid.getId(), 1);
+                    configButton.setValue(Component.translatable("gui.maid_storage_manager.config.fast_sort.disable"));
                 }
         ));
         this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 26,
@@ -80,20 +83,22 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                 }
         ));
 
-        this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 39,
+        configButton = this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 39,
                 Component.translatable("gui.maid_storage_manager.config.fast_sort_mode"),
-                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.fastSort())),
+                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.suppressStrategy())),
                 button -> {
-                    int oNxt = Math.max(this.currentMAData.fastSort().ordinal() - 1, 0);
-                    StorageManagerConfigData.FastSort v = StorageManagerConfigData.FastSort.values()[oNxt];
-                    this.currentMAData.fastSort(v);
+                    if (this.currentMAData.noSortPlacement()) return;
+                    int oNxt = Math.max(this.currentMAData.suppressStrategy().ordinal() - 1, 0);
+                    StorageManagerConfigData.SuppressStrategy v = StorageManagerConfigData.SuppressStrategy.values()[oNxt];
+                    this.currentMAData.suppressStrategy(v);
                     button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(v)));
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.FastSort, this.maid.getId(), v.ordinal());
                 },
                 button -> {
-                    int oNxt = Math.min(this.currentMAData.fastSort().ordinal() + 1, StorageManagerConfigData.FastSort.values().length - 1);
-                    StorageManagerConfigData.FastSort v = StorageManagerConfigData.FastSort.values()[oNxt];
-                    this.currentMAData.fastSort(v);
+                    if (this.currentMAData.noSortPlacement()) return;
+                    int oNxt = Math.min(this.currentMAData.suppressStrategy().ordinal() + 1, StorageManagerConfigData.SuppressStrategy.values().length - 1);
+                    StorageManagerConfigData.SuppressStrategy v = StorageManagerConfigData.SuppressStrategy.values()[oNxt];
+                    this.currentMAData.suppressStrategy(v);
                     button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(v)));
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.FastSort, this.maid.getId(), v.ordinal());
                 }

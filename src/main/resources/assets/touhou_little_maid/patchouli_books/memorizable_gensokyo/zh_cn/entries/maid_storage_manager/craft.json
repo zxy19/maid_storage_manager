@@ -6,7 +6,6 @@
     "pages": [
         {
             "type": "text",
-            "title": "女仆自动合成",
             "text": "自动合成是本模组最核心最实用的功能，想要教会女仆自动合成，首先需要造一个$(l:maid_storage_manager/craft#calculator)“便携式合成计算器”$(/l)，并将它放到女仆的饰品栏。"
         },
         {

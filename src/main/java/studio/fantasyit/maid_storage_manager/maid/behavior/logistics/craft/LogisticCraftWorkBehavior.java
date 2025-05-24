@@ -86,7 +86,7 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
         }
 
         if (layer.getCraftData().map(CraftGuideData::getAllOutputItems).map(l -> l.size() > 0).orElse(false))
-            ChatTexts.send(maid,
+            ChatTexts.progress(maid,
                     Component.translatable(ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
                             layer
                                     .getCraftData()
@@ -95,7 +95,8 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
                                     .orElse(Component.empty()),
                             String.valueOf((layer.getDoneCount() + 1)),
                             layer.getCount().toString()
-                    )
+                    ),
+                    (double) (layer.getDoneCount()) / layer.getCount()
             );
     }
 
@@ -107,7 +108,7 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
             done = true;
             return;
         }
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         AbstractCraftActionContext.Result tick = context.tick();
         switch (tick) {
             case SUCCESS -> {
@@ -134,11 +135,24 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
         MemoryUtil.clearTarget(maid);
         if (fail) {
             MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
+            ChatTexts.send(maid, ChatTexts.CHAT_CRAFTING_FAIL);
         } else {
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
+            ChatTexts.progress(maid,
+                    Component.translatable(ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
+                            layer
+                                    .getCraftData()
+                                    .map(CraftGuideData::getAllOutputItems)
+                                    .map(l -> l.get(0).getHoverName())
+                                    .orElse(Component.empty()),
+                            String.valueOf((layer.getDoneCount() + 1)),
+                            layer.getCount().toString()
+                    ),
+                    1
+            );
+            DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             layer.nextStep();
             if (layer.isDone()) {
-                DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]layer done");
+                DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
             }
         }

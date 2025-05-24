@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
@@ -11,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
+import studio.fantasyit.maid_storage_manager.maid.behavior.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -27,7 +27,7 @@ import java.util.Objects;
 /**
  * 手上持有物品清单，尝试前往附近所有的箱子
  */
-public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
+public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     public RequestCraftGatherMoveBehavior() {
         super((float) Config.collectSpeed, 3);
         this.verticalSearchStart = 1;
@@ -56,8 +56,8 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
             if (Conditions.useScanTarget(maid))
                 this.searchForDestination(level, maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
-            if(MemoryUtil.getCrafting(maid).confirmNoTarget()) {
-                DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER] No More Target");
+            if (MemoryUtil.getCrafting(maid).confirmNoTarget()) {
+                DebugData.sendDebug("[REQUEST_CRAFT_GATHER] No More Target");
                 MemoryUtil.getCrafting(maid).finishGathering(maid);
             }
         } else {
@@ -65,7 +65,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
             if (chestPos != null) {
                 MemoryUtil.getCrafting(maid).setTarget(chestPos);
                 MemoryUtil.setLookAt(maid, chestPos.getPos());
-                DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER] Target %s", chestPos);
+                DebugData.sendDebug("[REQUEST_CRAFT_GATHER] Target %s", chestPos);
             }
             ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_GATHER);
         }
@@ -99,10 +99,10 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
                         blockPos.getKey().getPos(),
                         blockPos.getKey().side);
                 if (storage != null) {
-                    if (!MoveUtil.isValidTarget(level, maid, storage)) continue;
+                    if (!MoveUtil.isValidTarget(level, maid, storage, false)) continue;
                     chestPos = storage;
                     MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
-                    DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER]Priority By Content %s", storage);
+                    DebugData.sendDebug("[REQUEST_CRAFT_GATHER]Priority By Content %s", storage);
                 }
                 return true;
             }
@@ -119,7 +119,7 @@ public class RequestCraftGatherMoveBehavior extends MaidMoveToBlockTask {
         @Nullable Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, MemoryUtil.getCrafting(entityMaid));
         if (canTouchChest != null) {
             chestPos = canTouchChest;
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_GATHER]Target %s", canTouchChest);
+            DebugData.sendDebug("[REQUEST_CRAFT_GATHER]Target %s", canTouchChest);
         }
         return canTouchChest != null;
     }

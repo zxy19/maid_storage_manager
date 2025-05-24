@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.data;
 
 import com.github.tartaricacid.touhoulittlemaid.api.entity.data.TaskDataKey;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -9,17 +10,17 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         private boolean coWorkMode;
         private MemoryAssistant memoryAssistant;
         private boolean noSortPlacement = false;
-        private FastSort fastSort = FastSort.NORMAL;
+        private SuppressStrategy suppressStrategy = SuppressStrategy.AFTER_ALL;
 
-        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode, FastSort fastSort) {
+        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode, SuppressStrategy suppressStrategy) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
             this.coWorkMode = coWorkMode;
-            this.fastSort = fastSort;
+            this.suppressStrategy = suppressStrategy;
         }
 
         public static Data getDefault() {
-            return new Data(MemoryAssistant.MEMORY_FIRST, false, false, FastSort.NORMAL);
+            return new Data(MemoryAssistant.MEMORY_FIRST, false, false, SuppressStrategy.AFTER_EACH);
         }
 
         public MemoryAssistant memoryAssistant() {
@@ -46,12 +47,12 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             this.coWorkMode = coWorkMode;
         }
 
-        public FastSort fastSort() {
-            return fastSort;
+        public SuppressStrategy suppressStrategy() {
+            return suppressStrategy;
         }
 
-        public void fastSort(FastSort fastSort) {
-            this.fastSort = fastSort;
+        public void suppressStrategy(SuppressStrategy suppressStrategy) {
+            this.suppressStrategy = suppressStrategy;
         }
     }
 
@@ -67,7 +68,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     public CompoundTag writeSaveData(Data data) {
         CompoundTag tag = new CompoundTag();
         tag.putString("memoryAssistant", data.memoryAssistant().name());
-        tag.putString("fastSortMode", data.fastSort().name());
+        tag.putString("suppressStrategy", data.suppressStrategy().name());
         tag.putBoolean("noSortPlacement", data.noSortPlacement());
         tag.putBoolean("coWorkMode", data.coWorkMode());
         return tag;
@@ -76,10 +77,12 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     @Override
     public Data readSaveData(CompoundTag compound) {
         MemoryAssistant memoryAssistant = MemoryAssistant.valueOf(compound.getString("memoryAssistant"));
-        FastSort fastSort = compound.contains("fastSortMode") ? FastSort.valueOf(compound.getString("fastSortMode")) : FastSort.NORMAL;
+        SuppressStrategy suppressStrategy = compound.contains("suppressStrategy")
+                ? SuppressStrategy.valueOf(compound.getString("suppressStrategy"))
+                : SuppressStrategy.AFTER_ALL;
         boolean noSortPlacement = compound.getBoolean("noSortPlacement");
         boolean coWorkMode = compound.getBoolean("coWorkMode");
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, fastSort);
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {
@@ -90,11 +93,11 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         };
     }
 
-    public static String getTranslationKey(FastSort memoryAssistant) {
+    public static String getTranslationKey(SuppressStrategy memoryAssistant) {
         return "gui.maid_storage_manager.config.fast_sort." + switch (memoryAssistant) {
-            case NORMAL -> "normal";
-            case KEEP_FILTER -> "filter";
-            case KEEP_ALL -> "all";
+            case AFTER_ALL -> "normal";//强效率
+            case AFTER_PRIORITY -> "filter";//优先分类
+            case AFTER_EACH -> "all";//强分类
         };
     }
 
@@ -109,9 +112,13 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         ALWAYS_SCAN,
     }
 
-    public enum FastSort {
-        NORMAL,
-        KEEP_FILTER,
-        KEEP_ALL
+    public enum SuppressStrategy {
+        AFTER_EACH,
+        AFTER_PRIORITY,
+        AFTER_ALL
+    }
+
+    public static StorageManagerConfigData.Data get(EntityMaid maid) {
+        return maid.getOrCreateData(KEY, Data.getDefault());
     }
 }

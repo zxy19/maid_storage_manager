@@ -145,7 +145,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tag.putInt(TAG_COOLING_DOWN, tag.getInt(TAG_COOLING_DOWN) - 1);
             item.setTag(tag);
             if (tag.getInt(TAG_COOLING_DOWN) == 0) {
-                DebugData.getInstance().sendMessage("Cooling Done(clear_repeat)");
+                DebugData.sendDebug("Cooling Done(clear_repeat)");
                 clearItemProcess(item);
             }
         }

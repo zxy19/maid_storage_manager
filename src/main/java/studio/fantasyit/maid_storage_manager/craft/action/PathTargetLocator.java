@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.action;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -19,18 +20,18 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class PathTargetLocator {
-    public static BlockPos commonNearestAvailablePos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
+    public static BlockPos commonNearestAvailablePos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding) {
         return MoveUtil.selectPosForTarget((ServerLevel) maid.level(), maid, craftGuideStepData.getStorage().getPos());
     }
 
-    public static BlockPos exactlySidedPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
+    public static BlockPos exactlySidedPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding) {
         BlockPos pos = craftGuideStepData.getStorage().getPos();
         if (craftGuideStepData.getStorage().side != null)
             pos = pos.relative(craftGuideStepData.getStorage().side, 1);
         return pos;
     }
 
-    public static BlockPos touchPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
+    public static BlockPos touchPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding) {
         List<BlockPos> posList = new ArrayList<>();
         BlockPos pos = craftGuideStepData.getStorage().getPos();
         Direction side = craftGuideStepData.getStorage().side;
@@ -71,39 +72,37 @@ public class PathTargetLocator {
         }
     }
 
-    public static BlockPos throwItemPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
+    public static BlockPos throwItemPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding) {
         BlockPos currentTarget = craftGuideStepData.getStorage().getPos();
         if (craftGuideStepData.getStorage().side != null)
             currentTarget = currentTarget.relative(craftGuideStepData.getStorage().side);
         ServerLevel level = (ServerLevel) maid.level();
         for (int i = 0; i < 4; i++) {
-            if (validPosForThrowItem(level, maid, currentTarget)) return currentTarget;
+            if (validPosForThrowItem(level, maid, currentTarget,pathFinding)) return currentTarget;
             if (level.getBlockState(currentTarget).isCollisionShapeFullBlock(level, currentTarget)) return null;
-            if (validPosForThrowItem(level, maid, currentTarget.south())) return currentTarget.south();
-            if (validPosForThrowItem(level, maid, currentTarget.east())) return currentTarget.east();
-            if (validPosForThrowItem(level, maid, currentTarget.west())) return currentTarget.west();
-            if (validPosForThrowItem(level, maid, currentTarget.north())) return currentTarget.north();
+            if (validPosForThrowItem(level, maid, currentTarget.south(),pathFinding)) return currentTarget.south();
+            if (validPosForThrowItem(level, maid, currentTarget.east(),pathFinding)) return currentTarget.east();
+            if (validPosForThrowItem(level, maid, currentTarget.west(),pathFinding)) return currentTarget.west();
+            if (validPosForThrowItem(level, maid, currentTarget.north(),pathFinding)) return currentTarget.north();
             currentTarget = currentTarget.above();
         }
         return null;
     }
 
-    private static boolean validPosForThrowItem(ServerLevel level, EntityMaid maid, BlockPos pos) {
+    private static boolean validPosForThrowItem(ServerLevel level, EntityMaid maid, BlockPos pos, MaidPathFindingBFS pathFinding) {
         if (PosUtil.isSafePos(level, pos) && maid.isWithinRestriction(pos)) {
-            Path path = maid.getNavigation().createPath(pos, 0);
-            if (path != null && path.canReach())
-                return true;
+            return pathFinding.canPathReach(pos);
         }
         return false;
     }
 
-    public static BlockPos besidePosOrExactlyPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer craftLayer) {
+    public static BlockPos besidePosOrExactlyPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer craftLayer, MaidPathFindingBFS pathFinding) {
         BlockPos center = craftGuideStepData.getStorage().getPos();
         if (craftGuideStepData.getStorage().side != null)
             center = center.relative(craftGuideStepData.getStorage().side, 1);
 
         return PosUtil.findAround(center, (pos) -> {
-            if (PosUtil.isSafePos(maid.level(), pos) && maid.isWithinRestriction(pos) && maid.canPathReach(pos)) {
+            if (PosUtil.isSafePos(maid.level(), pos) && maid.isWithinRestriction(pos) && pathFinding.canPathReach(pos)) {
                 return pos;
             } else {
                 return null;

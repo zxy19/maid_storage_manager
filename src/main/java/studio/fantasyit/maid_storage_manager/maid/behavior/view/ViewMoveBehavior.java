@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.view;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
@@ -12,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.maid.behavior.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -22,7 +22,7 @@ import studio.fantasyit.maid_storage_manager.util.PosUtil;
 /**
  * 正常情况下尝试前往附近所有的箱子
  */
-public class ViewMoveBehavior extends MaidMoveToBlockTask {
+public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     public ViewMoveBehavior() {
         super((float) Config.viewSpeed, 3);
         this.verticalSearchStart = 1;
@@ -49,7 +49,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
             if (MemoryUtil.getViewedInventory(maid).confirmNoTarget(2)) {
                 MemoryUtil.getViewedInventory(maid).removeUnvisited();
                 MemoryUtil.getViewedInventory(maid).resetVisitedPos();
-                DebugData.getInstance().sendMessage("[VIEW]Reset, waiting");
+                DebugData.sendDebug("[VIEW]Reset, waiting");
             }
         } else {
             MemoryUtil.getViewedInventory(maid).resetFailCount();
@@ -70,7 +70,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
                 if (target != null) {
                     chestPos = storage;
                     MemoryUtil.setTarget(maid, target, (float) Config.viewChangeSpeed);
-                    DebugData.getInstance().sendMessage("[VIEW]Priority By Change %s", storage);
+                    DebugData.sendDebug("[VIEW]Priority By Change %s", storage);
                     MemoryUtil.getViewedInventory(maid).resetMarkFailTime();
                     return true;
                 }
@@ -92,7 +92,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTask {
                 blockPos,
                 MemoryUtil.getViewedInventory(entityMaid));
         if (canTouchChest != null) {
-            DebugData.getInstance().sendMessage("[VIEW]Target %s", canTouchChest);
+            DebugData.sendDebug("[VIEW]Target %s", canTouchChest);
             chestPos = canTouchChest;
             return true;
         }

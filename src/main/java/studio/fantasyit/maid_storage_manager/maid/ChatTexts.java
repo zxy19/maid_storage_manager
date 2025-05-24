@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.implement.ProgressChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.implement.TextChatBubbleData;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.network.chat.Component;
@@ -14,14 +15,26 @@ public class ChatTexts {
         send(maid, Component.translatable(key));
     }
 
+    public static void progress(EntityMaid maid, Component component, double progress) {
+        if (chatTexts.containsKey(maid.getUUID())) {
+            if (maid.getChatBubbleManager().getChatBubble(chatTexts.get(maid.getUUID())) != null)
+                maid.getChatBubbleManager().removeChatBubble(chatTexts.get(maid.getUUID()));
+            chatTexts.remove(maid.getUUID());
+        }
+        ProgressChatBubbleData textChatBubbleData = ProgressChatBubbleData.create(70,
+                ProgressChatBubbleData.TYPE_1,
+                999,
+                component,
+                0xffffffff,
+                0xff1e88e5,
+                progress,
+                true);
+        long l = maid.getChatBubbleManager().addChatBubble(textChatBubbleData);
+        chatTexts.put(maid.getUUID(), l);
+    }
+
     public static void send(EntityMaid maid, Component component) {
         if (chatTexts.containsKey(maid.getUUID())) {
-            // TODO:怎么不能调时间🤡删除重置计时器
-//            IChatBubbleData chatBubble = maid.getChatBubbleManager().getChatBubble(chatTexts.get(maid.getUUID()));
-//            if(chatBubble instanceof TextChatBubbleData textChatBubbleData){
-//                textChatBubbleData.setText(component);
-//                maid.getChatBubbleManager().forceUpdateChatBubble();
-//            }
             if (maid.getChatBubbleManager().getChatBubble(chatTexts.get(maid.getUUID())) != null)
                 maid.getChatBubbleManager().removeChatBubble(chatTexts.get(maid.getUUID()));
             chatTexts.remove(maid.getUUID());

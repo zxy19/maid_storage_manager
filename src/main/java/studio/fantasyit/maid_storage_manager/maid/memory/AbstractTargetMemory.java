@@ -27,27 +27,22 @@ public abstract class AbstractTargetMemory {
                         Target.CODEC.fieldOf("target")
                                 .forGetter(TargetData::getTarget),
                         ItemStack.CODEC.optionalFieldOf("check")
-                                .forGetter(TargetData::getCheckItem),
-                        Codec.list(Target.CODEC).fieldOf("suppressedPos")
-                                .orElse(List.of())
-                                .forGetter(TargetData::getSuppressedPos)
+                                .forGetter(TargetData::getCheckItem)
                 ).apply(instance, TargetData::new));
         public static ResourceLocation NO_TARGET = new ResourceLocation(MaidStorageManager.MODID, "no_target");
         public List<Target> visitedPos;
-        public List<Target> suppressedPos;
         public Target target;
         @Nullable
         public ItemStack checkItem;
 
         public TargetData(List<Target> visitedPos, Target target) {
-            this(visitedPos, target, Optional.empty(), List.of());
+            this(visitedPos, target, Optional.empty());
         }
 
-        public TargetData(List<Target> visitedPos, Target target, Optional<ItemStack> checkItem, List<Target> suppressedPos) {
+        public TargetData(List<Target> visitedPos, Target target, Optional<ItemStack> checkItem) {
             this.visitedPos = new ArrayList<>(visitedPos);
             this.target = target;
             this.checkItem = checkItem.orElse(null);
-            this.suppressedPos = new ArrayList<>(suppressedPos);
         }
 
         public List<Target> getVisitedPos() {
@@ -65,18 +60,6 @@ public abstract class AbstractTargetMemory {
 
         public Optional<ItemStack> getCheckItem() {
             return Optional.ofNullable(checkItem);
-        }
-
-        public List<Target> getSuppressedPos() {
-            return suppressedPos;
-        }
-
-        public void addSuppressedPos(Target pos) {
-            this.suppressedPos.add(pos);
-        }
-
-        public void clearSuppressedPos() {
-            this.suppressedPos.clear();
         }
     }
 
@@ -162,25 +145,5 @@ public abstract class AbstractTargetMemory {
 
     public ItemStack getCheckItem() {
         return targetData.checkItem;
-    }
-
-    public boolean isSuppressedPos(Target pos) {
-        return targetData.suppressedPos.contains(pos);
-    }
-
-    public void addSuppressedPos(Target pos) {
-        targetData.addSuppressedPos(pos);
-    }
-
-    public void clearSuppressedPos() {
-        targetData.clearSuppressedPos();
-    }
-
-    public boolean anySuppressed() {
-        return !targetData.suppressedPos.isEmpty();
-    }
-
-    public boolean isVisitedPosOrSuppressed(Target validTarget) {
-        return isVisitedPos(validTarget) || isSuppressedPos(validTarget);
     }
 }

@@ -6,21 +6,26 @@ import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.api.entity.ai.IExtraMaidBrain;
 import com.github.tartaricacid.touhoulittlemaid.client.overlay.MaidTipsOverlay;
+import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.data.TaskDataRegister;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import studio.fantasyit.maid_storage_manager.ai.CoWorkSwitchFunction;
 import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.MaidInteractItem;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 @LittleMaidExtension
 public class MaidExtension implements ILittleMaid {
@@ -80,5 +85,14 @@ public class MaidExtension implements ILittleMaid {
                 maidTipsOverlay.addTips("tip.maid_storage_manager.interact_maid", item.get());
             }
         });
+        maidTipsOverlay.addTips("tip.maid_storage_manager.change_flag", ItemRegistry.CHANGE_FLAG.get());
+    }
+
+    @Override
+    public Collection<? extends Function<EntityMaid, List<DebugTarget>>> getMaidDebugTargets() {
+        return List.of(
+                DebugData::commonTargets,
+                DebugData::placeSuppresses
+        );
     }
 }

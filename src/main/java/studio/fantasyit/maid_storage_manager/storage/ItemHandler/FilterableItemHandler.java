@@ -1,14 +1,10 @@
 package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
 
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraft.world.phys.AABB;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -28,32 +24,16 @@ public class FilterableItemHandler implements IFilterable {
 
     List<Pair<ItemStack, Boolean>> filtered;
     boolean isBlackMode;
-    boolean requestOnly;
 
     public void init(ServerLevel level, Target target) {
-        List<BlockPos> samePos = new ArrayList<>(List.of(target.pos));
-        InvUtil.checkNearByContainers(level, target.pos, samePos::add);
-        AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);
-        List<ItemFrame> frames = level.getEntities(
-                EntityTypeTest.forClass(ItemFrame.class),
-                aabb,
-                itemFrame -> {
-                    if (storage.side != null && storage.side != itemFrame.getDirection()) return false;
-                    BlockPos relative = itemFrame.blockPosition().relative(itemFrame.getDirection(), -1);
-                    return samePos.stream().anyMatch(t -> t.equals(relative));
-                }
-        );
-        if (frames.isEmpty()) {
+        List<Pair<Target, ItemStack>> marksWithSameContainer = InvUtil.getMarksWithSameContainer(level, target);
+        if (marksWithSameContainer.isEmpty()) {
             filtered = new ArrayList<>();
             isBlackMode = true;
         } else {
-            this.requestOnly = frames
+            List<CompoundTag> items = marksWithSameContainer
                     .stream()
-                    .map(ItemFrame::getItem)
-                    .anyMatch(t -> t.is(ItemRegistry.NO_ACCESS.get()));
-            List<CompoundTag> items = frames
-                    .stream()
-                    .map(ItemFrame::getItem)
+                    .map(Pair::getB)
                     .filter(t -> t.is(ItemRegistry.FILTER_LIST.get()))
                     .map(ItemStack::getOrCreateTag).toList();
             isBlackMode = items.stream().allMatch(t -> t.getBoolean(FilterListItem.TAG_BLACK_MODE));
@@ -83,7 +63,7 @@ public class FilterableItemHandler implements IFilterable {
                                 //白名单模式下，黑名单列表的合并方式：移除撞车的
                                 for (int j = 0; j < filtered.size(); j++) {
                                     Pair<ItemStack, Boolean> pair = filtered.get(j);
-                                    if (ItemStackUtil.isSame(pair.getFirst(), item, tmp.getBoolean(FilterListItem.TAG_MATCH_TAG) && pair.getSecond())) {
+                                    if (ItemStackUtil.isSame(pair.getA(), item, tmp.getBoolean(FilterListItem.TAG_MATCH_TAG) && pair.getB())) {
                                         filtered.remove(pair);
                                         j--;
                                     }
@@ -98,7 +78,7 @@ public class FilterableItemHandler implements IFilterable {
     @Override
     public boolean isAvailable(ItemStack itemStack) {
         for (Pair<ItemStack, Boolean> pair : filtered) {
-            if (ItemStackUtil.isSame(pair.getFirst(), itemStack, pair.getSecond())) {
+            if (ItemStackUtil.isSame(pair.getA(), itemStack, pair.getB())) {
                 return !isBlackMode;
             }
         }
@@ -110,8 +90,4 @@ public class FilterableItemHandler implements IFilterable {
         return !isBlackMode;
     }
 
-    @Override
-    public boolean isRequestOnly() {
-        return requestOnly;
-    }
 }

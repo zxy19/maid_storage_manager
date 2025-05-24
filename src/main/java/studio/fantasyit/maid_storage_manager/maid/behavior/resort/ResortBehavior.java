@@ -66,7 +66,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         super.tick(p_22551_, maid, p_22553_);
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         CombinedInvWrapper maidInv = maid.getAvailableInv(false);
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
             if (!((IFilterable) context).isAvailable(itemStack)) {

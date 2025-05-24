@@ -1,0 +1,35 @@
+{
+  "parent": "maid_storage_manager:storage_manager",
+  "criteria": {
+    "maid_event": {
+      "conditions": {
+        "event": "left_right_brains_fight"
+      },
+      "trigger": "touhou_little_maid:maid/tamed_maid"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "background": "touhou_little_maid:textures/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancements.maid_storage_manager.left_right_brains_fight.desc"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "icon": {
+      "item": "maid_storage_manager:no_access"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.maid_storage_manager.left_right_brains_fight.title"
+    }
+  },
+  "requirements": [
+    [
+      "maid_event"
+    ]
+  ],
+  "rewards": {
+  },
+  "sends_telemetry_event": true
+}

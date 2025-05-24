@@ -12,8 +12,8 @@ public class Config {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_DEBUG = BUILDER
-            .comment("Enable debug box render")
-            .define("debug_box", false);
+            .comment("Print debug messages")
+            .define("debug_msg", false);
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_AE2SUP = BUILDER
             .comment("Enable ae2 support(Maid may pickup things from terminal)")
@@ -54,6 +54,16 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue TWO_STEP_AI_RESPONSE = BUILDER
             .comment("Allow Maid call AI two times when doing some request.")
             .define("two_step_ai_response", true);
+    private static final ForgeConfigSpec.DoubleValue PICKUP_REQUIRE_WHEN_PLACE = BUILDER
+            .comment("How many free slots required to pickup items when placing(Value indicates the percentage of empty slots in the total slots")
+            .defineInRange("pickup_require_when_place", 0.5, 0.0, 1.0);
+    private static final ForgeConfigSpec.BooleanValue FAST_PATH_SCHEDULE = BUILDER
+            .comment("Disable the 'shortest path limitation' to gain faster path finding.")
+            .define("fast_path_schedule", false);
+    private static final ForgeConfigSpec.BooleanValue REAL_WORK_SIM = BUILDER
+            .comment("Maid will need to stop and stand by the block to work")
+            .define("real_work_sim", true);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
@@ -69,7 +79,9 @@ public class Config {
     public static double followSpeed;
     public static boolean usingVisibleFrame;
     public static boolean twoStepAiResponse;
-
+    public static double pickupRequireWhenPlace;
+    public static boolean fastPathSchedule;
+    public static boolean realWorkSim;
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         enableDebug = ENABLE_DEBUG.get();
@@ -85,5 +97,8 @@ public class Config {
         viewChangeSpeed = VIEW_CHANGE_SPEED.get();
         followSpeed = FOLLOW_SPEED.get();
         twoStepAiResponse = TWO_STEP_AI_RESPONSE.get();
+        pickupRequireWhenPlace = PICKUP_REQUIRE_WHEN_PLACE.get();
+        fastPathSchedule = FAST_PATH_SCHEDULE.get();
+        realWorkSim = REAL_WORK_SIM.get();
     }
 }

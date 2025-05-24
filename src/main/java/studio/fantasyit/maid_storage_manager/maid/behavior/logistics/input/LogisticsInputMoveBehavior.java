@@ -38,7 +38,6 @@ public class LogisticsInputMoveBehavior extends Behavior<EntityMaid> {
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         @Nullable Target target = LogisticsGuide.getInput(MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem());
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
-
         if (target != null && storage != null) {
             //寻找落脚点
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);

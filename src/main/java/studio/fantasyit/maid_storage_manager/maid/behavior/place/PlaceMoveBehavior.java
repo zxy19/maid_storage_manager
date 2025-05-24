@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
-import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
+import studio.fantasyit.maid_storage_manager.maid.behavior.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
@@ -31,8 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class PlaceMoveBehavior extends MaidMoveToBlockTask {
+import static studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData.SuppressStrategy;
+
+public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     private Target chestPos;
+    private PlacingInventoryMemory.Suppressed.Type suppressType;
 
     public PlaceMoveBehavior() {
         super((float) Config.placeSpeed, 3);
@@ -50,10 +54,6 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         super.start(level, maid, p_22542_);
 
-        if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() == StorageManagerConfigData.FastSort.NORMAL) {
-            MemoryUtil.getPlacingInv(maid).clearSuppressedPos();
-        }
-
         if (!this.priorityTarget(level, maid))
             this.searchForDestination(level, maid);
 
@@ -63,10 +63,9 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
 
                 //快速放置-保留全部记录模式，没有目标几次后重置所有suppressed
                 if (MemoryUtil.getPlacingInv(maid).getFailCount() >= 2 && MemoryUtil.getPlacingInv(maid).anySuppressed()) {
-                    if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() == StorageManagerConfigData.FastSort.KEEP_ALL) {
-                        MemoryUtil.getPlacingInv(maid).clearSuppressedPos();
-                        MemoryUtil.getPlacingInv(maid).resetFailCount();
-                    }
+                    DebugData.sendDebug("[PLACE]Suppress clear L ALL");
+                    MemoryUtil.getPlacingInv(maid).removeSuppressed();
+                    MemoryUtil.getPlacingInv(maid).resetFailCount();
                 }
 
                 if (MemoryUtil.getPlacingInv(maid).getFailCount() >= 5)
@@ -78,10 +77,11 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
             MemoryUtil.getPlacingInv(maid).clearTarget();
             MemoryUtil.getPlacingInv(maid).resetAnySuccess();
             MemoryUtil.clearTarget(maid);
-            DebugData.getInstance().sendMessage("[PLACE]Reset (Iter all)");
+            DebugData.sendDebug("[PLACE]Reset (Iter all)");
         } else {
             if (chestPos != null) {
                 MemoryUtil.getPlacingInv(maid).setTarget(chestPos);
+                MemoryUtil.getPlacingInv(maid).setTargetSuppressType(suppressType);
                 maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.pos));
             }
         }
@@ -97,27 +97,33 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
         }
         Target targetContent = null;
         List<ItemStack> targetContentList = new ArrayList<>();
-        BlockPos targetContentPos = null;
+        List<BlockPos> targetContentPos = null;
         Target targetFilter = null;
         List<ItemStack> targetFilterList = new ArrayList<>();
-        BlockPos targetFilterPos = null;
+        List<BlockPos> targetFilterPos = null;
 
+        MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
         Map<Target, List<ViewedInventoryMemory.ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
         for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : blockPosListMap.entrySet()) {
             if (targetFilter != null) break;
 
-            @Nullable BlockPos possibleMove = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
-            if (possibleMove == null) continue;
-
             //过滤器判断
             Target validTarget = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
-            if (validTarget != null)
-                if (!MoveUtil.isValidTarget(level, maid, validTarget)) continue;
+            if (validTarget != null) {
+                if (!MoveUtil.isValidTarget(level, maid, validTarget, false)) continue;
+            }
+
+            if (MemoryUtil.getPlacingInv(maid).isVisitedPos(validTarget)) {
+                continue;
+            }
+
+            if (MoveUtil.findTargetRewrite(level, maid, blockPos.getKey(), false).isEmpty())
+                continue;
+
+            List<BlockPos> possibleMove = MoveUtil.getAllAvailablePosForTarget(level, maid, blockPos.getKey().getPos(), pathFinding);
+            if (possibleMove.isEmpty()) continue;
 
             if (validTarget != null) {
-                if (MemoryUtil.getPlacingInv(maid).isVisitedPosOrSuppressed(validTarget))
-                    continue;
-
                 @Nullable IStorageContext context = MaidStorage
                         .getInstance()
                         .getStorage(validTarget.getType())
@@ -125,7 +131,6 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
                 if (context != null) context.start(maid, level, validTarget);
                 if (context instanceof IFilterable ift) {
                     //请求返回箱子，不能存入其他物品
-                    if (ift.isRequestOnly()) continue;
                     if (ift.isWhitelist()) {
                         boolean found = false;
                         for (ItemStack itemStack : items) {
@@ -166,25 +171,38 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
         }
 
 
+        PlacingInventoryMemory placingInv = MemoryUtil.getPlacingInv(maid);
         if (targetFilter != null) {
-            PlacingInventoryMemory placingInv = MemoryUtil.getPlacingInv(maid);
             placingInv.setArrangeItems(targetFilterList);
             chestPos = targetFilter;
-            MemoryUtil.setTarget(maid, targetFilterPos, (float) Config.placeSpeed);
-            DebugData.getInstance().sendMessage("[PLACE]Priority By Filter %s", targetFilter.toString());
+            MemoryUtil.setTarget(maid, MoveUtil.getNearestFromTargetList(level, maid, targetFilterPos), (float) Config.placeSpeed);
+            DebugData.sendDebug("[PLACE]Priority By Filter %s", targetFilter.toString());
+            suppressType = PlacingInventoryMemory.Suppressed.Type.FILTER;
             return true;
-        } else if (targetContent != null) {
-            PlacingInventoryMemory placingInv = MemoryUtil.getPlacingInv(maid);
+        }
+        if (StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_EACH
+                && placingInv.anySuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER)
+        ) {
+            placingInv.removeSuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER);
+            DebugData.sendDebug("[PLACE]Suppress clear L Filter");
+            return priorityTarget(level, maid);
+        }
+        if (targetContent != null) {
             placingInv.setArrangeItems(targetContentList);
             chestPos = targetContent;
-            MemoryUtil.setTarget(maid, targetContentPos, (float) Config.placeSpeed);
-            DebugData.getInstance().sendMessage("[PLACE]Priority By Content %s", targetContent);
+            MemoryUtil.setTarget(maid, MoveUtil.getNearestFromTargetList(level, maid, targetContentPos), (float) Config.placeSpeed);
+            DebugData.sendDebug("[PLACE]Priority By Content %s", targetContent);
+            suppressType = PlacingInventoryMemory.Suppressed.Type.MATCH;
             return true;
-        } else if (MemoryUtil.getPlacingInv(maid).anySuppressed()) {//对于没查到的情况，可能有之前已经被标记为不可用的箱子
-            if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).fastSort() == StorageManagerConfigData.FastSort.KEEP_FILTER) {
-                MemoryUtil.getPlacingInv(maid).clearSuppressedPos();
-                return priorityTarget(level, maid);
-            }
+        }
+        if ((StorageManagerConfigData.get(maid).suppressStrategy() == StorageManagerConfigData.SuppressStrategy.AFTER_EACH
+                || StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_PRIORITY)
+                && (placingInv.anySuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER)
+                || placingInv.anySuppressed(PlacingInventoryMemory.Suppressed.Type.MATCH))) {
+            DebugData.sendDebug("[PLACE]Suppress clear L Match");
+            MemoryUtil.getPlacingInv(maid).removeSuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER);
+            MemoryUtil.getPlacingInv(maid).removeSuppressed(PlacingInventoryMemory.Suppressed.Type.MATCH);
+            return priorityTarget(level, maid);
         }
         return false;
     }
@@ -200,7 +218,8 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTask {
                 MemoryUtil.getPlacingInv(entityMaid));
         if (canTouchChest != null) {
             chestPos = canTouchChest;
-            DebugData.getInstance().sendMessage("[PLACE]Normal %s", canTouchChest);
+            DebugData.sendDebug("[PLACE]Normal %s", canTouchChest);
+            suppressType = PlacingInventoryMemory.Suppressed.Type.NORMAL;
             return true;
         }
         return false;

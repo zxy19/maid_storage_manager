@@ -60,10 +60,10 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
 
             if (goal == null) {
-                DebugData.getInstance().sendMessage("[REQUEST_RET] Unavailable target, waiting");
+                DebugData.sendDebug("[REQUEST_RET] Unavailable target, waiting");
                 return;
             }
-            DebugData.getInstance().sendMessage("[REQUEST_RET] Return target %s", storage);
+            DebugData.sendDebug("[REQUEST_RET] Return target %s", storage);
 
             MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
             MemoryUtil.getRequestProgress(maid).setReturn();
@@ -75,7 +75,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
         } else {
             //如果没有绑定存储位置，那么直接停止任务，扔掉或者存储清单，三十秒后进行日常工作
             if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) {
-                DebugData.getInstance().sendMessage("[REQUEST_RET] No target");
+                DebugData.sendDebug("[REQUEST_RET] No target");
                 RequestListItem.markAllDone(maid.getMainHandItem());
                 RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null, null);
                 MemoryUtil.setReturnToScheduleAt(maid, level.getServer().getTickCount() + 600);

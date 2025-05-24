@@ -63,7 +63,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         layer = MemoryUtil.getCrafting(maid).getCurrentLayer();
         craftGuideStepData = layer.getStepData();
-        ChatTexts.send(maid,
+        ChatTexts.progress(maid,
                 Component.translatable(
                         ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
                         layer
@@ -73,7 +73,8 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                                 .orElse(Component.empty()),
                         layer.getDoneCount().toString(),
                         layer.getCount().toString()
-                )
+                ),
+                (double) (layer.getDoneCount()) / layer.getCount()
         );
         if (craftGuideStepData == null) {
             MemoryUtil.getCrafting(maid).lastSuccess();
@@ -106,7 +107,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             done = true;
             return;
         }
-        if (!breath.breathTick()) return;
+        if (!breath.breathTick(maid)) return;
         AbstractCraftActionContext.Result tick = context.tick();
         switch (tick) {
             case SUCCESS -> {
@@ -133,13 +134,13 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         MemoryUtil.clearTarget(maid);
         if (!MemoryUtil.getCrafting(maid).hasCurrent()) return;
         if (fail) {
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]crafting fail");
+            DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting fail");
             MemoryUtil.getCrafting(maid).failCurrent(maid, craftGuideStepData.getItems());
         } else {
-            DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
+            DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             MemoryUtil.getCrafting(maid).getCurrentLayer().nextStep();
             if (MemoryUtil.getCrafting(maid).getCurrentLayer().isDone()) {
-                DebugData.getInstance().sendMessage("[REQUEST_CRAFT_WORK]layer done");
+                DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
                 MemoryUtil.getCrafting(maid).nextLayer();
                 MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
             }

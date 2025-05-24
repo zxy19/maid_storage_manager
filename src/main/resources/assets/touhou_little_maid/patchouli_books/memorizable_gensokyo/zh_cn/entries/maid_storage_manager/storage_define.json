@@ -1,17 +1,30 @@
 {
     "sortnum": 11,
-    "name": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define",
+    "name": "存储定义",
     "icon": "maid_storage_manager:storage_define_bauble",
     "category": "touhou_little_maid:maid_storage_manager",
     "pages": [
         {
             "type": "spotlight",
             "item": "maid_storage_manager:storage_define_bauble",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define.pages.0.1.text"
+            "text": "存储定义可以用来精准地“定义”女仆可访问的仓库范围，它有四种模式：添加，删除，替换，更新。通过潜行滚轮来切换模式，潜行右键以切换“标记某容器”“标记某个面”“取消标记”。$(br2)以下是四种模式的介绍："
         },
         {
             "type": "text",
-            "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.storage_define.pages.0.2.text"
+            "text": "$(li)添加模式会让所有被标记的容器可以被女仆访问到，甚至是那些贴了“禁止访问”的箱子。$(li)删除模式会禁止女仆访问所有被标记的容器，包括贴着“允许访问”的。"
+        },
+        {
+            "type": "text",
+            "text": "$(li)替换模式会先清空所有女仆访问仓库的权限（不论是否是其他存储定义给的），再将标记的容器添加到这个权限列表，也就是说你标的那些容器就是全部的可访问容器。$(li)更新模式会按照标记更新该容器的6个面对女仆开放的权限。你也可以把它理解为先在女仆的访问权限列表里删除所有标记的容器，再把标记的容器加回去，此时容器的可访问面可能就发生了变化。"
+        },
+        {
+            "type": "text",
+            "title": "存储定义的使用",
+            "text": "存储定义有两种使用方法。一是作为饰品放在女仆的饰品栏，二是作为配置表放入请求列表的左下角，女仆在执行请求列表任务时便会遵从存储定义的访问权限。$(br)多张存储定义可以同时生效，生效顺序是“饰品栏1”➡···➡“饰品栏9”➡“请求列表的存储定义”。$(br)$(7)例：饰品栏中添加了对箱子1的访问权限，而请求列表中删除了对箱子1的访问权限，女仆在执行请求列表任务时并不能访问箱子1。$()"
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:storage_define_bauble"
         }
     ]
 }

@@ -14,6 +14,7 @@ public class AdvancementTypes {
     public static final String COWORK = "cowork";
     public static final String STORAGE_MANAGER = "storage_manager";
     public static final String LOGISTICS = "logistics_guide";
+    public static final String LEFT_RIGHT_BRAINS_FIGHT = "left_right_brains_fight";
 
     public static void triggerForMaid(EntityMaid maid, String key) {
         LivingEntity player = maid.getOwner();

@@ -7,7 +7,7 @@
     {
       "type": "spotlight",
       "item": "maid_storage_manager:request_list",
-      "text": "Don't want to rummage through the warehouse yourself? Use the request list! Sneak right-click to bind the place where the item was delivered, then fill out the list, then give it to the maid. $(br) The maid will place the found items in this chest along with the request list."
+      "text": "Don't want to rummage through the warehouse yourself? Use the request list! Sneak right-click to bind the place where the item was delivered (Optional), then fill out the list, then give it to the maid. $(br) The maid will place the found items in this chest along with the request list. If no chest bound, maid will give items and the request list to you directly."
     },
     {
       "type": "image",
@@ -19,7 +19,7 @@
     },
     {
       "type": "text",
-      "title": "Configure the Request List",
+      "title": "Configure Request List",
       "text": "Columns one and three in the list are the requested items, and columns two and four are the completion status of the requested items.Items can be dragged in from the jei or backpack to mark them, and the wheel to adjust the number of requests.$(br2) If you want to craft an item, clicking on the plus sign for a jei recipe will automatically fill the request list with the ingredients needed for the recipe.$(br2)See $(l:maid_storage_manager/request_list_settings) ‘Request List Advanced Configuration’ $(/l) for the rest of the configuration items."
     },
     {

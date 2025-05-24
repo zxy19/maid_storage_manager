@@ -1,16 +1,48 @@
 {
   "sortnum": 12,
-  "name": "任务设置",
-  "icon": "minecraft:crafting_table",
+  "name": "Task Setting",
+  "icon": "maid_storage_manager:textures/book/work_setting.png",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
       "type": "text",
-      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.work_setting.pages.0.1.text"
+      "text": "At the top right of the maid GUI, you can set preferences for how that maid works.These settings are not global, but only affect settings for the current maid."
+    },
+    {
+      "type": "image",
+      "images": [
+          "maid_storage_manager:textures/book/work_setting2.png"
+      ],
+      "title": "Task Settings button",
+      "text": ""
     },
     {
       "type": "text",
-      "text": "patchouli.touhou_little_maid.book.entries.maid_storage_manager.work_setting.pages.0.2.text"
+      "title": "Memory Assistant Taking",
+      "text": "A maid in the storage manager profession will have a memory of the items in the warehouse.When a maid needs to request an item from the warehouse, the following three different configurations will allow the maid to behave differently in her search for the item: $(br)1. Memory First: This is the default configuration. \nIf the maid remembers the item in the warehouse, she will prioritise searching where the item is stored in her memory, and will only traverse the remaining chests in the warehouse if she fails to do so. If there is no such item in the warehouse in her memory, she will go through all the chests."
+    },
+    {
+      "type": "text",
+      "text": "2. Memory only: When the maid remembers that there is a needed item in the warehouse, she goes back to look for the item, but doesn't go to the remaining chests to look for it if she doesn't find it.When the maid does not have the item in her memory, the task of requesting the item will simply fail.$(br) 3. Always Scan: The maid does not care about the information about the item in her memory, but always scans the entire warehouse.(baka's practice)"
+    },
+    {
+      "type": "text",
+      "title": "Sorting when placing items",
+      "text": "By default, maids store their items with sorting enabled: items are stored in filtered chests if they are whitelisted, and in chests where they are stored if they are not, to ensure that items are sorted as much as possible.When you enable ‘no sorting’, the maid will store whatever items are nearby, and will only minimally follow the filter rules. This sacrifices the cleanliness of the chest and storage space, but will improve the speed of storing items."
+    },
+    {
+      "type": "text",
+      "title": "Cowork Mode",
+      "text": "Cowork mode is off by default. It allows the maid to work alongside the player as follows: $(li) The maid moves with the player in the workspace unless given a request$(li) The maid accesses storage along with the player and instantly updates her memory (i.e., items placed in the chest are instantly known to the maid)."
+    },
+    {
+      "type": "text",
+      "title": "Item Place Rule",
+      "text": "This option only works if ‘No Sorting When Place Item’ is disabled. The ‘Sorting’ option divides the maid's chests into three types (for example, tomatoes): $(br)1. Chests with filters on them and tomatoes in the filters $(br)2. Chests with no filters on them, but the maid has stored tomatoes in them in the past $(br)3. The rest of the chests have nothing to do with tomatoes $(br)The priority of the chests is 1>2>3 by default. Priority defaults to 1>2>3. $(br)In addition, the maid remembers if a previously stored crate is full or not (although this information may not be correct in real time)."
+    },
+    {
+      "type": "text",
+      "text": "Item storage rules (default is \"Better Sorting\"):  $(li)\"Better Sorting\": The maid strictly follows sorting priority to find storage Chests:  Filter Chests she considers not full -> Filter Chests she considers full (in case there's actual space) -> Not full previously stored Chests -> Full previously stored Chests -> Not full unrelated Chests -> Full unrelated Chests$(li)\"Prioritize Sorting\": Mode balancing efficiency and sorting:  Not full Filter Chests -> Not full previously stored Chests -> Full Filter Chests -> Full previously stored Chests -> Not full unrelated Chests -> Full unrelated Chests$(li)\"Better Efficiency\": Mode prioritizing storing items first: Not full Filter Chests -> Not full previously stored Chests -> Not full unrelated Chests -> Full Filter Chests -> Full previously stored Chests -> Full unrelated Chests  "
     }
   ]
 }

@@ -127,7 +127,7 @@ public class RequestItemUtil {
         llmMessages.add(LLMMessage.userChat(maid, "请查询，然后告诉我上一个任务的完成情况"));
         llmMessages.add(LLMMessage.assistantChat(maid, "查询任务情况", List.of(toolCall)));
         llmMessages.add(LLMMessage.toolChat(maid, sb.toString(), id));
-        LLMCallback callback = new LLMCallback(aiChatManager, "请查询，然后告诉我上一个任务的完成情况");
+        LLMCallback callback = new LLMCallback(aiChatManager, "请查询，然后告诉我上一个任务的完成情况",0);
         LLMConfig config = LLMConfig.normalChat(aiChatManager.getLLMModel(), maid);
         client.chat(llmMessages, config, callback);
     }
