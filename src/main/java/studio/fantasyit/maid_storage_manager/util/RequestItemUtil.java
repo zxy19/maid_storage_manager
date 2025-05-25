@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.setting.papi.PapiReplacer;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
@@ -20,8 +21,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.ai.AiUtils;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -98,36 +101,49 @@ public class RequestItemUtil {
 
 
             if (itemTag.getBoolean(RequestListItem.TAG_ITEMS_DONE)) {
-                sb.append("[结束]");
+                sb.append("[Finished]");
             } else {
-                sb.append("[进行中]");
+                sb.append("[Processing]");
             }
 
             sb.append(itemstack.getHoverName().getString());
             sb.append(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemstack.getItem())));
-            sb.append(" 成功收集了");
+            sb.append(" has collected ");
             sb.append(collected);
-            sb.append("个，计划需要");
-            sb.append(requested == -1 ? "无限" : requested);
-            sb.append("个");
+            sb.append(" and plans to get ");
+            sb.append(requested == -1 ? "any amount" : requested);
+            sb.append(".");
             sb.append("\n");
         }
         FunctionToolCall functionToolCall = new FunctionToolCall("stock", "{}");
         String id = UUID.randomUUID().toString();
         ToolCall toolCall = new ToolCall(id, functionToolCall);
         List<LLMMessage> llmMessages = aiChatManager.getSetting().map(s -> {
-            String setting = s.getSetting(maid, owner.getLanguage());
+            String setting = s.getSetting(maid, AiUtils.transformLanguage(owner.getLanguage()));
             CappedQueue<LLMMessage> history = aiChatManager.getHistory();
             List<LLMMessage> chatList = Lists.newArrayList();
             chatList.add(LLMMessage.systemChat(maid, setting));
             // 倒序遍历，将历史对话加载进去
             history.getDeque().descendingIterator().forEachRemaining(chatList::add);
             return chatList;
-        }).orElse(Lists.newArrayList());
-        llmMessages.add(LLMMessage.userChat(maid, "请查询，然后告诉我上一个任务的完成情况"));
-        llmMessages.add(LLMMessage.assistantChat(maid, "查询任务情况", List.of(toolCall)));
+        }).orElseGet(() -> {
+            if (StringUtils.isNotBlank(aiChatManager.customSetting)) {
+                String setting = PapiReplacer.replace(aiChatManager.customSetting, maid, AiUtils.transformLanguage(owner.getLanguage()));
+                CappedQueue<LLMMessage> history = aiChatManager.getHistory();
+                List<LLMMessage> chatList = Lists.newArrayList();
+                chatList.add(LLMMessage.systemChat(maid, setting));
+                // 倒序遍历，将历史对话加载进去
+                history.getDeque().descendingIterator().forEachRemaining(chatList::add);
+                return chatList;
+            }
+            return Lists.newArrayList();
+        });
+        llmMessages.add(LLMMessage.userChat(maid, "Please query and tell me the situation of last task."));
+        llmMessages.add(LLMMessage.assistantChat(maid, "Query task progress.", List.of(toolCall)));
         llmMessages.add(LLMMessage.toolChat(maid, sb.toString(), id));
-        LLMCallback callback = new LLMCallback(aiChatManager, "请查询，然后告诉我上一个任务的完成情况",0);
+        LLMCallback callback = new LLMCallback(aiChatManager,
+                "Please query and tell me the situation of last task.",
+                0);
         LLMConfig config = LLMConfig.normalChat(aiChatManager.getLLMModel(), maid);
         client.chat(llmMessages, config, callback);
     }

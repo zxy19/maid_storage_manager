@@ -13,7 +13,22 @@
 //import java.util.Stack;
 //
 //public class SimpleSearchGraph extends AbstractBiCraftGraph {
-//    public static MutableInt historyId = new MutableInt();
+//    public MutableInt historyId = new MutableInt();
+//
+//    protected record historyRecord(Node node, int id, int value) {
+//        public historyRecord(Node node, int id, int value) {
+//            this.node = node;
+//            this.id = id;
+//            this.value = value;
+//        }
+//        public static int RECORD_
+//    }
+//
+//    public Stack<MutableInt> history = new Stack<>();
+//
+//    public void pushHistory(Node node, int id, int value) {
+//
+//    }
 //
 //    /**
 //     * 返回最大可以完成的数量

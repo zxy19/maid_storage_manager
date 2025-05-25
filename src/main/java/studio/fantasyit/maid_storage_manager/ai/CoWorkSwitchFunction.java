@@ -46,7 +46,7 @@ public class CoWorkSwitchFunction implements IFunctionCall<CoWorkSwitchFunction.
         StorageManagerConfigData.Data data = entityMaid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault());
         data.coWorkMode(en.enable.equals("true"));
         entityMaid.setAndSyncData(StorageManagerConfigData.KEY, data);
-        return new ToolResponse(en.enable.equals("true") ? "协同工作模式已开启" : "协同工作模式已关闭");
+        return new ToolResponse((en.enable.equals("true") ? "Cowork mode enabled." : "Cowork mode disabled."));
     }
 
     public record EnableData(String enable) {

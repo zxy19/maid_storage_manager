@@ -50,6 +50,8 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        context = null;
+        targetEntity = null;
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (requestProgress.isReturning()) {
             if (requestProgress.hasTarget()) {
