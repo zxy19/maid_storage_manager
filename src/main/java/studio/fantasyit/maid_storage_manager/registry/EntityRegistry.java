@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.registry;
 
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -14,6 +13,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
+import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntityRender;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class EntityRegistry {
@@ -32,6 +32,6 @@ public class EntityRegistry {
 
     @SubscribeEvent
     public static void registerModel(FMLClientSetupEvent event) {
-        EntityRenderers.register(VIRTUAL_DISPLAY_ENTITY.get(), ItemFrameRenderer::new);
+        EntityRenderers.register(VIRTUAL_DISPLAY_ENTITY.get(), VirtualDisplayEntityRender::new);
     }
 }

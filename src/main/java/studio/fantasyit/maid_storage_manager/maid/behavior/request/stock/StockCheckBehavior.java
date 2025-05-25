@@ -76,7 +76,10 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
             context.finish();
         }
 
+        MemoryUtil.getRequestProgress(maid).addVisitedPos(target);
         MemoryUtil.getRequestProgress(maid).setCheckingStock(false);
+        MemoryUtil.getViewedInventory(maid).clearTarget();
+        MemoryUtil.clearTarget(maid);
         RequestListItem.setHasCheckedStock(maid.getMainHandItem(), true);
     }
 }

@@ -13,6 +13,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.CoWorkSwitchFunction;
 import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
@@ -90,6 +91,8 @@ public class MaidExtension implements ILittleMaid {
 
     @Override
     public Collection<? extends Function<EntityMaid, List<DebugTarget>>> getMaidDebugTargets() {
+        if (!Config.aiFunctions)
+            return List.of();
         return List.of(
                 DebugData::commonTargets,
                 DebugData::placeSuppresses

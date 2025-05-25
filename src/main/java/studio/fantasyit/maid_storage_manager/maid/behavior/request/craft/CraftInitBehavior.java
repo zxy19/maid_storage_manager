@@ -7,8 +7,8 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.algo.AvailableCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.BiCraftCountCalculator;
+import studio.fantasyit.maid_storage_manager.craft.algo.TopologyCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
@@ -29,7 +29,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
     }
 
 
-    private AvailableCraftGraph availableCraftGraph;
+    private TopologyCraftGraph availableCraftGraph;
     List<Integer> futureSteps;
     int totalSteps;
     List<Pair<ItemStack, Integer>> notDone;
@@ -103,7 +103,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                 });
 
 
-        availableCraftGraph = new AvailableCraftGraph(
+        availableCraftGraph = new TopologyCraftGraph(
                 items,
                 MemoryUtil.getCrafting(maid).getCraftGuides()
         );
@@ -117,7 +117,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         done = false;
         RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), false)
                 .forEach(itemStack -> {
-                    availableCraftGraph.setCount(itemStack.getA(), 0);
+                    availableCraftGraph.setItemCount(itemStack.getA(), 0);
                 });
         MemoryUtil.getCrafting(maid).clearLayers();
         MemoryUtil.getCrafting(maid).resetVisitedPos();
@@ -168,6 +168,11 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                     "[REQUEST_CRAFT] Failed to find recipe for %s",
                     notDone.get(count).getA().getHoverName().getString()
             );
+            if (biCalc.hasAnySuccessCraftingCalc()) {
+                RequestListItem.setFailAddition(maid.getMainHandItem(),
+                        notDone.get(count).getA(),
+                        "tooltip.maid_storage_manager.request_list.fail_backpack_full");
+            }
         } else {
             results.forEach(craftLayer -> {
                 MemoryUtil.getCrafting(maid).addLayer(craftLayer);

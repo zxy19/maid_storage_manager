@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BiCraftCountCalculator {
-    private final AvailableCraftGraph availableCraftGraph;
+    private final ICraftGraphLike availableCraftGraph;
     private final int availableSlots;
     private List<Pair<ItemStack, Integer>> fails = new ArrayList<>();
     private List<Pair<ItemStack, Integer>> fullGroupFails = List.of();
@@ -22,7 +23,9 @@ public class BiCraftCountCalculator {
     boolean circularTree = false;
     List<CraftLayer> results = new ArrayList<>();
 
-    public BiCraftCountCalculator(AvailableCraftGraph availableCraftGraph, ItemStack item, int requireCount, int availableSlots) {
+    boolean hasAnySuccessCraftingCalc = false;
+
+    public BiCraftCountCalculator(ICraftGraphLike availableCraftGraph, ItemStack item, int requireCount, int availableSlots) {
         this.availableCraftGraph = availableCraftGraph;
         currentRequire = requireCount;
         maxRequire = requireCount;
@@ -38,6 +41,7 @@ public class BiCraftCountCalculator {
         List<CraftLayer> currentResults = availableCraftGraph.getResults();
         CraftResultContext context = null;
         if (currentResults != null && !currentResults.isEmpty()) {
+            hasAnySuccessCraftingCalc = true;
             context = new CraftResultContext(currentResults);
             if (context.getSlotConsume() > availableSlots) {
                 currentResults = null;
@@ -55,11 +59,11 @@ public class BiCraftCountCalculator {
             currentRequire = maxRequire;
             if (circularTree) currentRequire = 1;
             //背包剩余的加入合成树
-            context.forEachRemaining(availableCraftGraph::addCount);
+            context.forEachRemaining(availableCraftGraph::addItemCount);
             //当前合成结束后，不属于产物的物品也应该加入合成树
             currentResults.get(currentResults.size() - 1).getItems().stream()
                     .filter(itemStack -> !ItemStackUtil.isSame(itemStack, this.item, false))
-                    .forEach(t -> availableCraftGraph.addCount(t, t.getCount()));
+                    .forEach(t -> availableCraftGraph.addItemCount(t, t.getCount()));
             if (maxRequire <= 0) return false;
             availableCraftGraph.startContext(this.item, currentRequire);
             fullGroupFails = List.of();
@@ -84,6 +88,10 @@ public class BiCraftCountCalculator {
 
     public List<Pair<ItemStack, Integer>> getFails() {
         return fails;
+    }
+
+    public boolean hasAnySuccessCraftingCalc() {
+        return hasAnySuccessCraftingCalc;
     }
 
     public int getWorstRestSteps() {

@@ -64,14 +64,18 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
         if (Minecraft.getInstance().player != null)
             listItem = Minecraft.getInstance().player.getItemInHand(InteractionHand.MAIN_HAND);
         List<ItemStack> itemStackStream = null;
+        Component additionFailMessage = null;
         if (listItem != null) {
-            itemStackStream = listItem.getOrCreateTag()
+            CompoundTag tag = listItem.getOrCreateTag();
+            itemStackStream = tag
                     .getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND)
                     .getCompound(slot)
                     .getList(RequestListItem.TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND)
                     .stream()
                     .map(t -> ItemStack.of((CompoundTag) t))
                     .toList();
+            if (tag.contains(RequestListItem.TAG_ITEMS_FAIL_ADDITION))
+                additionFailMessage = Component.translatable(tag.getString(RequestListItem.TAG_ITEMS_FAIL_ADDITION));
         }
 
         List<Component> tooltip = this.getTooltipFromContainerItem(filteredItems.getItem(slot));
@@ -93,6 +97,8 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                 tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.missing_items_item", itemStack.getHoverName(), itemStack.getCount()));
             }
         }
+        if (additionFailMessage != null)
+            tooltip.add(additionFailMessage.copy().withStyle(ChatFormatting.RED));
 
         tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.collected", collected, String.valueOf(requested == -1 ? "*" : requested)));
 

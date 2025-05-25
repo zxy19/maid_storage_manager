@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.find;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -36,6 +37,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
 
     ItemStack checkItem = null;
     Target chestPos = null;
+    Target returnPos = null;
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
@@ -85,6 +87,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
         boolean matchTag = RequestListItem.matchNbt(maid.getMainHandItem());
         Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
         for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
             if (MemoryUtil.getRequestProgress(maid).isVisitedPos(blockPos.getKey())) continue;
             Optional<ViewedInventoryMemory.ItemCount> targetItem = blockPos
@@ -102,18 +105,21 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
             if (storage == null) continue;
             boolean craftGuideProvider = MaidStorage.getInstance().isCraftGuideProvider(storage, blockPos.getValue());
-            if (targetItem.isEmpty() && !craftGuideProvider) {
-                continue;
-            }
-            @Nullable BlockPos targetPos = MoveUtil.selectPosForTarget(level, maid, blockPos.getKey().getPos());
-            if (targetPos != null) {
-                if (!MoveUtil.isValidTarget(level, maid, storage, false)) continue;
-                chestPos = storage;
-                MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
-                DebugData.sendDebug("[REQUEST_FIND]Priority By Filter %s", storage);
-                targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
-                return true;
-            }
+            if (targetItem.isEmpty() && !craftGuideProvider) continue;
+
+            if (!MoveUtil.isValidTarget(level, maid, storage, false)) continue;
+
+            List<BlockPos> possiblePos = MoveUtil.getAllAvailablePosForTarget(level, maid, blockPos.getKey().getPos(), pathFinding);
+            if (possiblePos.isEmpty()) continue;
+
+            @Nullable BlockPos targetPos = MoveUtil.getNearestFromTargetList(level, maid, possiblePos);
+            if (targetPos == null) continue;
+
+            chestPos = storage;
+            MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
+            DebugData.sendDebug("[REQUEST_FIND]Priority By Filter %s", storage);
+            targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
+            return true;
         }
         return false;
     }

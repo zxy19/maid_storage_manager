@@ -49,6 +49,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_ITEMS_REQUESTED = "requested";
     public static final String TAG_ITEMS_COLLECTED = "collected";
     public static final String TAG_ITEMS_MISSING = "missing";
+    public static final String TAG_ITEMS_FAIL_ADDITION = "fail";
     public static final String TAG_MATCH_TAG = "match_tag";
     public static final String TAG_UUID = "uuid";
     public static final String TAG_IGNORE_TASK = "ignore_task";
@@ -112,6 +113,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tmp.putInt(RequestListItem.TAG_ITEMS_DONE, 0);
             tmp.putInt(RequestListItem.TAG_ITEMS_STORED, 0);
             tmp.remove(RequestListItem.TAG_ITEMS_MISSING);
+            tmp.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
             list.set(i, tmp);
         }
         tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
@@ -484,7 +486,20 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tmp.putInt(TAG_ITEMS_COLLECTED, stored + Math.min(requested - stored, count));
         }
     }
-
+    public static void setFailAddition(ItemStack stack,ItemStack item, String failAddition){
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!stack.hasTag()) return;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag tmp = list.getCompound(i);
+            if (ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), item)) {
+                tag.putString(TAG_ITEMS_FAIL_ADDITION, failAddition);
+                list.set(i, tmp);
+            }
+        }
+        tag.put(TAG_ITEMS, list);
+    }
     public static void markAllDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
         if (!stack.hasTag()) return;

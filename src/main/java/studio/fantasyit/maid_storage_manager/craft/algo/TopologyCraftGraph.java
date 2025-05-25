@@ -2,25 +2,15 @@ package studio.fantasyit.maid_storage_manager.craft.algo;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 
 import java.util.*;
 import java.util.function.Consumer;
 
-public class AvailableCraftGraph {
-    public static class CraftResultNode {
-        public int index;
-        public int count;
-        public boolean related;
-
-        public CraftResultNode(int index, int count, boolean related) {
-            this.index = index;
-            this.count = count;
-            this.related = related;
-        }
-    }
-
+public class TopologyCraftGraph implements ICraftGraphLike {
     private int taskPerTick = 32;
     List<ItemStack> items;
     List<Integer> counts;
@@ -60,8 +50,9 @@ public class AvailableCraftGraph {
         }
         return -1;
     }
-    public AvailableCraftGraph(List<Pair<ItemStack, Integer>> items,
-                               List<CraftGuideData> craftGuideData) {
+
+    public TopologyCraftGraph(List<Pair<ItemStack, Integer>> items,
+                              List<CraftGuideData> craftGuideData) {
         this.items = new ArrayList<>();
         this.counts = new ArrayList<>();
         this.craftGuideData = new ArrayList<>();
@@ -121,14 +112,14 @@ public class AvailableCraftGraph {
         this.taskPerTick = taskPerTick;
     }
 
-    public void setCount(ItemStack itemStack, int count) {
+    public void setItemCount(ItemStack itemStack, int count) {
         int idx = getItemIndex(itemStack);
         if (idx == -1)
             idx = addItemNode(itemStack);
         counts.set(item(idx), count);
     }
 
-    public void addCount(ItemStack itemStack, int count) {
+    public void addItemCount(ItemStack itemStack, int count) {
         int idx = getItemIndex(itemStack);
         if (idx == -1)
             idx = addItemNode(itemStack);

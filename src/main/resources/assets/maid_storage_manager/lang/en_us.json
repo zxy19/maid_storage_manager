@@ -183,6 +183,7 @@
   "tooltip.maid_storage_manager.request_list.storage": "Storage Bind[%s %s %s]",
   "tooltip.maid_storage_manager.request_list.time": "Create at day %s",
   "tooltip.maid_storage_manager.request_list.time.str": "%s (%s:%s)",
+  "tooltip.maid_storage_manager.request_list.fail_backpack_full": "Backpack Full",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
   "tooltip.maid_storage_manager.logistics_guide.desc": "Your maid will follow the guide and transfer item from input to output.",
