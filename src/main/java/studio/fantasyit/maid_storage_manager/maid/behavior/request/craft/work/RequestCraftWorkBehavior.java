@@ -63,6 +63,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         layer = MemoryUtil.getCrafting(maid).getCurrentLayer();
         craftGuideStepData = layer.getStepData();
+        MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
         ChatTexts.progress(maid,
                 Component.translatable(
                         ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
@@ -143,6 +144,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
                 MemoryUtil.getCrafting(maid).nextLayer();
                 MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
+                MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
             }
         }
     }

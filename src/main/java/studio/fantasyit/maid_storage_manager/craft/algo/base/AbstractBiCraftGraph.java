@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.base;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -11,21 +12,24 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
-    protected Node getNode(int a) {
-        return nodes.get(a);
-    }
+
 
     public static class Node {
         public int id;
         public boolean related;
         public final List<Pair<Integer, Integer>> edges;
+        public final List<Pair<Integer, Integer>> revEdges;
+
         public Node(int id, boolean related) {
             this.id = id;
             this.related = related;
             this.edges = new ArrayList<>();
+            this.revEdges = new ArrayList<>();
         }
+
         public void addEdge(Node to, int weight) {
             this.edges.add(new Pair<>(to.id, weight));
+            to.revEdges.add(new Pair<>(this.id, weight));
         }
 
         public void forEachEdge(BiConsumer<Integer, Integer> visitor) {
@@ -41,15 +45,28 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         public int required;
         public int crafted;
         public int count;
+        public boolean isLoopedIngredient;
+        public int loopInputIngredientCount;
+        public boolean hasKeepIngredient;
+        public int maxLack;
 
         public ItemNode(int id, boolean related, ItemStack itemStack) {
             super(id, related);
             this.itemStack = itemStack;
             this.count = 0;
+            reinit();
+        }
+
+        public void reinit(){
             this.crafted = 0;
             this.required = 0;
+            this.isLoopedIngredient = false;
+            this.loopInputIngredientCount = 0;
+            this.hasKeepIngredient = false;
             this.minStepRequire = Integer.MAX_VALUE;
+            this.maxLack = 0;
         }
+
         public void addCount(int count) {
             this.count += count;
         }
@@ -75,6 +92,21 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     }
 
     List<Node> nodes;
+
+    public Node getNode(int a) {
+        return nodes.get(a);
+    }
+
+    public AbstractBiCraftGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
+        this.nodes = new ArrayList<>();
+        for (Pair<ItemStack, Integer> item : items) {
+            ItemNode itemNode = addItemNode(item.getA());
+            itemNode.addCount(item.getB());
+        }
+        for (CraftGuideData craftGuide : craftGuides) {
+            addCraft(craftGuide);
+        }
+    }
 
     public @NotNull ItemNode getItemNodeOrCreate(ItemStack itemStack) {
         ItemNode tmp = getItemNode(itemStack);
@@ -115,6 +147,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         nodes.add(craftNode);
     }
 
+    LoopSolver loopSolver;
     int buildGraphIndex;
 
     public void rebuildGraph() {
@@ -141,6 +174,14 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     }
 
     @Override
+    public boolean processQueues() {
+        if (!loopSolver.tick()) return false;
+        return process();
+    }
+
+    public abstract boolean process();
+
+    @Override
     public void restoreCurrentAndStartContext(ItemStack item, int count) {
         restoreCurrent();
         startContext(item, count);
@@ -162,18 +203,31 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     @Override
     public void startContext(ItemStack item, int count) {
-        buildGraphIndex = 0;
         for (Node node : nodes) {
             if (node instanceof ItemNode itemNode) {
                 itemNode.count -= itemNode.required;
                 itemNode.count += itemNode.crafted;
                 if (itemNode.count < 0)
                     itemNode.count = 0;
-                itemNode.minStepRequire = Integer.MAX_VALUE;
-                itemNode.required = 0;
+                itemNode.reinit();
             } else if (node instanceof CraftNode craftNode) {
                 craftNode.scheduled = 0;
             }
         }
+        loopSolver = new LoopSolver(this, getItemNodeOrCreate(item).id);
+    }
+
+    @Override
+    public ICraftGraphLike createGraphWithItem(CraftAlgorithmInit<?> init) {
+        List<Pair<ItemStack, Integer>> items = new ArrayList<>();
+        List<CraftGuideData> craftGuides = new ArrayList<>();
+        for (Node node : this.nodes) {
+            if (node instanceof ItemNode itemNode) {
+                items.add(new Pair<>(itemNode.itemStack, itemNode.getCurrentRemain()));
+            } else if (node instanceof CraftNode craftNode) {
+                craftGuides.add(craftNode.craftGuideData);
+            }
+        }
+        return init.init(items, craftGuides);
     }
 }

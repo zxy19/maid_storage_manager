@@ -28,6 +28,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     BehaviorBreath breath = new BehaviorBreath();
     IStorageContext context;
     private Target target;
+    boolean changed = false;
 
     public RequestCraftGatherBehavior() {
         super(Map.of());
@@ -62,9 +63,11 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         target = MemoryUtil.getCrafting(maid).getTarget();
         IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(target.getType()));
 
+        changed = false;
         context = storage.onStartCollect(level, maid, target);
         if (context != null)
             context.start(maid, level, target);
+        MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
     }
 
 
@@ -77,7 +80,8 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
             if (maxStore > 0) {
                 ItemStack copy = itemStack.copy();
                 ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
-                if (toTake.getCount() > 0)
+                if (toTake.getCount() > 0) {
+                    changed = true;
                     ChatTexts.send(maid,
                             Component.translatable(
                                     ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
@@ -85,6 +89,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                                     String.valueOf(toTake.getCount())
                             )
                     );
+                }
                 copy.shrink(toTake.getCount());
                 MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
                 InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
@@ -108,7 +113,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         super.stop(level, maid, p_22550_);
         if (context != null) {
             context.finish();
-            if (context.isDone()) {
+            if (context.isDone() && !changed) {
                 Target target = MemoryUtil.getCrafting(maid).getTarget();
                 MemoryUtil.getCrafting(maid).addVisitedPos(target);
                 InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
@@ -116,6 +121,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                 });
             }
         }
+        MemoryUtil.getCrafting(maid).clearCheckItem();
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
 

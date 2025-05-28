@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -32,6 +33,7 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
         RequestListItem.markAllDone(maid.getMainHandItem());
         MemoryUtil.getCrafting(maid).clearCraftGuides();
         MemoryUtil.getCrafting(maid).clearLayers();
+        ChatTexts.removeSecondary(maid);
         MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
         MemoryUtil.getRequestProgress(maid).setReturn(true);
     }

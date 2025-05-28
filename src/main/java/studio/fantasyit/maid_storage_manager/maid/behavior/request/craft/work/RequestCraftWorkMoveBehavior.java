@@ -79,6 +79,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             }
             MemoryUtil.getCrafting(maid).lastSuccess();
             MemoryUtil.getCrafting(maid).nextLayer();
+            MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
             MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
             //立刻安排返回存储
             MemoryUtil.getRequestProgress(maid).setReturn();
@@ -93,6 +94,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             layer.nextStep();
             if (layer.isDone()) {
                 MemoryUtil.getCrafting(maid).nextLayer();
+                MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
                 MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
             }
             //遇到这种情况需要重新选择

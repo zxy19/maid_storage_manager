@@ -1,0 +1,140 @@
+package studio.fantasyit.maid_storage_manager.craft.algo.base;
+
+import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.mutable.MutableInt;
+import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.LevelBasedLogger;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+
+import java.util.*;
+import java.util.function.Consumer;
+
+abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
+
+    public MutableInt historyId = new MutableInt();
+    protected Deque<CraftResultNode> results = new LinkedList<>();
+    protected LevelBasedLogger logger = new LevelBasedLogger();
+    protected ItemStack targetItem;
+    protected int targetCount;
+    protected int targetAvailable = -1;
+
+    public HistoryAndResultGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
+        super(items, craftGuides);
+    }
+
+
+    protected record HistoryRecord(int historyStackId, Node node, int id, int value) {
+        public final static int RECORD_CRAFTED = 0;
+        public final static int RECORD_REQUIRED = 1;
+        public final static int RECORD_SCHEDULED = 2;
+    }
+
+    public Stack<HistoryAndResultGraph.HistoryRecord> history = new Stack<>();
+
+    public void pushHistory(Node node, int id, int value) {
+        this.history.push(new HistoryAndResultGraph.HistoryRecord(historyId.addAndGet(1), node, id, value));
+        switch (id) {
+            case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {
+                ((ItemNode) node).crafted += value;
+            }
+            case HistoryAndResultGraph.HistoryRecord.RECORD_REQUIRED -> {
+                ((ItemNode) node).required += value;
+            }
+            case HistoryAndResultGraph.HistoryRecord.RECORD_SCHEDULED -> {
+                ((CraftNode) node).scheduled += value;
+            }
+        }
+    }
+
+    public void popHistoryAt(int index) {
+        while (!this.history.isEmpty() && this.history.peek().historyStackId > index) {
+            HistoryAndResultGraph.HistoryRecord pop = this.history.pop();
+            switch (pop.id) {
+                case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {
+                    ((ItemNode) pop.node).crafted -= pop.value;
+                }
+                case HistoryAndResultGraph.HistoryRecord.RECORD_REQUIRED -> {
+                    ((ItemNode) pop.node).required -= pop.value;
+                }
+                case HistoryAndResultGraph.HistoryRecord.RECORD_SCHEDULED -> {
+                    ((CraftNode) pop.node).scheduled -= pop.value;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void startContext(ItemStack item, int count) {
+        super.startContext(item, count);
+        history.clear();
+        historyId.setValue(0);
+        targetItem = item;
+        targetCount = count;
+        results.clear();
+        targetAvailable = -1;
+    }
+
+    @Override
+    public List<CraftLayer> getResults() {
+        if (this.results.isEmpty()) return List.of();
+        List<CraftLayer> results = new LinkedList<>();
+        CraftResultNode lastOne = this.results.peekLast();
+        while (!this.results.isEmpty()) {
+            CraftResultNode resultNode = this.results.removeFirst();
+            CraftNode node = (CraftNode) getNode(resultNode.index);
+
+            List<ItemStack> itemStacks = new ArrayList<>();
+            Consumer<ItemStack> addWithCountMultiple = (itemStack) -> {
+                if (itemStack.isEmpty()) return;
+                int count = resultNode.count * itemStack.getCount();
+                for (ItemStack existing : itemStacks) {
+                    if (ItemStack.isSameItem(existing, itemStack)) {
+                        existing.grow(count);
+                        return;
+                    }
+                }
+                itemStacks.add(itemStack.copyWithCount(count));
+            };
+            node.craftGuideData.getAllInputItemsWithOptional().forEach(addWithCountMultiple);
+            CraftLayer craftLayer = new CraftLayer(
+                    Optional.of(node.craftGuideData),
+                    itemStacks,
+                    resultNode.count
+            );
+            results.add(craftLayer);
+        }
+        CraftNode lastNode = (CraftNode) getNode(lastOne.index);
+        ArrayList<ItemStack> list = new ArrayList<>();
+        lastNode.craftGuideData.getAllOutputItems()
+                .stream()
+                .map(itemStack -> itemStack.copyWithCount(lastOne.count * itemStack.getCount()))
+                .forEach(list::add);
+        results.add(new CraftLayer(Optional.empty(),
+                list,
+                lastOne.count));
+        return results;
+    }
+
+    @Override
+    public List<Pair<ItemStack, Integer>> getFails() {
+        return nodes
+                .stream()
+                .filter(node -> node instanceof ItemNode)
+                .map(node -> (ItemNode) node)
+                .filter(node -> node.maxLack > 0)
+                .map(node -> new Pair<>(node.itemStack, node.maxLack))
+                .toList();
+    }
+
+    @Override
+    public void setSpeed(int i) {
+    }
+
+    @Override
+    public Optional<Integer> getMaxAvailable() {
+        if (targetAvailable == -1)
+            return super.getMaxAvailable();
+        return Optional.of(targetAvailable);
+    }
+}

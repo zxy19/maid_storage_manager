@@ -177,6 +177,7 @@ public class CraftMemory extends AbstractTargetMemory {
         if (this.hasCurrent()) {
             CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
             if (layer.hasCollectedAll()) {
+                showCraftingProgress(maid);
                 ChatTexts.send(maid,
                         Component.translatable(
                                 ChatTexts.CHAT_CRAFT_WORK,
@@ -230,6 +231,7 @@ public class CraftMemory extends AbstractTargetMemory {
         this.setFinishCurrent(true);
         this.setLastSuccess(false);
         this.startWorking(false);
+        showCraftingProgress(maid);
     }
 
     public boolean isFinishCurrent() {
@@ -303,5 +305,18 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void resetPathFindingFailCount() {
         this.pathFindingFailCount = 0;
+    }
+
+    public void showCraftingProgress(EntityMaid maid) {
+        ChatTexts.showSecondary(maid,
+                Component.translatable(
+                        ChatTexts.CHAT_SECONDARY_CRAFTING,
+                        this.currentLayer,
+                        this.layers.size(),
+                        hasStartWorking() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_WORK) :
+                                Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_GATHER)
+                ),
+                ((double) this.currentLayer * 2 - (hasStartWorking() ? 0 : 1)) / ((double) this.layers.size() * 2)
+        );
     }
 }

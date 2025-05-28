@@ -155,6 +155,4 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     public List<FilterSlot> getSlots() {
         return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();
     }
-
-
 }

@@ -5,6 +5,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
+import java.util.Arrays;
+import java.util.List;
+
 // An example config class. This is not required, but it's a good idea to have one to keep your config organized.
 // Demonstrates how to use Forge's config APIs
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -14,6 +17,12 @@ public class Config {
         LARGE,
         FRAME,
         CORNER
+    }
+
+    public enum CraftSolver {
+        TOPOLOGY,
+        DFS,
+        DFS_QUEUED
     }
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
@@ -84,7 +93,12 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue GENERATE_VIRTUAL_ITEM_FRAME = BUILDER
             .comment("Generate virtual item frame entity when shift right-click with certain items.")
             .define("utility.generate_virtual_item_frame", true);
-
+    private static final ForgeConfigSpec.ConfigValue<List<String>> CRAFTING_SOLVER = BUILDER
+            .comment("Crafting solver to use. [DFS/DFS_QUEUED/TOPOLOGY]")
+            .define("crafting.solver",
+                    List.of(CraftSolver.DFS_QUEUED.name()),
+                    o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
+            );
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -106,6 +120,7 @@ public class Config {
     public static boolean realWorkSim;
     public static boolean aiFunctions;
     public static boolean generateVirtualItemFrame;
+    public static List<CraftSolver> craftingSolver;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -127,5 +142,6 @@ public class Config {
         realWorkSim = REAL_WORK_SIM.get();
         aiFunctions = AI_FUNCTIONS.get();
         generateVirtualItemFrame = GENERATE_VIRTUAL_ITEM_FRAME.get();
+        craftingSolver = CRAFTING_SOLVER.get().stream().map(CraftSolver::valueOf).toList();
     }
 }

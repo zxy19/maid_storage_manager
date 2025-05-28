@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.algo;
+package studio.fantasyit.maid_storage_manager.craft.algo.graph;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
@@ -286,7 +286,7 @@ public class TopologyCraftGraph implements ICraftGraphLike {
 
     public List<CraftLayer> getResults() {
         //影响结果的节点中，如果任何一个节点的可用数量小于实际，则不返回结果
-        if (checkNodes.stream().anyMatch(index -> isItem(index) && (counts.get(index) < totalRequire.get(index)))) {
+        if (checkNodes.stream().anyMatch(index -> !isItem(index) || (counts.get(index) < totalRequire.get(index)))) {
             return null;
         }
         List<CraftLayer> res = new ArrayList<>();
@@ -339,4 +339,27 @@ public class TopologyCraftGraph implements ICraftGraphLike {
                 .toList();
     }
 
+    @Override
+    public boolean shouldStartUsingSingleItemProcess() {
+        return results
+                .stream()
+                .filter(l -> !isItem(l.index))
+                .map(l -> craftGuideData.get(l.index))
+                .anyMatch(cgd -> cgd != null && cgd.isCircular());
+    }
+
+    @Override
+    public ICraftGraphLike createGraphWithItem(CraftAlgorithmInit<?> init) {
+        List<Pair<ItemStack, Integer>> items = new ArrayList<>();
+        for (int i = 0; i < this.items.size(); i++) {
+            int c = counts.get(item(i)) - totalRequire.get(item(i));
+            items.add(new Pair<>(this.items.get(i), c));
+        }
+        return init.init(items, craftGuideData);
+    }
+
+    @Override
+    public void addRemainItem(ItemStack item, int count) {
+        this.addItemCount(item, count);
+    }
 }

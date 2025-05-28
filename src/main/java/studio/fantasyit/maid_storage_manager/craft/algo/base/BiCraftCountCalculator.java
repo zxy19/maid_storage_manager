@@ -1,9 +1,7 @@
-package studio.fantasyit.maid_storage_manager.craft.algo;
+package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -11,6 +9,7 @@ import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class BiCraftCountCalculator {
     private final ICraftGraphLike availableCraftGraph;
@@ -20,7 +19,7 @@ public class BiCraftCountCalculator {
     private final ItemStack item;
     int currentRequire = 0;
     int maxRequire = 0;
-    boolean circularTree = false;
+    boolean singleItemProcess = false;
     List<CraftLayer> results = new ArrayList<>();
 
     boolean hasAnySuccessCraftingCalc = false;
@@ -31,7 +30,7 @@ public class BiCraftCountCalculator {
         maxRequire = requireCount;
         this.availableSlots = availableSlots;
         this.item = item;
-        availableCraftGraph.setSpeed(32);
+        availableCraftGraph.setSpeed(128);
         availableCraftGraph.startContext(this.item, requireCount);
     }
 
@@ -48,35 +47,48 @@ public class BiCraftCountCalculator {
             }
         }
         if (currentResults != null && !currentResults.isEmpty()) {
-            if (!circularTree && currentRequire != 1 && currentResults.stream().anyMatch(layer -> layer.getCraftData().map(CraftGuideData::isCircular).orElse(false))) {
-                circularTree = true;
+            if (!singleItemProcess && currentRequire != 1 && availableCraftGraph.shouldStartUsingSingleItemProcess()) {
+                singleItemProcess = true;
                 currentRequire = 1;
+                availableCraftGraph.restoreCurrentAndStartContext(this.item, currentRequire);
                 return true;
             }
+
             //当前数量可以进行合成。那么先记录结果层。
             results.addAll(currentResults);
             maxRequire -= currentRequire;
             currentRequire = maxRequire;
-            if (circularTree) currentRequire = 1;
+            if (singleItemProcess) currentRequire = 1;
+
+            //余产物处理。此处不直接调用addItem.部分算法不需要进行此操作
             //背包剩余的加入合成树
-            context.forEachRemaining(availableCraftGraph::addItemCount);
+            context.forEachRemaining(availableCraftGraph::addRemainItem);
             //当前合成结束后，不属于产物的物品也应该加入合成树
             currentResults.get(currentResults.size() - 1).getItems().stream()
                     .filter(itemStack -> !ItemStackUtil.isSame(itemStack, this.item, false))
-                    .forEach(t -> availableCraftGraph.addItemCount(t, t.getCount()));
+                    .forEach(t -> availableCraftGraph.addRemainItem(t, t.getCount()));
+
             if (maxRequire <= 0) return false;
             availableCraftGraph.startContext(this.item, currentRequire);
             fullGroupFails = List.of();
         } else {
             if (maxRequire == currentRequire) fullGroupFails = availableCraftGraph.getFails();
-            if (currentRequire == 1) {
+            //当前数量不能完成合成
+            currentRequire /= 2;
+            //算法提供了最大可行计数
+            Optional<Integer> maxAvailable = availableCraftGraph.getMaxAvailable();
+            if (maxAvailable.isPresent()) {
+                while (maxAvailable.get() < currentRequire)
+                    currentRequire /= 2;
+            }
+
+            if (currentRequire == 0) {
                 fails.addAll(fullGroupFails);
                 availableCraftGraph.restoreCurrent();
                 return false;
             }
-            //当前数量不能完成合成
-            currentRequire = (int) (currentRequire / 2);
-            availableCraftGraph.setSpeed(128);
+
+            availableCraftGraph.setSpeed(64);
             availableCraftGraph.restoreCurrentAndStartContext(this.item, currentRequire);
         }
         return true;
@@ -96,5 +108,9 @@ public class BiCraftCountCalculator {
 
     public int getWorstRestSteps() {
         return MathUtil.biMaxStepCalc(maxRequire) - (int) MathUtil.log2((double) maxRequire / currentRequire);
+    }
+
+    public int getNotCraftedCount() {
+        return maxRequire;
     }
 }

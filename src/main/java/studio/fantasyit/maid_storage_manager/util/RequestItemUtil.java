@@ -14,6 +14,7 @@ import com.github.tartaricacid.touhoulittlemaid.util.CappedQueue;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -26,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.AiUtils;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -175,5 +177,15 @@ public class RequestItemUtil {
         tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
         itemStack.setTag(tag);
         return itemStack;
+    }
+
+    public static void markVisForCurrentRequestList(ServerLevel level, EntityMaid maid, AbstractTargetMemory target) {
+        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        if (storageBlock != null) {
+            target.addVisitedPos(storageBlock);
+            InvUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
+                target.addVisitedPos(storageBlock.sameType(pos, null));
+            });
+        }
     }
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatTexts {
     protected static final ConcurrentHashMap<UUID, Long> chatTexts = new ConcurrentHashMap<>();
+    protected static final ConcurrentHashMap<UUID, Long> chatTextsSecondary = new ConcurrentHashMap<>();
 
     public static void send(EntityMaid maid, String key) {
         send(maid, Component.translatable(key));
@@ -22,7 +23,7 @@ public class ChatTexts {
             chatTexts.remove(maid.getUUID());
         }
         ProgressChatBubbleData textChatBubbleData = ProgressChatBubbleData.create(70,
-                ProgressChatBubbleData.TYPE_1,
+                ProgressChatBubbleData.TYPE_2,
                 999,
                 component,
                 0xffffffff,
@@ -39,9 +40,36 @@ public class ChatTexts {
                 maid.getChatBubbleManager().removeChatBubble(chatTexts.get(maid.getUUID()));
             chatTexts.remove(maid.getUUID());
         }
-        TextChatBubbleData textChatBubbleData = TextChatBubbleData.create(70, component, TextChatBubbleData.TYPE_1, 999);
+        TextChatBubbleData textChatBubbleData = TextChatBubbleData.create(70, component, TextChatBubbleData.TYPE_2, 999);
         long l = maid.getChatBubbleManager().addChatBubble(textChatBubbleData);
         chatTexts.put(maid.getUUID(), l);
+    }
+
+    public static void showSecondary(EntityMaid maid, Component component, double progress) {
+        if (chatTextsSecondary.containsKey(maid.getUUID())) {
+            if (maid.getChatBubbleManager().getChatBubble(chatTextsSecondary.get(maid.getUUID())) != null)
+                maid.getChatBubbleManager().removeChatBubble(chatTextsSecondary.get(maid.getUUID()));
+            chatTextsSecondary.remove(maid.getUUID());
+        }
+
+        ProgressChatBubbleData textChatBubbleData = ProgressChatBubbleData.create(400,
+                ProgressChatBubbleData.TYPE_2,
+                10,
+                component,
+                0xffffffff,
+                0xff1e88e5,
+                progress,
+                true);
+        long l = maid.getChatBubbleManager().addChatBubble(textChatBubbleData);
+        chatTextsSecondary.put(maid.getUUID(), l);
+    }
+
+    public static void removeSecondary(EntityMaid maid) {
+        if (chatTextsSecondary.containsKey(maid.getUUID())) {
+            if (maid.getChatBubbleManager().getChatBubble(chatTextsSecondary.get(maid.getUUID())) != null)
+                maid.getChatBubbleManager().removeChatBubble(chatTextsSecondary.get(maid.getUUID()));
+            chatTextsSecondary.remove(maid.getUUID());
+        }
     }
 
     public static final String CHAT_CHEST_FULL = "chat_bubbles.maid_storage_manager.chest_full";
@@ -63,4 +91,10 @@ public class ChatTexts {
     public static final String CHAT_COWORK_DISABLE = "chat_bubbles.maid_storage_manager.cowork_disable";
     public static final String CHAT_MOVING = "chat_bubbles.maid_storage_manager.moving";
     public static final String CHAT_MOVING_TAKEN = "chat_bubbles.maid_storage_manager.moving_taken";
+
+    public static final String CHAT_SECONDARY_CRAFTING = "chat_bubbles.maid_storage_manager.secondary_crafting";
+
+    public static final String CHAT_SECONDARY_CRAFTING_GATHER = "chat_bubbles.maid_storage_manager.secondary_crafting.gather";
+
+    public static final String CHAT_SECONDARY_CRAFTING_WORK = "chat_bubbles.maid_storage_manager.secondary_crafting.work";
 }

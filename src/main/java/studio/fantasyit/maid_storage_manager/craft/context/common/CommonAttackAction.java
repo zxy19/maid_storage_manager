@@ -43,6 +43,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
     FakePlayer fakePlayer;
     boolean startDestroyBlock = false;
     float progress = 0.0f;
+    int tickLast = 0;
     int storedSlot = -1;
 
     public CommonAttackAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
@@ -102,7 +103,9 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         BlockPos target = craftGuideStepData.getStorage().pos;
         BlockState targetBs = maid.level().getBlockState(target);
         if (fakePlayer.hasCorrectToolForDrops(targetBs)) {
-            progress += targetBs.getDestroyProgress(fakePlayer, maid.level(), target);
+            int tickBetween = maid.tickCount - this.tickLast;
+            progress += targetBs.getDestroyProgress(fakePlayer, maid.level(), target) * tickBetween;
+            this.tickLast = maid.tickCount;
         } else {
             return Result.FAIL;
         }
@@ -179,6 +182,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         level.getBlockState(target).attack(level, target, fakePlayer);
         this.startDestroyBlock = true;
         this.progress = 0.0f;
+        this.tickLast = maid.tickCount;
     }
 
     @Override
