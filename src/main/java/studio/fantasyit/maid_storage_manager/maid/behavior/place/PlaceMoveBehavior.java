@@ -175,7 +175,13 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (targetFilter != null) {
             placingInv.setArrangeItems(targetFilterList);
             chestPos = targetFilter;
-            MemoryUtil.setTarget(maid, MoveUtil.getNearestFromTargetList(level, maid, targetFilterPos), (float) Config.placeSpeed);
+            BlockPos nearestFromTargetList = MoveUtil.getNearestFromTargetList(level, maid, targetFilterPos);
+            if(nearestFromTargetList == null){
+                //那我要问了，为什么两种巡路结果不一样？
+                MemoryUtil.getPlacingInv(maid).addVisitedPos(targetFilter);
+                return priorityTarget(level, maid);
+            }
+            MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
             DebugData.sendDebug("[PLACE]Priority By Filter %s", targetFilter.toString());
             suppressType = PlacingInventoryMemory.Suppressed.Type.FILTER;
             return true;
@@ -190,7 +196,12 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (targetContent != null) {
             placingInv.setArrangeItems(targetContentList);
             chestPos = targetContent;
-            MemoryUtil.setTarget(maid, MoveUtil.getNearestFromTargetList(level, maid, targetContentPos), (float) Config.placeSpeed);
+            BlockPos nearestFromTargetList = MoveUtil.getNearestFromTargetList(level, maid, targetContentPos);
+            if(nearestFromTargetList == null){
+                MemoryUtil.getPlacingInv(maid).addVisitedPos(targetContent);
+                return priorityTarget(level, maid);
+            }
+            MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
             DebugData.sendDebug("[PLACE]Priority By Content %s", targetContent);
             suppressType = PlacingInventoryMemory.Suppressed.Type.MATCH;
             return true;

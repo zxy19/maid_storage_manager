@@ -22,7 +22,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                         MutableInt remainToCraft,
                         MutableInt oMaxRequire,
                         MutableInt tNodeMinRequire,
-                        MutableBoolean tKeepIngredient
+                        MutableBoolean tKeepIngredient,
+                        MutableBoolean keepCurrently
     ) {
     }
 
@@ -53,9 +54,14 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         ItemNode node = context.node;
         int maxRequire = context.maxRequire;
         int stepCount = context.stepCount;
+        logger.log("Item use available: %d", node.getCurrentRemain());
         //CASE:物品数量够用：直接返回不需要计算方案
         if (node.getCurrentRemain() >= maxRequire) {
             if (!node.isLoopedIngredient || node.hasKeepIngredient || node.loopInputIngredientCount == 0) {
+                pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
+                setReturnValue(maxRequire);
+                return;
+            } else if(node.getCurrentRemain() - node.loopInputIngredientCount >= maxRequire){
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
                 setReturnValue(maxRequire);
                 return;
@@ -71,7 +77,9 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
         if (maxRequire >= node.minStepRequire) {
-            setReturnValue(0);
+            int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
+            pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            setReturnValue(alignedRequire);
             return;
         }
 
@@ -82,11 +90,18 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         int oMaxRequire = maxRequire;
         int tNodeMinRequire = node.minStepRequire;
         boolean tKeepIngredient = node.hasKeepIngredient;
+        boolean keepCurrently = false;
         if (!node.hasKeepIngredient && node.loopInputIngredientCount > 0) {
             maxRequire += node.loopInputIngredientCount;
             node.hasKeepIngredient = true;
-            //如果循环配方，当前步骤不消耗，下一步骤再进行判断。
-            stepCost = 0;
+            logger.log("Add keep loop use %s : %d", node.itemStack, node.loopInputIngredientCount);
+            keepCurrently = true;
+        }
+        if (node.loopInputIngredientCount > 0) {
+            //如果循环配方，当前步骤至少保留一次循环用量，下一步骤再进行判断。
+            stepCost -= node.loopInputIngredientCount;
+            if (stepCost < 0)
+                stepCost = 0;
         }
         node.minStepRequire = maxRequire;
 
@@ -98,6 +113,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         context.oMaxRequire.setValue(oMaxRequire);
         context.tNodeMinRequire.setValue(tNodeMinRequire);
         context.tKeepIngredient.setValue(tKeepIngredient);
+        context.keepCurrently.setValue(keepCurrently);
     }
 
     private void dfsItemLoopCall(DfsLayerItem context) {
@@ -114,24 +130,27 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode);
     }
 
-    private void dfsItemLoopReturn(DfsLayerItem context, int returnValue) {
+    private void dfsItemLoopReturn(DfsLayerItem context, int available) {
         int i = context.i.getValue();
         ItemNode node = context.node;
         int weight = node.edges.get(i).getB();
-        int available = weight * returnValue;
         logger.logExitLevel("Craft Finish=%d", available);
+        int collect = available * weight;
         if (available > 0) {
-            int collect = available * weight;
-            if (node.loopInputIngredientCount != 0) {
-                collect = Math.min(node.getCurrentRemain() - node.loopInputIngredientCount, collect);
+            if (context.keepCurrently.getValue()) {
+                collect -= node.loopInputIngredientCount;
                 if (collect < 0) collect = 0;
+                logger.log("Item keep loop %d in %d", collect, available * weight);
             }
             logger.log("Item use -= %d", collect);
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, collect);
         } else {
             context.i.add(1);
         }
-        context.remainToCraft.subtract(available * weight);
+        context.remainToCraft.subtract(collect);
+        if (context.remainToCraft.getValue() <= 0) {
+            context.remainToCraft.setValue(0);
+        }
         //返回逻辑
         if (context.i.getValue() >= node.edges.size() || context.remainToCraft.getValue() <= 0) {
             node.minStepRequire = context.tNodeMinRequire.getValue();
@@ -166,6 +185,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(),
                 new MutableInt(),
                 new MutableInt(),
+                new MutableBoolean(),
                 new MutableBoolean()
         ));
         dfsItemPre(push);

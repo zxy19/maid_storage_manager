@@ -15,9 +15,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
     }
 
     private int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount) {
+        logger.log("Item use available: %d", node.getCurrentRemain());
         //CASE:物品数量够用：直接返回不需要计算方案
         if (node.getCurrentRemain() >= maxRequire) {
             if (!node.isLoopedIngredient || node.hasKeepIngredient || node.loopInputIngredientCount == 0) {
+                pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
+                return maxRequire;
+            } else if (node.getCurrentRemain() - node.loopInputIngredientCount >= maxRequire) {
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
                 return maxRequire;
             }
@@ -31,7 +35,9 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
         if (maxRequire >= node.minStepRequire) {
-            return 0;
+            int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
+            pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            return alignedRequire;
         }
 
         // 本步骤的消耗。正常情况下，消耗所有的。
@@ -41,11 +47,18 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         int oMaxRequire = maxRequire;
         int tNodeMinRequire = node.minStepRequire;
         boolean tKeepIngredient = node.hasKeepIngredient;
+        boolean keepCurrent = false;
         if (!node.hasKeepIngredient && node.loopInputIngredientCount > 0) {
             maxRequire += node.loopInputIngredientCount;
+            logger.log("Add keep loop use %s : %d", node.itemStack, node.loopInputIngredientCount);
             node.hasKeepIngredient = true;
-            //如果循环配方，当前步骤不消耗，下一步骤再进行判断。
-            stepCost = 0;
+            keepCurrent = true;
+        }
+        if (node.loopInputIngredientCount > 0) {
+            //如果循环配方，当前步骤至少保留一次循环用量，下一步骤再进行判断。
+            stepCost -= node.loopInputIngredientCount;
+            if (stepCost < 0)
+                stepCost = 0;
         }
         node.minStepRequire = maxRequire;
 
@@ -56,25 +69,30 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         for (int i = 0; i < node.edges.size(); i++) {
             int to = node.edges.get(i).getA();
             int weight = node.edges.get(i).getB();
-            if (remainToCraft.getValue() == 0) continue;
             CraftNode toNode = (CraftNode) getNode(to);
             int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
             if (node.isLoopedIngredient && node.loopInputIngredientCount == 0) maxRequiredForCurrentCraftNode = 1;
             logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
-            int available = weight * dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
+            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
 
             logger.logExitLevel("Craft Finish=%d", available);
+            int collect = available * weight;
             if (available > 0) {
-                int collect = available * weight;
-                if (node.loopInputIngredientCount != 0) {
-                    collect = Math.min(node.getCurrentRemain() - node.loopInputIngredientCount, collect);
+                //当前层是保留物品层。需要计算保留物品
+                if (keepCurrent) {
+                    collect -= node.loopInputIngredientCount;
                     if (collect < 0) collect = 0;
+                    logger.log("Item keep loop %d in %d", collect, available * weight);
                 }
-                logger.log("Item use -= %d", collect);
+                logger.log("Item use -= available %d", collect);
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, collect);
                 i--;
             }
-            remainToCraft.subtract(available * weight);
+            remainToCraft.subtract(collect);
+            if (remainToCraft.getValue() <= 0) {
+                remainToCraft.setValue(0);
+                break;
+            }
         }
 
         node.minStepRequire = tNodeMinRequire;
@@ -111,17 +129,20 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                     popHistoryAt(historyId);
                     while (resultId < results.size()) results.removeLast();
                     anyFail = true;
+                    logger.log("Craft lack C:%d,%d", currentRequire, simulateRequire);
                     break;
                 }
             }
 
             if (!anyFail) {
+                logger.log("Craft add %d", simulateRequire);
                 totalSuccess += simulateRequire;
                 restRequire -= simulateRequire;
                 simulateRequire = restRequire;
             }
         }
         if (totalSuccess > 0) {
+            logger.log("Craft finally success %d", totalSuccess);
             results.addLast(new CraftResultNode(node.id, totalSuccess, true));
             for (Pair<Integer, Integer> to : node.revEdges) {
                 ItemNode cn = (ItemNode) getNode(to.getA());
