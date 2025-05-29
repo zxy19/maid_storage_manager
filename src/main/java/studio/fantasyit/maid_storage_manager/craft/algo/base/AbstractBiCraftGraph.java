@@ -57,7 +57,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             reinit();
         }
 
-        public void reinit(){
+        public void reinit() {
             this.crafted = 0;
             this.required = 0;
             this.isLoopedIngredient = false;
@@ -79,11 +79,13 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     public static class CraftNode extends Node {
         public final CraftGuideData craftGuideData;
         public int scheduled;
+        public boolean hasLoopIngredient;
 
         public CraftNode(int id, boolean related, CraftGuideData craftGuideData) {
             super(id, related);
             this.craftGuideData = craftGuideData;
             this.scheduled = 0;
+            this.hasLoopIngredient = false;
         }
 
         public void addScheduled(int count) {
@@ -197,6 +199,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
                 itemNode.crafted = 0;
             } else if (node instanceof CraftNode craftNode) {
                 craftNode.scheduled = 0;
+                craftNode.hasLoopIngredient = false;
             }
         }
     }

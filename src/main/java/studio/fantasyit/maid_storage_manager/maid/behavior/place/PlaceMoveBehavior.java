@@ -36,8 +36,6 @@ import static studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConf
 
 public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     private Target chestPos;
-    private PlacingInventoryMemory.Suppressed.Type suppressType;
-
     public PlaceMoveBehavior() {
         super((float) Config.placeSpeed, 3);
         this.verticalSearchStart = 1;
@@ -81,7 +79,6 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         } else {
             if (chestPos != null) {
                 MemoryUtil.getPlacingInv(maid).setTarget(chestPos);
-                MemoryUtil.getPlacingInv(maid).setTargetSuppressType(suppressType);
                 maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(chestPos.pos));
             }
         }
@@ -95,9 +92,13 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             if (!inv.getStackInSlot(i).isEmpty())
                 items.add(inv.getStackInSlot(i));
         }
+        List<Target> suppressedFilterTarget = new ArrayList<>();
+        List<Target> suppressedContentTarget = new ArrayList<>();
+
         Target targetContent = null;
         List<ItemStack> targetContentList = new ArrayList<>();
         List<BlockPos> targetContentPos = null;
+
         Target targetFilter = null;
         List<ItemStack> targetFilterList = new ArrayList<>();
         List<BlockPos> targetFilterPos = null;
@@ -113,12 +114,14 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 if (!MoveUtil.isValidTarget(level, maid, validTarget, false)) continue;
             }
 
-            if (MemoryUtil.getPlacingInv(maid).isVisitedPos(validTarget)) {
+
+            if (MoveUtil.findTargetRewrite(level, maid, blockPos.getKey(), false).isEmpty()) {
                 continue;
             }
 
-            if (MoveUtil.findTargetRewrite(level, maid, blockPos.getKey(), false).isEmpty())
+            if (MemoryUtil.getPlacingInv(maid).isVisitedPos(validTarget)) {
                 continue;
+            }
 
             List<BlockPos> possibleMove = MoveUtil.getAllAvailablePosForTarget(level, maid, blockPos.getKey().getPos(), pathFinding);
             if (possibleMove.isEmpty()) continue;
@@ -140,6 +143,11 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                             }
                         }
                         if (found) {
+                            if (MemoryUtil.getPlacingInv(maid).isSuppressed(validTarget)) {
+                                targetFilterList.clear();
+                                suppressedFilterTarget.add(validTarget);
+                                continue;
+                            }
                             targetFilter = validTarget;
                             targetFilterPos = possibleMove;
                         }
@@ -165,6 +173,11 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 }
             }
             if (foundTarget) {
+                if (MemoryUtil.getPlacingInv(maid).isSuppressed(validTarget)) {
+                    suppressedContentTarget.add(validTarget);
+                    targetContentList.clear();
+                    continue;
+                }
                 targetContentPos = possibleMove;
                 targetContent = validTarget;
             }
@@ -176,20 +189,20 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             placingInv.setArrangeItems(targetFilterList);
             chestPos = targetFilter;
             BlockPos nearestFromTargetList = MoveUtil.getNearestFromTargetList(level, maid, targetFilterPos);
-            if(nearestFromTargetList == null){
+            if (nearestFromTargetList == null) {
                 //那我要问了，为什么两种巡路结果不一样？
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(targetFilter);
                 return priorityTarget(level, maid);
             }
             MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
             DebugData.sendDebug("[PLACE]Priority By Filter %s", targetFilter.toString());
-            suppressType = PlacingInventoryMemory.Suppressed.Type.FILTER;
             return true;
         }
         if (StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_EACH
-                && placingInv.anySuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER)
+                && !suppressedFilterTarget.isEmpty()
         ) {
-            placingInv.removeSuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER);
+
+            placingInv.removeSuppressed(suppressedFilterTarget);
             DebugData.sendDebug("[PLACE]Suppress clear L Filter");
             return priorityTarget(level, maid);
         }
@@ -197,22 +210,20 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             placingInv.setArrangeItems(targetContentList);
             chestPos = targetContent;
             BlockPos nearestFromTargetList = MoveUtil.getNearestFromTargetList(level, maid, targetContentPos);
-            if(nearestFromTargetList == null){
+            if (nearestFromTargetList == null) {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(targetContent);
                 return priorityTarget(level, maid);
             }
             MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
             DebugData.sendDebug("[PLACE]Priority By Content %s", targetContent);
-            suppressType = PlacingInventoryMemory.Suppressed.Type.MATCH;
             return true;
         }
         if ((StorageManagerConfigData.get(maid).suppressStrategy() == StorageManagerConfigData.SuppressStrategy.AFTER_EACH
                 || StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_PRIORITY)
-                && (placingInv.anySuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER)
-                || placingInv.anySuppressed(PlacingInventoryMemory.Suppressed.Type.MATCH))) {
+                && ((!suppressedFilterTarget.isEmpty()) || (!suppressedContentTarget.isEmpty()))) {
             DebugData.sendDebug("[PLACE]Suppress clear L Match");
-            MemoryUtil.getPlacingInv(maid).removeSuppressed(PlacingInventoryMemory.Suppressed.Type.FILTER);
-            MemoryUtil.getPlacingInv(maid).removeSuppressed(PlacingInventoryMemory.Suppressed.Type.MATCH);
+            MemoryUtil.getPlacingInv(maid).removeSuppressed(suppressedContentTarget);
+            MemoryUtil.getPlacingInv(maid).removeSuppressed(suppressedFilterTarget);
             return priorityTarget(level, maid);
         }
         return false;
@@ -230,7 +241,6 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.sendDebug("[PLACE]Normal %s", canTouchChest);
-            suppressType = PlacingInventoryMemory.Suppressed.Type.NORMAL;
             return true;
         }
         return false;

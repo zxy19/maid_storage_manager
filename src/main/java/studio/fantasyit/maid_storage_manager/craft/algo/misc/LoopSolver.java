@@ -11,11 +11,13 @@ import java.util.Stack;
 public class LoopSolver {
     private AbstractBiCraftGraph graph;
     Stack<Pair<Integer, MutableInt>> queue = new Stack<>();
+    Stack<Pair<Integer, MutableInt>> queue2 = new Stack<>();
     List<Integer> path = new LinkedList<>();
 
     public LoopSolver(AbstractBiCraftGraph graph, int startNodeId) {
         this.graph = graph;
         queue.add(new Pair<>(startNodeId, new MutableInt(0)));
+        queue2.add(new Pair<>(startNodeId, new MutableInt(0)));
         path.add(startNodeId);
     }
 
@@ -26,6 +28,10 @@ public class LoopSolver {
             MutableInt index = nodeLayer.getB();
             AbstractBiCraftGraph.Node node = graph.getNode(nodeId);
             if (node.edges.size() <= index.intValue()) {
+                if (node instanceof AbstractBiCraftGraph.CraftNode craftNode) {
+                    craftNode.hasLoopIngredient = craftNode.edges
+                            .stream().anyMatch(edge -> ((AbstractBiCraftGraph.ItemNode) graph.getNode(edge.getA())).isLoopedIngredient);
+                }
                 queue.pop();
                 path.remove(path.size() - 1);
                 continue;
@@ -40,6 +46,7 @@ public class LoopSolver {
                 path.add(toNode.id);
             }
         }
+
         return true;
     }
 

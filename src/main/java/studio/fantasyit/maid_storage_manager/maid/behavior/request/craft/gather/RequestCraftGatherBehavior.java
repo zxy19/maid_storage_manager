@@ -126,7 +126,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.clearTarget(maid);
 
         if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
-            MemoryUtil.getCrafting(maid).finishGathering(maid);
+                MemoryUtil.getCrafting(maid).finishGathering(maid);
         }
     }
 

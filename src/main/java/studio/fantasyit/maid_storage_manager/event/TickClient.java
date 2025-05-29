@@ -13,11 +13,12 @@ public class TickClient {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onTick(TickEvent.ClientTickEvent event) {
-        if (InventoryListDataClient.showingInv == null)
-            return;
-        InventoryListDataClient.showingTime--;
-        if (InventoryListDataClient.showingTime <= 0) {
-            InventoryListDataClient.showingInv = null;
+        for (int i = InventoryListDataClient.showingInv.size() - 1; i >= 0; i--) {
+            InventoryListDataClient.showingInv.get(i).getB().subtract(1);
+            Integer value = InventoryListDataClient.showingInv.get(i).getB().getValue();
+            if (value <= 0) {
+                InventoryListDataClient.showingInv.remove(i);
+            }
         }
     }
 }

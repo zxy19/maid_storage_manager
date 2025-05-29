@@ -49,7 +49,7 @@ public class LogisticsInputMoveBehavior extends Behavior<EntityMaid> {
             }
         } else {
             CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem());
-            if (craftGuideData.getInput().size() == 0) {
+            if (craftGuideData != null && craftGuideData.getInput().size() == 0) {
                 MemoryUtil.getLogistics(maid).setCraftAndResultLayer(
                         new CraftLayer(Optional.of(craftGuideData), List.of(), 1),
                         new CraftLayer(Optional.empty(), craftGuideData.getAllOutputItems(), 1)

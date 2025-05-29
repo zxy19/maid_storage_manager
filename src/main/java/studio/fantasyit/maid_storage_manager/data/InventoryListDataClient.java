@@ -3,6 +3,8 @@ package studio.fantasyit.maid_storage_manager.data;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.mutable.MutableInt;
+import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @OnlyIn(Dist.CLIENT)
 public class InventoryListDataClient {
-    public static InventoryItem showingInv = null;
-    public static int showingTime;
+    public static List<Pair<InventoryItem, MutableInt>> showingInv = new ArrayList<>();
     private static InventoryListDataClient instance;
 
     public static InventoryListDataClient getInstance() {
@@ -24,6 +25,13 @@ public class InventoryListDataClient {
     }
 
     public Map<UUID, List<InventoryItem>> dataMap = new ConcurrentHashMap<>();
+
+    public static void setShowingInv(InventoryItem inventoryItem, int i) {
+        showingInv.add(new Pair<>(inventoryItem, new MutableInt(i)));
+    }
+    public static void clearShowingInv() {
+        showingInv.clear();
+    }
 
 
     public void patch(UUID uuid, List<InventoryItem> map) {

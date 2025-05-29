@@ -12,6 +12,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.graph.FlattenSearchGraph
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.SimpleSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.TopologyCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
+import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
@@ -193,7 +194,7 @@ public class MaidCraftPlanner {
                         "tooltip.maid_storage_manager.request_list.fail_backpack_full");
             }
         } else {
-            results.forEach(craftLayer -> {
+            ResultListOptimizer.optimize(results).forEach(craftLayer -> {
                 MemoryUtil.getCrafting(maid).addLayer(craftLayer);
             });
 

@@ -49,6 +49,7 @@ public class InventoryListScreen extends Screen {
         this.nextButton = Button.builder(Component.translatable("gui.maid_storage_manager.written_inventory_list.next"), (button) -> this.doNext())
                 .size(16, 16)
                 .build();
+        InventoryListDataClient.clearShowingInv();
         this.data = InventoryListDataClient.getInstance();
         this.originalList = data.get(uuid);
         this.list = originalList;
@@ -212,8 +213,7 @@ public class InventoryListScreen extends Screen {
         if (ix >= 0 && ix < columns && iy >= 0 && iy < rows) {
             int idx = iy * columns + ix + gridStart;
             if (idx < list.size()) {
-                InventoryListDataClient.showingInv = list.get(idx);
-                InventoryListDataClient.showingTime = 400;
+                InventoryListDataClient.setShowingInv(list.get(idx), 400);
                 minecraft.setScreen(null);
             }
         }

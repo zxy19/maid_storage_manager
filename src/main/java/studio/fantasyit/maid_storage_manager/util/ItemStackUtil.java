@@ -31,14 +31,15 @@ public class ItemStackUtil {
         return itemStack;
     }
 
-    public static void addToList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {
+    public static ItemStack addToList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {
         for (int i = 0; i < list.size(); i++) {
             ItemStack item = list.get(i);
             if (isSame(item, itemStack, matchTag)) {
                 item.grow(itemStack.getCount());
-                return;
+                return item;
             }
         }
         list.add(itemStack.copy());
+        return itemStack.copy();
     }
 }

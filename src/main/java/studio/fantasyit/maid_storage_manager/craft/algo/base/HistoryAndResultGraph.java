@@ -105,14 +105,9 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
             results.add(craftLayer);
         }
         CraftNode lastNode = (CraftNode) getNode(lastOne.index);
-        ArrayList<ItemStack> list = new ArrayList<>();
-        lastNode.craftGuideData.getAllOutputItems()
-                .stream()
-                .map(itemStack -> itemStack.copyWithCount(lastOne.count * itemStack.getCount()))
-                .forEach(list::add);
         results.add(new CraftLayer(Optional.empty(),
-                list,
-                lastOne.count));
+                List.of(targetItem.copyWithCount(targetAvailable)),
+                lastNode.scheduled));
         return results;
     }
 

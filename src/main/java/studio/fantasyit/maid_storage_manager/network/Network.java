@@ -25,6 +25,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
@@ -66,6 +67,10 @@ public class Network {
 
     public static void sendMaidDataSync(MaidDataSyncPacket.Type type, int id, int value) {
         INSTANCE.send(PacketDistributor.SERVER.noArg(), new MaidDataSyncPacket(type, id, value));
+    }
+
+    public static void sendShowInvPacket(ServerPlayer player, InventoryItem item, int time) {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new ShowInvPacket(item, time));
     }
 
     private static void registerMessage() {
@@ -224,6 +229,17 @@ public class Network {
                 (msg, context) -> {
                     context.get().enqueueWork(() -> {
                         BindingData.setEntityIds(msg.entityIds);
+                        context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(8,
+                ShowInvPacket.class,
+                ShowInvPacket::toBytes,
+                ShowInvPacket::new,
+                (msg, context) -> {
+                    context.get().enqueueWork(() -> {
+                        InventoryListDataClient.setShowingInv(msg.data, msg.time);
                         context.get().setPacketHandled(true);
                     });
                 }

@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -14,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,6 +179,8 @@ public class CraftMemory extends AbstractTargetMemory {
         if (this.hasCurrent()) {
             CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
             if (layer.hasCollectedAll()) {
+                //收集完了再次检查满足开始条件。如果否则开始前再次进行补齐
+                if (!checkInputInbackpack(maid)) return;
                 showCraftingProgress(maid);
                 ChatTexts.send(maid,
                         Component.translatable(
@@ -188,7 +192,7 @@ public class CraftMemory extends AbstractTargetMemory {
                                         .orElse(Component.empty())
                         )
                 );
-                layer.resetStep();
+                //按说没啥用？layer.resetStep();
                 startWorking(true);
             } else {
                 failCurrent(maid, layer.getUnCollectedItems());
@@ -279,6 +283,44 @@ public class CraftMemory extends AbstractTargetMemory {
                 DebugData.sendDebug("[REQUEST_CRAFT]initial vis %s", pos.toShortString());
             });
         }
+    }
+
+    public boolean checkInputInbackpack(EntityMaid maid) {
+        if (!hasCurrent()) return true;
+        CraftLayer layer = Objects.requireNonNull(getCurrentLayer());
+        if (layer.getStep() != 0) return true;
+        CraftGuideData craftData = layer.getCraftData().orElse(null);
+        if (craftData == null) return true;
+        List<ItemStack> inputs = new ArrayList<>();
+        for (ItemStack itemStack : craftData.getInput()) {
+            if (itemStack.isEmpty()) continue;
+            ItemStackUtil.addToList(inputs, itemStack, false);
+        }
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        for (ItemStack itemStack : inputs) {
+            for (int i = 0; i < inv.getSlots(); i++) {
+                ItemStack item = inv.getStackInSlot(i);
+                if (ItemStackUtil.isSame(item, itemStack, false)) {
+                    itemStack.shrink(Math.min(itemStack.getCount(), item.getCount()));
+                    if (itemStack.isEmpty()) break;
+                }
+            }
+        }
+        if (!inputs.stream().allMatch(ItemStack::isEmpty)) {
+            for (ItemStack itemStack : inputs) {
+                if (!itemStack.isEmpty()) {
+                    for (int i = 0; i < layer.getItems().size(); i++) {
+                        if (ItemStackUtil.isSame(layer.getItems().get(i), itemStack, false)) {
+                            layer.getItems().get(i).grow(itemStack.getCount());
+                            break;
+                        }
+                    }
+                }
+            }
+            startWorking(false);
+            return false;
+        }
+        return true;
     }
 
     public List<ItemStack> getRemainMaterials() {

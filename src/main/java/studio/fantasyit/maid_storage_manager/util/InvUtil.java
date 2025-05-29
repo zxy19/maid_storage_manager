@@ -31,10 +31,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -116,7 +113,10 @@ public class InvUtil {
         @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
         if (!optCap.isPresent()) return;
         IItemHandler inv = optCap.orElseThrow(RuntimeException::new);
-        ItemStack itemStack = inv.extractItem(0, inv.getStackInSlot(0).getCount(), false);
+        //确保清空第一个格子，再放入物品
+        Stack<ItemStack> tmpExtracted = new Stack<>();
+        while (inv.getStackInSlot(0).getCount() > 0)
+            tmpExtracted.add(inv.extractItem(0, inv.getStackInSlot(0).getCount(), false));
         ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
         CompoundTag tag = markItem.getOrCreateTag();
         tag.putUUID("uuid", UUID.randomUUID());
@@ -136,8 +136,8 @@ public class InvUtil {
         }, 1);
 
         inv.extractItem(0, markItem.getCount(), false);
-        if (itemStack.getCount() > 0) {
-            inv.insertItem(0, itemStack, false);
+        while (!tmpExtracted.isEmpty()) {
+            inv.insertItem(0, tmpExtracted.pop(), false);
         }
     }
 

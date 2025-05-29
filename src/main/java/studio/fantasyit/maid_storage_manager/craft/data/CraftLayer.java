@@ -183,4 +183,8 @@ public class CraftLayer {
     public int getTotalStep() {
         return steps.size();
     }
+
+    public void setCount(int i) {
+        this.count = i;
+    }
 }

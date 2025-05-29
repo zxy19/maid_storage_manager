@@ -41,9 +41,9 @@ public class DebugData {
                 .getPlacingInv(maid)
                 .getSuppressedPos()
                 .stream()
-                .map(suppressed -> new DebugTarget(suppressed.target().pos,
+                .map(suppressed -> new DebugTarget(suppressed.pos,
                         0xff00ff00,
-                        "Suppress_" + suppressed.type().name(),
+                        "Suppress",
                         500)
                 )
                 .toList();

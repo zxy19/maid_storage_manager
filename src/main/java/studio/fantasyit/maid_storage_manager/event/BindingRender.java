@@ -11,10 +11,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
@@ -197,21 +199,24 @@ public final class BindingRender {
     }
 
     private static void renderForInv(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
-        if (InventoryListDataClient.showingInv == null)
+        if (InventoryListDataClient.showingInv.isEmpty())
             return;
-        for (int i = 0; i < InventoryListDataClient.showingInv.posAndSlot.size(); i++) {
-            Pair<Target, Integer> storageIntegerPair = InventoryListDataClient.showingInv.posAndSlot.get(i);
-            BoxRenderUtil.renderStorage(
-                    storageIntegerPair.getA(),
-                    colors_y,
-                    event,
-                    Component.translatable("maid_storage_manager.inventory_list_render.inv",
-                                    InventoryListDataClient.showingInv.itemStack.getDisplayName().getString(),
-                                    storageIntegerPair.getB()
-                            )
-                            .getString(),
-                    floating
-            );
+        for (Pair<InventoryItem, MutableInt> pair : InventoryListDataClient.showingInv) {
+            InventoryItem inv = pair.getA();
+            for (int i = 0; i < inv.posAndSlot.size(); i++) {
+                Pair<Target, Integer> storageIntegerPair = inv.posAndSlot.get(i);
+                BoxRenderUtil.renderStorage(
+                        storageIntegerPair.getA(),
+                        colors_y,
+                        event,
+                        Component.translatable("maid_storage_manager.inventory_list_render.inv",
+                                        inv.itemStack.getDisplayName().getString(),
+                                        storageIntegerPair.getB()
+                                )
+                                .getString(),
+                        floating
+                );
+            }
         }
     }
 }

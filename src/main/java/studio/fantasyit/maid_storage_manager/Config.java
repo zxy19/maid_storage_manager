@@ -12,6 +12,7 @@ import java.util.List;
 // Demonstrates how to use Forge's config APIs
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Config {
+
     public enum VirtualItemFrameRender {
         SMALL,
         LARGE,
@@ -73,7 +74,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue REAL_WORK_SIM = BUILDER
             .comment("Maid will need to stop and stand by the block to work")
             .define("behavior.real_work_sim", false);
-
+    private static final ForgeConfigSpec.BooleanValue PICKUP_IGNORE_DELAY = BUILDER
+            .comment("Maid will ignore delay when picking up items.")
+            .define("behavior.pickup_ignore_delay", true);
     //渲染控制选项
     private static final ForgeConfigSpec.ConfigValue<VirtualItemFrameRender> VIRTUAL_ITEM_FRAME_RENDER = BUILDER
             .comment("Virtual Item Frame's render method allow access/no access/filter.")
@@ -120,6 +123,7 @@ public class Config {
     public static boolean realWorkSim;
     public static boolean aiFunctions;
     public static boolean generateVirtualItemFrame;
+    public static boolean pickupIgnoreDelay;
     public static List<CraftSolver> craftingSolver;
 
     @SubscribeEvent
@@ -143,5 +147,6 @@ public class Config {
         aiFunctions = AI_FUNCTIONS.get();
         generateVirtualItemFrame = GENERATE_VIRTUAL_ITEM_FRAME.get();
         craftingSolver = CRAFTING_SOLVER.get().stream().map(CraftSolver::valueOf).toList();
+        pickupIgnoreDelay = PICKUP_IGNORE_DELAY.get();
     }
 }

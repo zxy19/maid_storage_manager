@@ -26,6 +26,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     private CraftLayer layer;
     private boolean done;
     private boolean fail;
+    private boolean reTry;
     private int tryTick;
 
     public RequestCraftWorkBehavior() {
@@ -57,6 +58,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         fail = false;
         tryTick = 0;
+        reTry = false;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) {
             fail = done = true;
             return;
@@ -133,6 +135,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
+        if (reTry) return;
         if (!MemoryUtil.getCrafting(maid).hasCurrent()) return;
         if (fail) {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting fail");
@@ -145,6 +148,8 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getCrafting(maid).nextLayer();
                 MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
                 MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
+            }else{
+                MemoryUtil.getCrafting(maid).checkInputInbackpack(maid);
             }
         }
     }

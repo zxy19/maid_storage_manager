@@ -124,7 +124,7 @@ public class CraftManager {
         event.addAction(
                 CommonIdleAction.TYPE,
                 CommonIdleAction::new,
-                PathTargetLocator::touchPos,
+                PathTargetLocator::nearByNoLimitation,
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true,
                 0,

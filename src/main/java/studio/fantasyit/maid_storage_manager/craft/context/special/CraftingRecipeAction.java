@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -34,16 +35,21 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         List<ItemStack> input = craftGuideStepData.getInput();
         List<ItemStack> output = craftGuideStepData.getOutput();
+        List<ItemStack> realInput = new ArrayList<>();
         int[] slotExtractCount = new int[inv.getSlots()];
         Arrays.fill(slotExtractCount, 0);
         boolean allMatch = true;
         for (int i = 0; i < input.size(); i++) {
             boolean found = false;
-            if (input.get(i).isEmpty()) continue;
+            if (input.get(i).isEmpty()) {
+                realInput.add(ItemStack.EMPTY);
+                continue;
+            }
             for (int j = 0; j < inv.getSlots(); j++) {
                 if (ItemStack.isSameItem(inv.getStackInSlot(j), input.get(i))) {
                     //还有剩余（
                     if (inv.getStackInSlot(j).getCount() > slotExtractCount[j]) {
+                        realInput.add(inv.getStackInSlot(j).copyWithCount(input.get(i).getCount()));
                         found = true;
                         slotExtractCount[j] += 1;
                         break;
@@ -56,7 +62,7 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
             }
         }
         if (allMatch) {
-            CraftingContainer container = RecipeUtil.wrapCraftingContainer(input, 3, 3);
+            CraftingContainer container = RecipeUtil.wrapCraftingContainer(realInput, 3, 3);
             Optional<CraftingRecipe> recipe = RecipeUtil.getCraftingRecipe(level, container);
             if (recipe.isPresent()) {
                 ItemStack result = recipe.get().assemble(container, level.registryAccess());

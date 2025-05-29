@@ -71,15 +71,15 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             int weight = node.edges.get(i).getB();
             CraftNode toNode = (CraftNode) getNode(to);
             int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
-            if (node.isLoopedIngredient && node.loopInputIngredientCount == 0) maxRequiredForCurrentCraftNode = 1;
+            if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = 1;
             logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
             int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
 
             logger.logExitLevel("Craft Finish=%d", available);
-            int collect = available * weight;
+            int collect = Math.min(available * weight, remainToCraft.getValue());
             if (available > 0) {
-                //当前层是保留物品层。需要计算保留物品
-                if (keepCurrent) {
+                //当前层是保留物品层。需要计算保留物品。特殊情况是，如果一次就完成了，那么这里不需要减去循环物品。
+                if (keepCurrent && collect < remainToCraft.getValue()) {
                     collect -= node.loopInputIngredientCount;
                     if (collect < 0) collect = 0;
                     logger.log("Item keep loop %d in %d", collect, available * weight);
@@ -98,6 +98,11 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         node.minStepRequire = tNodeMinRequire;
         node.hasKeepIngredient = tKeepIngredient;
         node.maxLack = Math.max(node.maxLack, remainToCraft.getValue());
+        int crafted = maxRequire - remainToCraft.getValue();
+        if (keepCurrent && crafted > oMaxRequire) {
+            logger.log("Item exceed += %d", crafted - oMaxRequire);
+            pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - oMaxRequire);
+        }
         return Math.max(oMaxRequire - remainToCraft.getValue(), 0);
     }
 

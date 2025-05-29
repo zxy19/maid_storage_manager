@@ -47,7 +47,7 @@ public class ChangeFlag extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
+        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer && serverPlayer.isShiftKeyDown()) {
             BlockPos clickedPos = context.getClickedPos();
             Direction side = context.getClickedFace();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
@@ -77,7 +77,7 @@ public class ChangeFlag extends Item {
             }
             return InteractionResult.CONSUME;
         } else {
-            return InteractionResult.CONSUME;
+            return InteractionResult.PASS;
         }
     }
 

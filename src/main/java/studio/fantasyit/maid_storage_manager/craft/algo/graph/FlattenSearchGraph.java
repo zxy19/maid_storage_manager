@@ -19,6 +19,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
     record DfsLayerItem(ItemNode node, int maxRequire, int stepCount,
                         MutableInt i,
+                        MutableInt realMaxRequire,
                         MutableInt remainToCraft,
                         MutableInt oMaxRequire,
                         MutableInt tNodeMinRequire,
@@ -61,7 +62,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
                 setReturnValue(maxRequire);
                 return;
-            } else if(node.getCurrentRemain() - node.loopInputIngredientCount >= maxRequire){
+            } else if (node.getCurrentRemain() - node.loopInputIngredientCount >= maxRequire) {
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
                 setReturnValue(maxRequire);
                 return;
@@ -114,6 +115,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         context.tNodeMinRequire.setValue(tNodeMinRequire);
         context.tKeepIngredient.setValue(tKeepIngredient);
         context.keepCurrently.setValue(keepCurrently);
+        context.realMaxRequire.setValue(maxRequire);
     }
 
     private void dfsItemLoopCall(DfsLayerItem context) {
@@ -125,7 +127,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         int weight = node.edges.get(i).getB();
         CraftNode toNode = (CraftNode) getNode(to);
         int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
-        if (node.isLoopedIngredient) maxRequiredForCurrentCraftNode = 1;
+        if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = 1;
         logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
         dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode);
     }
@@ -135,9 +137,9 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         ItemNode node = context.node;
         int weight = node.edges.get(i).getB();
         logger.logExitLevel("Craft Finish=%d", available);
-        int collect = available * weight;
+        int collect = Math.min(available * weight, context.remainToCraft.getValue());
         if (available > 0) {
-            if (context.keepCurrently.getValue()) {
+            if (context.keepCurrently.getValue() && collect < context.remainToCraft.getValue()) {
                 collect -= node.loopInputIngredientCount;
                 if (collect < 0) collect = 0;
                 logger.log("Item keep loop %d in %d", collect, available * weight);
@@ -156,6 +158,11 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             node.minStepRequire = context.tNodeMinRequire.getValue();
             node.hasKeepIngredient = context.tKeepIngredient.getValue();
             node.maxLack = Math.max(node.maxLack, context.remainToCraft.getValue());
+            int crafted = context.realMaxRequire.getValue() - context.remainToCraft.getValue();
+            if (context.keepCurrently.getValue() && crafted > context.oMaxRequire.getValue()) {
+                logger.log("Item exceed += %d", crafted - context.oMaxRequire.getValue());
+                pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - context.oMaxRequire.getValue());
+            }
             setReturnValue(Math.max(context.oMaxRequire.getValue() - context.remainToCraft.getValue(), 0));
         }
     }
@@ -182,6 +189,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 maxRequire,
                 stepCount,
                 new MutableInt(),
+                new MutableInt(maxRequire),
                 new MutableInt(),
                 new MutableInt(),
                 new MutableInt(),
@@ -229,6 +237,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
         if (context.i.getValue() >= context.node.edges.size())
             if (!context.anyFail.getValue()) {
+                logger.log("Craft add %d", context.simulateRequire.getValue());
                 context.totalSuccess.add(context.simulateRequire.getValue());
                 context.restRequire.subtract(context.simulateRequire.getValue());
                 context.simulateRequire.setValue(context.restRequire.getValue());
@@ -238,6 +247,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     public void dfsCraftSetReturn(DfsLayerCraft context) {
         Integer totalSuccess = context.totalSuccess.getValue();
         if (totalSuccess > 0) {
+            logger.log("Craft finally success %d", totalSuccess);
             results.addLast(new CraftResultNode(context.node.id, totalSuccess, true));
             for (Pair<Integer, Integer> to : context.node.revEdges) {
                 ItemNode cn = (ItemNode) getNode(to.getA());

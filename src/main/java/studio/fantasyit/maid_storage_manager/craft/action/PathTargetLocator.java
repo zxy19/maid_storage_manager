@@ -9,6 +9,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -43,6 +44,7 @@ public class PathTargetLocator {
 
         Stream<Pair<BlockPos, Integer>> allPos = posList.stream().map(finalPos ->
                         PosUtil.gatherAroundUpAndDown(pos, (pos1) -> {
+                            if (pos1.equals(pos)) return null;
                             if (!PosUtil.isSafePos(maid.level(), pos1)) return null;
                             Vec3 eyePos = pos1.getCenter().add(0, maid.getEyeHeight() - 0.5, 0);
                             for (Direction direction : Direction.values()) {
@@ -78,12 +80,12 @@ public class PathTargetLocator {
             currentTarget = currentTarget.relative(craftGuideStepData.getStorage().side);
         ServerLevel level = (ServerLevel) maid.level();
         for (int i = 0; i < 4; i++) {
-            if (validPosForThrowItem(level, maid, currentTarget,pathFinding)) return currentTarget;
+            if (validPosForThrowItem(level, maid, currentTarget, pathFinding)) return currentTarget;
             if (level.getBlockState(currentTarget).isCollisionShapeFullBlock(level, currentTarget)) return null;
-            if (validPosForThrowItem(level, maid, currentTarget.south(),pathFinding)) return currentTarget.south();
-            if (validPosForThrowItem(level, maid, currentTarget.east(),pathFinding)) return currentTarget.east();
-            if (validPosForThrowItem(level, maid, currentTarget.west(),pathFinding)) return currentTarget.west();
-            if (validPosForThrowItem(level, maid, currentTarget.north(),pathFinding)) return currentTarget.north();
+            if (validPosForThrowItem(level, maid, currentTarget.south(), pathFinding)) return currentTarget.south();
+            if (validPosForThrowItem(level, maid, currentTarget.east(), pathFinding)) return currentTarget.east();
+            if (validPosForThrowItem(level, maid, currentTarget.west(), pathFinding)) return currentTarget.west();
+            if (validPosForThrowItem(level, maid, currentTarget.north(), pathFinding)) return currentTarget.north();
             currentTarget = currentTarget.above();
         }
         return null;
@@ -108,5 +110,26 @@ public class PathTargetLocator {
                 return null;
             }
         });
+    }
+
+    public static BlockPos nearByNoLimitation(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer craftLayer, MaidPathFindingBFS pathFinding) {
+        ServerLevel level = (ServerLevel) maid.level();
+        BlockPos target1 = craftGuideStepData.getStorage().getPos();
+        if (craftGuideStepData.getStorage().side != null)
+            target1 = target1.relative(craftGuideStepData.getStorage().side, 1);
+        BlockPos target = target1;
+        //寻找落脚点
+        @NotNull List<BlockPos> posListToEval = PosUtil.gatherAroundUpAndDown(target,
+                pos -> {
+                    if (!PosUtil.isSafePos(level, pos)) return null;
+                    if (maid.isWithinRestriction(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
+                        return pos;
+                    } else {
+                        return null;
+                    }
+                });
+        ;
+        pathFinding.finish();
+        return MoveUtil.getNearestFromTargetList(level, maid, posListToEval);
     }
 }

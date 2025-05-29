@@ -68,7 +68,7 @@ public class GetStorageFunction implements IFunctionCall<GetStorageFunction.Filt
 
     @Override
     public String getDescription(EntityMaid entityMaid) {
-        return "If you need to retrieve all item IDs stored in the warehouse, you can call this tool. The tool requires a filter parameter - you can input an item ID, a keyword from the item's name, or leave it blank to get all items. The results will be returned in the format: [Item ID]: Item Name * Stock Quantity. If there is a \"(Craftable)\" suffix after the quantity (e.g., [ItemID]:ItemName * 5(Craftable)), it indicates the item can be synthesized upon request, allowing you to request quantities exceeding current stock. When communicating with players, always use item names rather than item IDs to reference items.";
+        return "If you need to retrieve some item IDs stored in the warehouse, you can call this tool. The tool requires a filter parameter - you can input an item ID, a keyword from the item's name, or leave it blank to get all items. The results will be returned in the format: [Item ID]: Item Name * Stock Quantity. If there is a \"(Craftable)\" suffix after the quantity (e.g., [ItemID]:ItemName * 5(Craftable)), it indicates the item can be synthesized upon request, allowing you to request quantities exceeding current stock. When communicating with players, always use item names rather than item IDs to reference items.";
     }
 
     @Override

@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -47,7 +48,7 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
         }
         if (entities == null)
             entities = maid.level().getEntities(maid, maid.getBoundingBox().inflate(2),
-                    e -> e instanceof ItemEntity ie && EntityMaid.canInsertItem(ie.getItem()) && !ie.hasPickUpDelay()
+                    e -> e instanceof ItemEntity ie && EntityMaid.canInsertItem(ie.getItem()) && (!ie.hasPickUpDelay() || Config.pickupIgnoreDelay)
             );
         for (Entity entity : entities) {
             if (!entity.isAlive()) continue;

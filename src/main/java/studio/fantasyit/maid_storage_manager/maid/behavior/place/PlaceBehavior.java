@@ -11,7 +11,6 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -122,8 +121,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         }
         if (!changed) {
             if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
-                PlacingInventoryMemory.Suppressed.Type targetSuppressType = MemoryUtil.getPlacingInv(maid).getTargetSuppressType();
-                MemoryUtil.getPlacingInv(maid).addSuppressedPos(target, targetSuppressType);
+                MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);
                 DebugData.sendDebug("[PLACE]Suppress set at %s", target);
             }
         }
