@@ -89,7 +89,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             if (!toThrowStack.isEmpty()) {
                 InvUtil.throwItem(maid, toThrowStack, targetDir, true);
                 item.setCount(restCount);
-                inv.setStackInSlot(currentSlot, item);
+                inv.setStackInSlot(currentSlot - 1, item);
                 break;
             }
         }

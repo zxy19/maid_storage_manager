@@ -17,10 +17,11 @@ public class MathUtil {
     }
 
     public static Vec3 getFromToWithFriction(Vec3 from, Vec3 to, double friction) {
-        return new Vec3(
-                Math.sqrt((to.x - from.x) * 2 * friction),
-                Math.sqrt((to.y - from.y) * 2 * friction),
-                Math.sqrt((to.z - from.z) * 2 * friction)
-        );
+        return to.subtract(from).normalize().scale(0.02);
+//        return new Vec3(
+//                Math.sqrt((to.x - from.x) * 2 * friction),
+//                Math.sqrt((to.y - from.y) * 2 * friction),
+//                Math.sqrt((to.z - from.z) * 2 * friction)
+//        );
     }
 }
