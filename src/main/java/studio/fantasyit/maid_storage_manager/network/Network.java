@@ -25,17 +25,21 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
+import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.jei.request.JEIRequest;
+import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.List;
 import java.util.UUID;
@@ -240,6 +244,49 @@ public class Network {
                 (msg, context) -> {
                     context.get().enqueueWork(() -> {
                         InventoryListDataClient.setShowingInv(msg.data, msg.time);
+                        context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(9,
+                JEIRequestPacket.class,
+                JEIRequestPacket::toBytes,
+                JEIRequestPacket::new,
+                (msg, context) -> {
+                    context.get().enqueueWork(() -> {
+                        ServerPlayer sender = context.get().getSender();
+                        if (sender == null) return;
+                        JEIRequest.onRequest(sender, msg.data, msg.targetMaidId);
+                        context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(10,
+                JEIRequestResultPacket.class,
+                JEIRequestResultPacket::toBytes,
+                JEIRequestResultPacket::new,
+                (msg, context) -> {
+                    context.get().enqueueWork(() -> {
+                        InScreenTipData.show(msg.result, 5.0f);
+                        context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(11,
+                MaidDataSyncToClientPacket.class,
+                MaidDataSyncToClientPacket::toBytes,
+                MaidDataSyncToClientPacket::new,
+                (msg, context) -> {
+                    context.get().enqueueWork(() -> {
+                        Player sender = getLocalPlayer();
+                        if (sender.level().getEntity(msg.id) instanceof EntityMaid maid) {
+                            if (msg.type == MaidDataSyncToClientPacket.Type.WORKING) {
+                                maid.getBrain().setMemory(
+                                        MemoryModuleRegistry.CURRENTLY_WORKING.get(),
+                                        ScheduleBehavior.Schedule.values()[msg.value.getInt("id")]
+                                );
+                            }
+                        }
                         context.get().setPacketHandled(true);
                     });
                 }

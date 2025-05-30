@@ -2,10 +2,14 @@ package studio.fantasyit.maid_storage_manager.maid.behavior;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraftforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
+import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
+import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -73,6 +77,17 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
             maid.getBrain().setMemory(MemoryModuleRegistry.CURRENTLY_WORKING.get(), next);
             MemoryUtil.clearTarget(maid);
             DebugData.sendDebug("Schedule Change %s -> %s", last.toString(), next.toString());
+
+            CompoundTag nbt = new CompoundTag();
+            nbt.putInt("id", next.ordinal());
+            Network.INSTANCE.send(
+                    PacketDistributor.TRACKING_ENTITY.with(() -> maid),
+                    new MaidDataSyncToClientPacket(
+                            MaidDataSyncToClientPacket.Type.WORKING,
+                            maid.getId(),
+                            nbt
+                    )
+            );
         }
     }
 }

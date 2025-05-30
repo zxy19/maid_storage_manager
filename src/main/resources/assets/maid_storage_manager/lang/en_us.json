@@ -195,5 +195,12 @@
   "tooltip.maid_storage_manager.request_list.time.str": "%s (%s:%s)",
   "tooltip.maid_storage_manager.request_list.virtual": "「Maid's duty, no meddling (｡•̀ᴗ-)✧」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
-  "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view."
+  "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
+  "tooltip.maid_storage_manager.jei_request.from_maid": "Request from [%s]",
+  "tooltip.maid_storage_manager.jei_request.no_maid": "No maids around you",
+  "gui.maid_storage_manager.jei_request.start": "[%s] has handle the request!",
+  "gui.maid_storage_manager.jei_request.full": "[%s]: Backpack is full!",
+  "gui.maid_storage_manager.jei_request.invalid": "[%s] is not co-working with you",
+  "gui.maid_storage_manager.jei_request.not_found": "Maid not found",
+  "gui.maid_storage_manager.jei_request.finish": "[%s] has done its task."
 }

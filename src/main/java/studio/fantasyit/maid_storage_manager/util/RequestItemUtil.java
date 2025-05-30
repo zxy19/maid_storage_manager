@@ -14,6 +14,7 @@ import com.github.tartaricacid.touhoulittlemaid.util.CappedQueue;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +30,8 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.AiUtils;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
+import studio.fantasyit.maid_storage_manager.network.JEIRequestResultPacket;
+import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -44,6 +48,14 @@ public class RequestItemUtil {
         if (tag.getBoolean(RequestListItem.TAG_VIRTUAL)) {
             if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("AI")) {
                 sendToolResponseB(maid, reqList);
+            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("JEI")) {
+                if (maid.getOwner() instanceof ServerPlayer player)
+                    Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
+                            new JEIRequestResultPacket(
+                                    Component.translatable("gui.maid_storage_manager.jei_request.finish",
+                                            maid.getDisplayName()
+                                    )));
+
             }
             //虚拟的，不用额外处理
         }

@@ -5,7 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "maid_storage_manager.refmap.json",
   "mixins": [
-    "ContainerOpenersCounterPatch"
+    "ContainerOpenersCounterPatch",
+    "JeiGuiIconToggleButtonAccessor",
+    "JEIRecipeTransferHook"
   ],
   "client": [
     "GuiGraphicMixin",
