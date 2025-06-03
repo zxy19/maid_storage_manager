@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class CraftMemory extends AbstractTargetMemory {
                     Codec.INT.fieldOf("currentLayer")
                             .forGetter(CraftMemory::getCurrentLayerIndex),
                     Codec.BOOL.fieldOf("isFinishCurrent")
-                            .forGetter(CraftMemory::isFinishCurrent),
+                            .forGetter(CraftMemory::isGoPlacingBeforeCraft),
                     Codec.BOOL.fieldOf("isLastSuccess")
                             .forGetter(CraftMemory::isLastSuccess),
                     Codec.BOOL.fieldOf("startWorking")
@@ -51,7 +52,7 @@ public class CraftMemory extends AbstractTargetMemory {
     public List<CraftGuideData> craftGuides;
     public List<ItemStack> remainMaterials;
     public int currentLayer;
-    public boolean isFinishCurrent;
+    public boolean goPlacingBeforeCraft;
     public boolean isLastSuccess;
     private boolean startWorking;
     private int pathFindingFailCount = 0;
@@ -61,7 +62,7 @@ public class CraftMemory extends AbstractTargetMemory {
                        List<CraftGuideData> craftGuides,
                        List<ItemStack> remainMaterials,
                        int currentLayer,
-                       boolean isFinishCurrent,
+                       boolean goPlacingBeforeCraft,
                        boolean isLastSuccess,
                        boolean startWorking
     ) {
@@ -70,7 +71,7 @@ public class CraftMemory extends AbstractTargetMemory {
         this.craftGuides = new ArrayList<>(craftGuides);
         this.remainMaterials = new ArrayList<>(remainMaterials);
         this.currentLayer = currentLayer;
-        this.isFinishCurrent = isFinishCurrent;
+        this.goPlacingBeforeCraft = goPlacingBeforeCraft;
         this.isLastSuccess = isLastSuccess;
         this.startWorking = startWorking;
     }
@@ -81,7 +82,7 @@ public class CraftMemory extends AbstractTargetMemory {
         this.craftGuides = new ArrayList<>();
         this.remainMaterials = new ArrayList<>();
         this.currentLayer = 0;
-        this.isFinishCurrent = false;
+        this.goPlacingBeforeCraft = false;
         this.isLastSuccess = false;
         this.startWorking = false;
     }
@@ -195,9 +196,24 @@ public class CraftMemory extends AbstractTargetMemory {
                 //按说没啥用？layer.resetStep();
                 startWorking(true);
             } else {
-                failCurrent(maid, layer.getUnCollectedItems());
+                //如果不是最终步骤，而且没有收集成功，那么意味着记忆存在问题，重置记忆，并再次计算合成树
+                if (getCurrentLayer().getCraftData().isPresent())
+                    markMissingSchedulePlaceAndRecalc(maid);
+                else
+                    failCurrent(maid, getCurrentLayer().getUnCollectedItems());
             }
         }
+    }
+
+    private void markMissingSchedulePlaceAndRecalc(EntityMaid maid) {
+        CraftLayer currentLayer1 = this.getCurrentLayer();
+        List<ItemStack> unCollectedItems = currentLayer1.getUnCollectedItems();
+        ViewedInventoryMemory viewedInventoryMemory = MemoryUtil.getViewedInventory(maid);
+        unCollectedItems.forEach(itemStack -> viewedInventoryMemory.removeItemFromAllTargets(itemStack, false));
+        setGoPlacingBeforeCraft(true);
+        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_RESCHEDULE);
+        ChatTexts.removeSecondary(maid);
+        clearLayers();
     }
 
     public void failCurrent(EntityMaid maid, List<ItemStack> missing) {
@@ -232,18 +248,19 @@ public class CraftMemory extends AbstractTargetMemory {
                 );
                 RequestListItem.markDone(maid.getMainHandItem(), target);
             }
-        this.setFinishCurrent(true);
+        this.setGoPlacingBeforeCraft(true);
         this.setLastSuccess(false);
         this.startWorking(false);
         showCraftingProgress(maid);
     }
 
-    public boolean isFinishCurrent() {
-        return isFinishCurrent;
+
+    public boolean isGoPlacingBeforeCraft() {
+        return goPlacingBeforeCraft;
     }
 
-    public void setFinishCurrent(boolean finishCurrent) {
-        isFinishCurrent = finishCurrent;
+    public void setGoPlacingBeforeCraft(boolean goPlacingBeforeCraft) {
+        this.goPlacingBeforeCraft = goPlacingBeforeCraft;
     }
 
     public boolean isLastSuccess() {
@@ -256,12 +273,7 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void lastSuccess() {
         this.isLastSuccess = true;
-        this.isFinishCurrent = true;
-    }
-
-    public void lastFail() {
-        this.isLastSuccess = false;
-        this.isFinishCurrent = true;
+        this.goPlacingBeforeCraft = true;
     }
 
     public boolean hasStartWorking() {

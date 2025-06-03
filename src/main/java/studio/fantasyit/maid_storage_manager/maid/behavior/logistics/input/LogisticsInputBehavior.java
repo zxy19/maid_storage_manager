@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
@@ -54,11 +55,11 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
                 if (context != null && context.isDone()) {
                     context.reset();
                     failCount++;
-                    return failCount <= 10;
+                    return failCount <= Config.maxLogisticsTries;
                 }
                 return true;
             }
-        } else if (failCount > 10) {
+        } else if (failCount > Config.maxLogisticsTries) {
             return false;
         }
         return context != null && !context.isDone();
@@ -136,30 +137,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         }
         int count = LogisticsGuide.getWorkCount(currentLogisticsGuideItem);
         if (craftGuideData != null) {
-            List<ItemStack> inputs = craftGuideData.getInput();
-            for (ItemStack input : inputs) {
-                int availableCount = 0;
-                for (ViewedInventoryMemory.ItemCount itemCount : itemsAt) {
-                    if (ItemStackUtil.isSame(input, itemCount.getItem(), false)) {
-                        availableCount += itemCount.getSecond();
-                    }
-                }
-                count = Math.min(count, availableCount / input.getCount());
-            }
-            for (; count > 0; count--) {
-                int finalCount1 = count;
-                layer = new CraftLayer(Optional.of(craftGuideData),
-                        craftGuideData
-                                .getAllInputItems()
-                                .stream()
-                                .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() * finalCount1))
-                                .toList(),
-                        count);
-                CraftResultContext context = new CraftResultContext(List.of(layer));
-                if (context.getSlotConsume() < InvUtil.freeSlots(maid.getAvailableInv(false))) {
-                    break;
-                }
-            }
+            count = getAvailableCount(maid, craftGuideData, itemsAt, count);
             if (count != 0) {
                 int finalCount = count;
                 layer = new CraftLayer(Optional.of(craftGuideData),
@@ -199,6 +177,47 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
 
         if (!MemoryUtil.getLogistics(maid).hasMultipleGuide(maid))
             failCount = 0;
+    }
+
+    private int getAvailableCount(EntityMaid maid, CraftGuideData craftGuideData, List<ViewedInventoryMemory.ItemCount> itemsAt, int count) {
+        List<ItemStack> inputs = craftGuideData.getInput();
+        List<ItemStack> costedInputs = new ArrayList<>(inputs);
+        for (ItemStack output : costedInputs) {
+            int outputCount = output.getCount();
+            for (ItemStack itemStack : costedInputs) {
+                if (!itemStack.isEmpty() && ItemStackUtil.isSame(output, itemStack, false)) {
+                    int remove = Math.min(outputCount, itemStack.getCount());
+                    itemStack.shrink(remove);
+                    outputCount -= remove;
+                }
+                if (outputCount <= 0) break;
+            }
+        }
+        for (int i = 0; i < inputs.size(); i++) {
+            ItemStack input = inputs.get(i);
+            ItemStack costedInput = costedInputs.get(i);
+            int availableCount = 0;
+            for (ViewedInventoryMemory.ItemCount itemCount : itemsAt) {
+                if (ItemStackUtil.isSame(input, itemCount.getItem(), false)) {
+                    availableCount += itemCount.getSecond();
+                }
+            }
+            if (availableCount >= input.getCount())
+                count = 0;
+            else if (costedInput.getCount() != 0)
+                count = Math.min(count, (availableCount - input.getCount()) / costedInput.getCount() + 1);
+        }
+        List<ItemStack> toSimulate = new ArrayList<>(inputs);
+        for (; count > 0; count--) {
+            for (int i = 0; i < inputs.size(); i++)
+                toSimulate.get(i).setCount(costedInputs.get(i).getCount() * count + inputs.get(i).getCount());
+            layer = new CraftLayer(Optional.of(craftGuideData), toSimulate, count);
+            CraftResultContext context = new CraftResultContext(List.of(layer));
+            if (context.getSlotConsume() < InvUtil.freeSlots(maid.getAvailableInv(false))) {
+                break;
+            }
+        }
+        return count;
     }
 
     private void tickView(ServerLevel level, EntityMaid maid, long p22553) {
@@ -268,15 +287,17 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         }
 
         if (layer != null && output != null) {
-            MemoryUtil.getLogistics(maid).setCraftAndResultLayer(layer, output);
-            if (layer.getCraftData().isPresent()) {
-                MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.CRAFT);
-                if (!layer.getItems().isEmpty())
-                    ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK, layer.getItems().get(0).getHoverName()));
-            } else {
-                MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
-                if (!layer.getItems().isEmpty())
-                    ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK, layer.getItems().get(0).getHoverName()));
+            if (layer.getCollectedCounts().stream().anyMatch(i -> i > 0)) {
+                MemoryUtil.getLogistics(maid).setCraftAndResultLayer(layer, output);
+                if (layer.getCraftData().isPresent()) {
+                    MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.CRAFT);
+                    if (!layer.getItems().isEmpty())
+                        ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_CRAFT_WORK, layer.getItems().get(0).getHoverName()));
+                } else {
+                    MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
+                    if (!layer.getItems().isEmpty())
+                        ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_MOVING, layer.getItems().get(0).getHoverName()));
+                }
             }
         } else {
             MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);

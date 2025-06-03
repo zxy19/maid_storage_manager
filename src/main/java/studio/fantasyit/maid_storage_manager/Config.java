@@ -36,6 +36,12 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue ENABLE_AE2SUP = BUILDER
             .comment("Enable ae2 support(Maid may pickup things from terminal)")
             .define("compat.ae2_support", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_JEI_INGREDIENT_REQUEST = BUILDER
+            .comment("Ingredient request for JEI")
+            .define("compat.jei_ingredient_request", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_EMI_INGREDIENT_REQUEST = BUILDER
+            .comment("Ingredient request for EMI")
+            .define("compat.emi_ingredient_request", true);
 
     //速度控制选项
     private static final ForgeConfigSpec.DoubleValue CRAFT_WORK_SPEED = BUILDER
@@ -65,6 +71,10 @@ public class Config {
     private static final ForgeConfigSpec.IntValue MAX_CRAFT_TRIES = BUILDER
             .comment("Maximum tick Maid will try to perform craft action")
             .defineInRange("behavior.max_craft_tries", 600, 0, 9999999);
+    private static final ForgeConfigSpec.IntValue MAX_LOGISTICS_TRIES = BUILDER
+            .comment("Maximum logistics extract try will maid take")
+            .defineInRange("behavior.max_logistics_tries", 50, 0, 9999999);
+
     private static final ForgeConfigSpec.BooleanValue USE_ALL_STORAGE_BY_DEFAULT = BUILDER
             .comment("Enable maid from visiting all storages.")
             .define("behavior.use_all_storage", false);
@@ -81,6 +91,10 @@ public class Config {
     private static final ForgeConfigSpec.ConfigValue<VirtualItemFrameRender> VIRTUAL_ITEM_FRAME_RENDER = BUILDER
             .comment("Virtual Item Frame's render method allow access/no access/filter.")
             .defineEnum("render.virtual_item_frame_render", VirtualItemFrameRender.LARGE);
+    private static final ForgeConfigSpec.BooleanValue RENDER_MAID_WHEN_INGREDIENT_REQUEST = BUILDER
+            .comment("Render the maid at the bottom of the screen when pressing Alt.")
+            .define("render.maid_render_ingredient_request", true);
+
     //性能
     private static final ForgeConfigSpec.BooleanValue FAST_PATH_SCHEDULE = BUILDER
             .comment("Disable the 'shortest path limitation' to gain faster path finding.")
@@ -107,6 +121,8 @@ public class Config {
 
     public static boolean enableDebug;
     public static boolean enableAe2Sup;
+    public static boolean enableJeiIngredientRequest;
+    public static boolean enableEmiIngredientRequest;
     public static double collectSpeed;
     public static double viewSpeed;
     public static double placeSpeed;
@@ -114,9 +130,11 @@ public class Config {
     public static double craftWorkSpeed;
     public static int maxStoreTries;
     public static int maxCraftTries;
+    public static int maxLogisticsTries;
     public static boolean useAllStorageByDefault;
     public static double followSpeed;
     public static VirtualItemFrameRender virtualItemFrameRender;
+    public static boolean renderMaidWhenIngredientRequest;
     public static boolean twoStepAiResponse;
     public static double pickupRequireWhenPlace;
     public static boolean fastPathSchedule;
@@ -130,11 +148,14 @@ public class Config {
     static void onLoad(final ModConfigEvent event) {
         enableDebug = ENABLE_DEBUG.get();
         enableAe2Sup = ENABLE_AE2SUP.get();
+        enableJeiIngredientRequest = ENABLE_JEI_INGREDIENT_REQUEST.get();
+        enableEmiIngredientRequest = ENABLE_EMI_INGREDIENT_REQUEST.get();
         collectSpeed = COLLECT_SPEED.get();
         viewSpeed = VIEW_SPEED.get();
         placeSpeed = PLACE_SPEED.get();
         maxStoreTries = MAX_STORE_TRIES.get();
         maxCraftTries = MAX_CRAFT_TRIES.get();
+        maxLogisticsTries = MAX_LOGISTICS_TRIES.get();
         craftWorkSpeed = CRAFT_WORK_SPEED.get();
         virtualItemFrameRender = VIRTUAL_ITEM_FRAME_RENDER.get();
         useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
@@ -146,6 +167,7 @@ public class Config {
         realWorkSim = REAL_WORK_SIM.get();
         aiFunctions = AI_FUNCTIONS.get();
         generateVirtualItemFrame = GENERATE_VIRTUAL_ITEM_FRAME.get();
+        renderMaidWhenIngredientRequest = RENDER_MAID_WHEN_INGREDIENT_REQUEST.get();
         craftingSolver = CRAFTING_SOLVER.get().stream().map(CraftSolver::valueOf).toList();
         pickupIgnoreDelay = PICKUP_IGNORE_DELAY.get();
     }

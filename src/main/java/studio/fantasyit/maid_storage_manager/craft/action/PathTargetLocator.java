@@ -43,8 +43,8 @@ public class PathTargetLocator {
         }
 
         Stream<Pair<BlockPos, Integer>> allPos = posList.stream().map(finalPos ->
-                        PosUtil.gatherAroundUpAndDown(pos, (pos1) -> {
-                            if (pos1.equals(pos)) return null;
+                        PosUtil.gatherAroundUpAndDown(finalPos, (pos1) -> {
+                            if (PosUtil.isBetween(pos, finalPos, pos1)) return null;
                             if (!PosUtil.isSafePos(maid.level(), pos1)) return null;
                             Vec3 eyePos = pos1.getCenter().add(0, maid.getEyeHeight() - 0.5, 0);
                             for (Direction direction : Direction.values()) {

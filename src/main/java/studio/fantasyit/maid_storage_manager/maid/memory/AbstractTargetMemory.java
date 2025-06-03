@@ -43,6 +43,7 @@ public abstract class AbstractTargetMemory {
             this.visitedPos = new ArrayList<>(visitedPos);
             this.target = target;
             this.checkItem = checkItem.orElse(null);
+            if (target == null) this.target = new Target(TargetData.NO_TARGET, BlockPos.ZERO, Optional.empty());
         }
 
         public List<Target> getVisitedPos() {

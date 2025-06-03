@@ -98,6 +98,9 @@ minecraft {
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', mod_id
             jvmArg "-XX:+AllowEnhancedClassRedefinition"
+
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
         }
 
         server {
@@ -169,6 +172,10 @@ repositories {
         }
         url = uri("https://maven.ipn-mod.org/releases")
     }
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+    }
 }
 
 dependencies {
@@ -207,6 +214,8 @@ dependencies {
     compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     compileOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
     compileOnly fg.deobf("curse.maven:just-enough-characters-250702:5543190")
+    compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}:api")
+    compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
@@ -215,6 +224,9 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6266807")
     runtimeOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
     runtimeOnly fg.deobf("curse.maven:create-328085:6323270")
+    runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
+    runtimeOnly fg.deobf("curse.maven:botania-225643:5594997")
+    runtimeOnly fg.deobf("curse.maven:curios-309927:6058834")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:libIPN-forge-1.20:4.0.2")
 //    runtimeOnly fg.deobf("curse.maven:kotlin-for-forge-351264:5402061")

@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -28,10 +29,8 @@ import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionCo
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.WrappedMaidFakePlayer;
+import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +68,11 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         if (startDestroyBlock) {
             return tickDestroyBlock();
         }
-        if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE;
+        //破坏任务中不用关心面，只需离开目标所在pos
+        if (!MoveUtil.setMovementIfColliedTarget((ServerLevel) maid.level(), maid, craftGuideStepData.storage.pos))
+            return Result.CONTINUE;
+        if (!hasBlockOnTarget())
+            return Result.NOT_DONE;
         maid.swing(InteractionHand.MAIN_HAND);
         @Nullable List<ItemStack> ret = interactWithItemAndGetReturn();
 
@@ -96,6 +99,10 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         } else {
             return Result.FAIL;
         }
+    }
+
+    private boolean hasBlockOnTarget() {
+        return !maid.level().getBlockState(craftGuideStepData.storage.pos).isAir();
     }
 
     private Result tickDestroyBlock() {
@@ -151,13 +158,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
     private @Nullable List<ItemStack> interactWithItemAndGetReturn() {
         BlockPos target = craftGuideStepData.getStorage().getPos();
         ServerLevel level = (ServerLevel) maid.level();
-        ClipContext rayTraceContext =
-                new ClipContext(maid.getPosition(0).add(0, maid.getEyeHeight(), 0),
-                        target.getCenter(),
-                        ClipContext.Block.OUTLINE,
-                        ClipContext.Fluid.NONE,
-                        fakePlayer);
-        BlockHitResult result = level.clip(rayTraceContext);
+        BlockHitResult result = getBlockHitResult(level, craftGuideStepData.getStorage());
         if (!result.getBlockPos().equals(target)) return null;
         PlayerInteractEvent.LeftClickBlock event = ForgeHooks.onLeftClickBlock(fakePlayer,
                 target,
@@ -176,6 +177,29 @@ public class CommonAttackAction extends AbstractCraftActionContext {
             }
         }
         return items;
+    }
+
+    private BlockHitResult getBlockHitResult(ServerLevel level, Target target) {
+        BlockHitResult result = null;
+        for (float disToSize = 0.50f; disToSize > 0; disToSize -= 0.1f) {
+            for (Direction direction : Direction.values()) {
+                if (craftGuideStepData.getStorage().side != null && craftGuideStepData.getStorage().side != direction)
+                    continue;
+                ClipContext rayTraceContext = new ClipContext(maid.getPosition(0).add(0, maid.getEyeHeight(), 0),
+                        target.pos.getCenter().relative(direction, disToSize),
+                        ClipContext.Block.COLLIDER,
+                        ClipContext.Fluid.NONE,
+                        fakePlayer);
+                result = level.clip(rayTraceContext);
+                if (result.getBlockPos().equals(target.pos))
+                    if (target.side == null || result.getDirection() == target.side)
+                        break;
+                result = null;
+            }
+            if (result != null) break;
+        }
+        if (result == null) return null;
+        return result;
     }
 
     private void onStartDestroyBlock(ServerLevel level, BlockPos target) {

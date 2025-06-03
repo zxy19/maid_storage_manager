@@ -4,8 +4,10 @@
   "package": "studio.fantasyit.maid_storage_manager.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "maid_storage_manager.refmap.json",
+  "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
     "ContainerOpenersCounterPatch",
+    "EMIRecipeTransferHook",
     "JeiGuiIconToggleButtonAccessor",
     "JEIRecipeTransferHook"
   ],

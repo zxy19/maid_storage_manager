@@ -132,6 +132,7 @@ public class CraftLayer {
 
     public CraftGuideStepData getStepData() {
         if (craftData == null) return null;
+        if (step >= steps.size()) return null;
         return steps.get(step);
     }
 

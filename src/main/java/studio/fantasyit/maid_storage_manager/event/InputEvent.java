@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.jei.request.JEIRequestClient;
+import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
 import studio.fantasyit.maid_storage_manager.network.ClientInputPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -38,9 +38,9 @@ public class InputEvent {
     public static void onKey(net.minecraftforge.client.event.InputEvent.Key event) {
         if (event.getKey() == GLFW.GLFW_KEY_LEFT_ALT) {
             if (event.getAction() == GLFW.GLFW_PRESS) {
-                JEIRequestClient.keyPressed = true;
+                IngredientRequestClient.keyPressed = true;
             }else if(event.getAction() == GLFW.GLFW_RELEASE){
-                JEIRequestClient.keyPressed = false;
+                IngredientRequestClient.keyPressed = false;
             }
         }
     }

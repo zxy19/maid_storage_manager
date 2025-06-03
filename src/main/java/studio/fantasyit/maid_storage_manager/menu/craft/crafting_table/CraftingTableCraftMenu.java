@@ -53,7 +53,10 @@ public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraft
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag tag = list.getCompound(i);
                     ItemStack stack = ItemStack.of(tag);
-                    stepDataContainer.setItem(i, stack);
+                    stepDataContainer.setItemNoTrigger(i, stack);
+                }
+                for(int i = list.size(); i < stepDataContainer.getContainerSize(); i++){
+                    stepDataContainer.setItemNoTrigger(i, ItemStack.EMPTY);
                 }
                 save();
             }

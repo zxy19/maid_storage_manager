@@ -19,8 +19,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import studio.fantasyit.maid_storage_manager.api.IJEIButtonGetter;
-import studio.fantasyit.maid_storage_manager.jei.request.JEIRequestClient;
-import studio.fantasyit.maid_storage_manager.jei.request.JEIRequestDisplayError;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
+import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
+import studio.fantasyit.maid_storage_manager.integration.request.JEIClient;
+import studio.fantasyit.maid_storage_manager.integration.request.JEIRequestDisplayError;
 
 @Mixin(RecipeTransferButton.class)
 abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
@@ -32,7 +34,7 @@ abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
     @Final
     private IRecipeLayoutDrawable<?> recipeLayout;
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private Runnable onClose;
 
@@ -42,8 +44,9 @@ abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
 
     @Inject(method = "update", at = @At(value = "RETURN"), remap = false)
     public void update(AbstractContainerMenu parentContainer, Player player, CallbackInfo ci) {
-        if (JEIRequestClient.keyPressed) {
-            if (JEIRequestClient.preferMaidId != -1)
+        if (!Integrations.JEIIngredientRequest()) return;
+        if (IngredientRequestClient.keyPressed) {
+            if (IngredientRequestClient.preferMaidId != -1)
                 this.recipeTransferError = new JEIRequestDisplayError();
             else
                 this.recipeTransferError = new JEIRequestDisplayError.NoMaid();
@@ -54,14 +57,15 @@ abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
 
     @Redirect(method = "draw", at = @At(value = "INVOKE", target = "Lmezz/jei/gui/elements/GuiIconToggleButton;draw(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"), remap = false)
     public void draw(GuiIconToggleButton instance, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        if (!Integrations.JEIIngredientRequest()) return;
         if (instance instanceof IJEIButtonGetter ja) {
             if (ja.getArea().isEmpty())
                 return;
 
             boolean iconToggledOn = isIconToggledOn();
             IDrawable icon = iconToggledOn ? ja.getOnIcon() : ja.getOffIcon();
-            if (JEIRequestClient.keyPressed) {
-                icon = JEIRequestClient.icon;
+            if (IngredientRequestClient.keyPressed) {
+                icon = JEIClient.icon;
             }
             this.button.setForcePressed(iconToggledOn);
             this.button.setIcon(icon);
@@ -71,11 +75,11 @@ abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
 
     @Inject(method = "onMouseClicked", at = @At(value = "HEAD"), cancellable = true, remap = false)
     public void onMouseClicked(UserInput input, CallbackInfoReturnable<Boolean> cir) {
+        if (!Integrations.JEIIngredientRequest()) return;
         if (!input.isSimulate())
-            if (JEIRequestClient.keyPressed) {
-                if (JEIRequestClient.preferMaidId != -1) {
-                    JEIRequestClient.processRequestNearByClient(this.recipeLayout);
-                    onClose.run();
+            if (IngredientRequestClient.keyPressed) {
+                if (IngredientRequestClient.preferMaidId != -1) {
+                    JEIClient.processRequestNearByClient(this.recipeLayout);
                 }
                 cir.setReturnValue(true);
             }

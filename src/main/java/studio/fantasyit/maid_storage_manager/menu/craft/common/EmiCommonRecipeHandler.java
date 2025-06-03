@@ -1,21 +1,16 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
-import mezz.jei.api.gui.builder.ITooltipBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.transfer.IRecipeTransferError;
-import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
+import dev.emi.emi.api.recipe.EmiPlayerInventory;
+import dev.emi.emi.api.recipe.EmiRecipe;
+import dev.emi.emi.api.recipe.handler.EmiCraftContext;
+import dev.emi.emi.api.recipe.handler.EmiRecipeHandler;
+import dev.emi.emi.api.stack.EmiStack;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
-import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -23,36 +18,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CommonCraftRecipeHandler implements IUniversalRecipeTransferHandler<CommonCraftMenu> {
-
+public class EmiCommonRecipeHandler implements EmiRecipeHandler<CommonCraftMenu> {
     @Override
-    public @NotNull Class getContainerClass() {
-        return CommonCraftMenu.class;
+    public EmiPlayerInventory getInventory(AbstractContainerScreen<CommonCraftMenu> screen) {
+        return new EmiPlayerInventory(List.of());
     }
 
     @Override
-    public @NotNull Optional<MenuType<CommonCraftMenu>> getMenuType() {
-        return Optional.of(GuiRegistry.CRAFT_GUIDE_MENU_COMMON.get());
+    public boolean supportsRecipe(EmiRecipe recipe) {
+        return true;
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(@NotNull CommonCraftMenu container,
-                                                         @NotNull Object recipe,
-                                                         IRecipeSlotsView recipeSlots,
-                                                         @NotNull Player player,
-                                                         boolean maxTransfer,
-                                                         boolean doTransfer) {
+    public boolean alwaysDisplaySupport(EmiRecipe recipe) {
+        return true;
+    }
+
+    protected boolean work(EmiRecipe recipe, EmiCraftContext<CommonCraftMenu> context, boolean doTransfer) {
+        CommonCraftMenu container = context.getScreenHandler();
         List<ItemStack> outputs = new ArrayList<>();
-        recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)
+        recipe.getOutputs()
                 .stream()
-                .map(e -> e.getItemStacks().findFirst().orElse(ItemStack.EMPTY))
-                .filter(i -> !i.isEmpty())
+                .map(e -> e.getEmiStacks().stream().map(EmiStack::getItemStack).findFirst())
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .forEach(i -> ItemStackUtil.addToList(outputs, i.copy(), true));
 
         List<ItemStack> inputs = new ArrayList<>();
-        recipeSlots.getSlotViews(RecipeIngredientRole.INPUT)
+        recipe.getInputs()
                 .stream()
-                .map(e -> InventoryListUtil.getMatchingForPlayer(e.getItemStacks().toList()))
+                .map(e -> InventoryListUtil.getMatchingForPlayer(e.getEmiStacks().stream().map(EmiStack::getItemStack).toList()))
                 .filter(i -> !i.isEmpty())
                 .forEach(i -> ItemStackUtil.addToList(inputs, i.copy(), true));
 
@@ -88,20 +83,18 @@ public class CommonCraftRecipeHandler implements IUniversalRecipeTransferHandler
             ));
         }
         if (inputId != inputs.size() || outputId != outputs.size()) {
-            return new ExceedError();
+            return false;
         }
-        return null;
+        return true;
     }
 
-    public static class ExceedError implements IRecipeTransferError {
-        @Override
-        public Type getType() {
-            return Type.COSMETIC;
-        }
+    @Override
+    public boolean canCraft(EmiRecipe recipe, EmiCraftContext<CommonCraftMenu> context) {
+        return work(recipe, context, false);
+    }
 
-        @Override
-        public void getTooltip(ITooltipBuilder tooltip) {
-            tooltip.add(Component.translatable("tooltip.maid_storage_manager.request_list.jei.too_many_to_transfer"));
-        }
+    @Override
+    public boolean craft(EmiRecipe recipe, EmiCraftContext<CommonCraftMenu> context) {
+        return work(recipe, context, true);
     }
 }

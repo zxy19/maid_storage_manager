@@ -71,7 +71,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             int weight = node.edges.get(i).getB();
             CraftNode toNode = (CraftNode) getNode(to);
             int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
-            if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = 1;
+            if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
             logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
             int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
 
@@ -110,6 +110,12 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         int restRequire = maxRequire;
         int simulateRequire = maxRequire;
         int totalSuccess = 0;
+        //无原料合成，直接返回全部成功
+        if (node.edges.isEmpty()) {
+            totalSuccess = maxRequire;
+            simulateRequire = 0;
+            restRequire = 0;
+        }
         //对合成进行模拟。假设每次合成simulateRequire个
         while (simulateRequire > 0) {
             //回溯备用

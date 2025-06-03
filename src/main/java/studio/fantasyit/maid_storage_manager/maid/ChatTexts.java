@@ -86,6 +86,8 @@ public class ChatTexts {
     public static final String CHAT_CRAFT_GATHER = "chat_bubbles.maid_storage_manager.crafting_gathering";
     public static final String CHAT_CRAFT_GATHER_ITEMS = "chat_bubbles.maid_storage_manager.crafting_gathering_item";
     public static final String CHAT_CRAFT_STEP = "chat_bubbles.maid_storage_manager.crafting_step";
+    public static final String CHAT_CRAFT_RESCHEDULE = "chat_bubbles.maid_storage_manager.crafting_reschedule";
+
     public static final String CHAT_CHECK_MARK_CHANGED = "chat_bubbles.maid_storage_manager.check_mark_changed";
     public static final String CHAT_COWORK_ENABLE = "chat_bubbles.maid_storage_manager.cowork_enable";
     public static final String CHAT_COWORK_DISABLE = "chat_bubbles.maid_storage_manager.cowork_disable";

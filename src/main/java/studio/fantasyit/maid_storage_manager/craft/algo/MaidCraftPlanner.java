@@ -118,6 +118,7 @@ public class MaidCraftPlanner {
         currentAvailableGraph = craftJobs
                 .peek()
                 .getB().init(items, MemoryUtil.getCrafting(maid).getCraftGuides());
+        notDone.forEach(itemStack -> currentAvailableGraph.setItemCount(itemStack.getA(), 0));
         return true;
     }
 
@@ -131,9 +132,8 @@ public class MaidCraftPlanner {
     }
 
     public void tick(long tick) {
-        if (tick % 2 == 0) {
-            sendMaidProgressBubble();
-        }
+        sendMaidProgressBubble();
+
 
         //如果所有任务层完成，标记done
         if (craftJobs.isEmpty()) {

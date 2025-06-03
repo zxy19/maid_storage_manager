@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.jei.request;
+package studio.fantasyit.maid_storage_manager.integration.request;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.network.chat.Component;
@@ -15,7 +15,7 @@ import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 
 import java.util.List;
 
-public class JEIRequest {
+public class IngredientRequest {
     public static void onRequest(ServerPlayer actor, List<ItemStack> data, int maidId) {
         Level level = actor.level();
         if (level.getEntity(maidId) instanceof EntityMaid maid && maid.isOwnedBy(actor)) {

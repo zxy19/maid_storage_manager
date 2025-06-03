@@ -61,7 +61,9 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return;
         target = MemoryUtil.getCrafting(maid).getTarget();
-        IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(target.getType()));
+        IMaidStorage storage = MaidStorage.getInstance().getStorage(target.getType());
+        if (storage == null)
+            return;
 
         changed = false;
         context = storage.onStartCollect(level, maid, target);
@@ -126,7 +128,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.clearTarget(maid);
 
         if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
-                MemoryUtil.getCrafting(maid).finishGathering(maid);
+            MemoryUtil.getCrafting(maid).finishGathering(maid);
         }
     }
 

@@ -23,12 +23,22 @@ public class AltarUseAction extends CommonUseAction {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
 
+    ItemStack tmpFirstItem = ItemStack.EMPTY;
+
     @Override
     public Result start() {
-        Result result = super.start();
         Optional<AltarRecipe> recipe = RecipeUtil.getAltarRecipe(maid.level(), RecipeUtil.wrapAltarRecipeInventory(craftGuideStepData.getInput()));
-        if (recipe.isEmpty())
-            return null;
+        if (recipe.isEmpty()) {
+            tmpFirstItem = ItemStack.EMPTY;
+            return Result.FAIL;
+        }
+        //最后一个是没处理的，第一个是程序即将要处理的
+        tmpFirstItem = craftGuideStepData.getInput().get(0);
+        List<ItemStack> nonEmptyItems = craftGuideStepData.getNonEmptyItems();
+        craftGuideStepData.setInput(0, nonEmptyItems.get(nonEmptyItems.size() - 1));
+        Result result = super.start();
+        if (result == Result.FAIL || result == Result.SUCCESS)
+            return result;
         int cost = (int) Math.ceil(recipe.get().getPowerCost() / 4);
         if (maid.getExperience() >= cost) {
             maid.setExperience(maid.getExperience() - cost);
@@ -38,9 +48,12 @@ public class AltarUseAction extends CommonUseAction {
         fakePlayer.getCapability(PowerCapabilityProvider.POWER_CAP).ifPresent(powerCapability -> {
             powerCapability.add(recipe.get().getPowerCost());
         });
-        //最后一个是没处理的，第一个是程序即将要处理的
-        List<ItemStack> nonEmptyItems = craftGuideStepData.getNonEmptyItems();
-        craftGuideStepData.setInput(0, nonEmptyItems.get(nonEmptyItems.size() - 1));
         return result;
+    }
+
+    @Override
+    public void stop() {
+        craftGuideStepData.setInput(0, tmpFirstItem);
+        super.stop();
     }
 }

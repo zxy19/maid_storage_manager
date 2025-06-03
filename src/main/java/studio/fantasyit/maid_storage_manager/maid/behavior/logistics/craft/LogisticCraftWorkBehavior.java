@@ -142,7 +142,7 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
                             layer
                                     .getCraftData()
                                     .map(CraftGuideData::getAllOutputItems)
-                                    .map(l -> l.get(0).getHoverName())
+                                    .map(l -> l.isEmpty() ? Component.empty() : l.get(0).getHoverName())
                                     .orElse(Component.empty()),
                             String.valueOf((layer.getDoneCount() + 1)),
                             layer.getCount().toString()

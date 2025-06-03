@@ -28,10 +28,10 @@ import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
+import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
-import studio.fantasyit.maid_storage_manager.jei.request.JEIRequest;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
@@ -256,7 +256,7 @@ public class Network {
                     context.get().enqueueWork(() -> {
                         ServerPlayer sender = context.get().getSender();
                         if (sender == null) return;
-                        JEIRequest.onRequest(sender, msg.data, msg.targetMaidId);
+                        IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
                         context.get().setPacketHandled(true);
                     });
                 }

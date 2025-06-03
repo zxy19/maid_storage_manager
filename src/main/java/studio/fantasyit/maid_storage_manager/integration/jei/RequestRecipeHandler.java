@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.jei;
+package studio.fantasyit.maid_storage_manager.integration.jei;
 
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class RequestRecipeHandler implements IUniversalRecipeTransferHandler<Ite
                                                          boolean doTransfer) {
         List<ItemStack> inputs = recipeSlots.getSlotViews(RecipeIngredientRole.INPUT)
                 .stream()
-                .map(e -> e.getItemStacks().findFirst().orElse(ItemStack.EMPTY))
+                .map(e -> InventoryListUtil.getMatchingForPlayer(e.getItemStacks().toList()))
                 .filter(i -> !i.isEmpty())
                 .toList();
         List<Pair<Integer, ItemStack>> list = new ArrayList<>();

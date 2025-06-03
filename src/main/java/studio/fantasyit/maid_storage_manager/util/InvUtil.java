@@ -127,8 +127,10 @@ public class InvUtil {
             BlockEntity blockEntity = level.getBlockEntity(blockPos);
             if (blockEntity != null) {
                 blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-                    if (ItemStack.isSameItemSameTags(itemHandler.getStackInSlot(0), markItem)) {
-                        consumer.accept(blockPos);
+                    for (int i = 0; i < itemHandler.getSlots(); i++) {
+                        if (ItemStack.isSameItemSameTags(itemHandler.getStackInSlot(i), markItem)) {
+                            consumer.accept(blockPos);
+                        }
                     }
                 });
             }
@@ -210,7 +212,6 @@ public class InvUtil {
     }
 
     public static List<Pair<Target, ItemStack>> getMarksWithSameContainer(ServerLevel level, Target target) {
-        List<Target> list = new ArrayList<>();
         AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);
         List<BlockPos> samePos = new ArrayList<>(List.of(target.pos));
         InvUtil.checkNearByContainers(level, target.pos, samePos::add);

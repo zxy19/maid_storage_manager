@@ -41,11 +41,11 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.clearReturnWorkSchedule(maid);
             next = Schedule.NO_SCHEDULE;
             //如果拿着列表且背包有空就可以开始处理请求，否则还得继续放东西
-        } else if (MemoryUtil.getCrafting(maid).isFinishCurrent() && !MemoryUtil.getRequestProgress(maid).isReturning()) {
+        } else if (MemoryUtil.getCrafting(maid).isGoPlacingBeforeCraft() && !MemoryUtil.getRequestProgress(maid).isReturning()) {
             //之前在执行请求且上次任务完成，而且不在返回存储物品（也就意味着上次任务或者失败或者完全存储完成了），则应该先存储背包的所有东西
             //如果背包清空，则继续执行任务
             if (Conditions.isNothingToPlace(maid)) {
-                MemoryUtil.getCrafting(maid).setFinishCurrent(false);
+                MemoryUtil.getCrafting(maid).setGoPlacingBeforeCraft(false);
                 next = Schedule.NO_SCHEDULE;
             } else
                 next = Schedule.PLACE;

@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.jei.request;
+package studio.fantasyit.maid_storage_manager.integration.request;
 
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
@@ -17,7 +17,7 @@ public class JEIRequestDisplayError implements IRecipeTransferError {
 
     @Override
     public void getTooltip(ITooltipBuilder tooltip) {
-        tooltip.add(Component.translatable("tooltip.maid_storage_manager.jei_request.from_maid", JEIRequestClient.preferMaidName));
+        tooltip.add(Component.translatable("tooltip.maid_storage_manager.jei_request.from_maid", IngredientRequestClient.preferMaidName));
     }
 
     public static class NoMaid implements IRecipeTransferError {

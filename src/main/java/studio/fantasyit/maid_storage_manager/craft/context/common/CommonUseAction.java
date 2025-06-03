@@ -23,10 +23,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.WrappedMaidFakePlayer;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +52,8 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
     @Override
     public Result tick() {
-        if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE;
+        if(!MoveUtil.setMovementIfColliedTarget((ServerLevel) maid.level(), maid, craftGuideStepData.storage))
+            return Result.CONTINUE;
         maid.swing(InteractionHand.MAIN_HAND);
         @Nullable List<ItemStack> ret = interactWithItemAndGetReturn();
         if (ret == null) {

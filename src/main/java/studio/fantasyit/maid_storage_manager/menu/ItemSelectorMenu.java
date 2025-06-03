@@ -22,7 +22,7 @@ import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 
 public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilter {
-    Player player;
+    public Player player;
     ItemStack target;
     public FilterContainer filteredItems;
     public SimpleContainer storageHandler;

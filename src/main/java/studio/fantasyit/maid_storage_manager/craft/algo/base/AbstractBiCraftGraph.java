@@ -47,6 +47,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         public int count;
         public boolean isLoopedIngredient;
         public int loopInputIngredientCount;
+        public int singleTimeCount;
         public boolean hasKeepIngredient;
         public int maxLack;
 
@@ -65,6 +66,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             this.hasKeepIngredient = false;
             this.minStepRequire = Integer.MAX_VALUE;
             this.maxLack = 0;
+            this.singleTimeCount = 1;
         }
 
         public void addCount(int count) {

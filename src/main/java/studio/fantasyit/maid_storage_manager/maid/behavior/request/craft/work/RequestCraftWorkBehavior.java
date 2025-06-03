@@ -50,6 +50,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getCrafting(maid).hasCurrent()) return false;
         if (!MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) return false;
         CraftGuideStepData stepData = MemoryUtil.getCrafting(maid).getCurrentLayer().getStepData();
+        if (stepData == null) return false;
         return Conditions.hasReachedValidTargetOrReset(maid, stepData.actionType.pathCloseEnoughThreshold());
     }
 
@@ -148,7 +149,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getCrafting(maid).nextLayer();
                 MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
                 MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
-            }else{
+            } else {
                 MemoryUtil.getCrafting(maid).checkInputInbackpack(maid);
             }
         }

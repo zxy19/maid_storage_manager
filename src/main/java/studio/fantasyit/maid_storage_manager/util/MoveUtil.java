@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +12,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class MoveUtil {
     public static boolean isValidTarget(ServerLevel level, EntityMaid maid, Target target, boolean bypassNoAccess) {
@@ -36,18 +40,22 @@ public class MoveUtil {
     }
 
     public static List<BlockPos> getAllAvailablePosForTarget(ServerLevel level, EntityMaid maid, BlockPos target, MaidPathFindingBFS pathFinding) {
-        return PosUtil.gatherAroundUpAndDown(target,
-                pos -> {
-                    if (!PosUtil.isSafePos(level, pos)) return null;
-                    if (maid.isWithinRestriction(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
-                        return pos;
-                    } else {
-                        return null;
-                    }
-                });
+        Function<BlockPos, @Nullable BlockPos> predictor = (BlockPos pos) -> {
+            if (!PosUtil.isSafePos(level, pos)) return null;
+            if (maid.isWithinRestriction(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
+                return pos;
+            } else {
+                return null;
+            }
+        };
+        if (maid.blockPosition().distManhattan(target) <= 2)
+            if (predictor.apply(maid.blockPosition()) != null) return List.of(maid.blockPosition());
+        return PosUtil.gatherAroundUpAndDown(target, predictor);
     }
 
     public static @Nullable BlockPos getNearestFromTargetList(ServerLevel level, EntityMaid maid, List<BlockPos> posListToEval) {
+        if (posListToEval.contains(maid.blockPosition()))
+            return maid.blockPosition();
         List<Pair<BlockPos, Integer>> posList = posListToEval
                 .stream()
                 .map(pos -> {
@@ -158,5 +166,21 @@ public class MoveUtil {
         }
 
         return list;
+    }
+
+    public static boolean setMovementIfColliedTarget(ServerLevel level, EntityMaid maid, Target target) {
+        if (target.side == null) return setMovementIfColliedTarget(level, maid, target.pos);
+        else return setMovementIfColliedTarget(level, maid, target.pos.relative(target.side));
+    }
+
+    public static boolean setMovementIfColliedTarget(ServerLevel level, EntityMaid maid, BlockPos pos) {
+        if (maid.getBoundingBox().intersects(new AABB(pos))) {
+            if (maid.getDeltaMovement().length() > 0.1) return false;
+            Vec3 dMove = maid.getPosition(0).subtract(pos.getCenter()).normalize().scale(0.4f);
+            dMove = dMove.with(Direction.Axis.Y, 0);
+            maid.setDeltaMovement(dMove);
+            return false;
+        }
+        return true;
     }
 }

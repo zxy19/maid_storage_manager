@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.jei;
+package studio.fantasyit.maid_storage_manager.integration.jei;
 
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;

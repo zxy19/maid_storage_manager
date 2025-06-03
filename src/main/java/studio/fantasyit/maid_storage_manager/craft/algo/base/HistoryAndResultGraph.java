@@ -77,6 +77,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
 
     @Override
     public List<CraftLayer> getResults() {
+        if (targetAvailable == 0) return List.of();
         if (this.results.isEmpty()) return List.of();
         List<CraftLayer> results = new LinkedList<>();
         CraftResultNode lastOne = this.results.peekLast();

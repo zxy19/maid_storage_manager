@@ -11,6 +11,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
 
@@ -249,6 +250,25 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                 realTarget.setValue(m);
         });
         return realTarget.getValue();
+    }
+
+    public void removeItemFromAllTargets(ItemStack itemStack, boolean matchTag) {
+        for (String pos : viewedInventory.keySet()) {
+            Map<String, List<ItemCount>> vi = viewedInventory.get(pos);
+            for (String item : vi.keySet()) {
+                vi.get(item).removeIf(itemCount -> ItemStackUtil.isSame(itemStack, itemCount.getFirst(), matchTag));
+            }
+            Set<String> ks = new HashSet<>(vi.keySet());
+            for (String k : ks) {
+                if (vi.get(k).isEmpty())
+                    vi.remove(k);
+            }
+        }
+        Set<String> ks = new HashSet<>(viewedInventory.keySet());
+        for (String k : ks) {
+            if (viewedInventory.get(k).isEmpty())
+                viewedInventory.remove(k);
+        }
     }
 
     int failTime = 0;

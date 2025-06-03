@@ -1,21 +1,16 @@
-package studio.fantasyit.maid_storage_manager.jei;
+package studio.fantasyit.maid_storage_manager.integration.jei;
 
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.ingredients.ITypedIngredient;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 public class GhostIngredientHandler implements IGhostIngredientHandler<AbstractFilterScreen> {
 

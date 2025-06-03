@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
@@ -91,10 +92,11 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
         }
         if (context != null)
             if (currentSlot >= availableInv.getSlots() || context.isDone()) {
-                if (!MemoryUtil.getLogistics(maid).hasMultipleGuide(maid)) {
-                    if (currentSlot >= availableInv.getSlots()) currentSlot = 0;
-                    if (context.isDone()) context.reset();
-                }
+                // 女仆还没有放置所有的物品，而且女仆只有这一个任务，那么继续等待直到物品放置完成
+                if (!InvUtil.isEmpty(availableInv) && !MemoryUtil.getLogistics(maid).hasMultipleGuide(maid)) {
+                        if (currentSlot >= availableInv.getSlots()) currentSlot = 0;
+                        if (context.isDone()) context.reset();
+                    }
             }
     }
 

@@ -127,7 +127,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         int weight = node.edges.get(i).getB();
         CraftNode toNode = (CraftNode) getNode(to);
         int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
-        if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = 1;
+        if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
         logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
         dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode);
     }
@@ -179,8 +179,11 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(),
                 new MutableBoolean()
         ));
+        //无原料合成，直接返回全部成功
         if (push.node.edges.isEmpty()) {
-            setReturnValue(push.maxRequire);
+            push.totalSuccess.setValue(push.maxRequire);
+            push.simulateRequire.setValue(0);
+            push.restRequire.setValue(0);
         }
     }
 

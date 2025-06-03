@@ -1,15 +1,17 @@
 package studio.fantasyit.maid_storage_manager.data;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
+import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @OnlyIn(Dist.CLIENT)
@@ -29,10 +31,20 @@ public class InventoryListDataClient {
     public static void setShowingInv(InventoryItem inventoryItem, int i) {
         showingInv.add(new Pair<>(inventoryItem, new MutableInt(i)));
     }
+
     public static void clearShowingInv() {
         showingInv.clear();
     }
 
+    public static void tickShowingInv() {
+        for (int i = InventoryListDataClient.showingInv.size() - 1; i >= 0; i--) {
+            InventoryListDataClient.showingInv.get(i).getB().subtract(1);
+            Integer value = InventoryListDataClient.showingInv.get(i).getB().getValue();
+            if (value <= 0) {
+                InventoryListDataClient.showingInv.remove(i);
+            }
+        }
+    }
 
     public void patch(UUID uuid, List<InventoryItem> map) {
         for (InventoryItem pair : map) {
@@ -51,7 +63,27 @@ public class InventoryListDataClient {
         }
     }
 
+    Set<UUID> requestSet = new HashSet<>();
+
+    public void requestForDataIfFirstTime(UUID uuid) {
+        if (requestSet.contains(uuid))
+            return;
+        Network.sendRequestListPacket(uuid);
+        requestSet.add(uuid);
+    }
+
     public List<InventoryItem> get(UUID uuid) {
         return dataMap.getOrDefault(uuid, new ArrayList<>());
+    }
+
+    public void tickRequest() {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            for (ItemStack i : player.inventory.items)
+                if (i.is(ItemRegistry.WRITTEN_INVENTORY_LIST.get()) &&
+                        i.hasTag() &&
+                        i.getTag().contains(WrittenInvListItem.TAG_UUID))
+                    requestForDataIfFirstTime(i.getTag().getUUID(WrittenInvListItem.TAG_UUID));
+        }
     }
 }
