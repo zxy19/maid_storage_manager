@@ -1,38 +1,42 @@
 {
-    "sortnum": 4,
-    "name": "Inventory List",
-    "icon": "maid_storage_manager:inventory_list",
-    "category": "touhou_little_maid:maid_storage_manager",
-    "pages": [
-        {
-            "type": "spotlight",
-            "item": "maid_storage_manager:inventory_list",
-            "text": "Inventory lists show you exactly what's inside the warehouse and where it is stored. $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
-        },
-        {
-            "type": "image",
-            "images": [
-                "maid_storage_manager:textures/book/inventory.png"
-            ],
-            "title": "Recorded inventory list",
-            "text": ""
-        },
-                {
-            "type": "text",
-            "title": "Looking for something",
-            "text": "When viewing the inventory list, you can click on an item to have its storage location marked, which is very handy when looking for items."
-        },
-        {
-            "type": "image",
-            "images": [
-                "maid_storage_manager:textures/book/inventory2.png"
-            ],
-            "title": "Chest with tomatoes",
-            "text": ""
-        },
-        {
-            "type": "altar_recipe",
-            "recipe_id": "maid_storage_manager:inventory_list"
-        }
-    ]
+  "sortnum": 4,
+  "name": "Inventory List",
+  "icon": "maid_storage_manager:inventory_list",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:inventory_list",
+      "text": "Inventory lists show you exactly what's inside the warehouse and where it is stored. $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/inventory.png"
+      ],
+      "title": "Recorded inventory list",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "title": "Looking for something",
+      "text": "When viewing the inventory list, you can click on an item to have its storage location marked, which is very handy when looking for items."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/inventory2.png"
+      ],
+      "title": "Chest with tomatoes",
+      "text": ""
+    },
+    {
+      "type": "text",
+      "text": "Tip: If you have an [Inventory List] in your backpack, when fill recipe from JEI/EMI, it will prioritise items that are available in large quantities in the warehouse or that can be crafted."
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:inventory_list"
+    }
+  ]
 }

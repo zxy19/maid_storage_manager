@@ -45,6 +45,12 @@ public class IngredientRequestClient {
     public static float maidAnimated = 0f;
     public static int lastAnimatedMaidId = -1;
 
+    public static int hasButtonTick = 0;
+
+    public static void hasButton() {
+        hasButtonTick = 5;
+    }
+
     public static void drawIcon(GuiGraphics guiGraphics, int xOffset, int yOffset) {
         guiGraphics.blit(R, xOffset, yOffset, 0, 0, 9, 9, 9, 9);
         guiGraphics.pose().pushPose();
@@ -152,6 +158,8 @@ public class IngredientRequestClient {
             preferMaidId = -1;
             multiple = 1;
         }
+        if (hasButtonTick > 0)
+            hasButtonTick--;
         tickAnimation();
     }
 
@@ -180,6 +188,7 @@ public class IngredientRequestClient {
 
     public static void renderGui(GuiGraphics guiGraphics, int mouseX, int mouseY, Screen screen) {
         if (!Config.renderMaidWhenIngredientRequest) return;
+        if (hasButtonTick == 0) return;
         if (maidAnimated == 0) return;
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;

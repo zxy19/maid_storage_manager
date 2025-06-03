@@ -1,0 +1,28 @@
+{
+  "sortnum": 13,
+  "name": "Ingredient Request",
+  "flag": "|mod:jei,mod:emi",
+  "icon": "maid_storage_manager:textures/book/ingredient_request.png",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "If you have installed JEI or EMI, your maid can automatically collect crafting ingredients based on recipes. Requirements for using this feature: $(li) Your maid is nearby $(li) Your maid has enabled $(l:maid_storage_manager/work_setting#co_work) cowork mode$() $(li) Your maid is currently following you and not performing other tasks"
+    },
+    {
+      "type": "text",
+      "text": "When you view the recipe, press the Ingredient Request key ( $(k:maid_storage_manager.request_ingredient) ), and you will see a button shape like fox ears. If there is a maid nearby who meets the conditions, she will be rendered below the GUI, and the button will light up. After pressing the button, the maid will automatically collect these ingredients and throw them at you. $(br2) You can use the mouse wheel to adjust the requested quantity while pressing $(k:maid_storage_manager.request_ingredient)."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/ingredient_request1.png"
+      ],
+      "text": "After pressing the button, the maid will begin working."
+    },
+    {
+      "type": "text",
+      "text": "Tip: If you have an [Inventory List] in your backpack, the maid will prioritise items that are available in large quantities in the warehouse or that can be crafted."
+    }
+  ]
+}

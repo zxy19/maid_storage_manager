@@ -42,7 +42,8 @@ abstract public class EMIRecipeTransferHook extends RecipeButtonWidget {
 
     @Override
     public void render(GuiGraphics raw, int mouseX, int mouseY, float delta) {
-        if (Integrations.EMIngredientRequest())
+        if (Integrations.EMIngredientRequest()) {
+            IngredientRequestClient.hasButton();
             if (IngredientRequestClient.keyPressed) {
                 int offset = super.getTextureOffset(mouseX, mouseY);
                 if (IngredientRequestClient.preferMaidId == -1) {
@@ -64,6 +65,7 @@ abstract public class EMIRecipeTransferHook extends RecipeButtonWidget {
                 IngredientRequestClient.drawIcon(raw, x + 1, y + 1);
                 return;
             }
+        }
         super.render(raw, mouseX, mouseY, delta);
     }
 

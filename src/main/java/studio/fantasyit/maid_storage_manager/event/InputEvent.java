@@ -1,11 +1,15 @@
 package studio.fantasyit.maid_storage_manager.event;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -18,6 +22,23 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class InputEvent {
+
+
+    public static final Lazy<KeyMapping> KEY_REQUEST_INGREDIENT = Lazy.of(() -> new net.minecraft.client.KeyMapping(
+            "key.maid_storage_manager.request_ingredient",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_ALT,
+            "key.maid_storage_manager.category"
+    ));
+
+    @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ModBus {
+        @SubscribeEvent
+        public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
+            event.register(KEY_REQUEST_INGREDIENT.get());
+        }
+    }
+
     @SubscribeEvent
     public static void onScroll(MouseScrollingEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;
@@ -36,10 +57,11 @@ public class InputEvent {
 
     @SubscribeEvent
     public static void onKey(net.minecraftforge.client.event.InputEvent.Key event) {
-        if (event.getKey() == GLFW.GLFW_KEY_LEFT_ALT) {
+        InputConstants.Key key = InputConstants.getKey(event.getKey(), event.getScanCode());
+        if (KEY_REQUEST_INGREDIENT.get().getKey().equals(key)) {
             if (event.getAction() == GLFW.GLFW_PRESS) {
                 IngredientRequestClient.keyPressed = true;
-            }else if(event.getAction() == GLFW.GLFW_RELEASE){
+            } else if (event.getAction() == GLFW.GLFW_RELEASE) {
                 IngredientRequestClient.keyPressed = false;
             }
         }

@@ -11,7 +11,7 @@
     {
       "type": "image",
       "images": [
-          "maid_storage_manager:textures/book/work_setting2.png"
+        "maid_storage_manager:textures/book/work_setting2.png"
       ],
       "title": "Task Settings button",
       "text": ""
@@ -43,6 +43,11 @@
     {
       "type": "text",
       "text": "Item storage rules (default is \"Better Sorting\"):  $(li)\"Better Sorting\": The maid strictly follows sorting priority to find storage Chests:  Filter Chests she considers not full -> Filter Chests she considers full (in case there's actual space) -> Not full previously stored Chests -> Full previously stored Chests -> Not full unrelated Chests -> Full unrelated Chests$(li)\"Prioritize Sorting\": Mode balancing efficiency and sorting:  Not full Filter Chests -> Not full previously stored Chests -> Full Filter Chests -> Full previously stored Chests -> Not full unrelated Chests -> Full unrelated Chests$(li)\"Better Efficiency\": Mode prioritizing storing items first: Not full Filter Chests -> Not full previously stored Chests -> Not full unrelated Chests -> Full Filter Chests -> Full previously stored Chests -> Full unrelated Chests  "
+    },
+    {
+      "type": "text",
+      "title": "Allow to seek for work meal",
+      "text": "After opening, the maid will find something to eat from the warehouse by herself:)."
     }
   ]
 }

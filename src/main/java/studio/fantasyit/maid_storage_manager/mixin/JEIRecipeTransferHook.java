@@ -58,6 +58,7 @@ abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
     @Redirect(method = "draw", at = @At(value = "INVOKE", target = "Lmezz/jei/gui/elements/GuiIconToggleButton;draw(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"), remap = false)
     public void draw(GuiIconToggleButton instance, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (!Integrations.JEIIngredientRequest()) return;
+        IngredientRequestClient.hasButton();
         if (instance instanceof IJEIButtonGetter ja) {
             if (ja.getArea().isEmpty())
                 return;

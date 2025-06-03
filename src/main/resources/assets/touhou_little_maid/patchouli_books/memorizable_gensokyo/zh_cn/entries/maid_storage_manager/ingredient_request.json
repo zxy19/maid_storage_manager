@@ -1,0 +1,28 @@
+{
+  "sortnum": 13,
+  "name": "原材料请求",
+  "flag": "|mod:jei,mod:emi",
+  "icon": "maid_storage_manager:textures/book/ingredient_request.png",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "如果你安装了JEI或者EMI，女仆可以根据配方自动收集材料。使用该功能要求：$(li)你的身边有你的女仆$(li)你的女仆开启了$(l:maid_storage_manager/work_setting#co_work)协同工作模式$()$(li)你的女仆目前正在跟着你，而不是处理其他任务"
+    },
+    {
+      "type": "text",
+      "text": "在你查看配方的时候，按下原材料请求键($(k:maid_storage_manager.request_ingredient))，你将会看到一个类似狐狸耳朵的按钮。如果你附近有满足条件的女仆，则她会被渲染在GUI下方，且按钮会亮起。按下按钮后，女仆将自动收集这些原材料并将其扔到你的身上。$(br2)你可以在按下$(k:maid_storage_manager.request_ingredient)的同时使用鼠标滚轮来调节请求的数量。"
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/ingredient_request1.png"
+      ],
+      "text": "按下按钮后，女仆将开始工作。"
+    },
+    {
+      "type": "text",
+      "text": "提示：如果你的背包中有[库存清单]，则女仆会优先取仓库中数量较多或可以合成的物品。"
+    }
+  ]
+}

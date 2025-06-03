@@ -31,6 +31,10 @@
             "text": ""
         },
         {
+            "type": "text",
+            "text": "提示：如果你的背包中有[库存清单]，则当从JEI/EMI转移配方时，会优先取仓库中数量较多或可以合成的物品。"
+        },
+        {
             "type": "altar_recipe",
             "recipe_id": "maid_storage_manager:inventory_list"
         }
