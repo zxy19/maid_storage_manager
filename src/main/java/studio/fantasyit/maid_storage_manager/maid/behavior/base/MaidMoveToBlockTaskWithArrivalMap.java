@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.maid.behavior;
+package studio.fantasyit.maid_storage_manager.maid.behavior.base;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;

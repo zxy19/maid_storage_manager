@@ -103,5 +103,19 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.FastSort, this.maid.getId(), v.ordinal());
                 }
         ));
+        this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 52,
+                Component.translatable("gui.maid_storage_manager.config.allow_seek_meal"),
+                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.allowSeekWorkMeal())),
+                button -> {
+                    this.currentMAData.allowSeekWorkMeal(false);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.AllowSeekWorkMeal, this.maid.getId(), 0);
+                },
+                button -> {
+                    this.currentMAData.allowSeekWorkMeal(true);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.AllowSeekWorkMeal, this.maid.getId(), 1);
+                }
+        ));
     }
 }

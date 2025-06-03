@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidCheckRa
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -28,6 +29,8 @@ public class ViewBehavior extends MaidCheckRateTask {
     private IStorageContext context = null;
     Target target = null;
     List<ItemStack> mismatchFilter = new ArrayList<>();
+    boolean shouldSeekForWorkMeal = false;
+    MutableObject<ItemStack> workMeal = new MutableObject<>(null);
 
     public ViewBehavior() {
         super(Map.of());
@@ -65,6 +68,8 @@ public class ViewBehavior extends MaidCheckRateTask {
             context.start(maid, level, target);
         }
         this.mismatchFilter.clear();
+        workMeal = new MutableObject<>(null);
+        shouldSeekForWorkMeal = MemoryUtil.getMeal(maid).shouldTakeMeal(maid);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.VIEW);
     }
 
@@ -78,6 +83,9 @@ public class ViewBehavior extends MaidCheckRateTask {
                     if (!filter.isAvailable(itemStack)) {
                         mismatchFilter.add(itemStack);
                     }
+                }
+                if (shouldSeekForWorkMeal && MemoryUtil.getMeal(maid).isWorkMeal(maid, itemStack)) {
+                    workMeal.setValue(itemStack);
                 }
                 MemoryUtil.getViewedInventory(maid).addItem(this.target, itemStack);
                 return itemStack;
@@ -110,8 +118,12 @@ public class ViewBehavior extends MaidCheckRateTask {
             InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
                 MemoryUtil.getResorting(maid).addVisitedPos(target.sameType(pos, null));
             });
+        } else if (workMeal.getValue() != null) {
+            MemoryUtil.getMeal(maid).setCheckItem(workMeal.getValue());
+            MemoryUtil.getMeal(maid).setTarget(target);
         }
     }
+
     @Override
     protected boolean timedOut(long p_22537_) {
         return false;

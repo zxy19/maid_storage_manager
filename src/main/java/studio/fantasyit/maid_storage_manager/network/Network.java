@@ -199,6 +199,13 @@ public class Network {
                             );
                             data.coWorkMode(msg.value == 1);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        } else if (msg.type == MaidDataSyncPacket.Type.AllowSeekWorkMeal) {
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.allowSeekWorkMeal(msg.value == 1);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.FastSort) {
                             StorageManagerConfigData.Data data = maid.getOrCreateData(
                                     StorageManagerConfigData.KEY,

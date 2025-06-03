@@ -75,10 +75,17 @@ public class MemoryUtil {
             maid.getBrain().setMemory(MemoryModuleRegistry.CRAFTING.get(), new CraftMemory());
         return maid.getBrain().getMemory(MemoryModuleRegistry.CRAFTING.get()).orElse(null);
     }
+
     public static LogisticsMemory getLogistics(EntityMaid maid) {
         if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.LOGISTICS.get()))
             maid.getBrain().setMemory(MemoryModuleRegistry.LOGISTICS.get(), new LogisticsMemory());
         return maid.getBrain().getMemory(MemoryModuleRegistry.LOGISTICS.get()).orElse(null);
+    }
+
+    public static MealMemory getMeal(EntityMaid maid) {
+        if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.MEAL.get()))
+            maid.getBrain().setMemory(MemoryModuleRegistry.MEAL.get(), new MealMemory());
+        return maid.getBrain().getMemory(MemoryModuleRegistry.MEAL.get()).orElse(null);
     }
 
     public static void setLookAt(EntityMaid maid, BlockPos pos) {

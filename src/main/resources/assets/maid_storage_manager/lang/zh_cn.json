@@ -61,6 +61,7 @@
   "craft_guide.action.maid_storage_manager.throw": "扔出",
   "craft_guide.action.maid_storage_manager.use": "使用",
   "entity.maid_storage_manager.virtual_display": "物品展示框",
+  "gui.maid_storage_manager.config.allow_seek_meal": "允许寻找工作餐",
   "gui.maid_storage_manager.config.bool.disable": "禁用",
   "gui.maid_storage_manager.config.bool.enable": "启用",
   "gui.maid_storage_manager.config.co_work": "协同工作模式",

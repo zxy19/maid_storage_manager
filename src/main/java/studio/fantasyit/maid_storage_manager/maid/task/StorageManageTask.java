@@ -31,6 +31,8 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.Logi
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.LogisticsOutputMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.meal.MealBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.meal.MealMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.FindListItemBehavior;
@@ -71,10 +73,7 @@ public class StorageManageTask implements IMaidTask {
 
     @Override
     public boolean enableLookAndRandomWalk(@NotNull EntityMaid maid) {
-        return switch (MemoryUtil.getCurrentlyWorking(maid)) {
-            case VIEW, NO_SCHEDULE -> true;
-            default -> false;
-        };
+        return (MemoryUtil.getCurrentlyWorking(maid) == ScheduleBehavior.Schedule.MEAL);
     }
 
     @Override
@@ -141,6 +140,9 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(5, new LogisticCraftWorkBehavior()));
         list.add(Pair.of(5, new LogisticsRecycleBehavior()));
         list.add(Pair.of(5, new LogisticsRecycleMoveBehavior()));
+        //吃吃吃
+        list.add(Pair.of(5, new MealBehavior()));
+        list.add(Pair.of(5, new MealMoveBehavior()));
         return list;
     }
 

@@ -203,5 +203,6 @@
   "gui.maid_storage_manager.jei_request.full": "[%s]: Backpack is full!",
   "gui.maid_storage_manager.jei_request.invalid": "[%s] is not co-working with you",
   "gui.maid_storage_manager.jei_request.not_found": "Maid not found",
-  "gui.maid_storage_manager.jei_request.finish": "[%s] has done its task."
+  "gui.maid_storage_manager.jei_request.finish": "[%s] has done its task.",
+  "gui.maid_storage_manager.config.allow_seek_meal": "Allow to seek work meals"
 }

@@ -23,7 +23,10 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
         PLACE,
         VIEW,
         REQUEST,
-        CO_WORK, LOGISTICS, RESORT
+        CO_WORK,
+        LOGISTICS,
+        RESORT,
+        MEAL
     }
 
     public ScheduleBehavior() {
@@ -32,6 +35,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        memoryTick(maid);
         Schedule last = MemoryUtil.getCurrentlyWorking(maid);
         Schedule next = last;
 
@@ -56,6 +60,8 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 next = Schedule.PLACE;
             else
                 next = Schedule.LOGISTICS;
+        } else if (MemoryUtil.getMeal(maid).isEating()) {
+            next = Schedule.MEAL;
         } else if (!Conditions.isNothingToPlace(maid))
             //没捡满的话优先捡东西
             if (maid.getBrain().hasMemoryValue(InitEntities.VISIBLE_PICKUP_ENTITIES.get()) && InvUtil.hasAnyFree(maid.getAvailableInv(false)))
@@ -64,6 +70,8 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 next = Schedule.PLACE;
         else if (MemoryUtil.getResorting(maid).hasTarget())
             next = Schedule.RESORT;
+        else if (MemoryUtil.getMeal(maid).hasTarget())
+            next = Schedule.MEAL;
         else if (!MemoryUtil.getViewedInventory(maid).getMarkChanged().isEmpty())
             next = Schedule.VIEW;
         else if (MemoryUtil.isCoWorking(maid))
@@ -89,5 +97,9 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                     )
             );
         }
+    }
+
+    protected void memoryTick(EntityMaid maid){
+        MemoryUtil.getMeal(maid).tick();
     }
 }

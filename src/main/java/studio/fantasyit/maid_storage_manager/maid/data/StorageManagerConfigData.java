@@ -11,16 +11,18 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         private MemoryAssistant memoryAssistant;
         private boolean noSortPlacement = false;
         private SuppressStrategy suppressStrategy = SuppressStrategy.AFTER_ALL;
+        private boolean allowSeekWorkMeal = false;
 
-        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode, SuppressStrategy suppressStrategy) {
+        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode, SuppressStrategy suppressStrategy, boolean allowSeekWorkMeal) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
             this.coWorkMode = coWorkMode;
             this.suppressStrategy = suppressStrategy;
+            this.allowSeekWorkMeal = allowSeekWorkMeal;
         }
 
         public static Data getDefault() {
-            return new Data(MemoryAssistant.MEMORY_FIRST, false, false, SuppressStrategy.AFTER_EACH);
+            return new Data(MemoryAssistant.MEMORY_FIRST, false, false, SuppressStrategy.AFTER_EACH, false);
         }
 
         public MemoryAssistant memoryAssistant() {
@@ -54,6 +56,14 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         public void suppressStrategy(SuppressStrategy suppressStrategy) {
             this.suppressStrategy = suppressStrategy;
         }
+
+        public boolean allowSeekWorkMeal() {
+            return allowSeekWorkMeal;
+        }
+
+        public void allowSeekWorkMeal(boolean allowSeekWorkMeal) {
+            this.allowSeekWorkMeal = allowSeekWorkMeal;
+        }
     }
 
     public static TaskDataKey<Data> KEY = null;
@@ -71,6 +81,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         tag.putString("suppressStrategy", data.suppressStrategy().name());
         tag.putBoolean("noSortPlacement", data.noSortPlacement());
         tag.putBoolean("coWorkMode", data.coWorkMode());
+        tag.putBoolean("allowSeekWorkMeal", data.allowSeekWorkMeal());
         return tag;
     }
 
@@ -82,7 +93,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                 : SuppressStrategy.AFTER_ALL;
         boolean noSortPlacement = compound.getBoolean("noSortPlacement");
         boolean coWorkMode = compound.getBoolean("coWorkMode");
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy);
+        boolean allowSeekWorkMeal = compound.getBoolean("allowSeekWorkMeal");
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {

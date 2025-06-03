@@ -43,7 +43,8 @@ public class MemoryModuleRegistry {
             = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<ItemStack>> TEMP_PICKUP_ITEM
             = REGISTER.register("temp_pickup_item", () -> new MemoryModuleType<>(Optional.empty()));
-
+    public static final RegistryObject<MemoryModuleType<MealMemory>> MEAL
+            = REGISTER.register("meal", () -> new MemoryModuleType<>(Optional.of(MealMemory.CODEC)));
 
     public static void register(IEventBus eventBus) {
         REGISTER.register(eventBus);
