@@ -105,6 +105,16 @@ public class CraftLayer {
         return ItemStack.EMPTY;
     }
 
+    public int memorizeItemSimulate(ItemStack itemStack) {
+        for (int i = 0; i < items.size(); i++) {
+            if (ItemStack.isSameItem(items.get(i), itemStack)) {
+                int restNeed = items.get(i).getCount() - collectedCounts.get(i);
+                return Math.min(restNeed, itemStack.getCount());
+            }
+        }
+        return 0;
+    }
+
 
     /**
      * 下一个合成阶段。行为如下描述

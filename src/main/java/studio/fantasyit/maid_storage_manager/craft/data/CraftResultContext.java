@@ -85,5 +85,4 @@ public class CraftResultContext {
             consumer.accept(itemStack, itemConsumeCount.get(itemStack));
         }
     }
-
 }

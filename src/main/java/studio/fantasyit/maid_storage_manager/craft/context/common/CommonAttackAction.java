@@ -159,7 +159,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         BlockPos target = craftGuideStepData.getStorage().getPos();
         ServerLevel level = (ServerLevel) maid.level();
         BlockHitResult result = getBlockHitResult(level, craftGuideStepData.getStorage());
-        if (!result.getBlockPos().equals(target)) return null;
+        if (result == null || !result.getBlockPos().equals(target)) return null;
         PlayerInteractEvent.LeftClickBlock event = ForgeHooks.onLeftClickBlock(fakePlayer,
                 target,
                 craftGuideStepData.getStorage().side,

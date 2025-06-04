@@ -73,6 +73,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         if (node.edges.isEmpty()) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            if (maxRequire > alignedRequire)
+                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             setReturnValue(alignedRequire);
             return;
         }
@@ -80,6 +82,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         if (maxRequire >= node.minStepRequire) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            if (maxRequire > alignedRequire)
+                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             setReturnValue(alignedRequire);
             return;
         }

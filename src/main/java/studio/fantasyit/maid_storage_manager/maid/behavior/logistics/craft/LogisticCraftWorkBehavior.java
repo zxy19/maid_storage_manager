@@ -147,7 +147,7 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
                             String.valueOf((layer.getDoneCount() + 1)),
                             layer.getCount().toString()
                     ),
-                    1
+                    (double) (layer.getDoneCount()) / layer.getCount()
             );
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             layer.nextStep();

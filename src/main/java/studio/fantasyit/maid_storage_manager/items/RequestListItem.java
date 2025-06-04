@@ -65,8 +65,6 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public RequestListItem() {
         super(new Properties().stacksTo(1));
     }
-
-
     public static boolean isIgnored(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!mainHandItem.hasTag()) return false;

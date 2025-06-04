@@ -41,8 +41,7 @@ public class PathTargetLocator {
         } else {
             posList = Arrays.stream(Direction.values()).map(d -> pos.relative(d, 2)).toList();
         }
-
-        Stream<Pair<BlockPos, Integer>> allPos = posList.stream().map(finalPos ->
+        List<List<BlockPos>> allPosTmp = posList.stream().map(finalPos ->
                         PosUtil.gatherAroundUpAndDown(finalPos, (pos1) -> {
                             if (PosUtil.isBetween(pos, finalPos, pos1)) return null;
                             if (!PosUtil.isSafePos(maid.level(), pos1)) return null;
@@ -51,15 +50,23 @@ public class PathTargetLocator {
                                 if (side != null && direction != side) continue;
                                 for (float f = 0.5f; f > 0.0f; f -= 0.1f) {
                                     Vec3 offseted = pos.getCenter().relative(direction, f);
-                                    if (maid.isWithinRestriction(pos1) && hasLineOfSight(maid, offseted, eyePos)) {
-                                        Path path = maid.getNavigation().createPath(pos1, 0);
-                                        if (path != null && path.canReach())
-                                            return new Pair<>(pos1, path.getNodeCount());
+                                    if (maid.isWithinRestriction(pos1) && pathFinding.canPathReach(pos1) && hasLineOfSight(maid, offseted, eyePos)) {
+                                        return pos1;
                                     }
                                 }
                             }
                             return null;
                         }))
+                .filter(s -> !s.isEmpty())
+                .toList();
+        Stream<Pair<BlockPos, Integer>> allPos = allPosTmp
+                .stream()
+                .map(s -> s.stream().map(pos1 -> {
+                    Path path = maid.getNavigation().createPath(pos1, 0);
+                    if (path != null && path.canReach())
+                        return new Pair<>(pos1, path.getNodeCount());
+                    return null;
+                }).filter(Objects::nonNull).toList())
                 .filter(s -> !s.isEmpty())
                 .map(s -> s.stream().min(Comparator.comparingInt(Pair::getB)))
                 .map(Optional::get);

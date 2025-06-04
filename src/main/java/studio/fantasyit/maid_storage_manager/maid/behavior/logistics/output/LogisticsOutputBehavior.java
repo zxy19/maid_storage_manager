@@ -83,9 +83,10 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
             ItemStack stack = availableInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty())
                 if (context instanceof IStorageInsertableContext isic) {
-                    ItemStack toInsert = layer.memorizeItem(stack, Integer.MAX_VALUE);
-                    ItemStack notInserted = isic.insert(toInsert);
-                    int restCount = stack.getCount() - toInsert.getCount() + notInserted.getCount();
+                    int toInsert = layer.memorizeItemSimulate(stack);
+                    ItemStack notInserted = isic.insert(stack.copyWithCount(toInsert));
+                    layer.memorizeItem(stack.copyWithCount(toInsert - notInserted.getCount()), Integer.MAX_VALUE);
+                    int restCount = stack.getCount() - toInsert + notInserted.getCount();
                     availableInv.setStackInSlot(currentSlot, stack.copyWithCount(restCount));
                 }
             currentSlot++;
@@ -94,9 +95,9 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
             if (currentSlot >= availableInv.getSlots() || context.isDone()) {
                 // 女仆还没有放置所有的物品，而且女仆只有这一个任务，那么继续等待直到物品放置完成
                 if (!InvUtil.isEmpty(availableInv) && !MemoryUtil.getLogistics(maid).hasMultipleGuide(maid)) {
-                        if (currentSlot >= availableInv.getSlots()) currentSlot = 0;
-                        if (context.isDone()) context.reset();
-                    }
+                    if (currentSlot >= availableInv.getSlots()) currentSlot = 0;
+                    if (context.isDone()) context.reset();
+                }
             }
     }
 
@@ -105,8 +106,10 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
         super.stop(level, maid, p_22550_);
         if (context != null)
             context.finish();
-
-        MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.RECYCLE);
+        if (Conditions.isNothingToPlace(maid))
+            MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);
+        else
+            MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.RECYCLE);
         MemoryUtil.getLogistics(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
     }

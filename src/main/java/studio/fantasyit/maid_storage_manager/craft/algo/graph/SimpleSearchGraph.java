@@ -31,11 +31,15 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         if (node.edges.isEmpty()) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            if (maxRequire > alignedRequire)
+                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             return alignedRequire;
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
         if (maxRequire >= node.minStepRequire) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
+            if (maxRequire > alignedRequire)
+                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
             return alignedRequire;
         }

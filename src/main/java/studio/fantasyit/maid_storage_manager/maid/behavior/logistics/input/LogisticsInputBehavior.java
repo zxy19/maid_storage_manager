@@ -58,6 +58,8 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
                     return failCount <= Config.maxLogisticsTries;
                 }
                 return true;
+            } else {
+                return false;
             }
         } else if (failCount > Config.maxLogisticsTries) {
             return false;
@@ -137,27 +139,13 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         }
         int count = LogisticsGuide.getWorkCount(currentLogisticsGuideItem);
         if (craftGuideData != null) {
-            count = getAvailableCount(maid, craftGuideData, itemsAt, count);
-            if (count != 0) {
-                int finalCount = count;
-                layer = new CraftLayer(Optional.of(craftGuideData),
-                        craftGuideData
-                                .getAllInputItems()
-                                .stream()
-                                .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() * finalCount))
-                                .toList(),
-                        count);
-                output = new CraftLayer(Optional.empty(),
-                        craftGuideData
-                                .getAllOutputItems()
-                                .stream()
-                                .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() * finalCount))
-                                .toList(),
-                        count);
-            } else {
+            count = getAvailableCountFromCraftAndSetLayer(maid, craftGuideData, itemsAt, count);
+            if (count == 0) {
                 contextView.reset();
                 MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
                 failCount++;
+                layer = null;
+                output = null;
             }
         } else if (!itemsAt.isEmpty()) {
             ViewedInventoryMemory.ItemCount itemCount = itemsAt.get(0);
@@ -179,10 +167,10 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             failCount = 0;
     }
 
-    private int getAvailableCount(EntityMaid maid, CraftGuideData craftGuideData, List<ViewedInventoryMemory.ItemCount> itemsAt, int count) {
+    private int getAvailableCountFromCraftAndSetLayer(EntityMaid maid, CraftGuideData craftGuideData, List<ViewedInventoryMemory.ItemCount> itemsAt, int count) {
         List<ItemStack> inputs = craftGuideData.getInput();
-        List<ItemStack> costedInputs = new ArrayList<>(inputs);
-        for (ItemStack output : costedInputs) {
+        List<ItemStack> costedInputs = inputs.stream().map(ItemStack::copy).toList();
+        for (ItemStack output : craftGuideData.getOutput()) {
             int outputCount = output.getCount();
             for (ItemStack itemStack : costedInputs) {
                 if (!itemStack.isEmpty() && ItemStackUtil.isSame(output, itemStack, false)) {
@@ -202,21 +190,36 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
                     availableCount += itemCount.getSecond();
                 }
             }
-            if (availableCount >= input.getCount())
+            if (availableCount < input.getCount())
                 count = 0;
             else if (costedInput.getCount() != 0)
                 count = Math.min(count, (availableCount - input.getCount()) / costedInput.getCount() + 1);
         }
         List<ItemStack> toSimulate = new ArrayList<>(inputs);
+        List<CraftLayer> toTest = new ArrayList<>();
+        CraftLayer test = new CraftLayer(Optional.of(craftGuideData), toSimulate, 1);
+        for (int i = 0; i < count; i++) {
+            toTest.add(test);
+        }
         for (; count > 0; count--) {
             for (int i = 0; i < inputs.size(); i++)
                 toSimulate.get(i).setCount(costedInputs.get(i).getCount() * count + inputs.get(i).getCount());
-            layer = new CraftLayer(Optional.of(craftGuideData), toSimulate, count);
-            CraftResultContext context = new CraftResultContext(List.of(layer));
+            CraftResultContext context = new CraftResultContext(toTest);
             if (context.getSlotConsume() < InvUtil.freeSlots(maid.getAvailableInv(false))) {
                 break;
             }
+            toTest.remove(0);
         }
+
+        for (int i = 0; i < inputs.size(); i++)
+            toSimulate.get(i).setCount(costedInputs.get(i).getCount() * count + inputs.get(i).getCount());
+        layer = new CraftLayer(Optional.of(craftGuideData), toSimulate, count);
+        CraftResultContext remainContext = new CraftResultContext(toTest);
+        List<ItemStack> remains = new ArrayList<>();
+        remainContext.forEachRemaining((itemStack, c) -> ItemStackUtil.addToList(remains, itemStack.copyWithCount(c), false));
+        output = new CraftLayer(Optional.empty(),
+                remains,
+                count);
         return count;
     }
 
