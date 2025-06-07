@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -122,6 +123,8 @@ public class LogisticsMemory extends AbstractTargetMemory {
     }
 
     public void setStage(Stage stage) {
+        if (stage != this.stage)
+            DebugData.sendDebug("[LOGISTIC]Stage change to " + stage.name());
         this.stage = stage;
     }
 

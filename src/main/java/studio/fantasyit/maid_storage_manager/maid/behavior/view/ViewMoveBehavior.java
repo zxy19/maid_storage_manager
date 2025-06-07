@@ -14,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
@@ -65,7 +66,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         Target toCheckTarget = MemoryUtil.getViewedInventory(maid).getMarkChanged().peek();
         if (toCheckTarget != null) {
             @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, toCheckTarget.getPos(), toCheckTarget.side);
-            if (storage != null) {
+            if (storage != null && StoragePredictor.isViewable(storage)) {
                 @Nullable BlockPos target = MoveUtil.selectPosForTarget(level, maid, toCheckTarget.getPos());
                 if (target != null) {
                     chestPos = storage;
@@ -90,7 +91,10 @@ public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         Target canTouchChest = MoveUtil.findTargetForPos(serverLevel,
                 entityMaid,
                 blockPos,
-                MemoryUtil.getViewedInventory(entityMaid));
+                MemoryUtil.getViewedInventory(entityMaid),
+                false,
+                StoragePredictor::isViewable
+        );
         if (canTouchChest != null) {
             DebugData.sendDebug("[VIEW]Target %s", canTouchChest);
             chestPos = canTouchChest;

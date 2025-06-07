@@ -34,7 +34,7 @@ public class AE2Type implements ICraftType {
 
     @Override
     public ItemStack getIcon() {
-        return Items.STONECUTTER.getDefaultInstance();
+        return Items.STONE.getDefaultInstance();
     }
 
     @Override

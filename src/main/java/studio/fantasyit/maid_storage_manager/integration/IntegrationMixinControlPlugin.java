@@ -30,6 +30,10 @@ public class IntegrationMixinControlPlugin implements IMixinConfigPlugin {
             return Integrations.JEIIngredientRequestLoading();
         } else if (mixinClass("EMIRecipeTransferHook").equals(mixinClassName)) {
             return Integrations.EMIngredientRequestLoading();
+        } else if (mixinClass("CreateStockKeeperScreenMixin").equals(mixinClassName)) {
+            return Integrations.createLoading();
+        } else if (mixinClass("CreateStockTickerBEMixin").equals(mixinClassName)) {
+            return Integrations.createLoading();
         }
         return true;
     }

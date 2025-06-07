@@ -1,17 +1,22 @@
 package studio.fantasyit.maid_storage_manager.util;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class PosUtil {
@@ -88,14 +93,18 @@ public class PosUtil {
                 && !isEmptyBlockPos(level, pos.below());
     }
 
-    static public boolean hasSightLine(Level level, BlockPos pos1, BlockPos pos2) {
-        BlockHitResult result = level.clip(new ClipContext(pos1.getCenter(),
-                pos2.getCenter(),
-                ClipContext.Block.COLLIDER,
-                ClipContext.Fluid.NONE,
-                null));
-        if (result.getType() == HitResult.Type.BLOCK) {
-            return result.getBlockPos().equals(pos2);
+    static public boolean hasSightLineOnAnySurface(Level level, Vec3 pos1, BlockPos pos2) {
+        for (Direction direction : Direction.values()) {
+            BlockHitResult result = level.clip(new ClipContext(pos1,
+                    pos2.getCenter().relative(direction, 0.4),
+                    ClipContext.Block.COLLIDER,
+                    ClipContext.Fluid.NONE,
+                    null));
+            if (result.getType() == HitResult.Type.BLOCK) {
+                if (result.getBlockPos().equals(pos2)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -145,5 +154,11 @@ public class PosUtil {
             }
         }
         return false;
+    }
+
+    public static void walkThroughWithinEyesight(ServerLevel level, EntityMaid origin, AABB aabb, Consumer<BlockPos> consumer) {
+        BlockPos.betweenClosedStream(aabb)
+                .filter(pos -> canTouch(level, origin.blockPosition().above(), pos))
+                .forEach(consumer);
     }
 }

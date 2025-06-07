@@ -174,6 +174,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             if (!inventory.getItem(i).isEmpty()) {
                 ItemStackUtil.addToList(items, inventory.getItem(i), true);
+                inventory.setItem(i, ItemStack.EMPTY);
             }
         }
         return items;

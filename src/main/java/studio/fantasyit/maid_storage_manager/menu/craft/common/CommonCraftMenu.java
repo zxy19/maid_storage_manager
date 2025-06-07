@@ -323,6 +323,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                         }
                     }
                 }
+                save();
             }
         }
         recalculateSlots();

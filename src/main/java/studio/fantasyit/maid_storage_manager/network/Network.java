@@ -28,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
+import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
 import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
@@ -292,6 +293,27 @@ public class Network {
                                         MemoryModuleRegistry.CURRENTLY_WORKING.get(),
                                         ScheduleBehavior.Schedule.values()[msg.value.getInt("id")]
                                 );
+                            }
+                        }
+                        context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(12,
+                CreateStockManagerPacket.class,
+                CreateStockManagerPacket::toBytes,
+                CreateStockManagerPacket::new,
+                (packet, context) -> {
+                    context.get().enqueueWork(() -> {
+                        @Nullable ServerPlayer sender = context.get().getSender();
+                        if (sender != null) {
+                            Entity target = sender.level().getEntity(packet.id);
+                            if (target instanceof EntityMaid maid) {
+                                if (packet.data == CreateStockManagerPacket.Type.OPEN_SCREEN) {
+                                    StockManagerInteract.onHandleStockManager(sender, maid, packet.ticker);
+                                } else if (packet.data == CreateStockManagerPacket.Type.SHOP_LIST) {
+                                    StockManagerInteract.onHandleShoppingList(sender, maid, packet.ticker);
+                                }
                             }
                         }
                         context.get().setPacketHandled(true);

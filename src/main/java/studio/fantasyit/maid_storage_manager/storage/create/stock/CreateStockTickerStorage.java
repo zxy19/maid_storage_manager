@@ -1,6 +1,7 @@
-package studio.fantasyit.maid_storage_manager.storage.create;
+package studio.fantasyit.maid_storage_manager.storage.create.stock;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.simibubi.create.AllBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +13,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
-public class CreateStorage implements IMaidStorage {
+public class CreateStockTickerStorage implements IMaidStorage {
     public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "create");
 
     @Override
@@ -21,13 +22,18 @@ public class CreateStorage implements IMaidStorage {
     }
 
     @Override
-    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side) {
+    public boolean supportPlace() {
         return false;
     }
 
     @Override
+    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side) {
+        return level.getBlockState(block).is(AllBlocks.STOCK_TICKER.get());
+    }
+
+    @Override
     public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Target storage) {
-        return null;
+        return new CreateCollectContext();
     }
 
     @Override
@@ -37,6 +43,6 @@ public class CreateStorage implements IMaidStorage {
 
     @Override
     public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target storage) {
-        return null;
+        return new CreateViewContext();
     }
 }

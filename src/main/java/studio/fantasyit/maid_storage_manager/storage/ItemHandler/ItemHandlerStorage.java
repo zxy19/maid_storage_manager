@@ -14,11 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBlockStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class ItemHandlerStorage implements IMaidStorage {
     public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "item_handler");
+
     @Override
     public ResourceLocation getType() {
         return TYPE;
@@ -39,21 +41,21 @@ public class ItemHandlerStorage implements IMaidStorage {
 
     @Override
     public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Target storage) {
-        return new ContextItemHandlerCollect(storage);
+        return new ContextItemHandlerCollect();
     }
 
     @Override
     public @Nullable IStorageContext onStartPlace(ServerLevel level, EntityMaid maid, Target storage) {
-        return new ContextItemHandlerStore(storage);
+        return new ContextItemHandlerStore();
     }
 
     @Override
     public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target storage) {
-        return new ContextItemHandlerView(storage);
+        return new ContextItemHandlerView();
     }
 
     @Override
     public @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Target storage) {
-        return new ContextItemHandlerPreview(storage);
+        return new AbstractFilterableBlockStorage();
     }
 }

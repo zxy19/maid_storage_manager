@@ -12,6 +12,7 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -119,7 +120,13 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
                                    @NotNull BlockPos blockPos) {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
         //寻找当前格子能触碰的箱子
-        @Nullable Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, getMemory(entityMaid));
+        @Nullable Target canTouchChest = MoveUtil.findTargetForPos(serverLevel,
+                entityMaid,
+                blockPos,
+                getMemory(entityMaid),
+                false,
+                StoragePredictor::isCollectable
+        );
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.sendDebug("[GATHERING]Target %s", canTouchChest);

@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockT
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.*;
 
@@ -131,7 +132,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(entityMaid);
         //寻找当前格子能触碰的箱子
-        Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress);
+        Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress,false, StoragePredictor::isCollectable);
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.sendDebug("[REQUEST_FIND]Target %s", canTouchChest);

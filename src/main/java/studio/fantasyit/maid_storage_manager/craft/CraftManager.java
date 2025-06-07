@@ -206,6 +206,18 @@ public class CraftManager {
                     1
             );
         }
+        if (ModList.get().isLoaded("refinedstorage") && Config.enableRsSup) {
+            event.addCraftType(new RSType());
+            event.addAction(
+                    RSType.TYPE,
+                    RsCraftingAction::new,
+                    PathTargetLocator::commonNearestAvailablePos,
+                    CraftAction.PathEnoughLevel.NORMAL.value,
+                    false,
+                    0,
+                    1
+            );
+        }
     }
 
     public @Nullable ICraftType getType(ResourceLocation type) {

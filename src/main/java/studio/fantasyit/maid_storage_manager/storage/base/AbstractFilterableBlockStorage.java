@@ -1,5 +1,6 @@
-package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
+package studio.fantasyit.maid_storage_manager.storage.base;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
@@ -8,23 +9,20 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterableItemHandler implements IFilterable {
-    protected Target storage;
-
-    public FilterableItemHandler(Target storage) {
-        this.storage = storage;
-    }
-
+public class AbstractFilterableBlockStorage implements IFilterable, IStorageContext {
     List<Pair<ItemStack, Boolean>> filtered;
     boolean isBlackMode;
 
+    @Override
+    public void start(EntityMaid maid, ServerLevel level, Target target) {
+        init(level, target);
+    }
     public void init(ServerLevel level, Target target) {
         List<Pair<Target, ItemStack>> marksWithSameContainer = InvUtil.getMarksWithSameContainer(level, target);
         if (marksWithSameContainer.isEmpty()) {
@@ -89,5 +87,4 @@ public class FilterableItemHandler implements IFilterable {
     public boolean isWhitelist() {
         return !isBlackMode;
     }
-
 }

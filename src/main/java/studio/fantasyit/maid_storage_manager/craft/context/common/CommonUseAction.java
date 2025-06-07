@@ -7,14 +7,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -32,8 +34,9 @@ import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 public class CommonUseAction extends AbstractCraftActionContext {
     public static final ResourceLocation TYPE_R = new ResourceLocation(MaidStorageManager.MODID, "use");
-    protected FakePlayer fakePlayer;
+    protected WrappedMaidFakePlayer fakePlayer;
     private int storedSlot;
+    int failCount = 0;
 
     public CommonUseAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -47,20 +50,24 @@ public class CommonUseAction extends AbstractCraftActionContext {
         storedSlot = InvUtil.getTargetIndex(maid, craftGuideStepData.getInput().get(0), craftGuideStepData.matchTag);
         if (storedSlot == -1) return Result.FAIL;
         InvUtil.swapHandAndSlot(maid, storedSlot);
+        failCount = 0;
         return Result.CONTINUE;
     }
 
     @Override
     public Result tick() {
-        if(!MoveUtil.setMovementIfColliedTarget((ServerLevel) maid.level(), maid, craftGuideStepData.storage))
+        if (!MoveUtil.setMovementIfColliedTarget((ServerLevel) maid.level(), maid, craftGuideStepData.storage))
             return Result.CONTINUE;
         maid.swing(InteractionHand.MAIN_HAND);
         @Nullable List<ItemStack> ret = interactWithItemAndGetReturn();
         if (ret == null) {
-            if (craftGuideStepData.isOptional())
-                return Result.SUCCESS;
-            else
-                return Result.FAIL;
+            if (++failCount > 5) {
+                if (craftGuideStepData.isOptional())
+                    return Result.SUCCESS;
+                else
+                    return Result.FAIL;
+            }
+            return Result.CONTINUE;
         }
 
         int resultPlaced = 0;
@@ -94,17 +101,20 @@ public class CommonUseAction extends AbstractCraftActionContext {
         Target storage = craftGuideStepData.getStorage();
         BlockPos target = craftGuideStepData.getStorage().getPos();
         ServerLevel level = (ServerLevel) maid.level();
+        Vec3 eyePos = maid.getPosition(0).add(0, maid.getEyeHeight(), 0);
+        Vec3 viewVec = null;
 
         BlockHitResult result = null;
         for (float disToSize = 0.50f; disToSize > 0; disToSize -= 0.1f) {
             for (Direction direction : Direction.values()) {
                 if (craftGuideStepData.getStorage().side != null && craftGuideStepData.getStorage().side != direction)
                     continue;
-                ClipContext rayTraceContext = new ClipContext(maid.getPosition(0).add(0, maid.getEyeHeight(), 0),
+                ClipContext rayTraceContext = new ClipContext(eyePos,
                         target.getCenter().relative(direction, disToSize),
                         ClipContext.Block.COLLIDER,
-                        ClipContext.Fluid.NONE,
+                        shouldUseFluidClip(level, target) ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE,
                         fakePlayer);
+                viewVec = target.getCenter().relative(direction, disToSize).subtract(eyePos);
                 result = level.clip(rayTraceContext);
                 if (result.getBlockPos().equals(target))
                     if (storage.side == null || result.getDirection() == storage.side)
@@ -115,6 +125,8 @@ public class CommonUseAction extends AbstractCraftActionContext {
         }
         if (result == null) return null;
 
+
+        fakePlayer.overrideXYRot(MathUtil.vec2RotX(viewVec), MathUtil.vec2RotY(viewVec));
         PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(fakePlayer,
                 InteractionHand.MAIN_HAND,
                 target,
@@ -129,17 +141,31 @@ public class CommonUseAction extends AbstractCraftActionContext {
                 InteractionResult actionresult = fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).onItemUseFirst(useContext);
                 if (actionresult == InteractionResult.PASS) {
                     InteractionResult interactionResult = fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).useOn(useContext);
+                    if (!interactionResult.consumesAction()) {
+                        InteractionResultHolder<ItemStack> use1 = fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).use(level, fakePlayer, InteractionHand.MAIN_HAND);
+                        fakePlayer.setItemInHand(InteractionHand.MAIN_HAND, use1.getObject());
+                    }
                 }
             }
         }
+        fakePlayer.overrideXYRot(null, null);
         Inventory inventory = fakePlayer.getInventory();
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             if (!inventory.getItem(i).isEmpty()) {
                 ItemStackUtil.addToList(items, inventory.getItem(i), true);
+                inventory.setItem(i, ItemStack.EMPTY);
             }
         }
         return items;
+    }
+
+    private boolean shouldUseFluidClip(ServerLevel level, BlockPos target) {
+        if (level.getFluidState(target).isSource()) return true;
+        if (craftGuideStepData.getInput().stream().anyMatch(t -> t.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent())) {
+            return true;
+        }
+        return false;
     }
 
     @Override

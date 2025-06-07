@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class MoveUtil {
     public static boolean isValidTarget(ServerLevel level, EntityMaid maid, Target target, boolean bypassNoAccess) {
@@ -77,17 +78,16 @@ public class MoveUtil {
         return getNearestFromTargetList(level, maid, posListToEval);
     }
 
-    public static @Nullable Target findTargetForPos(ServerLevel level, EntityMaid maid, BlockPos blockPos, AbstractTargetMemory memory) {
-        return findTargetForPos(level, maid, blockPos, memory, false);
-    }
 
-    public static @Nullable Target findTargetForPos(ServerLevel level, EntityMaid maid, BlockPos blockPos, AbstractTargetMemory memory, boolean allowRequestOnly) {
+    public static @Nullable Target findTargetForPos(ServerLevel level, EntityMaid maid, BlockPos blockPos, AbstractTargetMemory memory, boolean allowRequestOnly, Predicate<Target> validator) {
         return PosUtil.findAroundUpAndDown(blockPos, (pos) -> {
             Target validTarget = MaidStorage.getInstance().isValidTarget(level, maid, pos);
             if (validTarget == null || !PosUtil.canTouch(level, blockPos, pos)) return null;
             List<Target> list = findTargetRewrite(level, maid, validTarget, allowRequestOnly);
             for (Target storage : list) {
                 if (memory.isVisitedPos(storage))
+                    continue;
+                if (!validator.test(storage))
                     continue;
                 return storage;
             }

@@ -96,6 +96,7 @@ public class SimulateTargetInteractHelper {
     final Player opener;
     int currentSlot = 0;
     int restTick = 0;
+    int countPreTick = 10;
     boolean notOpener = false;
 
     public SimulateTargetInteractHelper(EntityMaid maid, BlockPos targetPos, @Nullable Direction side, ServerLevel level) {
@@ -113,6 +114,9 @@ public class SimulateTargetInteractHelper {
 
             if (capability.isPresent()) {
                 itemHandler = capability.orElseThrow(RuntimeException::new);
+
+                if (itemHandler.getSlots() > 60)
+                    countPreTick = itemHandler.getSlots() / 6;
             }
         }
     }
@@ -200,7 +204,7 @@ public class SimulateTargetInteractHelper {
         if (itemHandler == null) return;
         int count = 0;
         for (; currentSlot < itemHandler.getSlots(); currentSlot++) {
-            if (++count >= 10) break;
+            if (++count >= countPreTick) break;
             //可以获取到的物品
             ItemStack copy = itemHandler.extractItem(currentSlot,
                     itemHandler.getStackInSlot(currentSlot).getCount(),
@@ -220,7 +224,7 @@ public class SimulateTargetInteractHelper {
         if (itemHandler == null) return;
         int count = 0;
         for (; currentSlot < itemHandler.getSlots(); currentSlot++) {
-            if (++count >= 10) break;
+            if (++count >= countPreTick) break;
             ItemStack stack = itemHandler.getStackInSlot(currentSlot);
             if (stack.isEmpty()) continue;
             cb.accept(stack);

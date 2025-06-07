@@ -5,12 +5,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
+import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -34,8 +37,19 @@ public class PlayerInteract {
     }
 
     @SubscribeEvent
+    public static void onPlayerInteractMaid(PlayerInteractEvent.EntityInteractSpecific event) {
+        if (event.getTarget() instanceof EntityMaid maid) {
+            if (Integrations.createStockManager())
+                if (StockManagerInteract.onPlayerInteract(event.getEntity(), maid)) {
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                    return;
+                }
+        }
+    }
+
+    @SubscribeEvent
     public static void onPlayerInteractRc(PlayerInteractEvent.RightClickBlock event) {
-        if(event.getLevel().isClientSide || event.getFace() == null) return;
+        if (event.getLevel().isClientSide || event.getFace() == null) return;
         onPlayerInteract(
                 (ServerLevel) event.getLevel(),
                 (ServerPlayer) event.getEntity(),
@@ -46,7 +60,7 @@ public class PlayerInteract {
 
     @SubscribeEvent
     public static void onPlayerInteractLc(PlayerInteractEvent.LeftClickBlock event) {
-        if(event.getLevel().isClientSide || event.getFace() == null) return;
+        if (event.getLevel().isClientSide || event.getFace() == null) return;
         onPlayerInteract(
                 (ServerLevel) event.getLevel(),
                 (ServerPlayer) event.getEntity(),

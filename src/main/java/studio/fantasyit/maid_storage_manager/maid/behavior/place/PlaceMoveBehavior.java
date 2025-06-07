@@ -20,8 +20,10 @@ import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
+import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -36,6 +38,7 @@ import static studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConf
 
 public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     private Target chestPos;
+
     public PlaceMoveBehavior() {
         super((float) Config.placeSpeed, 3);
         this.verticalSearchStart = 1;
@@ -127,10 +130,11 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             if (possibleMove.isEmpty()) continue;
 
             if (validTarget != null) {
-                @Nullable IStorageContext context = MaidStorage
+                @Nullable IMaidStorage type = MaidStorage
                         .getInstance()
-                        .getStorage(validTarget.getType())
-                        .onPreviewFilter(level, maid, validTarget);
+                        .getStorage(validTarget.getType());
+                if (type == null || !type.supportPlace()) continue;
+                @Nullable IStorageContext context = type.onPreviewFilter(level, maid, validTarget);
                 if (context != null) context.start(maid, level, validTarget);
                 if (context instanceof IFilterable ift) {
                     //请求返回箱子，不能存入其他物品
@@ -237,7 +241,10 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         Target canTouchChest = MoveUtil.findTargetForPos(serverLevel,
                 entityMaid,
                 blockPos,
-                MemoryUtil.getPlacingInv(entityMaid));
+                MemoryUtil.getPlacingInv(entityMaid),
+                false,
+                StoragePredictor::isPlaceable
+        );
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.sendDebug("[PLACE]Normal %s", canTouchChest);

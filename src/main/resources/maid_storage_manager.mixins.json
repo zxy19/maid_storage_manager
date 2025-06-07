@@ -7,11 +7,14 @@
   "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
     "ContainerOpenersCounterPatch",
+    "CreateStockKeeperMenuMixin",
+    "CreateStockTickerBEMixin",
     "EMIRecipeTransferHook",
     "JeiGuiIconToggleButtonAccessor",
     "JEIRecipeTransferHook"
   ],
   "client": [
+    "CreateStockKeeperScreenMixin",
     "GuiGraphicMixin",
     "MinecraftMixin"
   ],

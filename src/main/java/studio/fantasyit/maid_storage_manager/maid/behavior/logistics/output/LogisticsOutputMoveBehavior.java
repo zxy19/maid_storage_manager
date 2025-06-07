@@ -43,11 +43,16 @@ public class LogisticsOutputMoveBehavior extends Behavior<EntityMaid> {
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
 
             if (goal != null) {
+                MemoryUtil.getLogistics(maid).resetFailCount();
                 MemoryUtil.getLogistics(maid).setTarget(storage);
                 MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
                 return;
             }
         }
-        MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.RECYCLE);
+        MemoryUtil.getLogistics(maid).addFailCount();
+        if (MemoryUtil.getLogistics(maid).getFailCount() > 20) {
+            MemoryUtil.getLogistics(maid).resetFailCount();
+            MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.RECYCLE);
+        }
     }
 }

@@ -36,12 +36,28 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue ENABLE_AE2SUP = BUILDER
             .comment("Enable ae2 support(Maid may pickup things from terminal)")
             .define("compat.ae2_support", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_RS_SUP = BUILDER
+            .comment("Enable rs support(Maid may pickup things from rs)")
+            .define("compat.rs_support", true);
     private static final ForgeConfigSpec.BooleanValue ENABLE_JEI_INGREDIENT_REQUEST = BUILDER
             .comment("Ingredient request for JEI")
             .define("compat.jei_ingredient_request", true);
     private static final ForgeConfigSpec.BooleanValue ENABLE_EMI_INGREDIENT_REQUEST = BUILDER
             .comment("Ingredient request for EMI")
             .define("compat.emi_ingredient_request", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_CREATE_STORAGE = BUILDER
+            .comment("Enable create's stock ticker support for maid")
+            .define("compat.create_storage", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_CREATE_STORAGE_MANAGER = BUILDER
+            .comment("Allow maid to act as create stock keeper around a stock ticker.")
+            .define("compat.create_stock_keeper", true);
+    private static final ForgeConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_V = BUILDER
+            .comment("How far maid can control the stock ticker. Vertically")
+            .defineInRange("compat.create_stock_keeper_range_v", 16, 1, 256);
+    private static final ForgeConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_H = BUILDER
+            .comment("How far maid can control the stock ticker. Horizontally")
+            .defineInRange("compat.create_stock_keeper_range_h", 7, 1, 64);
+
 
     //速度控制选项
     private static final ForgeConfigSpec.DoubleValue CRAFT_WORK_SPEED = BUILDER
@@ -121,8 +137,13 @@ public class Config {
 
     public static boolean enableDebug;
     public static boolean enableAe2Sup;
+    public static boolean enableRsSup;
     public static boolean enableJeiIngredientRequest;
     public static boolean enableEmiIngredientRequest;
+    public static boolean enableCreateStorage;
+    public static boolean enableCreateStockManager;
+    public static double createStockKeeperRangeV;
+    public static double createStockKeeperRangeH;
     public static double collectSpeed;
     public static double viewSpeed;
     public static double placeSpeed;
@@ -148,8 +169,13 @@ public class Config {
     static void onLoad(final ModConfigEvent event) {
         enableDebug = ENABLE_DEBUG.get();
         enableAe2Sup = ENABLE_AE2SUP.get();
+        enableRsSup = ENABLE_RS_SUP.get();
         enableJeiIngredientRequest = ENABLE_JEI_INGREDIENT_REQUEST.get();
         enableEmiIngredientRequest = ENABLE_EMI_INGREDIENT_REQUEST.get();
+        enableCreateStorage = ENABLE_CREATE_STORAGE.get();
+        enableCreateStockManager = ENABLE_CREATE_STORAGE_MANAGER.get();
+        createStockKeeperRangeV = ENABLE_CREATE_STOCK_RANGE_V.get();
+        createStockKeeperRangeH = ENABLE_CREATE_STOCK_RANGE_H.get();
         collectSpeed = COLLECT_SPEED.get();
         viewSpeed = VIEW_SPEED.get();
         placeSpeed = PLACE_SPEED.get();

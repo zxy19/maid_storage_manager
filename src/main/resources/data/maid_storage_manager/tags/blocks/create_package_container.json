@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "create:belt",
+    "create:depot",
+    "create:package_frogport",
+    "create:weighted_ejector",
+    "create:chute",
+    "create:basin",
+    "create:packager",
+    "create:smart_chute"
+  ]
+}

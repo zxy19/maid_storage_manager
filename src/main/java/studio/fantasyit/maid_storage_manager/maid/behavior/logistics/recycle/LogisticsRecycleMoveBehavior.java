@@ -62,10 +62,15 @@ public class LogisticsRecycleMoveBehavior extends Behavior<EntityMaid> {
 
             if (goal != null) {
                 MemoryUtil.getLogistics(maid).setTarget(storage);
+                MemoryUtil.getLogistics(maid).resetFailCount();
                 MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
                 return;
             }
         }
-        MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);
+        MemoryUtil.getLogistics(maid).addFailCount();
+        if (MemoryUtil.getLogistics(maid).getFailCount() > 10) {
+            MemoryUtil.getLogistics(maid).resetFailCount();
+            MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);
+        }
     }
 }

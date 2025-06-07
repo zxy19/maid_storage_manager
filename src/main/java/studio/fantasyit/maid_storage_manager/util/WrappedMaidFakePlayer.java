@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.util;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -10,6 +11,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -46,6 +48,7 @@ public class WrappedMaidFakePlayer extends FakePlayer {
         public float getDestroySpeed(BlockState p_36021_) {
             return maid.getMainHandItem().getDestroySpeed(p_36021_);
         }
+
     }
 
     private static ConcurrentHashMap<UUID, WrappedMaidFakePlayer> cache = new ConcurrentHashMap<>();
@@ -245,5 +248,86 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     public ChunkPos chunkPosition() {
         if (maid == null) return new ChunkPos(0, 0);
         return maid.chunkPosition();
+    }
+
+    Float xRot = null, yRot = null;
+
+    public void overrideXYRot(Float xRot, Float yRot) {
+        this.xRot = xRot;
+        this.yRot = yRot;
+    }
+
+    @Override
+    public float getXRot() {
+        if (xRot != null) return xRot;
+        if (maid == null) return 0;
+        return maid.getXRot();
+    }
+
+    @Override
+    public float getYRot() {
+        if (yRot != null) return yRot;
+        if (maid == null) return 0;
+        return maid.getYRot();
+    }
+
+    @Override
+    public float getEyeHeight(Pose p_20237_) {
+        if (maid == null) return 0;
+        return maid.getEyeHeight(p_20237_);
+    }
+
+    @Override
+    public double getBlockReach() {
+        if (maid == null) return 0;
+        //TODO
+        return 7;
+    }
+
+    @Override
+    public boolean mayUseItemAt(BlockPos p_36205_, Direction p_36206_, ItemStack p_36207_) {
+        return true;
+    }
+
+    @Override
+    public double getX(double p_20166_) {
+        if (maid == null) return super.getX(p_20166_);
+        return maid.getX(p_20166_);
+    }
+
+    @Override
+    public double getY(double p_20168_) {
+        if (maid == null) return super.getY(p_20168_);
+        return maid.getY(p_20168_);
+    }
+
+    @Override
+    public double getZ(double p_20170_) {
+        if (maid == null) return super.getZ(p_20170_);
+        return maid.getZ(p_20170_);
+    }
+
+    @Override
+    public double getX() {
+        if (maid == null) return super.getX();
+        return maid.getX();
+    }
+
+    @Override
+    public double getY() {
+        if (maid == null) return super.getY();
+        return maid.getY();
+    }
+
+    @Override
+    public double getZ() {
+        if (maid == null) return super.getZ();
+        return maid.getZ();
+    }
+
+    @Override
+    public double getEyeY() {
+        if (maid == null) return super.getEyeY();
+        return maid.getEyeY();
     }
 }

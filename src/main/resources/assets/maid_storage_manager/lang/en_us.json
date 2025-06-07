@@ -206,5 +206,7 @@
   "gui.maid_storage_manager.jei_request.finish": "[%s] has done its task.",
   "gui.maid_storage_manager.config.allow_seek_meal": "Allow to seek work meals",
   "key.maid_storage_manager.request_ingredient": "Request Ingredient",
-  "key.maid_storage_manager.category": "Maid Storage Manager"
+  "key.maid_storage_manager.category": "Maid Storage Manager",
+  "maid_storage_manager.no_stock_ticker": "No stock ticker around the maid",
+  "gui.maid_storage_manager.create_stock_button": "Create Stock Manager GUI"
 }

@@ -16,6 +16,18 @@ import java.util.List;
 public interface IMaidStorage {
     ResourceLocation getType();
 
+    default boolean supportCollect() {
+        return true;
+    }
+
+    default boolean supportPlace() {
+        return true;
+    }
+
+    default boolean supportView() {
+        return true;
+    }
+
     boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side);
 
     @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Target storage);

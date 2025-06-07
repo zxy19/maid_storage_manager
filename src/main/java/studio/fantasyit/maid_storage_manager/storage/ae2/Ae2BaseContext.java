@@ -19,12 +19,13 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.type.AE2Type;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBlockStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageCraftDataProvider;
 
 import java.util.*;
 
-public abstract class Ae2BaseContext implements IStorageCraftDataProvider, IStorageContext {
+public abstract class Ae2BaseContext extends AbstractFilterableBlockStorage implements IStorageCraftDataProvider, IStorageContext {
     protected MEStorage inv;
     protected IGrid grid;
     protected Target target;
@@ -105,11 +106,13 @@ public abstract class Ae2BaseContext implements IStorageCraftDataProvider, IStor
         setDone(true);
         return list;
     }
+
     @Override
     public boolean isDone() {
         return isDone;
     }
-    public void setDone(boolean done){
+
+    public void setDone(boolean done) {
         isDone = done;
     }
 }

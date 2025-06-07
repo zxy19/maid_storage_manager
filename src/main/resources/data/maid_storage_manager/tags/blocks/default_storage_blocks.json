@@ -5,6 +5,8 @@
     "#forge:barrels",
     "minecraft:shulker_box",
     {"required": false,"id":"ae2:cable_bus"},
+    {"required": false,"id":"#refinedstorage:grid"},
+    {"required": false,"id":"#refinedstorage:crafting_grid"},
     {"required": false,"id":"sophisticatedstorage:barrel"},
     {"required": false,"id":"sophisticatedstorage:copper_barrel"},
     {"required": false,"id":"sophisticatedstorage:iron_barrel"},

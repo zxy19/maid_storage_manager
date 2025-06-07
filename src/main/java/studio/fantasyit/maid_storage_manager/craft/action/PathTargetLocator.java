@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 import studio.fantasyit.maid_storage_manager.util.PosUtil;
 
@@ -34,8 +36,9 @@ public class PathTargetLocator {
 
     public static BlockPos touchPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding) {
         List<BlockPos> posList = new ArrayList<>();
-        BlockPos pos = craftGuideStepData.getStorage().getPos();
-        Direction side = craftGuideStepData.getStorage().side;
+        Target target = craftGuideStepData.getStorage();
+        BlockPos pos = target.getPos();
+        Direction side = target.side;
         if (side != null) {
             posList = List.of(pos.relative(side, 2));
         } else {
@@ -45,15 +48,8 @@ public class PathTargetLocator {
                         PosUtil.gatherAroundUpAndDown(finalPos, (pos1) -> {
                             if (PosUtil.isBetween(pos, finalPos, pos1)) return null;
                             if (!PosUtil.isSafePos(maid.level(), pos1)) return null;
-                            Vec3 eyePos = pos1.getCenter().add(0, maid.getEyeHeight() - 0.5, 0);
-                            for (Direction direction : Direction.values()) {
-                                if (side != null && direction != side) continue;
-                                for (float f = 0.5f; f > 0.0f; f -= 0.1f) {
-                                    Vec3 offseted = pos.getCenter().relative(direction, f);
-                                    if (maid.isWithinRestriction(pos1) && pathFinding.canPathReach(pos1) && hasLineOfSight(maid, offseted, eyePos)) {
-                                        return pos1;
-                                    }
-                                }
+                            if (maid.isWithinRestriction(pos1) && pathFinding.canPathReach(pos1) && canTouchBlock(maid, pos1, target)) {
+                                return pos1;
                             }
                             return null;
                         }))
@@ -73,12 +69,18 @@ public class PathTargetLocator {
         return allPos.min(Comparator.comparingInt(Pair::getB)).map(Pair::getA).orElse(null);
     }
 
-    private static boolean hasLineOfSight(EntityMaid maid, Vec3 startPos, Vec3 target) {
-        if (startPos.distanceTo(target) > 128.0D) {
-            return false;
-        } else {
-            return maid.level().clip(new ClipContext(target, startPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, maid)).getType() == HitResult.Type.MISS;
+    private static boolean canTouchBlock(EntityMaid maid, BlockPos standPos, Target target) {
+        Vec3 eyePos = standPos.getCenter().add(0, maid.getEyeHeight() - 0.5, 0);
+        for (Direction direction : Direction.values()) {
+            if (target.side != null && direction != target.side) continue;
+            for (float f = 0.5f; f > 0.0f; f -= 0.1f) {
+                Vec3 offseted = target.pos.getCenter().relative(direction, f);
+                BlockHitResult clip = maid.level().clip(new ClipContext(eyePos, offseted, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, maid));
+                if ((clip.getType() == HitResult.Type.BLOCK && clip.getBlockPos().equals(target.pos)) || clip.getType() == HitResult.Type.MISS)
+                    return true;
+            }
         }
+        return false;
     }
 
     public static BlockPos throwItemPos(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer, MaidPathFindingBFS pathFinding) {
