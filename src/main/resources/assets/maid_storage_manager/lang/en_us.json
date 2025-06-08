@@ -30,6 +30,7 @@
   "chat_bubbles.maid_storage_manager.cowork_disable": "Master departure detected…",
   "chat_bubbles.maid_storage_manager.cowork_enable": "Master’s back! Bounce bounce~",
   "chat_bubbles.maid_storage_manager.craft_calculated": "Crafting math ON! [%s/%s]Spinning~",
+  "chat_bubbles.maid_storage_manager.craft_generating": "Compiling recipes...[%s/%s]",
   "chat_bubbles.maid_storage_manager.crafting": "Crafting magic %s GO! Click-clack~",
   "chat_bubbles.maid_storage_manager.crafting_fail": "Oops, %s crafting failed!",
   "chat_bubbles.maid_storage_manager.crafting_gathering": "Items radar ON! Beep beep~",

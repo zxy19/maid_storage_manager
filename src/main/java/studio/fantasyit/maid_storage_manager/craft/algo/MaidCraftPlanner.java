@@ -12,7 +12,9 @@ import studio.fantasyit.maid_storage_manager.craft.algo.graph.FlattenSearchGraph
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.SimpleSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.TopologyCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
+import studio.fantasyit.maid_storage_manager.craft.algo.utils.AutoGraphGenerator;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
@@ -41,6 +43,8 @@ public class MaidCraftPlanner {
     Queue<Pair<Queue<Pair<ItemStack, Integer>>, ICraftGraphLike.CraftAlgorithmInit<?>>> craftJobs = new LinkedList<>();
     Queue<Pair<ItemStack, Integer>> tmpNextJob = new LinkedList<>();
     ItemListStepSum futureSteps;
+    AutoGraphGenerator autoGraphGenerator;
+    private List<CraftGuideData> craftGuides;
 
     public MaidCraftPlanner(ServerLevel level, EntityMaid maid) {
         this.maid = maid;
@@ -56,7 +60,12 @@ public class MaidCraftPlanner {
                     craftAlgorithmInit
             ));
         }
-        initItems();
+        craftGuides = new ArrayList<>(MemoryUtil.getCrafting(maid).getCraftGuides());
+        if (Config.craftingGenerateCraftGuide) {
+            autoGraphGenerator = new AutoGraphGenerator(maid);
+        } else {
+            initItems();
+        }
     }
 
     protected boolean precheck() {
@@ -114,11 +123,10 @@ public class MaidCraftPlanner {
                 });
 
         futureSteps = new ItemListStepSum(notDone);
-
         craftJobs.peek().getA().addAll(notDone);
         currentAvailableGraph = craftJobs
                 .peek()
-                .getB().init(items, MemoryUtil.getCrafting(maid).getCraftGuides());
+                .getB().init(items, craftGuides);
         notDone.forEach(itemStack -> currentAvailableGraph.setItemCount(itemStack.getA(), 0));
         return true;
     }
@@ -135,6 +143,13 @@ public class MaidCraftPlanner {
     public void tick(long tick) {
         sendMaidProgressBubble();
 
+        if (autoGraphGenerator != null) {
+            if (autoGraphGenerator.process()) {
+                craftGuides.addAll(autoGraphGenerator.getCraftGuideData());
+                autoGraphGenerator = null;
+                initItems();
+            }
+        }
 
         //如果所有任务层完成，标记done
         if (craftJobs.isEmpty()) {
@@ -221,6 +236,14 @@ public class MaidCraftPlanner {
     }
 
     private void sendMaidProgressBubble() {
+        if (autoGraphGenerator != null) {
+            ChatTexts.progress(maid, Component.translatable(
+                    ChatTexts.CHAT_CRAFT_GENERATING,
+                    autoGraphGenerator.getDone(),
+                    autoGraphGenerator.getTotal()
+            ), autoGraphGenerator.getProgress());
+            return;
+        }
         if (biCalc == null) return;
         int restSteps = futureSteps.getStep(count) + biCalc.getWorstRestSteps();
         ChatTexts.progress(maid, Component.translatable(

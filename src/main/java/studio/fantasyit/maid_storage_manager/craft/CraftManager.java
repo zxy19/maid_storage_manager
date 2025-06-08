@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
+import studio.fantasyit.maid_storage_manager.craft.autogen.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.context.VirtualAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.*;
@@ -39,12 +40,13 @@ public class CraftManager {
     protected Map<ResourceLocation, ICraftType> typesMap;
     protected List<CraftAction> actions;
     protected Map<ResourceLocation, CraftAction> actionsMap;
-
+    protected Map<ResourceLocation, IAutoCraftGuideGenerator> autoCraftGuideGenerators;
 
     public void collect() {
         ArrayList<ICraftType> list = new ArrayList<>();
         ArrayList<CraftAction> actions = new ArrayList<>();
-        CollectCraftEvent event = new CollectCraftEvent(list, actions);
+        ArrayList<IAutoCraftGuideGenerator> autoCraftGuideGenerators = new ArrayList<>();
+        CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators);
         fireInternal(event);
         MinecraftForge.EVENT_BUS.post(event);
 
@@ -58,6 +60,9 @@ public class CraftManager {
         this.actionsMap = new HashMap<>();
         for (CraftAction action : actions) {
             this.actionsMap.put(action.type(), action);
+        }
+        for (IAutoCraftGuideGenerator autoCraftGuideGenerator : autoCraftGuideGenerators) {
+            this.autoCraftGuideGenerators.put(autoCraftGuideGenerator.getType(), autoCraftGuideGenerator);
         }
     }
 
@@ -277,5 +282,9 @@ public class CraftManager {
             if (craftAction.type().equals(action.type())) found = true;
         }
         return this.getCommonActions().get(0);
+    }
+
+    public List<IAutoCraftGuideGenerator> getAutoCraftGuideGenerators() {
+        return this.autoCraftGuideGenerators.values().stream().toList();
     }
 }

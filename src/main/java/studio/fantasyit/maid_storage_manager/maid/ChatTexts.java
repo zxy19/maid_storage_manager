@@ -78,6 +78,7 @@ public class ChatTexts {
     public static final String CHAT_CRAFT_WORK = "chat_bubbles.maid_storage_manager.crafting";
     public static final String CHAT_CRAFT_WORK_PROGRESS = "chat_bubbles.maid_storage_manager.crafting_progress";
     public static final String CHAT_CRAFT_CALCULATE = "chat_bubbles.maid_storage_manager.craft_calculated";
+    public static final String CHAT_CRAFT_GENERATING = "chat_bubbles.maid_storage_manager.craft_generating";
     public static final String CHAT_CRAFTING_FAIL = "chat_bubbles.maid_storage_manager.crafting_fail";
     public static final String CHAT_CRAFTING_SUCCESS = "chat_bubbles.maid_storage_manager.crafting_success";
     public static final String CHAT_REQUEST_SUCCESS = "chat_bubbles.maid_storage_manager.request_finish";

@@ -151,6 +151,9 @@ public class Config {
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
             .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
             .defineListAllowEmpty("crafting.nbt.no_matching_path", () -> List.of("Damage"), o -> o instanceof String);
+    private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
+            .comment("Generate craft guides for vanilla recipes.")
+            .define("crafting.generate", false);
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -187,6 +190,7 @@ public class Config {
     public static List<CraftSolver> craftingSolver;
     public static boolean craftingMatchTag;
     public static List<String> noMatchPaths;
+    public static boolean craftingGenerateCraftGuide;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -223,5 +227,6 @@ public class Config {
         craftingMatchTag = USE_NBT.get();
         noMatchPaths = NBT_NO_MATCH_PATH.get().stream().map(t -> (String) t).toList();
         throwItemVector = THROW_ITEM_VECTOR.get();
+        craftingGenerateCraftGuide = CRAFTING_GENERATE_CRAFT_GUIDE.get();
     }
 }

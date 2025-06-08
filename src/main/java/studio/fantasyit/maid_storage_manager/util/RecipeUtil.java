@@ -166,11 +166,4 @@ public class RecipeUtil {
                 level
         );
     }
-
-    public static List<CraftingRecipe> getAllRecipes(Level level) {
-        RecipeManager recipeManager = level.getRecipeManager();
-        return recipeManager.getAllRecipesFor(
-                RecipeType.CRAFTING
-        );
-    }
 }
