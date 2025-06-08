@@ -226,6 +226,9 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         }
     }
 
+    public void resetViewedInvForPosAsRemoved(Target pos){
+        viewedInventory.remove(pos.toStoreString());
+    }
     public void resetViewedInvForPos(Target pos) {
         viewedInventory.remove(pos.toStoreString());
         viewedInventory.put(pos.toStoreString(), new HashMap<>());

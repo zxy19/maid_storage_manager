@@ -55,10 +55,11 @@ public class ViewBehavior extends MaidCheckRateTask {
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22542_) {
         if (!MemoryUtil.getViewedInventory(maid).hasTarget()) return;
+        MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getViewedInventory(maid).getTarget();
         MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
         InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
-            MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target.sameType(pos, null));
+            MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
         context = MaidStorage
                 .getInstance()
@@ -95,6 +96,7 @@ public class ViewBehavior extends MaidCheckRateTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        MemoryUtil.setWorking(maid, false);
         if (context != null) {
             MemoryUtil.getViewedInventory(maid).addVisitedPos(target);
             InvUtil.checkNearByContainers(level, target.getPos(), pos -> {

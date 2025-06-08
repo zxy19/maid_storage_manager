@@ -1,9 +1,10 @@
 package studio.fantasyit.maid_storage_manager.util;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
@@ -14,13 +15,15 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.apache.logging.log4j.util.Strings;
-import studio.fantasyit.maid_storage_manager.api.IGuiGraphicsGetter;
+import studio.fantasyit.maid_storage_manager.render.SeeThroughBoxRenderType;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class BoxRenderUtil {
+    public static boolean useSeeThroughBox = false;
+
     public static void renderStorage(Target storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating) {
         renderStorage(storage, colors, event, key, floating, 0xffffff);
     }
@@ -32,7 +35,7 @@ public class BoxRenderUtil {
         }
         Vec3 position = event.getCamera().getPosition().reverse();
         AABB aabb = new AABB(storage.getPos()).move(position);
-        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderType.LINES);
         LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
         if (storage.getSide().isPresent()) {
             BlockPos sidePos = storage.getPos().relative(storage.getSide().get());
@@ -70,20 +73,9 @@ public class BoxRenderUtil {
             LevelRenderer.renderLineBox(event.getPoseStack(), buffer, sideAabb, colors[0], colors[1], colors[2], colors[3]);
         }
         if (!Strings.isBlank(key)) {
-            final GuiGraphics guiGraphics = ((IGuiGraphicsGetter) Minecraft.getInstance()).getGuiGraphics(event.getPoseStack());
-            Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick());
             Vec3 livingFrom = storage.getPos().getCenter().add(0, 0.7f, 0);
-            Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
-            guiGraphics.pose().translate(0, floating.getOrDefault(storage.getPos(), 0) * 0.3f, 0);
+            drawText(event, mc, livingFrom, key, textColor, floating.getOrDefault(storage.getPos(), 0) * 0.3f);
             floating.put(storage.getPos(), floating.getOrDefault(storage.getPos(), 0) + 1);
-            guiGraphics.pose().mulPose(Axis.YP.rotationDegrees(-event.getCamera().getYRot()));
-            guiGraphics.pose().mulPose(Axis.XP.rotationDegrees(event.getCamera().getXRot()));
-            guiGraphics.pose().scale(-0.025f, -0.025f, -1f);
-            guiGraphics.pose().translate(-mc.font.width(key) / 2f, 0, 0);
-            guiGraphics.drawString(mc.font, key, 0, 0, textColor);
-            guiGraphics.pose().popPose();
         }
     }
 
@@ -97,23 +89,38 @@ public class BoxRenderUtil {
             return;
         }
         Vec3 position = event.getCamera().getPosition().reverse();
-        AABB aabb = entity.getBoundingBox().move(entity.getPosition(event.getPartialTick()));
-        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+        AABB aabb = entity.getBoundingBox().move(position).inflate(0.3);
+        VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderType.LINES);
         LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
         if (!Strings.isBlank(key)) {
-            final GuiGraphics guiGraphics = ((IGuiGraphicsGetter) Minecraft.getInstance()).getGuiGraphics(event.getPoseStack());
-            Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick());
-            Vec3 livingFrom = entity.getPosition(event.getPartialTick()).add(0, entity.getBbHeight() + 0.2f, 0);
-            Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
-            guiGraphics.pose().mulPose(Axis.YP.rotationDegrees(-event.getCamera().getYRot()));
-            guiGraphics.pose().mulPose(Axis.XP.rotationDegrees(event.getCamera().getXRot()));
-            guiGraphics.pose().scale(-0.025f, -0.025f, -1f);
-            guiGraphics.pose().translate(-mc.font.width(key) / 2f, 0, 0);
-            guiGraphics.drawString(mc.font, key, 0, 0, textColor);
-            guiGraphics.pose().popPose();
+            Vec3 livingFrom = entity.getPosition(event.getPartialTick()).add(0, entity.getBbHeight() + 0.5f, 0);
+            drawText(event, mc, livingFrom, key, textColor, 0);
         }
     }
 
+    protected static void drawText(RenderLevelStageEvent event, Minecraft mc, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
+        PoseStack pose = event.getPoseStack();
+        Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick());
+        Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
+        pose.pushPose();
+        pose.translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
+        pose.translate(0, floatingTransform, 0);
+        pose.mulPose(Axis.YP.rotationDegrees(-event.getCamera().getYRot()));
+        pose.mulPose(Axis.XP.rotationDegrees(event.getCamera().getXRot()));
+        pose.scale(-0.025f, -0.025f, -1f);
+        pose.translate(-mc.font.width(key) / 2f, 0, 0);
+//            guiGraphics.drawString(mc.font, key, 0, 0, textColor);
+        mc.font.drawInBatch(key,
+                0,
+                0,
+                textColor,
+                mc.font.isBidirectional(),
+                pose.last().pose(),
+                mc.renderBuffers().bufferSource(),
+                useSeeThroughBox ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL,
+                0,
+                15728880);
+        mc.renderBuffers().bufferSource().endBatch();
+        pose.popPose();
+    }
 }

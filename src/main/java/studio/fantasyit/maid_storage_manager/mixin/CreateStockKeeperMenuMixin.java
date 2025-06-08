@@ -16,7 +16,7 @@ public class CreateStockKeeperMenuMixin implements ICreateStockKeeperMaidChecker
     @Unique
     private EntityMaid maid_storage_manager$maid = null;
 
-    @Inject(method = "stillValid", at = @At("RETURN"), cancellable = true, remap = false)
+    @Inject(method = "stillValid", at = @At("RETURN"), cancellable = true)
     public void stillValid(Player player, CallbackInfoReturnable<Boolean> cir) {
         if (Integrations.createStockManager() && maid_storage_manager$maid != null && !cir.getReturnValue()) {
             if (maid_storage_manager$maid.distanceTo(player) <= player.getEntityReach()) {

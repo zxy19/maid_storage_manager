@@ -98,7 +98,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         //重算Inv
         MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
         InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
-            MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target.sameType(pos, null));
+            MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
     }
 
@@ -306,7 +306,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);
         }
         if (MoveUtil.findTargetRewrite(level, maid, target, false).isEmpty()) {
-            MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
+            MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target);
         }
         MemoryUtil.getLogistics(maid).clearTarget();
         MemoryUtil.clearTarget(maid);

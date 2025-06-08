@@ -6,11 +6,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -22,10 +19,26 @@ public class MaidItemPickupEvent {
     public static void onItemPickup(MaidPickupEvent.ItemResultPre event) {
         EntityMaid maid = event.getMaid();
         ItemEntity entityItem = event.getEntityItem();
-        if (Conditions.takingRequestList(maid)) {
+        if (MemoryUtil.isWorking(maid)) {
             event.setCanceled(true);
             return;
         }
+        switch (MemoryUtil.getCurrentlyWorking(maid)) {
+            case PLACE -> {
+                if (Conditions.shouldStopAndPickUpItems(maid)) {
+                    event.setCanceled(true);
+                }
+            }
+            case VIEW, NO_SCHEDULE, RESORT -> {
+            }
+            case CO_WORK -> {
+                if (event.isSimulate())
+                    event.setCanceled(true);
+            }
+            default -> event.setCanceled(true);
+        }
+        if (event.isCanceled())
+            return;
         if (entityItem.getItem().is(ItemRegistry.WRITTEN_INVENTORY_LIST.get())) {
             event.setCanceled(true);
             return;
@@ -42,12 +55,6 @@ public class MaidItemPickupEvent {
                     event.setCanceled(true);
                     return;
                 }
-            }
-        }
-        if (MemoryUtil.getCurrentlyWorking(maid) == ScheduleBehavior.Schedule.PLACE) {
-            CombinedInvWrapper inv = maid.getAvailableInv(false);
-            if (InvUtil.freeSlots(inv) >= inv.getSlots() * Config.pickupRequireWhenPlace) {
-                event.setCanceled(true);
             }
         }
     }

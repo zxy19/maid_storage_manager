@@ -44,6 +44,7 @@ public class MealBehavior extends MaidWorkMealTask {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         if (!MemoryUtil.getMeal(maid).hasTarget()) return;
+        MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getMeal(maid).getTarget();
         context = MaidStorage
                 .getInstance()
@@ -98,6 +99,7 @@ public class MealBehavior extends MaidWorkMealTask {
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
         if (context != null)
             context.finish();
+        MemoryUtil.setWorking(maid, false);
         MemoryUtil.getMeal(maid).clearTarget();
         MemoryUtil.getMeal(maid).setCoolDown(40);
         MemoryUtil.getMeal(maid).setEating(false);

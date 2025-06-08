@@ -38,6 +38,7 @@ import static studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConf
 
 public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     private Target chestPos;
+    private ArrayList<ItemStack> maidAvailableItems;
 
     public PlaceMoveBehavior() {
         super((float) Config.placeSpeed, 3);
@@ -55,6 +56,12 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         super.start(level, maid, p_22542_);
 
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        maidAvailableItems = new ArrayList<>();
+        for (int i = 0; i < inv.getSlots(); i++) {
+            if (!inv.getStackInSlot(i).isEmpty())
+                maidAvailableItems.add(inv.getStackInSlot(i).copy());
+        }
         if (!this.priorityTarget(level, maid))
             this.searchForDestination(level, maid);
 
@@ -89,12 +96,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
 
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
         if (Conditions.noSortPlacement(maid)) return false;
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
-        List<ItemStack> items = new ArrayList<>();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            if (!inv.getStackInSlot(i).isEmpty())
-                items.add(inv.getStackInSlot(i));
-        }
+
         List<Target> suppressedFilterTarget = new ArrayList<>();
         List<Target> suppressedContentTarget = new ArrayList<>();
 
@@ -140,7 +142,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                     //请求返回箱子，不能存入其他物品
                     if (ift.isWhitelist()) {
                         boolean found = false;
-                        for (ItemStack itemStack : items) {
+                        for (ItemStack itemStack : maidAvailableItems) {
                             if (ift.isAvailable(itemStack)) {
                                 found = true;
                                 targetFilterList.add(itemStack);
@@ -164,7 +166,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             boolean foundTarget = false;
             for (ViewedInventoryMemory.ItemCount itemCount : blockPos.getValue()) {
                 boolean found = false;
-                for (ItemStack itemStack : items) {
+                for (ItemStack itemStack : maidAvailableItems) {
                     if (!itemCount.getFirst().isEmpty() && ItemStack.isSameItem(itemStack, itemCount.getFirst())) {
                         found = true;
                         break;
@@ -200,6 +202,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             }
             MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
             DebugData.sendDebug("[PLACE]Priority By Filter %s", targetFilter.toString());
+            targetFilterList.forEach(i -> DebugData.sendDebug("+ Arranged:%s", i.getItem().toString()));
             return true;
         }
         if (StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_EACH
@@ -220,6 +223,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             }
             MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
             DebugData.sendDebug("[PLACE]Priority By Content %s", targetContent);
+            targetContentList.forEach(i -> DebugData.sendDebug("+ Arranged:%s", i.getItem().toString()));
             return true;
         }
         if ((StorageManagerConfigData.get(maid).suppressStrategy() == StorageManagerConfigData.SuppressStrategy.AFTER_EACH
@@ -247,6 +251,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         );
         if (canTouchChest != null) {
             chestPos = canTouchChest;
+            MemoryUtil.getPlacingInv(entityMaid).setArrangeItems(maidAvailableItems);
             DebugData.sendDebug("[PLACE]Normal %s", canTouchChest);
             return true;
         }

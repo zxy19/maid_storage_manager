@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "maid_storage_manager:list_clear",
   "ingredients": [
     {
       "item": "maid_storage_manager:written_inventory_list",

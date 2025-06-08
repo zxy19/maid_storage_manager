@@ -39,7 +39,12 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         CombinedInvWrapper availableInv = maid.getAvailableInv(true);
         for (int i = 0; i < availableInv.getSlots(); i++) {
             if (availableInv.getStackInSlot(i).is(ItemRegistry.INVENTORY_LIST.get())) {
-                availableInv.extractItem(i, 1, false);
+                ItemStack itemStack = availableInv.extractItem(i, 1, false);
+                if (itemStack.hasTag() && itemStack.getTag().contains(WrittenInvListItem.TAG_UUID)) {
+                    level.getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY).ifPresent(inventoryListData -> {
+                        inventoryListData.remove(itemStack.getTag().getUUID(WrittenInvListItem.TAG_UUID));
+                    });
+                }
                 break;
             }
         }

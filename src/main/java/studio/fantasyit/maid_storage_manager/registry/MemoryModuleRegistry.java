@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.registry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -41,10 +40,9 @@ public class MemoryModuleRegistry {
             = REGISTER.register("co_work", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<Target>> CO_WORK_TARGET_STORAGE
             = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
-    public static final RegistryObject<MemoryModuleType<ItemStack>> TEMP_PICKUP_ITEM
-            = REGISTER.register("temp_pickup_item", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<MealMemory>> MEAL
             = REGISTER.register("meal", () -> new MemoryModuleType<>(Optional.of(MealMemory.CODEC)));
+    public static final RegistryObject<MemoryModuleType<Boolean>> IS_WORKING = REGISTER.register("is_working", () -> new MemoryModuleType<>(Optional.empty()));
 
     public static void register(IEventBus eventBus) {
         REGISTER.register(eventBus);

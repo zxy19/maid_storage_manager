@@ -54,6 +54,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         if (!MemoryUtil.getPlacingInv(maid).hasTarget()) return;
+        MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getPlacingInv(maid).getTarget();
         context = MaidStorage
                 .getInstance()
@@ -106,6 +107,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        MemoryUtil.setWorking(maid, false);
         if (context != null) {
             context.finish();
             MemoryUtil.getPlacingInv(maid).clearTarget();

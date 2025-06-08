@@ -149,15 +149,6 @@ public class CraftManager {
                 1
         );
         event.addAction(
-                AltarUseAction.TYPE,
-                AltarUseAction::new,
-                PathTargetLocator::touchPos,
-                CraftAction.PathEnoughLevel.CLOSER.value,
-                false,
-                6,
-                1
-        );
-        event.addAction(
                 FurnaceType.TYPE,
                 VirtualAction::new,
                 PathTargetLocator::commonNearestAvailablePos,

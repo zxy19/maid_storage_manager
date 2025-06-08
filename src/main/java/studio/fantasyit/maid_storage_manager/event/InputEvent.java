@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.integration.request.IngredientReque
 import studio.fantasyit.maid_storage_manager.network.ClientInputPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class InputEvent {
@@ -30,12 +31,19 @@ public class InputEvent {
             GLFW.GLFW_KEY_LEFT_ALT,
             "key.maid_storage_manager.category"
     ));
+    public static final Lazy<KeyMapping> KEY_SEE_THROUGH_MARK_BOX = Lazy.of(() -> new net.minecraft.client.KeyMapping(
+            "key.maid_storage_manager.see_through_mark_box",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_ALT,
+            "key.maid_storage_manager.category"
+    ));
 
     @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModBus {
         @SubscribeEvent
         public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
             event.register(KEY_REQUEST_INGREDIENT.get());
+            event.register(KEY_SEE_THROUGH_MARK_BOX.get());
         }
     }
 
@@ -63,6 +71,13 @@ public class InputEvent {
                 IngredientRequestClient.keyPressed = true;
             } else if (event.getAction() == GLFW.GLFW_RELEASE) {
                 IngredientRequestClient.keyPressed = false;
+            }
+        }
+        if (KEY_SEE_THROUGH_MARK_BOX.get().getKey().equals(key)) {
+            if (event.getAction() == GLFW.GLFW_PRESS) {
+                BoxRenderUtil.useSeeThroughBox = true;
+            } else if (event.getAction() == GLFW.GLFW_RELEASE) {
+                BoxRenderUtil.useSeeThroughBox = false;
             }
         }
     }

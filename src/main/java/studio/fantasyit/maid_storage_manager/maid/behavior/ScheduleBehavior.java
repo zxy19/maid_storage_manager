@@ -64,7 +64,8 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
             next = Schedule.MEAL;
         } else if (!Conditions.isNothingToPlace(maid))
             //没捡满的话优先捡东西
-            if (maid.getBrain().hasMemoryValue(InitEntities.VISIBLE_PICKUP_ENTITIES.get()) && InvUtil.hasAnyFree(maid.getAvailableInv(false)))
+            if (maid.getBrain().hasMemoryValue(InitEntities.VISIBLE_PICKUP_ENTITIES.get())
+                    && Conditions.shouldStopAndPickUpItems(maid))
                 next = Schedule.NO_SCHEDULE;
             else
                 next = Schedule.PLACE;
@@ -99,7 +100,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
         }
     }
 
-    protected void memoryTick(EntityMaid maid){
+    protected void memoryTick(EntityMaid maid) {
         MemoryUtil.getMeal(maid).tick();
     }
 }

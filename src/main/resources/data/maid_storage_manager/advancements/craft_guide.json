@@ -30,9 +30,6 @@
     ]
   ],
   "rewards": {
-    "loot": [
-      "touhou_little_maid:advancement/cake"
-    ]
   },
   "sends_telemetry_event": true
 }

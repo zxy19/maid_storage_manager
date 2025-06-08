@@ -146,6 +146,7 @@
   "jei.maid_storage_manager.altar_craft.item_craft.result": "合成物品",
   "key.maid_storage_manager.category": "女仆仓管",
   "key.maid_storage_manager.request_ingredient": "请求原材料",
+  "key.maid_storage_manager.see_through_mark_box": "透视标记框",
   "maid_storage_manager.changed_flag_binding_render.changed": "已更改",
   "maid_storage_manager.inventory_list_render.inv": "%s * %s",
   "maid_storage_manager.logistics_guide_binding_extract": "取出",

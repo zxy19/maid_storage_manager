@@ -80,6 +80,9 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 canPick = true;
                 if (context instanceof IStorageInteractContext) {
                     MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
+                    InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+                        MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
+                    });
                 }
             }
         }

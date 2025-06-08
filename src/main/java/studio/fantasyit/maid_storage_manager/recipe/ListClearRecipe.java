@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 public class ListClearRecipe extends ShapelessRecipe {
@@ -40,6 +41,16 @@ public class ListClearRecipe extends ShapelessRecipe {
                 CompoundTag tag = tmp.getOrCreateTag();
                 tag.put(StorageDefineBauble.TAG_STORAGES, new ListTag());
                 tmp.setTag(tag);
+                return tmp;
+            }
+            if (stack.is(ItemRegistry.WRITTEN_INVENTORY_LIST.get())) {
+                if (!stack.hasTag()) return stack;
+                ItemStack tmp = ItemRegistry.INVENTORY_LIST.get().getDefaultInstance().copy();
+                if (stack.getTag().contains(WrittenInvListItem.TAG_UUID)) {
+                    CompoundTag tag = tmp.getOrCreateTag();
+                    tag.putUUID(WrittenInvListItem.TAG_UUID, stack.getTag().getUUID(WrittenInvListItem.TAG_UUID));
+                    tmp.setTag(tag);
+                }
                 return tmp;
             }
         }

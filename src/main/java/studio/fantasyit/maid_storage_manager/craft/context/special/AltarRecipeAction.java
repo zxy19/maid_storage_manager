@@ -45,9 +45,9 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
             for (int i = 0; i < totalUsed; i++) {
                 addStep(new CraftGuideStepData(
                         Target.virtual(data.get(i), null),
-                        (i == totalUsed - 1) ? craftGuideStepData.getInput() : List.of(inputs.get(i)),
+                        List.of(inputs.get(i)),
                         List.of(ItemStack.EMPTY),
-                        (i == totalUsed - 1) ? AltarUseAction.TYPE : CommonUseAction.TYPE_R,
+                        CommonUseAction.TYPE_R,
                         false,
                         false,
                         new CompoundTag()

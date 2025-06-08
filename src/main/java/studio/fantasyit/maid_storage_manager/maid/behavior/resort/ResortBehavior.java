@@ -49,6 +49,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         if (!MemoryUtil.getResorting(maid).hasTarget()) return;
+        MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getResorting(maid).getTarget();
         context = MaidStorage
                 .getInstance()
@@ -95,6 +96,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        MemoryUtil.setWorking(maid, false);
         if (context != null) {
             if (context.isDone())
                 MemoryUtil.getResorting(maid).clearTarget();

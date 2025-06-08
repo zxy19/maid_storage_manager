@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
+import com.github.tartaricacid.touhoulittlemaid.capability.PowerCapabilityProvider;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,6 +38,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
     protected WrappedMaidFakePlayer fakePlayer;
     private int storedSlot;
     int failCount = 0;
+    float powerPointAtStart = 0;
 
     public CommonUseAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -45,6 +47,10 @@ public class CommonUseAction extends AbstractCraftActionContext {
     @Override
     public Result start() {
         fakePlayer = WrappedMaidFakePlayer.get(maid);
+        fakePlayer.getCapability(PowerCapabilityProvider.POWER_CAP).ifPresent(powerCapability -> {
+            powerCapability.set(maid.getExperience() * 4);
+            powerPointAtStart = powerCapability.get();
+        });
         maid.getNavigation().stop();
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
         storedSlot = InvUtil.getTargetIndex(maid, craftGuideStepData.getInput().get(0), craftGuideStepData.matchTag);
@@ -173,6 +179,12 @@ public class CommonUseAction extends AbstractCraftActionContext {
         if (storedSlot != -1) {
             InvUtil.swapHandAndSlot(maid, storedSlot);
         }
+        fakePlayer.getCapability(PowerCapabilityProvider.POWER_CAP).ifPresent(powerCapability -> {
+            if (powerCapability.get() != powerPointAtStart) {
+                float deltaPP = powerCapability.get() - powerPointAtStart;
+                maid.setExperience(maid.getExperience() - (int) Math.ceil(deltaPP / 4));
+            }
+        });
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(false);
     }
 }

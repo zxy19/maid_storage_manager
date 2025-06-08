@@ -208,5 +208,6 @@
   "key.maid_storage_manager.request_ingredient": "Request Ingredient",
   "key.maid_storage_manager.category": "Maid Storage Manager",
   "maid_storage_manager.no_stock_ticker": "No stock ticker around the maid",
-  "gui.maid_storage_manager.create_stock_button": "Create Stock Manager GUI"
+  "gui.maid_storage_manager.create_stock_button": "Create Stock Manager GUI",
+  "key.maid_storage_manager.see_through_mark_box": "See through mark box"
 }

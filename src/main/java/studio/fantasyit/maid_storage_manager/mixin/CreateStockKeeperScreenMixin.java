@@ -35,7 +35,7 @@ public abstract class CreateStockKeeperScreenMixin {
     @Shadow
     private WeakReference<BlazeBurnerBlockEntity> blaze;
 
-    @Inject(at = @At("RETURN"), method = "<init>", remap = false)
+    @Inject(at = @At("RETURN"), method = "<init>")
     private void init(StockKeeperRequestMenu container, Inventory inv, Component title, CallbackInfo ci) {
         if (Integrations.createStockManager()) {
             ClientLevel level = Minecraft.getInstance().level;

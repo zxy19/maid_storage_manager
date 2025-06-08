@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.event;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -13,6 +14,13 @@ public class StartUpEvent {
     public static void onStartUp(FMLLoadCompleteEvent event) {
         MaidStorage.getInstance().collectStorage();
         CraftManager.getInstance().collect();
-        AddCreateStockButtonForMaid.init();
+    }
+
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class StartUpEventClient {
+        @SubscribeEvent
+        public static void onStartUp(FMLLoadCompleteEvent event) {
+            AddCreateStockButtonForMaid.init();
+        }
     }
 }

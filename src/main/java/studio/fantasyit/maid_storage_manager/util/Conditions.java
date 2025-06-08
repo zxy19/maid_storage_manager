@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -88,6 +89,16 @@ public class Conditions {
                     return true;
                 }
         ).stream().allMatch(stack -> stack.isEmpty());
+    }
+
+    public static boolean shouldStopAndPickUpItems(EntityMaid maid) {
+        if (MemoryUtil.isWorking(maid))
+            return false;
+        CombinedInvWrapper inv = maid.getAvailableInv(false);
+        if (InvUtil.freeSlots(inv) >= inv.getSlots() * Config.pickupRequireWhenPlace) {
+            return true;
+        }
+        return false;
     }
 
     public static boolean triesReach(EntityMaid maid) {

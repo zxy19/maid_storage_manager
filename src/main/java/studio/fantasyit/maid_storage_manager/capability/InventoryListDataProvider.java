@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.capability;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -62,6 +61,9 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
     public static class InventoryListData {
         public Map<UUID, Map<String, List<InventoryItem>>> dataMap = new ConcurrentHashMap<>();
 
+        public void remove(UUID uuid){
+            dataMap.remove(uuid);
+        }
         public void set(UUID uuid, ListTag listTag) {
             ConcurrentHashMap<String, List<InventoryItem>> map = new ConcurrentHashMap<>();
             for (int i = 0; i < listTag.size(); i++) {

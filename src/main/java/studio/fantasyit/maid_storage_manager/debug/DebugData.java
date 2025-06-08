@@ -42,7 +42,7 @@ public class DebugData {
                 .getSuppressedPos()
                 .stream()
                 .map(suppressed -> new DebugTarget(suppressed.pos,
-                        0xff00ff00,
+                        0x4f00ff00,
                         "Suppress",
                         500)
                 )

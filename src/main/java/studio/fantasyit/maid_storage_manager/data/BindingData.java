@@ -29,6 +29,7 @@ public class BindingData {
                 playerUUIDToItem.put(player.getUUID(), itemStack);
                 return true;
             }
+            playerUUIDToItem.put(player.getUUID(), itemStack);
             return false;
         } else {
             playerUUIDToItem.put(player.getUUID(), itemStack);

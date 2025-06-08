@@ -112,4 +112,17 @@ public class MemoryUtil {
         return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.CO_WORK_MODE.get());
     }
 
+    public static boolean isWorking(EntityMaid maid) {
+        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.IS_WORKING.get());
+    }
+
+    public static void setWorking(EntityMaid maid, boolean working) {
+        if (working) {
+            maid.getBrain().setMemory(MemoryModuleRegistry.IS_WORKING.get(), true);
+//            DebugData.sendDebug("->✔️Working Start");
+        } else {
+            maid.getBrain().eraseMemory(MemoryModuleRegistry.IS_WORKING.get());
+//            DebugData.sendDebug("<-❌Working Stop");
+        }
+    }
 }
