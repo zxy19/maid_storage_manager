@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.base;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;

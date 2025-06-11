@@ -13,6 +13,8 @@ import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
@@ -63,6 +65,7 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
         ));
         this.addDataSlot(new CountSlot(stepDataContainer.getCountMutable(6), stepDataContainer));
     }
+
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
@@ -89,7 +92,11 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
 
     @Override
     public void recalculateRecipe() {
-        Optional<AltarRecipe> recipe = RecipeUtil.getAltarRecipe(player.level(), RecipeUtil.wrapAltarRecipeInventory(stepDataContainer.step.getInput()));
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 0; i < stepDataContainer.inputCount; i++) {
+            items.add(stepDataContainer.getItem(i));
+        }
+        Optional<AltarRecipe> recipe = RecipeUtil.getAltarRecipe(player.level(), RecipeUtil.wrapAltarRecipeInventory(items));
         recipe.ifPresentOrElse(craftingRecipe -> {
             ItemStack resultItem = craftingRecipe.getResultItem(player.level().registryAccess());
             stepDataContainer.setItemNoTrigger(6, resultItem);

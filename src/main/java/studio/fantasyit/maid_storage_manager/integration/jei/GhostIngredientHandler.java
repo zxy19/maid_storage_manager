@@ -6,7 +6,7 @@ import mezz.jei.api.ingredients.ITypedIngredient;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 
 import java.util.ArrayList;

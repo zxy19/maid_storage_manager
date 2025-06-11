@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -24,31 +25,36 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
+import studio.fantasyit.maid_storage_manager.menu.container.InventorySelectButton;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
-public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
+public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> implements IItemTarget {
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/item_selector.png");
-    AbstractWidget abstractWidget;
+    AbstractWidget repeatControl;
+    InventorySelectButton inventorySelectButton;
 
     public ItemSelectorScreen(ItemSelectorMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
         this.imageWidth = 176;
         this.imageHeight = 200;
         this.inventoryLabelY = this.imageHeight - 94;
-
     }
 
     @Override
@@ -56,6 +62,8 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
         super.init();
         this.addButtons();
         this.addRepeatControl();
+        this.addInventoryListButton();
+        refreshUUID(true);
     }
 
     protected List<Component> getTooltipForResult(int slot) {
@@ -209,7 +217,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
     }
 
     private void addRepeatControl() {
-        abstractWidget = this.addRenderableWidget(new AbstractWidget(
+        repeatControl = this.addRenderableWidget(new AbstractWidget(
                 116,
                 26,
                 52,
@@ -284,6 +292,29 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
         });
     }
 
+    protected void addInventoryListButton() {
+        inventorySelectButton = this.addRenderableWidget(new InventorySelectButton(
+                getGuiLeft() + 8,
+                getGuiTop() + 50,
+                this
+        ));
+    }
+
+    @Override
+    protected void containerTick() {
+        refreshUUID(false);
+    }
+
+    protected void refreshUUID(boolean force) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && (player.tickCount % 20 == 0 || force)) {
+            UUID inventoryListUUIDFromPlayerInv = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.inventory.items);
+            if (inventoryListUUIDFromPlayerInv != null) {
+                inventorySelectButton.setUUID(inventoryListUUIDFromPlayerInv);
+            }
+        }
+    }
+
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
         renderBackground(guiGraphics);
@@ -337,7 +368,13 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
                                 x,
                                 y
                         );
-                    } else if (abstractWidget == renderable) {
+                    } else if (renderable instanceof InventorySelectButton buttonWidget) {
+                        graphics.renderTooltip(this.font,
+                                buttonWidget.getTooltipComponent(),
+                                x,
+                                y
+                        );
+                    } else if (repeatControl == renderable) {
                         graphics.renderTooltip(this.font,
                                 List.of(Component.translatable("gui.maid_storage_manager.request_list.scroll_to_adjust"),
                                         Component.translatable("gui.maid_storage_manager.request_list.click_to_switch")),
@@ -420,7 +457,6 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
         RenderSystem.enableDepthTest();
     }
 
-
     @Override
     public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
         @Nullable Slot slot = this.getSlotUnderMouse();
@@ -454,5 +490,15 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> {
     @Override
     public List<FilterSlot> getSlots() {
         return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();
+    }
+
+    @Override
+    public void itemSelected(ItemStack stack) {
+        for (FilterSlot slot : getSlots()) {
+            if (slot.isActive() && slot.getItem().isEmpty()) {
+                accept(slot, stack);
+                break;
+            }
+        }
     }
 }

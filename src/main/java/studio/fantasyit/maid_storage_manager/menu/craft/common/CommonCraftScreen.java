@@ -4,8 +4,12 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +26,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
-import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
@@ -30,6 +34,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.*;
@@ -44,13 +49,16 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         SORT_REMOVE,
         SORT_DOWN,
         OPTIONAL,
-        TIME,
+        TIME
     }
+
+    protected enum BUTTON_TYPE_SPECIAL {BLOCK}
 
     private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
 
     public final List<HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>>> buttonsByRow = new ArrayList<>();
     public final List<EditBox> editBoxes = new ArrayList<>();
+    public final List<HashMap<BUTTON_TYPE_SPECIAL, AbstractButton>> otherButton = new ArrayList<>();
     public final List<List<Integer>> buttonYOffset = new ArrayList<>();
     SelectButtonWidget<?> pageUpBtn;
     SelectButtonWidget<?> pageDownBtn;
@@ -74,6 +82,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private void addButtons() {
         buttonsByRow.clear();
         buttonYOffset.clear();
+        otherButton.clear();
         editBoxes.clear();
         //TODO:目前配方树计算需要使用准确物品进行匹配，暂时不支持模糊物品作为配方拓扑的节点。
         // 所以忽略NBT功能暂时不能实现。也许节点中的ItemStack应该被更换?
@@ -85,11 +94,57 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             addSortButtons(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
             addOptionButtons(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
             addTimeButton(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
+            HashMap<BUTTON_TYPE_SPECIAL, AbstractButton> objectsSpecial = new HashMap<>();
+            addBlockButton(objectsSpecial, yOffsets, SLOT_Y[i % 3] - 5, i);
+            otherButton.add(objectsSpecial);
             buttonsByRow.add(objects);
             buttonYOffset.add(yOffsets);
         }
         addPageButton();
         updateButtons();
+    }
+
+    private void addBlockButton(HashMap<BUTTON_TYPE_SPECIAL, AbstractButton> objects, ArrayList<Integer> yOffsets, int sy, int i) {
+        yOffsets.add(1);
+        objects.put(BUTTON_TYPE_SPECIAL.BLOCK, addRenderableWidget(new AbstractButton(
+                this.leftPos + menu.targetBlockSlots.get(i).x + 1,
+                this.topPos + menu.targetBlockSlots.get(i).y - 3,
+                20,
+                20,
+                Component.literal("")
+        ) {
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
+                if (menu.targetBlockSlots.size() > i && menu.steps.size() > i) {
+                    p_259858_.add(NarratedElementType.HINT, menu.targetBlockSlots.get(i).getItem().getDisplayName());
+                    p_259858_.add(NarratedElementType.HINT, getStorageSideTranslate(menu.steps.get(i).step.storage));
+                }
+            }
+
+            @Override
+            protected void renderWidget(GuiGraphics graphics, int x, int y, float p_282542_) {
+                if (isMouseOver(x, y)) {
+                    graphics.pose().pushPose();
+                    graphics.pose().translate(0, 0, 1000);
+                    graphics.fill(getX(), getY(), getX() + width, getY() + font.lineHeight, 0x80000000);
+                    graphics.drawString(font, getStorageSideTranslate(menu.steps.get(i).step.storage), getX(), getY(), 0xFFFFFFFF);
+                    graphics.pose().popPose();
+                }
+            }
+
+            @Override
+            public void onPress() {
+                Optional<Direction> currentSide = menu.steps.get(i).step.storage.getSide();
+                int nextOri;
+                if (currentSide.isEmpty())
+                    nextOri = 0;
+                else if (currentSide.get().ordinal() + 1 == Direction.values().length)
+                    nextOri = -1;
+                else
+                    nextOri = currentSide.get().ordinal() + 1;
+                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SIDE, i, nextOri));
+            }
+        }));
     }
 
     private void addTimeButton(HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> objects, ArrayList<Integer> yOffsets, int sy, int i1) {
@@ -497,6 +552,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         switch (type) {
             case REMOVE -> {
                 buttonsByRow.get(buttonsByRow.size() - 1).values().forEach(button -> button.setVisible(false));
+                otherButton.get(otherButton.size() - 1).values().forEach(button -> button.active = false);
                 buttonsByRow.remove(buttonsByRow.size() - 1);
             }
         }
@@ -512,6 +568,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons = buttonsByRow.get(i);
             int finalI = i;
             buttons.values().forEach(button -> button.setVisible(menu.isIdCurrentPage(finalI)));
+            otherButton.get(i).values().forEach(button -> button.active = menu.isIdCurrentPage(finalI));
             if (menu.steps.get(i).actionType.type() == CommonIdleAction.TYPE) {
                 buttons.get(BUTTON_TYPE_COMMON.TIME).setVisible(menu.isIdCurrentPage(i));
                 buttons.get(BUTTON_TYPE_COMMON.TIME).setOption(null);
@@ -551,5 +608,14 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (transformer != null)
             transformer.accept(tag);
         sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.EXTRA, i, 0, tag));
+    }
+
+    private Component getStorageSideTranslate(Target target) {
+        return Component.translatable("gui.maid_storage_manager.craft_guide.common.side",
+                Component.translatable(
+                        "gui.maid_storage_manager.craft_guide.common.side_" +
+                                target.getSide().map(t -> t.name().toLowerCase()).orElse("none")
+                )
+        );
     }
 }

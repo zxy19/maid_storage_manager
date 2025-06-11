@@ -21,6 +21,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
@@ -95,7 +96,7 @@ public class MaidCraftPlanner {
                     for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
                         boolean flag = false;
                         for (int i = 0; i < items.size(); i++) {
-                            if (ItemStack.isSameItem(itemStack.getFirst(), items.get(i).getA())) {
+                            if (ItemStackUtil.isSameInCrafting(itemStack.getFirst(), items.get(i).getA())) {
                                 items.set(i, new Pair<>(
                                         items.get(i).getA(),
                                         items.get(i).getB() + itemStack.getSecond()

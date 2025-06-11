@@ -53,7 +53,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
         });
         maid.getNavigation().stop();
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
-        storedSlot = InvUtil.getTargetIndex(maid, craftGuideStepData.getInput().get(0), craftGuideStepData.matchTag);
+        storedSlot = InvUtil.getTargetIndexInCrafting(maid, craftGuideStepData.getInput().get(0));
         if (storedSlot == -1) return Result.FAIL;
         InvUtil.swapHandAndSlot(maid, storedSlot);
         failCount = 0;
@@ -84,12 +84,12 @@ public class CommonUseAction extends AbstractCraftActionContext {
             if (!itemStack1.isEmpty()) {
                 InvUtil.throwItem(maid, itemStack1);
             }
-            if (ItemStackUtil.isSame(itemStack, craftGuideStepData.getOutput().get(0), craftGuideStepData.matchTag)) {
+            if (ItemStackUtil.isSameInCrafting(itemStack, craftGuideStepData.getOutput().get(0))) {
                 resultPlaced += realPlaced;
             }
         }
         //如果主手包含目标物品，也视为返回
-        if (ItemStackUtil.isSame(craftGuideStepData.getOutput().get(0), fakePlayer.getMainHandItem(), craftGuideStepData.matchTag)) {
+        if (ItemStackUtil.isSameInCrafting(craftGuideStepData.getOutput().get(0), fakePlayer.getMainHandItem())) {
             resultPlaced += fakePlayer.getMainHandItem().getCount();
         }
 

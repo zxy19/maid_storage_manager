@@ -19,6 +19,8 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
+import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,8 +45,8 @@ public class CraftManager {
         ArrayList<ICraftType> list = new ArrayList<>();
         ArrayList<CraftAction> actions = new ArrayList<>();
         CollectCraftEvent event = new CollectCraftEvent(list, actions);
-        MinecraftForge.EVENT_BUS.post(event);
         fireInternal(event);
+        MinecraftForge.EVENT_BUS.post(event);
 
         this.types = event.getCraftTypes();
         this.typesMap = new HashMap<>();
@@ -64,6 +66,7 @@ public class CraftManager {
         event.addCraftType(new CraftingType());
         event.addCraftType(new AltarType());
         event.addCraftType(new FurnaceType());
+        event.addCraftType(new BrewingType());
         event.addCraftType(new SmithingType());
         event.addCraftType(new AnvilType());
         event.addCraftType(new StoneCuttingType());
@@ -158,6 +161,15 @@ public class CraftManager {
                 1
         );
         event.addAction(
+                BrewingType.TYPE,
+                VirtualAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false,
+                3,
+                1
+        );
+        event.addAction(
                 SmithingType.TYPE,
                 SmithingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
@@ -208,6 +220,9 @@ public class CraftManager {
                     0,
                     1
             );
+        }
+        if (Integrations.tacz()) {
+            TaczRecipe.addType(event);
         }
     }
 

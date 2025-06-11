@@ -80,7 +80,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     private void tickTargetEntity(EntityMaid maid) {
         CombinedInvWrapper inv = maid.getAvailableInv(false);
-        Vec3 targetDir = MathUtil.getFromToWithFriction(maid.getPosition(0), targetEntity.getPosition(0));
+        Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.getPosition(0));
         for (int i = 0; i < 5 && targetEntity != null && inv.getSlots() > currentSlot; i++) {
             @NotNull ItemStack item = inv.getStackInSlot(currentSlot++);
             int restCount = RequestListItem.updateStored(maid.getMainHandItem(), item, false);

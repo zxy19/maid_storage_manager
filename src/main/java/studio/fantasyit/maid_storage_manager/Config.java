@@ -20,6 +20,12 @@ public class Config {
         CORNER
     }
 
+    public enum ThrowMethod {
+        FINALLY_POS,
+        GO_THROUGH,
+        FIXED
+    }
+
     public enum CraftSolver {
         TOPOLOGY,
         DFS,
@@ -48,6 +54,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue ENABLE_CREATE_STORAGE = BUILDER
             .comment("Enable create's stock ticker support for maid")
             .define("compat.create_storage", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_TACZ = BUILDER
+            .comment("Enable tacz recipe support")
+            .define("compat.create_stock_manager", true);
     private static final ForgeConfigSpec.BooleanValue ENABLE_CREATE_STORAGE_MANAGER = BUILDER
             .comment("Allow maid to act as create stock keeper around a stock ticker.")
             .define("compat.create_stock_keeper", true);
@@ -103,6 +112,10 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue PICKUP_IGNORE_DELAY = BUILDER
             .comment("Maid will ignore delay when picking up items.")
             .define("behavior.pickup_ignore_delay", true);
+
+    private static final ForgeConfigSpec.EnumValue<ThrowMethod> THROW_ITEM_VECTOR = BUILDER
+            .comment("How maid will throw Item.FINALLY_POS will try make the item stop at the position. GO_THROUGH will try to make item go through the target position. FIXED will always use the vector of length 0.6")
+            .defineEnum("behavior.throw_item_vector", ThrowMethod.FINALLY_POS, ThrowMethod.values());
     //渲染控制选项
     private static final ForgeConfigSpec.ConfigValue<VirtualItemFrameRender> VIRTUAL_ITEM_FRAME_RENDER = BUILDER
             .comment("Virtual Item Frame's render method allow access/no access/filter.")
@@ -127,11 +140,17 @@ public class Config {
             .comment("Generate virtual item frame entity when shift right-click with certain items.")
             .define("utility.generate_virtual_item_frame", true);
     private static final ForgeConfigSpec.ConfigValue<List<String>> CRAFTING_SOLVER = BUILDER
-            .comment("Crafting solver to use. [DFS/DFS_QUEUED/TOPOLOGY]")
+            .comment("Crafting solver to use. [DFS/DFS_QUEUED/TOPOLOGY]. Topology algorithm costs least but dose not support circular recipes.")
             .define("crafting.solver",
                     List.of(CraftSolver.DFS_QUEUED.name()),
                     o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
             );
+    private static final ForgeConfigSpec.BooleanValue USE_NBT = BUILDER
+            .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
+            .define("crafting.nbt.default", false);
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
+            .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
+            .defineListAllowEmpty("crafting.nbt.no_matching_path", () -> List.of("Damage"), o -> o instanceof String);
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -142,6 +161,7 @@ public class Config {
     public static boolean enableEmiIngredientRequest;
     public static boolean enableCreateStorage;
     public static boolean enableCreateStockManager;
+    public static boolean enableTacz;
     public static double createStockKeeperRangeV;
     public static double createStockKeeperRangeH;
     public static double collectSpeed;
@@ -154,6 +174,7 @@ public class Config {
     public static int maxLogisticsTries;
     public static boolean useAllStorageByDefault;
     public static double followSpeed;
+    public static ThrowMethod throwItemVector;
     public static VirtualItemFrameRender virtualItemFrameRender;
     public static boolean renderMaidWhenIngredientRequest;
     public static boolean twoStepAiResponse;
@@ -164,6 +185,8 @@ public class Config {
     public static boolean generateVirtualItemFrame;
     public static boolean pickupIgnoreDelay;
     public static List<CraftSolver> craftingSolver;
+    public static boolean craftingMatchTag;
+    public static List<String> noMatchPaths;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -174,6 +197,7 @@ public class Config {
         enableEmiIngredientRequest = ENABLE_EMI_INGREDIENT_REQUEST.get();
         enableCreateStorage = ENABLE_CREATE_STORAGE.get();
         enableCreateStockManager = ENABLE_CREATE_STORAGE_MANAGER.get();
+        enableTacz = ENABLE_TACZ.get();
         createStockKeeperRangeV = ENABLE_CREATE_STOCK_RANGE_V.get();
         createStockKeeperRangeH = ENABLE_CREATE_STOCK_RANGE_H.get();
         collectSpeed = COLLECT_SPEED.get();
@@ -196,5 +220,8 @@ public class Config {
         renderMaidWhenIngredientRequest = RENDER_MAID_WHEN_INGREDIENT_REQUEST.get();
         craftingSolver = CRAFTING_SOLVER.get().stream().map(CraftSolver::valueOf).toList();
         pickupIgnoreDelay = PICKUP_IGNORE_DELAY.get();
+        craftingMatchTag = USE_NBT.get();
+        noMatchPaths = NBT_NO_MATCH_PATH.get().stream().map(t -> (String) t).toList();
+        throwItemVector = THROW_ITEM_VECTOR.get();
     }
 }

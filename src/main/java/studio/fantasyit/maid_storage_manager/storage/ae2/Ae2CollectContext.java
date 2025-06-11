@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableCon
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtractableContext {
     private int current = 0;
@@ -39,6 +40,18 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
         this.current = 0;
         setDone(false);
         lastDone = false;
+    }
+
+    @Override
+    public void setExtractByExisting(Predicate<ItemStack> predicate) {
+        if (this.keys != null)
+            setExtract(
+                    keys.stream()
+                            .map(AEItemKey::getReadOnlyStack)
+                            .filter(predicate)
+                            .toList(), true);
+        else
+            setExtract(List.of(), true);
     }
 
     @Override

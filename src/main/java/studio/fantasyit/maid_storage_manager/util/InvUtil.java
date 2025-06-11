@@ -83,7 +83,21 @@ public class InvUtil {
             }
         }
         return itemStack.copyWithCount(count);
+    }
 
+    public static ItemStack tryExtractForCrafting(IItemHandler inv, ItemStack itemStack) {
+        int count = 0;
+        int max = itemStack.getCount();
+        for (int i = 0; i < inv.getSlots(); i++) {
+            ItemStack stackInSlot = inv.getStackInSlot(i);
+            if (ItemStackUtil.isSameInCrafting(stackInSlot, itemStack)) {
+                int extractCurrent = Math.min(max - count, stackInSlot.getCount());
+                ItemStack get = inv.extractItem(i, extractCurrent, false);
+                count += get.getCount();
+                if (count >= max) break;
+            }
+        }
+        return itemStack.copyWithCount(count);
     }
 
     public static int maxCanPlace(IItemHandler container, ItemStack itemStack) {
@@ -198,6 +212,16 @@ public class InvUtil {
         CombinedInvWrapper inv = maid.getAvailableInv(true);
         for (int i = 0; i < inv.getSlots(); i++) {
             if (ItemStackUtil.isSame(inv.getStackInSlot(i), itemStack, matchTag)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int getTargetIndexInCrafting(EntityMaid maid, ItemStack itemStack) {
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        for (int i = 0; i < inv.getSlots(); i++) {
+            if (ItemStackUtil.isSameInCrafting(inv.getStackInSlot(i), itemStack)) {
                 return i;
             }
         }

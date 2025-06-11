@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.base.AbstractGatherMo
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
@@ -55,6 +56,11 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
     @Override
     protected void noTarget(ServerLevel level, EntityMaid maid) {
         MemoryUtil.getCrafting(maid).finishGathering(maid);
+    }
+
+    @Override
+    protected boolean isTargetItem(ServerLevel level, EntityMaid maid, List<ItemStack> targets, ItemStack itemStack) {
+        return targets.stream().anyMatch(i2 -> ItemStackUtil.isSameInCrafting(i2, itemStack));
     }
 
     @Override

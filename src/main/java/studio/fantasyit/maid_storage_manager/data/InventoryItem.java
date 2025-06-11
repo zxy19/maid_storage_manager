@@ -11,11 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryItem implements INBTSerializable<CompoundTag> {
+    public record PositionCount(Target pos, int count, boolean isCraftGuide) {
+    }
+
     public ItemStack itemStack;
     public int totalCount;
-    public List<Pair<Target, Integer>> posAndSlot;
+    public List<PositionCount> posAndSlot;
 
-    public InventoryItem(ItemStack itemStack, int totalCount, List<Pair<Target, Integer>> posAndSlot) {
+    public InventoryItem(ItemStack itemStack, int totalCount, List<PositionCount> posAndSlot) {
         this.itemStack = itemStack.copyWithCount(1);
         this.totalCount = totalCount;
         this.posAndSlot = posAndSlot;
@@ -28,8 +31,12 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
     }
 
     public void addCount(Target pos, int second) {
-        posAndSlot.add(new Pair<>(pos, second));
+        posAndSlot.add(new PositionCount(pos, second, false));
         totalCount += second;
+    }
+
+    public void addCraftGuidePos(Target pos) {
+        posAndSlot.add(new PositionCount(pos, 0, true));
     }
 
     public Pair<ItemStack, Integer> toPair() {
@@ -44,8 +51,9 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         ListTag list = new ListTag();
         for (int i = 0; i < posAndSlot.size(); i++) {
             CompoundTag posAndSlotTag = new CompoundTag();
-            posAndSlotTag.put("pos", posAndSlot.get(i).getA().toNbt());
-            posAndSlotTag.putInt("count", posAndSlot.get(i).getB());
+            posAndSlotTag.put("pos", posAndSlot.get(i).pos().toNbt());
+            posAndSlotTag.putInt("count", posAndSlot.get(i).count());
+            posAndSlotTag.putBoolean("isCraftGuide", posAndSlot.get(i).isCraftGuide());
             list.add(posAndSlotTag);
         }
         tag.put("posCount", list);
@@ -59,11 +67,16 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         ListTag list = nbt.getList("posCount", 10);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
-            posAndSlot.add(new Pair<>(Target.fromNbt(tmp.getCompound("pos")),
-                    tmp.getInt("count")));
+            posAndSlot.add(new PositionCount(
+                            Target.fromNbt(tmp.getCompound("pos")),
+                            tmp.getInt("count"),
+                            tmp.getBoolean("isCraftGuide")
+                    )
+            );
         }
     }
-    public static InventoryItem fromNbt(CompoundTag tag){
+
+    public static InventoryItem fromNbt(CompoundTag tag) {
         InventoryItem inventoryItem = new InventoryItem(ItemStack.EMPTY, 0);
         inventoryItem.deserializeNBT(tag);
         return inventoryItem;

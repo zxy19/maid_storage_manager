@@ -32,4 +32,8 @@ public class Integrations {
     public static boolean createLoading() {
         return LoadingModList.get().getModFileById("create") != null;
     }
+
+    public static boolean tacz(){
+        return ModList.get().isLoaded("tacz") && Config.enableTacz;
+    }
 }

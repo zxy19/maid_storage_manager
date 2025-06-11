@@ -12,11 +12,13 @@ import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftScreen;
+import studio.fantasyit.maid_storage_manager.menu.craft.brewing.BrewingCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingTableCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutterCraftScreen;
+import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftScreen;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientGuiRegistry {
@@ -33,7 +35,9 @@ public class ClientGuiRegistry {
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_FURNACE.get(), FurnaceCraftScreen::new);
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), SmithingCraftScreen::new);
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), AnvilCraftScreen::new);
+            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get(), BrewingCraftScreen::new);
             MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), StoneCutterCraftScreen::new);
+            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), TaczCraftScreen::new);
         });
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -31,7 +32,16 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
 
     @Override
     public Result start() {
+        if(craftGuideStepData.getStorage() == null)
+            return Result.FAIL;
+        return Result.CONTINUE;
+    }
+
+    @Override
+    public Result tick() {
         Level level = maid.level();
+        if (!level.getBlockState(craftGuideStepData.storage.pos).is(Blocks.CRAFTING_TABLE))
+            return Result.NOT_DONE;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         List<ItemStack> input = craftGuideStepData.getInput();
         List<ItemStack> output = craftGuideStepData.getOutput();
@@ -66,7 +76,7 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
             Optional<CraftingRecipe> recipe = RecipeUtil.getCraftingRecipe(level, container);
             if (recipe.isPresent()) {
                 ItemStack result = recipe.get().assemble(container, level.registryAccess());
-                if (ItemStackUtil.isSame(result, output.get(0), craftGuideStepData.matchTag)) {
+                if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
                 }
 
@@ -83,7 +93,7 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
                             int total = remain.get(j).getCount();
                             for (int k = 0; k < output.size(); k++) {
                                 int rem = output.get(k).getCount() - craftLayer.getCurrentStepCount(k);
-                                if (ItemStackUtil.isSame(remain.get(j), output.get(k), craftGuideStepData.matchTag) && rem > 0) {
+                                if (ItemStackUtil.isSameInCrafting(remain.get(j), output.get(k)) && rem > 0) {
                                     craftLayer.addCurrentStepPlacedCounts(k, Math.min(total, rem));
                                 }
                                 total -= rem;
@@ -106,11 +116,6 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
             return Result.FAIL;
         }
         return Result.FAIL;
-    }
-
-    @Override
-    public Result tick() {
-        return Result.SUCCESS;
     }
 
     @Override

@@ -11,6 +11,8 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.MathUtil;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
 
@@ -33,12 +35,32 @@ public class CommonThrowItemAction extends AbstractCraftActionContext {
         return Result.CONTINUE;
     }
 
+    protected boolean shouldMoveAndWait() {
+        BlockPos targetPos = MemoryUtil.getTargetPos(maid);
+        if (targetPos == null) return false;
+        double maidX = maid.getX();
+        double maidZ = maid.getZ();
+        Vec3 center = targetPos.getCenter();
+        double targetCenterX = center.x;
+        double targetCenterZ = center.z;
+        if (Math.abs(maidX - targetCenterX) > 0.3 || Math.abs(maidZ - targetCenterZ) > 0.3) {
+            maid.setDeltaMovement(
+                    new Vec3(targetCenterX - maidX, 0, targetCenterZ - maidZ)
+                            .normalize()
+                            .scale(0.1)
+            );
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public Result tick() {
         if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE;
+        if (shouldMoveAndWait()) return Result.CONTINUE;
         ItemStack current = ingredients.get(ingredientIndex);
         if (current.isEmpty()) return Result.CONTINUE;
-        ItemStack toThrow = InvUtil.tryExtract(maid.getAvailableInv(false), current, craftGuideStepData.matchTag);
+        ItemStack toThrow = InvUtil.tryExtractForCrafting(maid.getAvailableInv(false), current);
         if (toThrow.getCount() < current.getCount()) {
             InvUtil.tryPlace(maid.getAvailableInv(false), current);
             return Result.FAIL;
@@ -46,7 +68,7 @@ public class CommonThrowItemAction extends AbstractCraftActionContext {
         BlockPos tp = craftGuideStepData.getStorage().pos;
         BlockPos directlyTarget = new BlockPos(tp.getX(), maid.getBlockY() >= tp.getY() ? tp.getY() : tp.getY() - 1, tp.getZ());
 
-        Vec3 direction = directlyTarget.getCenter().subtract(maid.getPosition(0));
+        Vec3 direction = MathUtil.getFromToWithFriction(maid, directlyTarget.getCenter());
         InvUtil.throwItem(maid, toThrow, direction);
         ingredientIndex++;
         if (ingredientIndex >= ingredients.size()) {

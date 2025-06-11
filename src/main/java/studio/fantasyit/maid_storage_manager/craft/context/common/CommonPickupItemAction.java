@@ -52,7 +52,7 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
             );
         for (Entity entity : entities) {
             if (!entity.isAlive()) continue;
-            if (entity instanceof ItemEntity ie && ItemStackUtil.isSame(ie.getItem(), current, craftGuideStepData.matchTag)) {
+            if (entity instanceof ItemEntity ie && ItemStackUtil.isSameInCrafting(ie.getItem(), current)) {
                 int toTakeCount = Math.min(ie.getItem().getCount(), current.getCount() - hasTaken);
                 ItemStack notPlaced = InvUtil.tryPlace(maid.getAvailableInv(false), ItemHandlerHelper.copyStackWithSize(current, toTakeCount));
                 int realTake = toTakeCount - notPlaced.getCount();

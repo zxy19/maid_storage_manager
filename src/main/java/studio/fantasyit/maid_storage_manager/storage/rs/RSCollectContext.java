@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class RSCollectContext extends AbstractRSContext implements IStorageExtractableContext {
     int current = 0;
@@ -72,6 +73,18 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
         this.task = itemList;
         this.matchNbt = matchNbt;
         current = 0;
+    }
+
+    @Override
+    public void setExtractByExisting(Predicate<ItemStack> predicate) {
+        if (stackListStacks != null)
+            setExtract(
+                    stackListStacks.stream()
+                            .map(StackListEntry::getStack)
+                            .filter(predicate)
+                            .toList(), true);
+        else
+            setExtract(List.of(), true);
     }
 
     @Override

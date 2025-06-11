@@ -14,6 +14,16 @@ import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 public class MemoryUtil {
+    public static BlockPos getTargetPos(EntityMaid maid) {
+        return maid
+                .getBrain()
+                .getMemory(InitEntities.TARGET_POS.get())
+                .filter(t -> t instanceof BlockPosTracker)
+                .map(t -> (BlockPosTracker) t)
+                .map(BlockPosTracker::currentBlockPosition)
+                .orElse(null);
+    }
+
     public static RequestProgressMemory getRequestProgress(EntityMaid maid) {
         if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.REQUEST_PROGRESS.get()))
             maid.getBrain().setMemory(MemoryModuleRegistry.REQUEST_PROGRESS.get(), new RequestProgressMemory());

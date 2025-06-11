@@ -13,6 +13,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.item.Items;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.CoWorkSwitchFunction;
 import studio.fantasyit.maid_storage_manager.ai.FindAndMarkStorageFunction;
@@ -84,12 +85,18 @@ public class MaidExtension implements ILittleMaid {
 
     @Override
     public void addMaidTips(MaidTipsOverlay maidTipsOverlay) {
-        ItemRegistry.ITEMS.getEntries().forEach(item -> {
-            if (item.get() instanceof MaidInteractItem) {
-                maidTipsOverlay.addTips("tip.maid_storage_manager.interact_maid", item.get());
-            }
+        maidTipsOverlay.addSpecialTips("tip.maid_storage_manager.interact_maid", (stack, maid, player) -> {
+            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
+                return false;
+            return stack.getItem() instanceof MaidInteractItem;
         });
-        maidTipsOverlay.addTips("tip.maid_storage_manager.change_flag", ItemRegistry.CHANGE_FLAG.get());
+        maidTipsOverlay.addSpecialTips("tip.maid_storage_manager.change_flag", (stack, maid, player) -> {
+            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
+                return false;
+            return stack.is(ItemRegistry.CHANGE_FLAG.get());
+        });
+
+        maidTipsOverlay.addTips("tip.maid_storage_manager.experience_bottle", Items.EXPERIENCE_BOTTLE);
     }
 
     @Override

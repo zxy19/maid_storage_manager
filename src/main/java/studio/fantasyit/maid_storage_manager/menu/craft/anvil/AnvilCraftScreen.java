@@ -24,7 +24,7 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
     }
     @Override
     protected void addButtons() {
-        EditBox editBox = new EditBox(font, getGuiLeft() + 57, getGuiTop() + 46, 96, 16, Component.literal(""));
+        EditBox editBox = new EditBox(font, getGuiLeft() + 58, getGuiTop() + 50, 96, 16, Component.literal(""));
         CompoundTag extraData = menu.stepDataContainer.step.extraData;
         name = "";
         if (extraData != null && extraData.contains("name")) {

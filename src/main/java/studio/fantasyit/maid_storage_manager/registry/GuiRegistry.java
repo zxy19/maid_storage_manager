@@ -13,11 +13,13 @@ import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
+import studio.fantasyit.maid_storage_manager.menu.craft.brewing.BrewingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingTableCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutterCraftMenu;
+import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftMenu;
 
 public class GuiRegistry {
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MaidStorageManager.MODID);
@@ -40,8 +42,16 @@ public class GuiRegistry {
             () -> IForgeMenuType.create((windowId, inv, data) -> new SmithingCraftMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<AnvilCraftMenu>> CRAFT_GUIDE_MENU_ANVIL = MENU_TYPES.register("craft_guide_menu_anvil",
             () -> IForgeMenuType.create((windowId, inv, data) -> new AnvilCraftMenu(windowId, inv.player)));
+    public static final RegistryObject<MenuType<BrewingCraftMenu>> CRAFT_GUIDE_MENU_BREWING = MENU_TYPES.register("craft_guide_menu_brewing",
+            () -> IForgeMenuType.create((windowId, inv, data) -> new BrewingCraftMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<StoneCutterCraftMenu>> CRAFT_GUIDE_MENU_STONE_CUTTER = MENU_TYPES.register("craft_guide_menu_stone_cutter",
             () -> IForgeMenuType.create((windowId, inv, data) -> new StoneCutterCraftMenu(windowId, inv.player)));
+
+
+    public static final RegistryObject<MenuType<TaczCraftMenu>> CRAFT_GUIDE_MENU_TACZ = MENU_TYPES.register("craft_guide_menu_tacz",
+            () -> IForgeMenuType.create((windowId, inv, data) -> new TaczCraftMenu(windowId, inv.player)));
+
+
     public static final RegistryObject<MenuType<StorageManagerMaidConfigGui.Container>> STORAGE_MANAGER_MAID_CONFIG_GUI = MENU_TYPES.register("storage_manager_maid_config_gui",
             () -> IForgeMenuType.create((windowId, inv, data) -> new StorageManagerMaidConfigGui.Container(windowId, inv, data.readInt())));
 

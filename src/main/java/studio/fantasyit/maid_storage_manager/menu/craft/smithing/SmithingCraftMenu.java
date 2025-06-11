@@ -12,12 +12,14 @@ import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class SmithingCraftMenu extends AbstractCraftMenu<SmithingCraftMenu> {
 
     public SmithingCraftMenu(int p_38852_, Player player) {
-        super(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), p_38852_,player);
+        super(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), p_38852_, player);
     }
 
     @Override
@@ -44,6 +46,7 @@ public class SmithingCraftMenu extends AbstractCraftMenu<SmithingCraftMenu> {
                 true
         ));
     }
+
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
@@ -69,7 +72,11 @@ public class SmithingCraftMenu extends AbstractCraftMenu<SmithingCraftMenu> {
     }
 
     public void recalculateRecipe() {
-        Optional<SmithingRecipe> recipe = RecipeUtil.getSmithingRecipe(player.level(), stepDataContainer.step.getInput());
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 0; i < stepDataContainer.inputCount; i++) {
+            items.add(stepDataContainer.getItem(i));
+        }
+        Optional<SmithingRecipe> recipe = RecipeUtil.getSmithingRecipe(player.level(), items);
         recipe.ifPresentOrElse(smithingRecipe -> {
             ItemStack resultItem = smithingRecipe.getResultItem(player.level().registryAccess());
             stepDataContainer.setItemNoTrigger(3, resultItem);

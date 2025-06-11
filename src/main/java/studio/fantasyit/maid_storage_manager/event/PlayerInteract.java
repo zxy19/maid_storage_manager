@@ -1,13 +1,17 @@
 package studio.fantasyit.maid_storage_manager.event;
 
+import com.github.tartaricacid.touhoulittlemaid.api.event.InteractMaidEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
@@ -36,15 +40,26 @@ public class PlayerInteract {
         }
     }
 
-    @SubscribeEvent
-    public static void onPlayerInteractMaid(PlayerInteractEvent.EntityInteractSpecific event) {
-        if (event.getTarget() instanceof EntityMaid maid) {
-            if (Integrations.createStockManager())
-                if (StockManagerInteract.onPlayerInteract(event.getEntity(), maid)) {
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    return;
-                }
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onPlayerInteractMaid(InteractMaidEvent event) {
+        EntityMaid maid = event.getMaid();
+        Player player = event.getPlayer();
+        if (Integrations.createStockManager())
+            if (StockManagerInteract.onPlayerInteract(player, maid)) {
+                event.setCanceled(true);
+                return;
+            }
+        if (player instanceof ServerPlayer sp) {
+            if (sp.getMainHandItem().is(Items.EXPERIENCE_BOTTLE)) {
+                ItemStack mainHandItem = sp.getMainHandItem();
+                int count = sp.isShiftKeyDown() ? mainHandItem.getCount() : 1;
+                int amount = (3 + sp.level().random.nextInt(5) + sp.level().random.nextInt(5)) * count;
+                maid.setExperience(maid.getExperience() + amount);
+                mainHandItem.shrink(count);
+                event.setCanceled(true);
+            }
         }
+
     }
 
     @SubscribeEvent

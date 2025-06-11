@@ -204,18 +204,30 @@ public final class BindingRender {
         for (Pair<InventoryItem, MutableInt> pair : InventoryListDataClient.showingInv) {
             InventoryItem inv = pair.getA();
             for (int i = 0; i < inv.posAndSlot.size(); i++) {
-                Pair<Target, Integer> storageIntegerPair = inv.posAndSlot.get(i);
-                BoxRenderUtil.renderStorage(
-                        storageIntegerPair.getA(),
-                        colors_y,
-                        event,
-                        Component.translatable("maid_storage_manager.inventory_list_render.inv",
-                                        inv.itemStack.getDisplayName().getString(),
-                                        storageIntegerPair.getB()
-                                )
-                                .getString(),
-                        floating
-                );
+                InventoryItem.PositionCount storageIntegerPair = inv.posAndSlot.get(i);
+                if (storageIntegerPair.isCraftGuide())
+                    BoxRenderUtil.renderStorage(
+                            storageIntegerPair.pos(),
+                            colors_y,
+                            event,
+                            Component.translatable("maid_storage_manager.inventory_list_render.inv_craft_guide",
+                                            inv.itemStack.getDisplayName().getString()
+                                    )
+                                    .getString(),
+                            floating
+                    );
+                else
+                    BoxRenderUtil.renderStorage(
+                            storageIntegerPair.pos(),
+                            colors_y,
+                            event,
+                            Component.translatable("maid_storage_manager.inventory_list_render.inv",
+                                            inv.itemStack.getDisplayName().getString(),
+                                            storageIntegerPair.count()
+                                    )
+                                    .getString(),
+                            floating
+                    );
             }
         }
     }

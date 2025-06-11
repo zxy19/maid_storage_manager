@@ -94,7 +94,6 @@ public abstract class Ae2BaseContext extends AbstractFilterableBlockStorage impl
                             List.of(((AEItemKey) key).getReadOnlyStack().copyWithCount(1)),
                             AeCraftingAction.TYPE,
                             false,
-                            false,
                             new CompoundTag()
                     ));
                     return new CraftGuideData(

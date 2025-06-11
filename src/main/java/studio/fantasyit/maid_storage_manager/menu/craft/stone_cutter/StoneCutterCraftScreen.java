@@ -73,9 +73,8 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
                         y,
                         (data) -> {
                             if (!menu.stepDataContainer.getItem(1).isEmpty()
-                                    && ItemStackUtil.isSame(menu.stepDataContainer.getItem(1),
-                                    menu.displayOnlySlots.getItem(index),
-                                    menu.stepDataContainer.matchTag)) {
+                                    && ItemStackUtil.isSameInCrafting(menu.stepDataContainer.getItem(1),
+                                    menu.displayOnlySlots.getItem(index))) {
                                 return new SelectButtonWidget.Option<>(
                                         1,
                                         SLOT_SELECTED,

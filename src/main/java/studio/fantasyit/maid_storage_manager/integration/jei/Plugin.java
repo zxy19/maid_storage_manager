@@ -10,14 +10,16 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.handler.JEIRecipeHandler;
+import studio.fantasyit.maid_storage_manager.menu.craft.brewing.BrewingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingTableCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.JeiStoneCutterRecipeHandler;
+import studio.fantasyit.maid_storage_manager.menu.craft.tacz.JEITaczRecipeTransfer;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 
 @JeiPlugin
@@ -52,6 +54,12 @@ public class Plugin implements IModPlugin {
                 ), RecipeTypes.SMELTING);
         registration.addRecipeTransferHandler(
                 new JEIRecipeHandler<>(
+                        BrewingCraftMenu.class,
+                        RecipeTypes.BREWING,
+                        GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get()
+                ), RecipeTypes.BREWING);
+        registration.addRecipeTransferHandler(
+                new JEIRecipeHandler<>(
                         AltarCraftMenu.class,
                         AltarRecipeCategory.ALTAR,
                         GuiRegistry.CRAFT_GUIDE_MENU_ALTAR.get()
@@ -63,6 +71,7 @@ public class Plugin implements IModPlugin {
                         GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get()
                 ), RecipeTypes.SMITHING);
         registration.addRecipeTransferHandler(new JeiStoneCutterRecipeHandler(), RecipeTypes.STONECUTTING);
+        registration.addUniversalRecipeTransferHandler(new JEITaczRecipeTransfer());
     }
 
     @Override

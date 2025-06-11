@@ -1,0 +1,34 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:tipped_arrow",
+    "minecraft:firework_rocket",
+    "minecraft:firework_star",
+    "minecraft:potion",
+    "minecraft:splash_potion",
+    "minecraft:lingering_potion",
+    "minecraft:enchanted_book",
+    "#enchantable/armor",
+    "#enchantable/bow",
+    "#enchantable/chest_armor",
+    "#enchantable/crossbow",
+    "#enchantable/durability",
+    "#enchantable/equippable",
+    "#enchantable/fire_aspect",
+    "#enchantable/fishing",
+    "#enchantable/foot_armor",
+    "#enchantable/head_armor",
+    "#enchantable/leg_armor",
+    "#enchantable/mining",
+    "#enchantable/mining_loot",
+    "#enchantable/sharp_weapon",
+    "#enchantable/sword",
+    "#enchantable/trident",
+    "#enchantable/vanishing",
+    "#enchantable/weapon",
+    {
+      "id": "tacz:ammo",
+      "required": "false"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
-import studio.fantasyit.maid_storage_manager.integration.create.AddCreateStockButtonForMaid;
+import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -20,7 +20,7 @@ public class StartUpEvent {
     public static class StartUpEventClient {
         @SubscribeEvent
         public static void onStartUp(FMLLoadCompleteEvent event) {
-            AddCreateStockButtonForMaid.init();
+            CreateIntegration.init();
         }
     }
 }

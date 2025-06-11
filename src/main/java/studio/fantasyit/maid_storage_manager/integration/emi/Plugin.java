@@ -8,6 +8,7 @@ import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.handler.EmiRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.EmiCommonRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.EmiStoneCutterRecipeHandler;
+import studio.fantasyit.maid_storage_manager.menu.craft.tacz.EMITaczRecipeTransfer;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 
 @EmiEntrypoint
@@ -20,8 +21,10 @@ public class Plugin implements EmiPlugin {
         registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), new EmiRecipeHandler<>(VanillaEmiRecipeCategories.SMITHING));
         registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), new EmiRecipeHandler<>(VanillaEmiRecipeCategories.CRAFTING));
         registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_FURNACE.get(), new EmiRecipeHandler<>(VanillaEmiRecipeCategories.SMELTING));
+        registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get(), new EmiRecipeHandler<>(VanillaEmiRecipeCategories.BREWING));
         registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), new EmiRecipeHandler<>(VanillaEmiRecipeCategories.ANVIL_REPAIRING));
         registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), new EmiStoneCutterRecipeHandler());
         registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_ALTAR.get(), new EmiRecipeHandler<>(MaidEmiPlugin.ALTAR));
+        registry.addRecipeHandler(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), new EMITaczRecipeTransfer());
     }
 }

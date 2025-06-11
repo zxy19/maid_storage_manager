@@ -10,7 +10,6 @@ public class StepDataContainer extends FilterContainer implements ISaveFilter {
     public final CraftGuideStepData step;
     CraftAction actionType;
     public boolean optional;
-    public boolean matchTag;
     public int inputCount = 0;
     public int outputCount = 0;
 
@@ -28,7 +27,6 @@ public class StepDataContainer extends FilterContainer implements ISaveFilter {
             setItemNoTrigger(inputCount + i, step.getOutput().get(i));
             setCount(inputCount + i, step.getOutput().get(i).getCount());
         }
-        matchTag = step.isMatchTag();
     }
 
     @Override
@@ -47,6 +45,5 @@ public class StepDataContainer extends FilterContainer implements ISaveFilter {
             step.setOutput(i, getItem(inputCount + i).copyWithCount(count));
         }
         step.optional = optional;
-        step.matchTag = matchTag;
     }
 }

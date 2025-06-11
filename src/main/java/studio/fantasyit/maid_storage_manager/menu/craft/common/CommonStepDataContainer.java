@@ -41,7 +41,6 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
             setCount(inputOffset + i, step.getOutput().get(i).getCount());
         }
         optional = step.isOptional();
-        matchTag = step.isMatchTag();
     }
 
     @Override
@@ -85,7 +84,6 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         else
             step.clearOutput();
         step.optional = optional;
-        step.matchTag = matchTag;
     }
 
 }

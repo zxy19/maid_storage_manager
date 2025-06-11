@@ -7,13 +7,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class ViewedInventoryMemory extends AbstractTargetMemory {
 
@@ -154,7 +154,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                     if (!found)
                         result.add(new InventoryItem(itemCount.getItem(),
                                         itemCount.getCount(),
-                                        new ArrayList<>(List.of(new Pair<>(pos, itemCount.getSecond())))
+                                        new ArrayList<>(List.of(new InventoryItem.PositionCount(pos, itemCount.getSecond(), false)))
                                 )
                         );
                 }
@@ -226,9 +226,10 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         }
     }
 
-    public void resetViewedInvForPosAsRemoved(Target pos){
+    public void resetViewedInvForPosAsRemoved(Target pos) {
         viewedInventory.remove(pos.toStoreString());
     }
+
     public void resetViewedInvForPos(Target pos) {
         viewedInventory.remove(pos.toStoreString());
         viewedInventory.put(pos.toStoreString(), new HashMap<>());
@@ -255,11 +256,11 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return realTarget.getValue();
     }
 
-    public void removeItemFromAllTargets(ItemStack itemStack, boolean matchTag) {
+    public void removeItemFromAllTargets(ItemStack itemStack, Predicate<ItemStack> predicate) {
         for (String pos : viewedInventory.keySet()) {
             Map<String, List<ItemCount>> vi = viewedInventory.get(pos);
             for (String item : vi.keySet()) {
-                vi.get(item).removeIf(itemCount -> ItemStackUtil.isSame(itemStack, itemCount.getFirst(), matchTag));
+                vi.get(item).removeIf(itemCount -> ItemStackUtil.isSame(itemStack, itemCount.getFirst(), false) && predicate.test(itemCount.getFirst()));
             }
             Set<String> ks = new HashSet<>(vi.keySet());
             for (String k : ks) {

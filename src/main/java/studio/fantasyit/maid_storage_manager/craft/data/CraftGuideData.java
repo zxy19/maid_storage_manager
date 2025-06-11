@@ -51,7 +51,7 @@ public class CraftGuideData {
     /**
      * 根据步骤，构建出具体的输入和输出物品及其数量
      */
-    private void buildInputAndOutputs() {
+    public void buildInputAndOutputs() {
         inputs = new ArrayList<>();
         outputs = new ArrayList<>();
         inputsWithOptional = new ArrayList<>();
@@ -62,20 +62,21 @@ public class CraftGuideData {
                 if (_item.isEmpty()) continue;
                 ItemStack item = _item.copy();
                 if (!step.isOptional()) {
-                    if (ItemStackUtil.removeIsMatchInList(outputs, item, step.isMatchTag()).isEmpty()) continue;
-                    ItemStackUtil.addToList(inputs, item, step.isMatchTag());
+                    if (ItemStackUtil.removeIsMatchInList(outputs, item, ItemStackUtil::isSameInCrafting).isEmpty())
+                        continue;
+                    ItemStackUtil.addToList(inputs, item, ItemStackUtil::isSameInCrafting);
                 }
 
-                if (ItemStackUtil.removeIsMatchInList(outputsWithOptional, item, step.isMatchTag()).isEmpty())
+                if (ItemStackUtil.removeIsMatchInList(outputsWithOptional, item, ItemStackUtil::isSameInCrafting).isEmpty())
                     continue;
-                ItemStackUtil.addToList(inputsWithOptional, item, step.isMatchTag());
+                ItemStackUtil.addToList(inputsWithOptional, item, ItemStackUtil::isSameInCrafting);
             }
             for (ItemStack _item : step.getOutput()) {
                 if (_item.isEmpty()) continue;
                 ItemStack item = _item.copy();
                 if (!step.isOptional())
-                    ItemStackUtil.addToList(outputs, item, step.isMatchTag());
-                ItemStackUtil.addToList(outputsWithOptional, item, step.isMatchTag());
+                    ItemStackUtil.addToList(outputs, item, ItemStackUtil::isSameInCrafting);
+                ItemStackUtil.addToList(outputsWithOptional, item, ItemStackUtil::isSameInCrafting);
             }
         }
     }
@@ -129,7 +130,6 @@ public class CraftGuideData {
                         items,
                         type,
                         optional,
-                        false,
                         new CompoundTag()));
             else
                 craftGuideData.steps.add(new CraftGuideStepData(target,
@@ -137,7 +137,6 @@ public class CraftGuideData {
                         new ArrayList<>(),
                         type,
                         optional,
-                        false,
                         new CompoundTag()));
         }
     }
@@ -166,7 +165,6 @@ public class CraftGuideData {
                     inputs,
                     outputs,
                     CraftingType.TYPE,
-                    false,
                     false,
                     new CompoundTag()));
         }
@@ -314,8 +312,8 @@ public class CraftGuideData {
         for (CraftGuideStepData step : steps) {
             List<ItemStack> output = step.getOutput();
             for (ItemStack outputItem : output) {
-                if (allInputs.stream().anyMatch(item -> ItemStackUtil.isSame(item, outputItem, step.matchTag))) {
-                    if (allOutputs.stream().anyMatch(item -> ItemStackUtil.isSame(item, outputItem, true))) {
+                if (allInputs.stream().anyMatch(item -> ItemStackUtil.isSameInCrafting(item, outputItem))) {
+                    if (allOutputs.stream().anyMatch(item -> ItemStackUtil.isSameInCrafting(item, outputItem))) {
                         return true;
                     }
                 }

@@ -49,7 +49,6 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
                         List.of(ItemStack.EMPTY),
                         CommonUseAction.TYPE_R,
                         false,
-                        false,
                         new CompoundTag()
                 ));
             }
@@ -58,7 +57,6 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
                     List.of(),
                     List.of(craftGuideStepData.getNonEmptyOutput().get(0)),
                     CommonPickupItemAction.TYPE,
-                    false,
                     false,
                     new CompoundTag()
             ));

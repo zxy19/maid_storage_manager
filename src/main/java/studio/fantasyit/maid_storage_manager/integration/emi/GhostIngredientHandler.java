@@ -5,7 +5,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 
 import java.util.Optional;

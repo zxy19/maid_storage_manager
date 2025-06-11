@@ -119,7 +119,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
             if (!recipe.isEmpty()) {
                 availableItems = recipe.stream().map(re -> re.getResultItem(player.level().registryAccess())).toList();
                 Optional<ItemStack> first = availableItems.stream().filter(
-                        itemStack -> ItemStackUtil.isSame(stepDataContainer.getItem(1), itemStack, stepDataContainer.matchTag)
+                        itemStack -> ItemStackUtil.isSameInCrafting(stepDataContainer.getItem(1), itemStack)
                 ).findAny();
                 if (first.isEmpty()) {
                     stepDataContainer.setItemNoTrigger(1, ItemStack.EMPTY);

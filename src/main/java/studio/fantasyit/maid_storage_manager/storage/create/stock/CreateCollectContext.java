@@ -42,6 +42,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class CreateCollectContext extends AbstractCreateContext implements IStorageExtractableContext {
     protected ChainConveyorBlockEntity chainConveyorBlockEntity;
@@ -333,6 +334,18 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
         this.itemList = new ArrayList<>(itemList.stream().map(ItemStack::copy).toList());
         this.matchNbt = matchNbt;
         this.current = 0;
+    }
+
+    @Override
+    public void setExtractByExisting(Predicate<ItemStack> predicate) {
+        if (this.stacks != null)
+            setExtract(
+                    stacks.stream()
+                            .map(s -> s.stack)
+                            .filter(predicate)
+                            .toList(), true);
+        else
+            setExtract(List.of(), true);
     }
 
     private Pair<Double, Double> getDistanceToBeConnectionAndPosition(BlockPos pos, BlockPos connection, Vec3 origin) {

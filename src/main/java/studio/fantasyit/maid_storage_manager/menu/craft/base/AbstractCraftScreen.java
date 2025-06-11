@@ -15,7 +15,7 @@ import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.menu.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;

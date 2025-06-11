@@ -56,7 +56,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
         ItemStack targetItem = craftGuideStepData.getInput().get(0);
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
-        storedSlot = InvUtil.getTargetIndex(maid, targetItem, craftGuideStepData.matchTag);
+        storedSlot = InvUtil.getTargetIndexInCrafting(maid, targetItem);
         if (storedSlot == -1) return Result.FAIL;
         InvUtil.swapHandAndSlot(maid, storedSlot);
 
@@ -88,7 +88,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
             if (!itemStack1.isEmpty()) {
                 InvUtil.throwItem(maid, itemStack1);
             }
-            if (ItemStackUtil.isSame(itemStack, craftGuideStepData.getOutput().get(0), craftGuideStepData.matchTag)) {
+            if (ItemStackUtil.isSameInCrafting(itemStack, craftGuideStepData.getOutput().get(0))) {
                 resultPlaced += realPlaced;
             }
         }
@@ -130,7 +130,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
             Block.getDrops(targetBs, level, target, blockEntity, maid, maid.getMainHandItem()).forEach((stack) -> {
                 ItemStack originalStack = stack.copy();
                 ItemStack remindItemStack = ItemHandlerHelper.insertItemStacked(availableInv, stack, false);
-                if (ItemStackUtil.isSame(originalStack, craftGuideStepData.getOutput().get(0), craftGuideStepData.matchTag)) {
+                if (ItemStackUtil.isSameInCrafting(originalStack, craftGuideStepData.getOutput().get(0))) {
                     totalGet.add(originalStack.getCount() - remindItemStack.getCount());
                 }
                 if (!remindItemStack.isEmpty()) {

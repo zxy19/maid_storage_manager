@@ -61,7 +61,7 @@ public class RequestItemUtil {
         }
         //1.1 尝试扔给目标实体
         else if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) <= 0 && targetEntity != null) {
-            Vec3 targetDir = MathUtil.getFromToWithFriction(maid.position(), targetEntity.position(), 0.6);
+            Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.position());
             tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
             reqList.setTag(tag);
             InvUtil.throwItem(maid, reqList, targetDir, true);

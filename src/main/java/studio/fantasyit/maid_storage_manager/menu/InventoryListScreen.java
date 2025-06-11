@@ -11,19 +11,56 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.fml.ModList;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
-import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class InventoryListScreen extends Screen {
+    private enum FilterOption {
+        ALL(Component.translatable("gui.maid_storage_manager.written_inventory_list.filter.all"), inventoryItem -> true),
+        STORED(Component.translatable("gui.maid_storage_manager.written_inventory_list.filter.stored"),
+                inventoryItem -> inventoryItem.posAndSlot.stream().anyMatch(t -> !t.isCraftGuide())),
+        CRAFTABLE(Component.translatable("gui.maid_storage_manager.written_inventory_list.filter.craftable"),
+                inventoryItem -> inventoryItem.posAndSlot.stream().anyMatch(InventoryItem.PositionCount::isCraftGuide));
+        public final Component component;
+        public final Predicate<InventoryItem> predicate;
+
+        FilterOption(Component component, Predicate<InventoryItem> predicate) {
+            this.component = component;
+            this.predicate = predicate;
+        }
+    }
+
+    private enum SortOption {
+        DEFAULT(Component.translatable("gui.maid_storage_manager.written_inventory_list.sorting.default"), (a, b) -> 0),
+        NAME(Component.translatable("gui.maid_storage_manager.written_inventory_list.sorting.name_p"),
+                Comparator.comparing(a -> a.itemStack.getHoverName().getString())),
+        NAME_N(Component.translatable("gui.maid_storage_manager.written_inventory_list.sorting.name_n"),
+                (a, b) -> -a.itemStack.getHoverName().getString().compareTo(b.itemStack.getHoverName().getString())),
+        COUNT(Component.translatable("gui.maid_storage_manager.written_inventory_list.sorting.count_p"),
+                Comparator.comparingInt(t -> t.totalCount)),
+        COUNT_N(Component.translatable("gui.maid_storage_manager.written_inventory_list.sorting.count_n"),
+                Comparator.comparingInt(t -> -t.totalCount));
+        public final Component component;
+        public final Comparator<InventoryItem> comparator;
+
+        SortOption(Component component, Comparator<InventoryItem> comparator) {
+            this.component = component;
+            this.comparator = comparator;
+        }
+    }
+
+
+    private static SortOption sortingOption = SortOption.DEFAULT;
+    private static FilterOption filterOption = FilterOption.ALL;
     private final Button prevButton;
     private final Button nextButton;
+    private final Button sortingButton;
+    private final Button filterButton;
+
     private final InventoryListDataClient data;
     private final UUID uuid;
     protected int left = 0;
@@ -39,6 +76,12 @@ public class InventoryListScreen extends Screen {
     private List<InventoryItem> list;
     private String search;
     private EditBox searchBox;
+    private Screen toSelectTarget = null;
+
+    public InventoryListScreen(UUID uuid, Screen toSelectTarget) {
+        this(uuid);
+        this.toSelectTarget = toSelectTarget;
+    }
 
     public InventoryListScreen(UUID uuid) {
         super(Component.empty());
@@ -49,10 +92,28 @@ public class InventoryListScreen extends Screen {
         this.nextButton = Button.builder(Component.translatable("gui.maid_storage_manager.written_inventory_list.next"), (button) -> this.doNext())
                 .size(16, 16)
                 .build();
+        this.sortingButton = Button.builder(Component.literal(""), btn -> this.switchSorting())
+                .size(96, 16)
+                .build();
+        this.filterButton = Button.builder(Component.literal(""), (button) -> this.switchFilter())
+                .size(96, 16)
+                .build();
         InventoryListDataClient.clearShowingInv();
         this.data = InventoryListDataClient.getInstance();
         this.originalList = data.get(uuid);
         this.list = originalList;
+    }
+
+    private void switchFilter() {
+        filterOption = FilterOption.values()[(filterOption.ordinal() + 1) % FilterOption.values().length];
+        filterButton.setMessage(filterOption.component);
+        reGenerateList();
+    }
+
+    private void switchSorting() {
+        sortingOption = SortOption.values()[(sortingOption.ordinal() + 1) % SortOption.values().length];
+        sortingButton.setMessage(sortingOption.component);
+        reGenerateList();
     }
 
     private void doPrev() {
@@ -71,14 +132,28 @@ public class InventoryListScreen extends Screen {
     protected List<Component> getTooltipForResult(int index) {
         InventoryItem inventoryItem = list.get(index);
         List<Component> tooltip = new ArrayList<>(Screen.getTooltipFromItem(minecraft, inventoryItem.itemStack));
-        tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.find"));
-        for (Pair<Target, Integer> pair : inventoryItem.posAndSlot) {
-            tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.pos",
-                    pair.getA().getPos().getX(),
-                    pair.getA().getPos().getY(),
-                    pair.getA().getPos().getZ(),
-                    pair.getB()
-            ).withStyle(ChatFormatting.DARK_GRAY));
+        if (toSelectTarget == null) {
+            if (inventoryItem.posAndSlot.stream().anyMatch(InventoryItem.PositionCount::isCraftGuide))
+                tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.craftable"));
+            if (inventoryItem.posAndSlot.stream().anyMatch(t -> !t.isCraftGuide()))
+                tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.find"));
+            for (InventoryItem.PositionCount pair : inventoryItem.posAndSlot) {
+                if (!pair.isCraftGuide())
+                    tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.pos",
+                            pair.pos().getPos().getX(),
+                            pair.pos().getPos().getY(),
+                            pair.pos().getPos().getZ(),
+                            pair.count()
+                    ).withStyle(ChatFormatting.DARK_GRAY));
+                else
+                    tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.craft_guide_pos",
+                            pair.pos().getPos().getX(),
+                            pair.pos().getPos().getY(),
+                            pair.pos().getPos().getZ()
+                    ).withStyle(ChatFormatting.DARK_GRAY));
+            }
+        } else {
+            tooltip.add(Component.translatable("gui.maid_storage_manager.written_inventory_list.select"));
         }
         return tooltip;
     }
@@ -86,7 +161,7 @@ public class InventoryListScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        this.width = Math.min(this.minecraft.getWindow().getGuiScaledWidth(), 300);
+        this.width = (Math.min(this.minecraft.getWindow().getGuiScaledWidth(), 300) - 10) / 18 * 18 + 10;
         this.height = Math.min(this.minecraft.getWindow().getGuiScaledHeight(), 300);
         this.left = (this.minecraft.getWindow().getGuiScaledWidth() - this.width) / 2;
         this.top = (this.minecraft.getWindow().getGuiScaledHeight() - this.height) / 2;
@@ -109,9 +184,18 @@ public class InventoryListScreen extends Screen {
         this.nextButton.setX(this.left + this.width - this.nextButton.getWidth());
         this.nextButton.setY(this.top);
 
+        this.sortingButton.setX(this.left);
+        this.sortingButton.setY(this.top + this.height - 16);
+        this.sortingButton.setMessage(sortingOption.component);
+        this.filterButton.setX(this.left + this.width - filterButton.getWidth());
+        this.filterButton.setY(this.top + this.height - 16);
+        this.filterButton.setMessage(filterOption.component);
+
         this.addRenderableWidget(this.prevButton);
         this.addRenderableWidget(this.nextButton);
         this.addRenderableWidget(this.searchBox);
+        this.addRenderableWidget(this.sortingButton);
+        this.addRenderableWidget(this.filterButton);
     }
 
     @Override
@@ -125,27 +209,7 @@ public class InventoryListScreen extends Screen {
         }
         if (!searchBox.getValue().equals(search)) {
             search = searchBox.getValue();
-            if (search.equals(""))
-                list = originalList;
-            else
-                list = originalList.stream()
-                        .filter(inventoryItem -> {
-                            ItemStack itemStack = inventoryItem.itemStack;
-                            if (ModList.get().isLoaded("jecharacters")) {
-                                if (Match.matches(itemStack.getHoverName().getString(), search))
-                                    return true;
-                                if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
-                                    return true;
-                                if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
-                                    return true;
-                                }
-                            }
-                            if (itemStack.getHoverName().getString().contains(search))
-                                return true;
-                            if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
-                                return true;
-                            return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
-                        }).toList();
+            reGenerateList();
         }
 
 
@@ -153,6 +217,32 @@ public class InventoryListScreen extends Screen {
             gridStart -= gridSize;
         nextButton.active = (list.size() >= gridStart + gridSize);
         prevButton.active = gridStart != 0;
+    }
+
+    private void reGenerateList() {
+        if (search.equals(""))
+            list = originalList;
+        else
+            list = originalList.stream()
+                    .filter(inventoryItem -> {
+                        ItemStack itemStack = inventoryItem.itemStack;
+                        if (ModList.get().isLoaded("jecharacters")) {
+                            if (Match.matches(itemStack.getHoverName().getString(), search))
+                                return true;
+                            if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
+                                return true;
+                            if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+                                return true;
+                            }
+                        }
+                        if (itemStack.getHoverName().getString().contains(search))
+                            return true;
+                        if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
+                            return true;
+                        return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
+                    }).toList();
+
+        list = list.stream().filter(filterOption.predicate).sorted(sortingOption.comparator).toList();
     }
 
     @Override
@@ -163,7 +253,7 @@ public class InventoryListScreen extends Screen {
             for (int j = 0; j < this.columns; j++) {
                 int index = i * this.columns + j + gridStart;
                 if (index < list.size()) {
-                    int ix = this.left + j * 18;
+                    int ix = this.left + 5 + j * 18;
                     int iy = this.top + 20 + i * 18;
                     ItemStack item = list.get(index).itemStack;
                     guiGraphics.renderItem(
@@ -172,7 +262,7 @@ public class InventoryListScreen extends Screen {
                             iy
                     );
                     guiGraphics.pose().pushPose();
-                    guiGraphics.pose().translate(0, 0, 1000);
+                    guiGraphics.pose().translate(0, 0, 200);
                     guiGraphics.renderItemDecorations(this.font, item, ix, iy);
                     guiGraphics.pose().scale(0.5F, 0.5F, 1);
                     guiGraphics.drawString(this.font,
@@ -182,6 +272,16 @@ public class InventoryListScreen extends Screen {
                             0xffffff
                     );
                     guiGraphics.pose().popPose();
+                }
+            }
+        }
+        guiGraphics.flush();
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.columns; j++) {
+                int index = i * this.columns + j + gridStart;
+                if (index < list.size()) {
+                    int ix = this.left + 5 + j * 18;
+                    int iy = this.top + 20 + i * 18;
                     if (x >= ix && x < ix + 16 && y >= iy && y < iy + 16) {
                         guiGraphics.pose().pushPose();
                         guiGraphics.pose().translate(0, 0, 5000);
@@ -207,14 +307,30 @@ public class InventoryListScreen extends Screen {
     }
 
     @Override
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+        if (p_94688_ < 0)
+            doNext();
+        else if (p_94688_ > 0)
+            doPrev();
+        return true;
+    }
+
+    @Override
     public boolean mouseClicked(double x, double y, int p_94697_) {
         int ix = (int) Math.floor((x - this.left) / 18);
         int iy = (int) Math.floor((y - this.top - 20) / 18);
         if (ix >= 0 && ix < columns && iy >= 0 && iy < rows) {
             int idx = iy * columns + ix + gridStart;
             if (idx < list.size()) {
-                InventoryListDataClient.setShowingInv(list.get(idx), 400);
-                minecraft.setScreen(null);
+                if (toSelectTarget != null) {
+                    if (toSelectTarget instanceof IItemTarget iit) {
+                        iit.itemSelected(list.get(idx).itemStack);
+                    }
+                    minecraft.setScreen(toSelectTarget);
+                } else {
+                    InventoryListDataClient.setShowingInv(list.get(idx), 400);
+                    minecraft.setScreen(null);
+                }
             }
         }
         return super.mouseClicked(x, y, p_94697_);

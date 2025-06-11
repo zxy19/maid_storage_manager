@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +96,7 @@ public class CraftLayer {
      */
     public ItemStack memorizeItem(ItemStack itemStack, int maxStore) {
         for (int i = 0; i < items.size(); i++) {
-            if (ItemStack.isSameItem(items.get(i), itemStack)) {
+            if (ItemStackUtil.isSameInCrafting(items.get(i), itemStack)) {
                 int restNeed = items.get(i).getCount() - collectedCounts.get(i);
                 int toTake = Math.min(Math.min(restNeed, maxStore), itemStack.getCount());
                 collectedCounts.set(i, collectedCounts.get(i) + toTake);
@@ -107,7 +108,7 @@ public class CraftLayer {
 
     public int memorizeItemSimulate(ItemStack itemStack) {
         for (int i = 0; i < items.size(); i++) {
-            if (ItemStack.isSameItem(items.get(i), itemStack)) {
+            if (ItemStackUtil.isSameInCrafting(items.get(i), itemStack)) {
                 int restNeed = items.get(i).getCount() - collectedCounts.get(i);
                 return Math.min(restNeed, itemStack.getCount());
             }

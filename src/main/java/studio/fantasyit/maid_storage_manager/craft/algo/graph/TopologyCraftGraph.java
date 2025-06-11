@@ -6,6 +6,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -45,7 +46,7 @@ public class TopologyCraftGraph implements ICraftGraphLike {
 
     private int getItemIndex(ItemStack itemStack) {
         for (int i = 0; i < this.items.size(); i++) {
-            if (ItemStack.isSameItem(this.items.get(i), itemStack))
+            if (ItemStackUtil.isSameInCrafting(this.items.get(i), itemStack))
                 return i;
         }
         return -1;
@@ -62,7 +63,7 @@ public class TopologyCraftGraph implements ICraftGraphLike {
             List<ItemStack> inComingOpt = inComing.getAllOutputItems();
             for (CraftGuideData existing : this.craftGuideData) {
                 List<ItemStack> existingOpt = existing.getAllOutputItems();
-                if (ItemStack.isSameItem(existingOpt.get(0),
+                if (ItemStackUtil.isSameInCrafting(existingOpt.get(0),
                         inComingOpt.get(0))
                         && !inComingOpt.get(0).isEmpty()
                 ) {
@@ -81,7 +82,7 @@ public class TopologyCraftGraph implements ICraftGraphLike {
             for (int j = 1; j < outputs.size(); j++) {
                 ItemStack i2 = outputs.get(j);
                 if (existingFirstOutput.stream().anyMatch(
-                        i1 -> ItemStack.isSameItem(i1, i2)
+                        i1 -> ItemStackUtil.isSameInCrafting(i1, i2)
                 )) {
                     this.disableOutputEdge.get(i)[j] = true;
                 }
@@ -303,7 +304,7 @@ public class TopologyCraftGraph implements ICraftGraphLike {
                 if (itemStack.isEmpty()) return;
                 int count = resultNode.count * itemStack.getCount();
                 for (ItemStack existing : itemStacks) {
-                    if (ItemStack.isSameItem(existing, itemStack)) {
+                    if (ItemStackUtil.isSameInCrafting(existing, itemStack)) {
                         existing.grow(count);
                         return;
                     }

@@ -79,7 +79,6 @@ public class FurnaceType implements ICraftType {
                 List.of(),
                 CommonPlaceItemAction.TYPE,
                 false,
-                craftGuideStepData.matchTag,
                 new CompoundTag()
         ));
         ret.add(new CraftGuideStepData(
@@ -88,7 +87,6 @@ public class FurnaceType implements ICraftType {
                 List.of(),
                 CommonPlaceItemAction.TYPE,
                 true,
-                craftGuideStepData.matchTag,
                 new CompoundTag()
         ));
         ret.add(new CraftGuideStepData(
@@ -97,7 +95,6 @@ public class FurnaceType implements ICraftType {
                 List.of(craftGuideStepData.getOutput().get(0)),
                 CommonTakeItemAction.TYPE,
                 false,
-                craftGuideStepData.matchTag,
                 new CompoundTag()
         ));
         return ret;

@@ -14,11 +14,16 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+
 abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
     ItemStack target;
     protected Player player;
     protected CraftGuideData craftGuideData;
     public StepDataContainer stepDataContainer = null;
+    public Map<Integer, Predicate<ItemStack>> slotFilter = new HashMap<>();
 
     public AbstractCraftMenu(MenuType<T> p_38851_, int p_38852_, Player player) {
         super(p_38851_, p_38852_);
@@ -29,7 +34,8 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
         addFilterSlots();
         addPlayerSlots();
         addSpecialSlots();
-        recalculateRecipe();
+        if (!player.level().isClientSide)
+            recalculateRecipe();
     }
 
     abstract protected void addFilterSlots();
@@ -56,6 +62,14 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
     }
 
     protected void addSpecialSlots() {
+    }
+
+    protected void setSlotFilter(Slot slot, Predicate<ItemStack> filter) {
+        slotFilter.put(slot.getContainerSlot(), filter);
+    }
+
+    protected void setSlotFilter(int containerIndex, Predicate<ItemStack> filter) {
+        slotFilter.put(containerIndex, filter);
     }
 
     @Override
@@ -86,13 +100,25 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
                 insert = held.copy();
                 insert.setCount(1);
             }
-            container.setItem(slot, insert);
-            container.setCount(slot, 1);
-            getSlot(slotId).setChanged();
-            save();
+            if (!isValidFor(slot, insert))
+                return;
+            if (!player.level().isClientSide) {
+                container.setItem(slot, insert);
+                container.setCount(slot, 1);
+                getSlot(slotId).setChanged();
+                save();
+            }
         } else {
             super.clicked(slotId, dragType, clickTypeIn, player);
         }
+    }
+
+    protected boolean isValidFor(Slot slot, ItemStack itemStack) {
+        return isValidFor(slot.getContainerSlot(), itemStack);
+    }
+
+    protected boolean isValidFor(int slot, ItemStack itemStack) {
+        return itemStack.isEmpty() || !slotFilter.containsKey(slot) || slotFilter.get(slot).test(itemStack);
     }
 
     @Override
@@ -113,10 +139,12 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
                 int toPlace = -1;
                 for (int j = 0; j < stepDataContainer.getContainerSize(); j++) {
                     if (stepDataContainer.getItem(j).isEmpty()) {
-                        if (toPlace == -1) {
-                            toPlace = j;
+                        if (isValidFor(j, slot.getItem())) {
+                            if (toPlace == -1) {
+                                toPlace = j;
+                            }
                         }
-                    } else if (ItemStackUtil.isSame(stepDataContainer.getItem(j), slot.getItem(), stepDataContainer.matchTag)) {
+                    } else if (ItemStackUtil.isSameInCrafting(stepDataContainer.getItem(j), slot.getItem())) {
                         found = true;
                     }
                 }
@@ -147,8 +175,10 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
     public void save() {
         if (stepDataContainer == null) return;
         if (player.level().isClientSide) return;
+        this.broadcastChanges();
         recalculateRecipe();
         stepDataContainer.save();
+        craftGuideData.buildInputAndOutputs();
         craftGuideData.saveToItemStack(target);
         CraftGuideRenderData.recalculateItemStack(target);
         this.broadcastChanges();

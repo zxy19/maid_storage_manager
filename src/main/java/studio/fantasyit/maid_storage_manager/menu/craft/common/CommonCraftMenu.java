@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -58,7 +59,6 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             set.accept(p_39402_);
         }
     }
-
 
 
     public CommonCraftMenu(int p_38852_, Player player) {
@@ -207,7 +207,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                                 target = steps.get(i);
                                 toPlace = j;
                             }
-                        } else if (ItemStackUtil.isSame(steps.get(i).getItem(j), slot.getItem(), step.matchTag)) {
+                        } else if (ItemStackUtil.isSameInCrafting(steps.get(i).getItem(j), slot.getItem())) {
                             found = true;
                         }
                     }
@@ -299,6 +299,13 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     save();
                 }
             }
+            case SIDE -> {
+                if (value == -1)
+                    steps.get(key).step.storage.side = null;
+                else
+                    steps.get(key).step.storage.side = Direction.values()[value];
+                save();
+            }
             case SET_ALL_INPUT -> {
                 ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
                 ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
@@ -356,6 +363,10 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
         CraftGuideStepData tmpStepData = craftGuideData.getSteps().get(i);
         craftGuideData.getSteps().set(i, craftGuideData.getSteps().get(j));
         craftGuideData.getSteps().set(j, tmpStepData);
+
+        NoPlaceFilterSlot noPlaceFilterSlot = targetBlockSlots.get(i);
+        targetBlockSlots.set(i, targetBlockSlots.get(j));
+        targetBlockSlots.set(j, noPlaceFilterSlot);
 
         this.save();
     }

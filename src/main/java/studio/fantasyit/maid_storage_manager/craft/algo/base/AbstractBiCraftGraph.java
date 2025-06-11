@@ -104,7 +104,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     public AbstractBiCraftGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
         this.nodes = new ArrayList<>();
         for (Pair<ItemStack, Integer> item : items) {
-            ItemNode itemNode = addItemNode(item.getA());
+            ItemNode itemNode = getItemNodeOrCreate(item.getA());
             itemNode.addCount(item.getB());
         }
         for (CraftGuideData craftGuide : craftGuides) {
@@ -122,7 +122,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     public ItemNode getItemNode(ItemStack itemStack) {
         for (Node node : nodes) {
             if (node instanceof ItemNode in) {
-                if (ItemStackUtil.isSame(itemStack, in.itemStack, false)) {
+                if (ItemStackUtil.isSameInCrafting(itemStack, in.itemStack)) {
                     return in;
                 }
             }

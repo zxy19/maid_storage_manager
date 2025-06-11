@@ -18,6 +18,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.function.Function;
@@ -60,7 +61,7 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
         Function<ItemStack, ItemStack> taker = itemStack -> {
             int idx = -1;
             for (int i = 0; i < allItems.size(); i++) {
-                if (ItemStack.isSameItem(allItems.get(i), itemStack)) {
+                if (ItemStackUtil.isSameInCrafting(allItems.get(i), itemStack)) {
                     idx = i;
                     break;
                 }
@@ -82,7 +83,7 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
             if (isec.hasTask())
                 isec.tick(taker);
             else
-                isec.setExtract(allItems, craftGuideStepData.matchTag);
+                isec.setExtractByExisting(item -> allItems.stream().anyMatch(i -> ItemStackUtil.isSameInCrafting(i, item)));
         } else if (storageContext instanceof IStorageInteractContext isic) {
             isic.tick(taker);
         }

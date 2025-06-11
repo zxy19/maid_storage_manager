@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
@@ -63,7 +64,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
                 @NotNull ItemStack item = inv.getStackInSlot(slot);
                 if (item.isEmpty()) continue;
                 if (count++ > 10) break;
-                if (ItemStack.isSameItem(stepItem, item)) {
+                if (ItemStackUtil.isSameInCrafting(stepItem, item)) {
                     if (craftLayer.getCurrentStepCount(ingredientIndex) < stepItem.getCount()) {
                         shouldDoPlace = true;
                         break;

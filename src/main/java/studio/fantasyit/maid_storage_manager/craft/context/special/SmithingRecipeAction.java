@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -28,7 +29,16 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
 
     @Override
     public Result start() {
+        if (craftGuideStepData.getStorage() == null)
+            return Result.FAIL;
+        return Result.CONTINUE;
+    }
+
+    @Override
+    public Result tick() {
         Level level = maid.level();
+        if (!level.getBlockState(craftGuideStepData.storage.pos).is(Blocks.SMITHING_TABLE))
+            return Result.NOT_DONE;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         List<ItemStack> input = craftGuideStepData.getInput();
         List<ItemStack> output = craftGuideStepData.getOutput();
@@ -57,7 +67,7 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
             Optional<SmithingRecipe> recipe = RecipeUtil.getSmithingRecipe(level, input);
             if (recipe.isPresent()) {
                 ItemStack result = recipe.get().getResultItem(level.registryAccess());
-                if (ItemStackUtil.isSame(result, output.get(0), craftGuideStepData.matchTag)) {
+                if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
                 }
 
@@ -67,6 +77,7 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
                     for (int j = 0; j < inv.getSlots(); j++) {
                         inv.extractItem(j, slotExtractCount[j], false);
                     }
+                    level.levelEvent(1044, craftGuideStepData.storage.pos, 0);
                     return Result.SUCCESS;
                 } else {
                     return Result.FAIL;
@@ -76,11 +87,6 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
             return Result.FAIL;
         }
         return Result.FAIL;
-    }
-
-    @Override
-    public Result tick() {
-        return Result.SUCCESS;
     }
 
     @Override

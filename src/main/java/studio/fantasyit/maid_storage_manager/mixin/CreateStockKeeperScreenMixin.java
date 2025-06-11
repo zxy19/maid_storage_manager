@@ -32,8 +32,8 @@ public abstract class CreateStockKeeperScreenMixin {
     @Shadow(remap = false)
     WeakReference<LivingEntity> stockKeeper;
 
-    @Shadow
-    private WeakReference<BlazeBurnerBlockEntity> blaze;
+    @Shadow(remap = false)
+    WeakReference<BlazeBurnerBlockEntity> blaze;
 
     @Inject(at = @At("RETURN"), method = "<init>")
     private void init(StockKeeperRequestMenu container, Inventory inv, Component title, CallbackInfo ci) {

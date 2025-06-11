@@ -15,9 +15,12 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.network.PartialInventoryListData;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,9 +64,10 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
     public static class InventoryListData {
         public Map<UUID, Map<String, List<InventoryItem>>> dataMap = new ConcurrentHashMap<>();
 
-        public void remove(UUID uuid){
+        public void remove(UUID uuid) {
             dataMap.remove(uuid);
         }
+
         public void set(UUID uuid, ListTag listTag) {
             ConcurrentHashMap<String, List<InventoryItem>> map = new ConcurrentHashMap<>();
             for (int i = 0; i < listTag.size(); i++) {
@@ -79,6 +83,12 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
             dataMap.put(uuid, map);
         }
 
+
+        public void addWithCraftable(UUID uuid, List<InventoryItem> flatten) {
+            set(uuid, flatten);
+            addAllMissingCraftable(uuid, flatten);
+        }
+
         public void set(UUID uuid, List<InventoryItem> list) {
             if (!dataMap.containsKey(uuid)) {
                 dataMap.put(uuid, new ConcurrentHashMap<>());
@@ -90,6 +100,36 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
                     dataMap.get(uuid).put(key, new ArrayList<>());
                 }
                 dataMap.get(uuid).get(key).add(pair);
+            }
+        }
+
+        public void addAllMissingCraftable(UUID uuid, List<InventoryItem> list) {
+            if (!dataMap.containsKey(uuid)) {
+                dataMap.put(uuid, new ConcurrentHashMap<>());
+            }
+            for (InventoryItem existingItem : list) {
+                if (existingItem.itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
+                    CraftGuideData cgd = CraftGuideData.fromItemStack(existingItem.itemStack);
+                    if (cgd.available()) {
+                        cgd.getOutput().forEach(itemStack -> {
+                            String key = String.valueOf(ForgeRegistries.ITEMS.getKey(itemStack.getItem()));
+                            if (!dataMap.get(uuid).containsKey(key)) {
+                                dataMap.get(uuid).put(key, new ArrayList<>());
+                            }
+                            List<InventoryItem> matches = dataMap.get(uuid).get(key).stream().filter(
+                                    p -> ItemStackUtil.isSameInCrafting(p.itemStack, itemStack)
+                            ).toList();
+                            if (!matches.isEmpty()) {
+                                existingItem.posAndSlot.forEach(p -> matches.forEach(p1 -> p1.addCraftGuidePos(p.pos())));
+                            } else {
+                                InventoryItem inventoryItem = new InventoryItem(itemStack, 0);
+                                existingItem.posAndSlot.forEach(p -> inventoryItem.addCraftGuidePos(p.pos()));
+                                dataMap.get(uuid).get(key).add(inventoryItem);
+                            }
+                        });
+                    }
+                }
+
             }
         }
 
@@ -131,5 +171,6 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
                 );
             }
         }
+
     }
 }

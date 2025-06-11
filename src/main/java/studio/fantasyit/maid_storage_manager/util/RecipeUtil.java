@@ -11,6 +11,8 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
+import net.minecraftforge.common.brewing.IBrewingRecipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,6 +150,13 @@ public class RecipeUtil {
                 new SimpleContainer(itemStack),
                 level
         );
+    }
+    public static Optional<IBrewingRecipe> getBrewingRecipe(Level level, ItemStack item1, ItemStack item2) {
+        return BrewingRecipeRegistry
+                .getRecipes()
+                .stream()
+                .filter(r-> r.isInput(item1) && r.isIngredient(item2))
+                .findFirst();
     }
     public static List<StonecutterRecipe> getStonecuttingRecipe(Level level, ItemStack itemStack) {
         RecipeManager recipeManager = level.getRecipeManager();

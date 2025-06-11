@@ -209,7 +209,7 @@ public class CraftMemory extends AbstractTargetMemory {
         CraftLayer currentLayer1 = this.getCurrentLayer();
         List<ItemStack> unCollectedItems = currentLayer1.getUnCollectedItems();
         ViewedInventoryMemory viewedInventoryMemory = MemoryUtil.getViewedInventory(maid);
-        unCollectedItems.forEach(itemStack -> viewedInventoryMemory.removeItemFromAllTargets(itemStack, false));
+        unCollectedItems.forEach(itemStack -> viewedInventoryMemory.removeItemFromAllTargets(itemStack, i -> ItemStackUtil.isSameTagInCrafting(i, itemStack)));
         setGoPlacingBeforeCraft(true);
         ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_RESCHEDULE);
         ChatTexts.removeSecondary(maid);
@@ -239,7 +239,12 @@ public class CraftMemory extends AbstractTargetMemory {
                 break;
             }
         }
-        if (targets != null)
+        if (targets != null) {
+            CombinedInvWrapper inv = maid.getAvailableInv(true);
+            for (int i = 0; i < inv.getSlots(); i++) {
+                ItemStack stack = inv.getStackInSlot(i);
+                RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount());
+            }
             for (ItemStack target : targets) {
                 RequestListItem.setMissingItem(
                         maid.getMainHandItem(),
@@ -248,6 +253,8 @@ public class CraftMemory extends AbstractTargetMemory {
                 );
                 RequestListItem.markDone(maid.getMainHandItem(), target);
             }
+            MemoryUtil.getRequestProgress(maid).setReturn();
+        }
         this.setGoPlacingBeforeCraft(true);
         this.setLastSuccess(false);
         this.startWorking(false);
@@ -312,7 +319,7 @@ public class CraftMemory extends AbstractTargetMemory {
         for (ItemStack itemStack : inputs) {
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack item = inv.getStackInSlot(i);
-                if (ItemStackUtil.isSame(item, itemStack, false)) {
+                if (ItemStackUtil.isSameInCrafting(item, itemStack)) {
                     itemStack.shrink(Math.min(itemStack.getCount(), item.getCount()));
                     if (itemStack.isEmpty()) break;
                 }
@@ -322,7 +329,7 @@ public class CraftMemory extends AbstractTargetMemory {
             for (ItemStack itemStack : inputs) {
                 if (!itemStack.isEmpty()) {
                     for (int i = 0; i < layer.getItems().size(); i++) {
-                        if (ItemStackUtil.isSame(layer.getItems().get(i), itemStack, false)) {
+                        if (ItemStackUtil.isSameInCrafting(layer.getItems().get(i), itemStack)) {
                             layer.getItems().get(i).grow(itemStack.getCount());
                             break;
                         }

@@ -1,6 +1,8 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -9,20 +11,26 @@ import net.minecraft.world.item.ItemStack;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
+import studio.fantasyit.maid_storage_manager.menu.container.InventorySelectButton;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
+import java.util.UUID;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
-public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
+public class FilterScreen extends AbstractFilterScreen<FilterMenu> implements IItemTarget {
     private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/filter_list.png");
+    private InventorySelectButton inventorySelectButton;
 
     public FilterScreen(FilterMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
@@ -36,6 +44,8 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     protected void init() {
         super.init();
         addButtons();
+        addInventoryListButton();
+        refreshUUID(true);
     }
 
     private void addButtons() {
@@ -87,6 +97,15 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
         ));
     }
 
+    protected void addInventoryListButton() {
+        inventorySelectButton = this.addRenderableWidget(new InventorySelectButton(
+                getGuiLeft() + 12,
+                getGuiTop() + 85,
+                this
+        ));
+    }
+
+
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
         renderBackground(guiGraphics);
@@ -137,6 +156,12 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
                                 x,
                                 y
                         );
+                    } else if (renderable instanceof InventorySelectButton buttonWidget) {
+                        graphics.renderTooltip(this.font,
+                                buttonWidget.getTooltipComponent(),
+                                x,
+                                y
+                        );
                     }
                 }
             });
@@ -152,7 +177,32 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu>{
     }
 
     @Override
+    protected void containerTick() {
+        refreshUUID(false);
+    }
+
+    protected void refreshUUID(boolean force) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && (player.tickCount % 20 == 0 || force)) {
+            UUID inventoryListUUIDFromPlayerInv = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.inventory.items);
+            if (inventoryListUUIDFromPlayerInv != null) {
+                inventorySelectButton.setUUID(inventoryListUUIDFromPlayerInv);
+            }
+        }
+    }
+
+    @Override
     public List<FilterSlot> getSlots() {
         return this.getMenu().slots.stream().filter(slot -> slot instanceof FilterSlot).map(slot -> (FilterSlot) slot).toList();
+    }
+
+    @Override
+    public void itemSelected(ItemStack stack) {
+        for (FilterSlot slot : getSlots()) {
+            if (slot.isActive() && slot.getItem().isEmpty()) {
+                accept(slot, stack);
+                break;
+            }
+        }
     }
 }
