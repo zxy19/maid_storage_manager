@@ -19,6 +19,7 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
+        super.start(maid, level, target);
         if (this.init(maid, level, target))
             this.keys = inv
                     .getAvailableStacks()

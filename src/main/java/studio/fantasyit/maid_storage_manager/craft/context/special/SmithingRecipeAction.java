@@ -5,9 +5,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -37,7 +37,7 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
     @Override
     public Result tick() {
         Level level = maid.level();
-        if (!level.getBlockState(craftGuideStepData.storage.pos).is(Blocks.SMITHING_TABLE))
+        if (!level.getBlockState(craftGuideStepData.storage.pos).is(WorkBlockTags.SMITHING_TABLE))
             return Result.NOT_DONE;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         List<ItemStack> input = craftGuideStepData.getInput();

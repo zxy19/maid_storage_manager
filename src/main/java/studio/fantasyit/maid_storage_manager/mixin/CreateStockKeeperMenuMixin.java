@@ -12,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.api.ICreateStockKeeperMaidChecker;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 
 @Mixin(StockKeeperCategoryMenu.class)
-public class CreateStockKeeperMenuMixin implements ICreateStockKeeperMaidChecker {
+public abstract class CreateStockKeeperMenuMixin implements ICreateStockKeeperMaidChecker {
     @Unique
     private EntityMaid maid_storage_manager$maid = null;
 

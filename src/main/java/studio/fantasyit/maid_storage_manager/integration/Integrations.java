@@ -2,6 +2,8 @@ package studio.fantasyit.maid_storage_manager.integration;
 
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import studio.fantasyit.maid_storage_manager.Config;
 
 public class Integrations {
@@ -22,18 +24,27 @@ public class Integrations {
     }
 
     public static boolean createStorage() {
-        return ModList.get().isLoaded("create") && Config.enableCreateStorage;
+        return ModList.get().isLoaded("create")
+                && ModList.get().getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("create")
+                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0)
+                && Config.enableCreateStorage;
     }
 
     public static boolean createStockManager() {
-        return ModList.get().isLoaded("create") && Config.enableCreateStockManager;
+        return ModList.get().isLoaded("create")
+                && ModList.get().getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("create")
+                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0)
+                && Config.enableCreateStockManager;
     }
 
     public static boolean createLoading() {
-        return LoadingModList.get().getModFileById("create") != null;
+        ModFileInfo create = LoadingModList.get().getModFileById("create");
+        if (create == null) return false;
+        return create.getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("create")
+                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0);
     }
 
-    public static boolean tacz(){
+    public static boolean tacz() {
         return ModList.get().isLoaded("tacz") && Config.enableTacz;
     }
 }

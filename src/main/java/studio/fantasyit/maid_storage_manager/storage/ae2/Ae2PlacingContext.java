@@ -13,6 +13,7 @@ public class Ae2PlacingContext extends Ae2BaseContext implements IStorageInserta
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
+        super.start(maid, level, target);
         this.init(maid, level, target);
     }
 

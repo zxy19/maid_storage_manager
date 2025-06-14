@@ -53,6 +53,7 @@
     {"required": false,"id":"ars_nouveau:repository"},
     {"required": false,"id":"create:item_vault"},
     {"required": false,"id":"#create:toolboxes"},
+    {"required": false,"id":"create:stock_ticker"},
     {"required": false,"id":"sophisticatedbackpacks:iron_backpack"},
     {"required": false,"id":"sophisticatedbackpacks:gold_backpack"},
     {"required": false,"id":"sophisticatedbackpacks:diamond_backpack"},

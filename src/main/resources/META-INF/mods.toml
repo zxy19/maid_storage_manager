@@ -82,7 +82,7 @@ side="BOTH"
 [[dependencies."${mod_id}"]]
 modId="create"
 mandatory=false
-versionRange="[6.0.0,)"
+versionRange="[0,)"
 ordering="AFTER"
 side="BOTH"
 

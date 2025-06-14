@@ -10,10 +10,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.context.special.CraftingRecipeAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -47,7 +47,7 @@ public class CraftingType implements ICraftType {
 
     @Override
     public boolean isSpecialType(ServerLevel level, BlockPos pos, Direction direction) {
-        return level.getBlockState(pos).is(Blocks.CRAFTING_TABLE);
+        return level.getBlockState(pos).is(WorkBlockTags.CRAFTING_TABLE);
     }
 
     @Override
