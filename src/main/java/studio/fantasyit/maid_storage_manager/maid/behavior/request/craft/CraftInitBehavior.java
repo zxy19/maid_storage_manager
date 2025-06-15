@@ -5,9 +5,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
+import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
@@ -39,10 +43,21 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        planner = new MaidCraftPlanner(level, maid);
         MemoryUtil.getCrafting(maid).clearLayers();
         MemoryUtil.getCrafting(maid).resetVisitedPos();
         MemoryUtil.getCrafting(maid).startWorking(false);
+        if (StorageManagerConfigData.get(maid).useMemorizedCraftGuide()) {
+            CraftMemory crafting = MemoryUtil.getCrafting(maid);
+            MemoryUtil.getViewedInventory(maid).flatten().forEach(item -> {
+                if (item.itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
+                    CraftGuideData craftGuideData = CraftGuideData.fromItemStack(item.itemStack);
+                    if (craftGuideData.available()) {
+                        crafting.addCraftGuide(craftGuideData);
+                    }
+                }
+            });
+        }
+        planner = new MaidCraftPlanner(level, maid);
     }
 
     @Override

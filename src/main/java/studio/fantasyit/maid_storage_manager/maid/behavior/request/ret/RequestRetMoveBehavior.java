@@ -51,6 +51,12 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        //背包压根没东西，而且是要回去算合成的，那就别回去了，就地进行下一步即可
+        if (Conditions.isNothingToPlace(maid) && MemoryUtil.getRequestProgress(maid).isTryCrafting()) {
+            MemoryUtil.getRequestProgress(maid).setReturn(false);
+            return;
+        }
+
         @Nullable Target target = RequestListItem.getStorageBlock(maid.getMainHandItem());
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
         @Nullable UUID uuid = RequestListItem.getStorageEntity(maid.getMainHandItem());

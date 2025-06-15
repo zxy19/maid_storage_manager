@@ -63,6 +63,8 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return;
         target = MemoryUtil.getRequestProgress(maid).getTarget();
         checkItem = MemoryUtil.getRequestProgress(maid).getCheckItem();
+        if (checkItem.isEmpty())
+            checkItem = null;
         context = storage.onStartCollect(level, maid, target);
         if (context != null)
             context.start(maid, level, target);

@@ -10,7 +10,7 @@ public class MaidDataSyncPacket {
         MemoryAssistant,
         CoWork,
         FastSort,
-        AllowSeekWorkMeal, NoPlaceSort
+        AllowSeekWorkMeal, MemorizeCraftGuide, NoPlaceSort
     }
     public final Type type;
     public final int id;

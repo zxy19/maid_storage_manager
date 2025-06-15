@@ -101,10 +101,16 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             if (!MoveUtil.isValidTarget(level, maid, storage, false)) continue;
 
             List<BlockPos> possiblePos = MoveUtil.getAllAvailablePosForTarget(level, maid, blockPos.getKey().getPos(), pathFinding);
-            if (possiblePos.isEmpty()) continue;
+            if (possiblePos.isEmpty()) {
+                continue;
+            }
 
             @Nullable BlockPos targetPos = MoveUtil.getNearestFromTargetList(level, maid, possiblePos);
-            if (targetPos == null) continue;
+            if (targetPos == null) {
+                //因为getAvailablePos会破坏nodeEvaluator，所以重新创建一次
+                pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
+                continue;
+            }
 
             chestPos = storage;
             MemoryUtil.setTarget(maid, targetPos, this.moveSpeed);
@@ -133,4 +139,5 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
         }
         return canTouchChest != null;
     }
+
 }

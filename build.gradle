@@ -21,7 +21,7 @@ group = mod_group_id
 version = mod_version
 
 base {
-    archivesName = mod_id
+    archivesName = minecraft_version + "-" + mod_id
 }
 
 java {
@@ -230,8 +230,8 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:sophisticated-storage-619320:6217888")
     runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6266807")
     runtimeOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
-//    runtimeOnly fg.deobf("curse.maven:create-328085:6323270")
-//    runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
+    runtimeOnly fg.deobf("curse.maven:create-328085:6323270")
+    runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
     runtimeOnly fg.deobf("curse.maven:botania-225643:5594997")
     runtimeOnly fg.deobf("curse.maven:curios-309927:6058834")
     runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")

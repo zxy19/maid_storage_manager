@@ -7,22 +7,35 @@ import net.minecraft.resources.ResourceLocation;
 
 public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfigData.Data> {
     public static final class Data {
+        private boolean useMemorizedCraftGuide;
         private boolean coWorkMode;
         private MemoryAssistant memoryAssistant;
         private boolean noSortPlacement = false;
         private SuppressStrategy suppressStrategy = SuppressStrategy.AFTER_ALL;
         private boolean allowSeekWorkMeal = false;
 
-        public Data(MemoryAssistant memoryAssistant, boolean noSortPlacement, boolean coWorkMode, SuppressStrategy suppressStrategy, boolean allowSeekWorkMeal) {
+        public Data(MemoryAssistant memoryAssistant,
+                    boolean noSortPlacement,
+                    boolean coWorkMode,
+                    SuppressStrategy suppressStrategy,
+                    boolean allowSeekWorkMeal,
+                    boolean useMemorizedCraftGuide) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
             this.coWorkMode = coWorkMode;
             this.suppressStrategy = suppressStrategy;
             this.allowSeekWorkMeal = allowSeekWorkMeal;
+            this.useMemorizedCraftGuide = useMemorizedCraftGuide;
         }
 
         public static Data getDefault() {
-            return new Data(MemoryAssistant.MEMORY_FIRST, false, false, SuppressStrategy.AFTER_EACH, false);
+            return new Data(MemoryAssistant.MEMORY_FIRST,
+                    false,
+                    false,
+                    SuppressStrategy.AFTER_EACH,
+                    false,
+                    false
+                    );
         }
 
         public MemoryAssistant memoryAssistant() {
@@ -64,6 +77,12 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         public void allowSeekWorkMeal(boolean allowSeekWorkMeal) {
             this.allowSeekWorkMeal = allowSeekWorkMeal;
         }
+        public boolean useMemorizedCraftGuide() {
+            return useMemorizedCraftGuide;
+        }
+        public void useMemorizedCraftGuide(boolean useMemorizedCraftGuide) {
+            this.useMemorizedCraftGuide = useMemorizedCraftGuide;
+        }
     }
 
     public static TaskDataKey<Data> KEY = null;
@@ -82,6 +101,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         tag.putBoolean("noSortPlacement", data.noSortPlacement());
         tag.putBoolean("coWorkMode", data.coWorkMode());
         tag.putBoolean("allowSeekWorkMeal", data.allowSeekWorkMeal());
+        tag.putBoolean("useMemorizedCraftGuide", data.useMemorizedCraftGuide());
         return tag;
     }
 
@@ -94,7 +114,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         boolean noSortPlacement = compound.getBoolean("noSortPlacement");
         boolean coWorkMode = compound.getBoolean("coWorkMode");
         boolean allowSeekWorkMeal = compound.getBoolean("allowSeekWorkMeal");
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal);
+        boolean useMemorizedCraftGuide = compound.getBoolean("useMemorizedCraftGuide");
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal,useMemorizedCraftGuide);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {

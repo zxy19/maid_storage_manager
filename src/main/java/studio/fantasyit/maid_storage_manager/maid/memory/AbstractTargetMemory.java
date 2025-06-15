@@ -145,6 +145,6 @@ public abstract class AbstractTargetMemory {
     }
 
     public ItemStack getCheckItem() {
-        return targetData.checkItem;
+        return targetData.checkItem != null ? targetData.checkItem : ItemStack.EMPTY;
     }
 }

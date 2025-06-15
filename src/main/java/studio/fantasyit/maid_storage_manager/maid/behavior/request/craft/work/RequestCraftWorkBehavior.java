@@ -140,7 +140,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getCrafting(maid).hasCurrent()) return;
         if (fail) {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting fail");
-            MemoryUtil.getCrafting(maid).failCurrent(maid, craftGuideStepData.getItems());
+            MemoryUtil.getCrafting(maid).failCurrent(maid, craftGuideStepData.getItems(), "tooltip.maid_storage_manager.request_list.fail_crafting");
         } else {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             MemoryUtil.getCrafting(maid).getCurrentLayer().nextStep();

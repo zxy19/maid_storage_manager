@@ -117,5 +117,20 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.AllowSeekWorkMeal, this.maid.getId(), 1);
                 }
         ));
+
+        this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 65,
+                Component.translatable("gui.maid_storage_manager.config.memorize_craft_guide"),
+                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.useMemorizedCraftGuide())),
+                button -> {
+                    this.currentMAData.useMemorizedCraftGuide(false);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.MemorizeCraftGuide, this.maid.getId(), 0);
+                },
+                button -> {
+                    this.currentMAData.useMemorizedCraftGuide(true);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.MemorizeCraftGuide, this.maid.getId(), 1);
+                }
+        ));
     }
 }

@@ -216,7 +216,12 @@ public class CraftMemory extends AbstractTargetMemory {
         clearLayers();
     }
 
+
     public void failCurrent(EntityMaid maid, List<ItemStack> missing) {
+        failCurrent(maid, missing, null);
+    }
+
+    public void failCurrent(EntityMaid maid, List<ItemStack> missing, String additional) {
         CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
         ChatTexts.send(
                 maid,
@@ -252,6 +257,9 @@ public class CraftMemory extends AbstractTargetMemory {
                         missing
                 );
                 RequestListItem.markDone(maid.getMainHandItem(), target);
+                if (additional != null) {
+                    RequestListItem.setFailAddition(maid.getMainHandItem(), target, additional);
+                }
             }
             MemoryUtil.getRequestProgress(maid).setReturn();
         }

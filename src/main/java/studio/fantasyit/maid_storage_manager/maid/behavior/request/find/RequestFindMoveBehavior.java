@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -106,6 +107,9 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             @Nullable Target storage = MaidStorage.getInstance().isValidTarget(level, maid, blockPos.getKey().getPos(), blockPos.getKey().side);
             if (storage == null) continue;
             boolean craftGuideProvider = MaidStorage.getInstance().isCraftGuideProvider(storage, blockPos.getValue());
+            //如果选择了记忆合成指南，则没必要寻找合成指南了
+            if (StorageManagerConfigData.get(maid).useMemorizedCraftGuide())
+                craftGuideProvider = false;
             if (targetItem.isEmpty() && !craftGuideProvider) continue;
 
             if (!MoveUtil.isValidTarget(level, maid, storage, false)) continue;
@@ -114,7 +118,11 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             if (possiblePos.isEmpty()) continue;
 
             @Nullable BlockPos targetPos = MoveUtil.getNearestFromTargetList(level, maid, possiblePos);
-            if (targetPos == null) continue;
+            if (targetPos == null) {
+                //因为getAvailablePos会破坏nodeEvaluator，所以重新创建一次
+                pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
+                continue;
+            }
 
             chestPos = storage;
             MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
@@ -132,7 +140,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (!PosUtil.isSafePos(serverLevel, blockPos)) return false;
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(entityMaid);
         //寻找当前格子能触碰的箱子
-        Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress,false, StoragePredictor::isCollectable);
+        Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress, false, StoragePredictor::isCollectable);
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             DebugData.sendDebug("[REQUEST_FIND]Target %s", canTouchChest);

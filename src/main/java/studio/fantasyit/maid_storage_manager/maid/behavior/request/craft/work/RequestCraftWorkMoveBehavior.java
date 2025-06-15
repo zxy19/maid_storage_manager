@@ -13,6 +13,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
@@ -118,8 +119,11 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             } else {
                 MemoryUtil.getCrafting(maid).addPathFindingFailCount();
                 if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
+                    CraftLayer currentLayer = MemoryUtil.getCrafting(maid).getCurrentLayer();
+                    List<ItemStack> missing = currentLayer == null ? List.of() :
+                            currentLayer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of());
                     DebugData.sendDebug("[REQUEST_CRAFT_WORK]Path finding fail.");
-                    MemoryUtil.getCrafting(maid).failCurrent(maid, List.of());
+                    MemoryUtil.getCrafting(maid).failCurrent(maid, missing, "tooltip.maid_storage_manager.request_list.fail_cannot_path_reach_crafting");
                     MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
                 }
             }

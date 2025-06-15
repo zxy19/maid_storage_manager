@@ -214,6 +214,13 @@ public class Network {
                             );
                             data.suppressStrategy(StorageManagerConfigData.SuppressStrategy.values()[msg.value]);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        } else if (msg.type == MaidDataSyncPacket.Type.MemorizeCraftGuide) {
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.useMemorizedCraftGuide(msg.value == 1);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
                     context.get().setPacketHandled(true);
