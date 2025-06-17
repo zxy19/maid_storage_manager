@@ -65,6 +65,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public RequestListItem() {
         super(new Properties().stacksTo(1));
     }
+
     public static boolean isIgnored(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!mainHandItem.hasTag()) return false;
@@ -334,12 +335,14 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         CompoundTag tag = stack.getTag();
         if (tag.getBoolean(TAG_BLACKMODE)) return List.of();
         ListTag list = Objects.requireNonNull(tag).getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
-        return list.stream().filter(t -> !((CompoundTag) t).getBoolean(TAG_ITEMS_DONE)).filter(t -> ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED) != -1 || includingNoRequest).map(t -> {
-            ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(TAG_ITEMS_ITEM));
-            int cnt = ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED);
-            if (cnt != -1) cnt -= ((CompoundTag) t).getInt(TAG_ITEMS_COLLECTED);
-            return new Pair<>(item, cnt);
-        }).filter(i -> !i.getA().isEmpty()).toList();
+        return list.stream()
+                .filter(t -> !((CompoundTag) t).getBoolean(TAG_ITEMS_DONE))
+                .filter(t -> ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED) != -1 || includingNoRequest).map(t -> {
+                    ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(TAG_ITEMS_ITEM));
+                    int cnt = ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED);
+                    if (cnt != -1) cnt -= ((CompoundTag) t).getInt(TAG_ITEMS_COLLECTED);
+                    return new Pair<>(item, cnt);
+                }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
     public static @Nullable UUID getStorageEntity(ItemStack stack) {
@@ -484,7 +487,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tmp.putInt(TAG_ITEMS_COLLECTED, stored + Math.min(requested - stored, count));
         }
     }
-    public static void setFailAddition(ItemStack stack,ItemStack item, String failAddition){
+
+    public static void setFailAddition(ItemStack stack, ItemStack item, String failAddition) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
         if (!stack.hasTag()) return;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
@@ -498,6 +502,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }
         tag.put(TAG_ITEMS, list);
     }
+
     public static void markAllDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
         if (!stack.hasTag()) return;

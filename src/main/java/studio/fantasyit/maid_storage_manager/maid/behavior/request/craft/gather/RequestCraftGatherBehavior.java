@@ -76,6 +76,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
         if (!breath.breathTick(maid)) return;
+        if (!MemoryUtil.getCrafting(maid).hasCurrent()) return;
         CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
@@ -127,7 +128,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
 
-        if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
+        if (MemoryUtil.getCrafting(maid).hasCurrent() && MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
             MemoryUtil.getCrafting(maid).finishGathering(maid);
         }
     }

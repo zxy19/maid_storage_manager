@@ -11,7 +11,8 @@
     "CreateStockTickerBEMixin",
     "EMIRecipeTransferHook",
     "JeiGuiIconToggleButtonAccessor",
-    "JEIRecipeTransferHook"
+    "JEIRecipeTransferHook",
+    "WorldRecipeLoaderMixin"
   ],
   "client": [
     "CreateStockKeeperScreenMixin",

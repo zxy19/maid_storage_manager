@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
-import studio.fantasyit.maid_storage_manager.craft.autogen.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.context.VirtualAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.*;
@@ -19,6 +18,8 @@ import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.generator.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.GeneratorCraftingTable;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
@@ -61,6 +62,7 @@ public class CraftManager {
         for (CraftAction action : actions) {
             this.actionsMap.put(action.type(), action);
         }
+        this.autoCraftGuideGenerators = new HashMap<>();
         for (IAutoCraftGuideGenerator autoCraftGuideGenerator : autoCraftGuideGenerators) {
             this.autoCraftGuideGenerators.put(autoCraftGuideGenerator.getType(), autoCraftGuideGenerator);
         }
@@ -229,6 +231,8 @@ public class CraftManager {
         if (Integrations.tacz()) {
             TaczRecipe.addType(event);
         }
+
+        event.addAutoCraftGuideGenerator(new GeneratorCraftingTable());
     }
 
     public @Nullable ICraftType getType(ResourceLocation type) {

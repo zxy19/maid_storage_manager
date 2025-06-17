@@ -12,10 +12,10 @@ import studio.fantasyit.maid_storage_manager.craft.algo.graph.FlattenSearchGraph
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.SimpleSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.TopologyCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
-import studio.fantasyit.maid_storage_manager.craft.algo.utils.AutoGraphGenerator;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.generator.AutoGraphGenerator;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -40,6 +40,7 @@ public class MaidCraftPlanner {
     int count = 0;
     ServerLevel level;
     EntityMaid maid;
+    List<Pair<ItemStack, Integer>> notDone;
     Queue<Pair<Queue<Pair<ItemStack, Integer>>, ICraftGraphLike.CraftAlgorithmInit<?>>> craftJobs = new LinkedList<>();
     Queue<Pair<ItemStack, Integer>> tmpNextJob = new LinkedList<>();
     ItemListStepSum futureSteps;
@@ -61,8 +62,12 @@ public class MaidCraftPlanner {
             ));
         }
         craftGuides = new ArrayList<>(MemoryUtil.getCrafting(maid).getCraftGuides());
+        notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
         if (Config.craftingGenerateCraftGuide) {
-            autoGraphGenerator = new AutoGraphGenerator(maid);
+            autoGraphGenerator = new AutoGraphGenerator(
+                    maid,
+                    notDone.stream().map(itemStack -> itemStack.getA()).toList()
+            );
         } else {
             initItems();
         }
@@ -92,7 +97,6 @@ public class MaidCraftPlanner {
 
     protected boolean initItems() {
         DebugData.sendDebug("[REQUEST_CRAFT]Start. Calculate tree");
-        List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
         if (notDone.isEmpty()) {
             return false;
         }
@@ -132,7 +136,7 @@ public class MaidCraftPlanner {
     }
 
 
-    ////任务步骤
+    /// /任务步骤
     BiCraftCountCalculator biCalc = null;
     Pair<ItemStack, Integer> currentWork = null;
 
@@ -149,6 +153,7 @@ public class MaidCraftPlanner {
                 autoGraphGenerator = null;
                 initItems();
             }
+            return;
         }
 
         //如果所有任务层完成，标记done
@@ -209,6 +214,7 @@ public class MaidCraftPlanner {
                         currentWork.getA(),
                         "tooltip.maid_storage_manager.request_list.fail_backpack_full");
             }
+            RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
         } else {
             ResultListOptimizer.optimize(results).forEach(craftLayer -> {
                 MemoryUtil.getCrafting(maid).addLayer(craftLayer);

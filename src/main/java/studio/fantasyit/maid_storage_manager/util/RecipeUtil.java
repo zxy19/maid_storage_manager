@@ -13,6 +13,7 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.common.brewing.IBrewingRecipe;
+import net.minecraftforge.common.crafting.IShapedRecipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +94,21 @@ public class RecipeUtil {
         }
     }
 
+
+    public static CraftingContainer wrapCraftingContainer(List<ItemStack> items, CraftingRecipe recipe) {
+        if (recipe instanceof IShapedRecipe<?> shapedRecipe)
+            return wrapCraftingContainer(items, shapedRecipe.getRecipeWidth(), shapedRecipe.getRecipeHeight());
+        return wrapCraftingContainer(items, 3, 3);
+    }
+
+
     public static CraftingContainer wrapCraftingContainer(List<ItemStack> items, int w, int h) {
+        if (items.size() != w * h) {
+            items = new ArrayList<>(items);
+            for (int i = items.size(); i < w * h; i++) {
+                items.add(ItemStack.EMPTY);
+            }
+        }
         return new ReadonlyCraftingContainer(items, w, h);
     }
 
@@ -113,6 +128,7 @@ public class RecipeUtil {
                 level
         );
     }
+
     public static Optional<SmithingRecipe> getSmithingRecipe(Level level, List<ItemStack> items) {
         SimpleContainer simpleContainer = new SimpleContainer(3);
         for (int i = 0; i < Math.min(3, items.size()); i++) {
@@ -151,13 +167,15 @@ public class RecipeUtil {
                 level
         );
     }
+
     public static Optional<IBrewingRecipe> getBrewingRecipe(Level level, ItemStack item1, ItemStack item2) {
         return BrewingRecipeRegistry
                 .getRecipes()
                 .stream()
-                .filter(r-> r.isInput(item1) && r.isIngredient(item2))
+                .filter(r -> r.isInput(item1) && r.isIngredient(item2))
                 .findFirst();
     }
+
     public static List<StonecutterRecipe> getStonecuttingRecipe(Level level, ItemStack itemStack) {
         RecipeManager recipeManager = level.getRecipeManager();
         return recipeManager.getRecipesFor(

@@ -1,23 +1,24 @@
-package studio.fantasyit.maid_storage_manager.craft.algo.utils;
+package studio.fantasyit.maid_storage_manager.craft.generator;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
-import studio.fantasyit.maid_storage_manager.craft.autogen.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AutoGraphGenerator {
     private final EntityMaid maid;
+    protected final GeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
-    protected final List<CraftGuideData> craftGuideData;
     protected final List<InventoryItem> inventory;
     protected final MaidPathFindingBFS pathfindingBFS;
     private final List<BlockPos> blockPosList;
@@ -26,9 +27,8 @@ public class AutoGraphGenerator {
     protected double currentMinDistance = Double.MAX_VALUE;
     protected BlockPos minPos;
 
-    public AutoGraphGenerator(EntityMaid maid) {
+    public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList) {
         this.maid = maid;
-        this.craftGuideData = new ArrayList<>();
         BlockPos center = maid.blockPosition();
         if (maid.hasRestriction())
             center = maid.getRestrictCenter();
@@ -40,31 +40,35 @@ public class AutoGraphGenerator {
                 distance
         );
         inventory = MemoryUtil.getViewedInventory(maid).flatten();
+        graph = new GeneratorGraph(inventory.stream().map(i -> i.itemStack).toList(), maid.level().registryAccess(), itemList);
         iAutoCraftGuideGenerators = CraftManager.getInstance().getAutoCraftGuideGenerators();
         blockPosList = BlockPos
                 .betweenClosedStream(new AABB(center).inflate(distance, 6, distance))
-                .filter(p -> pathfindingBFS.canPathReach(p) && maid.isWithinRestriction(p))
+                .map(BlockPos::immutable)
+                .filter(maid::isWithinRestriction)
                 .toList();
     }
 
-    public boolean process() {
+    public boolean processBlock() {
         int count = 0;
         if (craftGeneratorTypeIndex >= iAutoCraftGuideGenerators.size()) return true;
         IAutoCraftGuideGenerator generator = iAutoCraftGuideGenerators.get(craftGeneratorTypeIndex);
         while (index < blockPosList.size()) {
             BlockPos next = blockPosList.get(index++);
             if (generator.isBlockValid(maid.level(), next)) {
+                if (MoveUtil.getAllAvailablePosForTarget((ServerLevel) maid.level(), maid, next, pathfindingBFS).isEmpty())
+                    continue;
                 double distance = maid.distanceToSqr(next.getCenter());
                 if (distance < currentMinDistance) {
                     currentMinDistance = distance;
                     minPos = next;
                 }
             }
-            if (++count > 50)
+            if (++count > 1000)
                 return false;
         }
         if (minPos != null) {
-            craftGuideData.addAll(generator.generate(inventory, maid.level(), minPos));
+            generator.generate(inventory, maid.level(), minPos, graph);
         }
         minPos = null;
         currentMinDistance = Double.MAX_VALUE;
@@ -74,18 +78,40 @@ public class AutoGraphGenerator {
     }
 
     public List<CraftGuideData> getCraftGuideData() {
-        return craftGuideData;
+        return graph.craftGuides;
     }
 
     public int getDone() {
-        return index;
+        if (isProcessingBlocks)
+            return index;
+        return graph.processedSteps;
     }
 
     public int getTotal() {
-        return blockPosList.size();
+        if (isProcessingBlocks)
+            return blockPosList.size();
+        return graph.pushedSteps;
     }
 
     public float getProgress() {
-        return (float) index / blockPosList.size();
+        if (isProcessingBlocks)
+            return (float) index / blockPosList.size();
+        return (float) graph.processedSteps / graph.pushedSteps;
+    }
+
+
+    boolean isProcessingBlocks = true;
+
+    /**
+     * @return 返回处理是否完成
+     */
+    public boolean process() {
+        if (isProcessingBlocks) {
+            if (processBlock())
+                isProcessingBlocks = false;
+            return false;
+        } else {
+            return graph.process();
+        }
     }
 }

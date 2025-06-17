@@ -4,6 +4,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -13,6 +14,11 @@ public class LoopSolver {
     Stack<Pair<Integer, MutableInt>> queue = new Stack<>();
     Stack<Pair<Integer, MutableInt>> queue2 = new Stack<>();
     List<Integer> path = new LinkedList<>();
+    HashSet<Long> used = new HashSet<>();
+
+    public long compoundToLong(int a, int b) {
+        return (((long) a) << 32) | (b & 0xffffffffL);
+    }
 
     public LoopSolver(AbstractBiCraftGraph graph, int startNodeId) {
         this.graph = graph;
@@ -22,7 +28,10 @@ public class LoopSolver {
     }
 
     public boolean tick() {
+        int c = 0;
         while (!queue.isEmpty()) {
+            if (c++ > 100)
+                return false;
             Pair<Integer, MutableInt> nodeLayer = queue.peek();
             int nodeId = nodeLayer.getA();
             MutableInt index = nodeLayer.getB();
@@ -40,7 +49,11 @@ public class LoopSolver {
             index.add(1);
 
             if (toNode instanceof AbstractBiCraftGraph.ItemNode && path.contains(toNode.id)) {
-                processLoop(path.indexOf(toNode.id));
+                if (!used.contains(compoundToLong(toNode.id, node.id))) {
+                    used.add(compoundToLong(toNode.id, node.id));
+                    processLoop(path.indexOf(toNode.id));
+                    c += 10;
+                }
             } else {
                 queue.add(new Pair<>(toNode.id, new MutableInt(0)));
                 path.add(toNode.id);
