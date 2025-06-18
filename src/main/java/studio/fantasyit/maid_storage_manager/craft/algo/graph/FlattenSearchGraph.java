@@ -227,7 +227,10 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     }
 
     public void dfsCraftRet(DfsLayerCraft context, int currentRequire) {
-        logger.logExitLevel("Item Finish=%d", currentRequire);
+        Pair<Integer, Integer> edge = context.node.edges.get(context.i.getValue());
+        logger.log("Item Finish=%d", currentRequire);
+        currentRequire /= edge.getB();
+        logger.logExitLevel("Co Craft Finish=%d", currentRequire);
         //如果当前物品获取数量小于模拟数量，说明模拟数量不能顺利完成。此时可以直接回溯
         if (currentRequire < context.simulateRequire.getValue()) {
             //至少对于当前物品，这个数量是可以获取到的

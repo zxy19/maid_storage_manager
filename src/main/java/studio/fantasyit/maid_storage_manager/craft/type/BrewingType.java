@@ -73,18 +73,18 @@ public class BrewingType implements ICraftType {
         CraftGuideStepData craftGuideStepData = ICraftType.super.transformSteps(steps).get(0);
         List<CraftGuideStepData> ret = new ArrayList<>();
         Target target = new Target(ItemHandlerStorage.TYPE, craftGuideStepData.getStorage().pos);
-        //烈焰粉
+        //烈焰粉/药水
         ret.add(new CraftGuideStepData(
-                target,
-                List.of(craftGuideStepData.getInput().get(0)),
+                target.sameType(target.pos, Direction.WEST),
+                List.of(craftGuideStepData.getInput().get(0), craftGuideStepData.getInput().get(1)),
                 List.of(),
                 CommonPlaceItemAction.TYPE,
                 true,
                 new CompoundTag()
         ));
         ret.add(new CraftGuideStepData(
-                target,
-                List.of(craftGuideStepData.getInput().get(1),craftGuideStepData.getInput().get(2)),
+                target.sameType(target.pos, Direction.UP),
+                List.of(craftGuideStepData.getInput().get(2)),
                 List.of(),
                 CommonPlaceItemAction.TYPE,
                 false,

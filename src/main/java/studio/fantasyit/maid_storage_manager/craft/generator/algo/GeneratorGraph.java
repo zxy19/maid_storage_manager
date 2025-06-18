@@ -20,7 +20,10 @@ import java.util.function.Function;
 
 public class GeneratorGraph {
 
-    protected record AddRecipeData(Recipe<?> recipe,
+    protected record AddRecipeData(ResourceLocation id,
+                                   List<Ingredient> ingredients,
+                                   List<Integer> ingredientCounts,
+                                   ItemStack output,
                                    Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
     }
 
@@ -231,27 +234,43 @@ public class GeneratorGraph {
 
     /// ////////////配方节点处理/////////////
     public void addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        addRecipeQueue.add(new AddRecipeData(recipe, craftGuideSupplier));
-        pushedSteps++;
-    }
-
-    protected int _addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        processedSteps++;
-        int affectFactor = recipe.getIngredients().size() + 1;
-        if (!RecipeIngredientCache.isCached(recipe)) {
-            affectFactor += (recipe.getIngredients().size() + 1) + RecipeIngredientCache.getUncachedRecipeIngredient(recipe, this) * 5;
-            RecipeIngredientCache.addRecipeCache(recipe);
-        }
-        RecipeIngredientCache.addCahcedRecipeToGraph(this, recipe, craftGuideSupplier);
-        return affectFactor;
-    }
-
-    public void addRecipeWithIngredients(Recipe<?> recipe, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        List<Integer> ingredientCounts = recipe
-                .getIngredients()
+        List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
                 .toList();
+        addRecipeQueue.add(new AddRecipeData(
+                recipe.getId(),
+                recipe.getIngredients(),
+                ingredientCounts,
+                recipe.getResultItem(registryAccess),
+                craftGuideSupplier)
+        );
+        pushedSteps++;
+    }
+
+    public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        addRecipeQueue.add(new AddRecipeData(
+                id,
+                ingredients,
+                ingredientCounts,
+                output,
+                craftGuideSupplier)
+        );
+        pushedSteps++;
+    }
+
+    protected int _addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        processedSteps++;
+        int affectFactor = ingredients.size() + 1;
+        if (!RecipeIngredientCache.isCached(id)) {
+            affectFactor += (ingredients.size() + 1) + RecipeIngredientCache.getUncachedRecipeIngredient(id, ingredients, this) * 5;
+            RecipeIngredientCache.addRecipeCache(id, ingredients);
+        }
+        RecipeIngredientCache.addCahcedRecipeToGraph(this, id, ingredients, ingredientCounts, output, craftGuideSupplier);
+        return affectFactor;
+    }
+
+    public void addRecipeWithIngredients(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         CraftNode craftNode = new CraftNode(nodes.size(), craftGuideSupplier, ingredientNodes, ingredientCounts);
         nodes.add(craftNode);
 
@@ -259,7 +278,7 @@ public class GeneratorGraph {
             ingredientNode.addEdge(craftNode, 1);
         }
 
-        craftNode.addEdge(getItemNodeOrCreate(recipe.getResultItem(registryAccess), false), 1);
+        craftNode.addEdge(getItemNodeOrCreate(output, false), 1);
     }
 
     public boolean hasCachedIngredientNode(UUID ingredient) {
@@ -287,7 +306,7 @@ public class GeneratorGraph {
         int c = 0;
         while (!addRecipeQueue.isEmpty() && c++ < MAX_PRE_TICK * 20) {
             AddRecipeData addRecipeData = addRecipeQueue.poll();
-            c += _addRecipe(addRecipeData.recipe, addRecipeData.craftGuideSupplier);
+            c += _addRecipe(addRecipeData.id, addRecipeData.ingredients, addRecipeData.ingredientCounts, addRecipeData.output, addRecipeData.craftGuideSupplier);
         }
     }
 

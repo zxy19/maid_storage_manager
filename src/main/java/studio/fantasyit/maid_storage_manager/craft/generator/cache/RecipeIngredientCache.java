@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.cache;
 
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -26,30 +25,32 @@ public class RecipeIngredientCache {
         cachedNode.clear();
     }
 
-    public static boolean isCached(Recipe<?> recipe) {
-        return CACHE.containsKey(recipe.getId());
+    public static boolean isCached(ResourceLocation recipeId) {
+        return CACHE.containsKey(recipeId);
     }
 
-    public static boolean addCahcedRecipeToGraph(GeneratorGraph graph, Recipe<?> recipe, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier) {
-        if (CACHE.containsKey(recipe.getId())) {
+    public static boolean addCahcedRecipeToGraph(GeneratorGraph graph, ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier) {
+        if (CACHE.containsKey(id)) {
             List<GeneratorGraph.IngredientNode> ingredientNodes = new ArrayList<>();
-            NonNullList<Ingredient> ingredients = recipe.getIngredients();
             for (int i = 0; i < ingredients.size(); i++) {
                 Ingredient ingredient = ingredients.get(i);
-                UUID uuid = CACHE.get(recipe.getId()).get(i);
+                UUID uuid = CACHE.get(id).get(i);
                 GeneratorGraph.IngredientNode ingredientNode = graph.addOrGetCahcedIngredientNode(ingredient, uuid);
                 ingredientNodes.add(ingredientNode);
             }
-            graph.addRecipeWithIngredients(recipe, ingredientNodes, craftGuideSupplier);
+            graph.addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier);
             return true;
         }
         return false;
     }
 
     public static void addRecipeCache(Recipe<?> recipe) {
-        ResourceLocation id = recipe.getId();
+        RecipeIngredientCache.addRecipeCache(recipe.getId(), recipe.getIngredients());
+    }
+
+    public static void addRecipeCache(ResourceLocation id, List<Ingredient> ingredients) {
         List<UUID> cachedIngredientNodeUUID = new ArrayList<>();
-        for (Ingredient ingredient : recipe.getIngredients()) {
+        for (Ingredient ingredient : ingredients) {
             boolean found = false;
             for (CachedIngredient ingredientNode : cachedNode) {
                 if (ingredientNode.isEqualTo(ingredient)) {
@@ -67,10 +68,10 @@ public class RecipeIngredientCache {
         CACHE.put(id, cachedIngredientNodeUUID);
     }
 
-    public static int getUncachedRecipeIngredient(Recipe<?> recipe, GeneratorGraph generatorGraph) {
-        if (!isCached(recipe)) return recipe.getIngredients().size();
+    public static int getUncachedRecipeIngredient(ResourceLocation id, List<Ingredient> ingredients, GeneratorGraph generatorGraph) {
+        if (!isCached(id)) return ingredients.size();
         int c = 0;
-        for (UUID ingredient : CACHE.get(recipe.getId())) {
+        for (UUID ingredient : CACHE.get(id)) {
             if (!generatorGraph.hasCachedIngredientNode(ingredient)) c++;
         }
         return c;

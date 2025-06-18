@@ -149,7 +149,30 @@ public class MaidCraftPlanner {
 
         if (autoGraphGenerator != null) {
             if (autoGraphGenerator.process()) {
-                craftGuides.addAll(autoGraphGenerator.getCraftGuideData());
+                List<CraftGuideData> craftGuideData = autoGraphGenerator.getCraftGuideData();
+                //去除和用户添加的有重叠的部分（第一输出相同）
+                craftGuideData = craftGuideData
+                        .stream().
+                        filter(c ->
+                                !
+                                c.getOutput()
+                                .stream()
+                                .findFirst()
+                                .map(i1 ->
+                                        craftGuides
+                                                .stream()
+                                                .anyMatch(c2 -> c2
+                                                        .getOutput()
+                                                        .stream()
+                                                        .findFirst()
+                                                        .map(i -> ItemStackUtil.isSameInCrafting(i, i1))
+                                                        .orElse(false)
+                                                )
+                                )
+                                .orElse(false)
+                        )
+                        .toList();
+                craftGuides.addAll(craftGuideData);
                 autoGraphGenerator = null;
                 initItems();
             }

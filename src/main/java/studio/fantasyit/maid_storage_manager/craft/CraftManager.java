@@ -19,7 +19,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.generator.IAutoCraftGuideGenerator;
-import studio.fantasyit.maid_storage_manager.craft.generator.type.GeneratorCraftingTable;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.*;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
@@ -233,6 +233,11 @@ public class CraftManager {
         }
 
         event.addAutoCraftGuideGenerator(new GeneratorCraftingTable());
+        event.addAutoCraftGuideGenerator(new GeneratorSmithingTable());
+        event.addAutoCraftGuideGenerator(new GeneratorFurnace());
+        event.addAutoCraftGuideGenerator(new GeneratorStoneCutter());
+        event.addAutoCraftGuideGenerator(new GeneratorAltar());
+        event.addAutoCraftGuideGenerator(new GeneratorBrewing());
     }
 
     public @Nullable ICraftType getType(ResourceLocation type) {

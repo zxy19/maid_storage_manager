@@ -64,7 +64,7 @@ public class AutoGraphGenerator {
                     minPos = next;
                 }
             }
-            if (++count > 1000)
+            if (++count > 2000)
                 return false;
         }
         if (minPos != null) {
@@ -83,20 +83,18 @@ public class AutoGraphGenerator {
 
     public int getDone() {
         if (isProcessingBlocks)
-            return index;
+            return index + craftGeneratorTypeIndex * blockPosList.size();
         return graph.processedSteps;
     }
 
     public int getTotal() {
         if (isProcessingBlocks)
-            return blockPosList.size();
+            return blockPosList.size() * iAutoCraftGuideGenerators.size();
         return graph.pushedSteps;
     }
 
     public float getProgress() {
-        if (isProcessingBlocks)
-            return (float) index / blockPosList.size();
-        return (float) graph.processedSteps / graph.pushedSteps;
+        return (float) getDone() / getTotal();
     }
 
 

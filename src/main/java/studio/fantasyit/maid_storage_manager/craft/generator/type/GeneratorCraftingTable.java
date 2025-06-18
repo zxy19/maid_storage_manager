@@ -1,80 +1,51 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.crafting.IShapedRecipe;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.IAutoCraftGuideGenerator;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
-import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
+import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
-import studio.fantasyit.maid_storage_manager.data.InventoryItem;
-import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class GeneratorCraftingTable implements IAutoCraftGuideGenerator {
-    @Override
-    public ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "crafting_table");
-    }
+public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, CraftingContainer> {
 
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
-        return level.getBlockState(pos).is(Blocks.CRAFTING_TABLE);
+        return level.getBlockState(pos).is(WorkBlockTags.CRAFTING_TABLE);
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
-        level.getRecipeManager()
-                .getAllRecipesFor(RecipeType.CRAFTING)
-                .forEach((CraftingRecipe recipe) -> {
-                    graph.addRecipe(recipe, (items) -> {
-                        Optional<CraftingRecipe> realRecipe = RecipeUtil.getCraftingRecipe(level, RecipeUtil.wrapCraftingContainer(items, recipe));
-                        if (realRecipe.isEmpty() || !realRecipe.get().getId().equals(recipe.getId())) {
-                            return null;
-                        }
-                        CraftingRecipe craftingRecipe = realRecipe.get();
-                        ArrayList<ItemStack> result = new ArrayList<>(List.of(craftingRecipe.getResultItem(level.registryAccess())));
-                        result.addAll(craftingRecipe
-                                .getRemainingItems(RecipeUtil.wrapCraftingContainer(items, recipe))
-                                .stream()
-                                .filter(i -> !i.isEmpty())
-                                .toList()
-                        );
-
-                        CraftGuideStepData step = new CraftGuideStepData(
-                                new Target(CraftingType.TYPE, pos),
-                                wrapInputsForRecipe(items, recipe),
-                                result,
-                                CraftingType.TYPE,
-                                false,
-                                new CompoundTag()
-                        );
-                        return new CraftGuideData(
-                                List.of(step),
-                                CraftingType.TYPE
-                        );
-                    });
-                });
-
+    protected RecipeType getRecipeType() {
+        return RecipeType.CRAFTING;
     }
 
     @Override
-    public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(RecipeType.CRAFTING).forEach(RecipeIngredientCache::addRecipeCache);
+    protected ResourceLocation getCraftType() {
+        return CraftingType.TYPE;
+    }
+
+    @Override
+    protected Optional<CraftingRecipe> validateAndGetRealRecipe(Level level, CraftingRecipe recipe, List<ItemStack> inputs, CraftingContainer container) {
+        return RecipeUtil.getCraftingRecipe(level, container);
+    }
+
+    @Override
+    protected CraftingContainer getWrappedContainer(Level level, CraftingRecipe recipe, List<ItemStack> inputs) {
+        return RecipeUtil.wrapCraftingContainer(inputs, recipe);
+    }
+
+    @Override
+    protected List<ItemStack> wrapInputs(Level level, CraftingRecipe recipe, List<ItemStack> inputs) {
+        return wrapInputsForRecipe(inputs, recipe);
     }
 
     protected static List<ItemStack> wrapInputsForRecipe(List<ItemStack> items, CraftingRecipe recipe) {

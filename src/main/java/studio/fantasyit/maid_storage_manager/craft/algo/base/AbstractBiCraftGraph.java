@@ -164,11 +164,11 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             Node node = nodes.get(buildGraphIndex);
             if (node instanceof CraftNode craftNode) {
                 stepCount++;
-                for (ItemStack input : craftNode.craftGuideData.getAllInputItems()) {
+                for (ItemStack input : craftNode.craftGuideData.getAllInputItemsWithOptional()) {
                     ItemNode itemNode = getItemNodeOrCreate(input);
                     craftNode.addEdge(itemNode, input.getCount());
                 }
-                for (ItemStack output : craftNode.craftGuideData.getAllOutputItems()) {
+                for (ItemStack output : craftNode.craftGuideData.getAllOutputItemsWithOptional()) {
                     ItemNode itemNode = getItemNodeOrCreate(output);
                     itemNode.addEdge(craftNode, output.getCount());
                 }

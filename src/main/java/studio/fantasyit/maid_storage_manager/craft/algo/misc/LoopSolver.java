@@ -102,6 +102,11 @@ public class LoopSolver {
             node.singleTimeCount = finallyGain;
         } else {
             node.loopInputIngredientCount = 0;
+            //对于起始点，不允许计算非自增环（任何非自增环实际上都没有意义）
+            if (startNode == 0) {
+                node.isLoopedIngredient = false;
+            }
         }
+
     }
 }
