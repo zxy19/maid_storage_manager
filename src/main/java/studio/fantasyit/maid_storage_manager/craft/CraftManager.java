@@ -18,8 +18,10 @@ import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
-import studio.fantasyit.maid_storage_manager.craft.generator.IAutoCraftGuideGenerator;
-import studio.fantasyit.maid_storage_manager.craft.generator.type.*;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.create.*;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla.*;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
@@ -204,6 +206,14 @@ public class CraftManager {
                 1
         );
 
+        event.addAutoCraftGuideGenerator(new GeneratorCraftingTable());
+        event.addAutoCraftGuideGenerator(new GeneratorSmithingTable());
+        event.addAutoCraftGuideGenerator(new GeneratorFurnace());
+        event.addAutoCraftGuideGenerator(new GeneratorStoneCutter());
+        event.addAutoCraftGuideGenerator(new GeneratorAltar());
+        event.addAutoCraftGuideGenerator(new GeneratorBrewing());
+        event.addAutoCraftGuideGenerator(new GeneratorWatering());
+
         if (ModList.get().isLoaded("ae2") && Config.enableAe2Sup) {
             event.addCraftType(new AE2Type());
             event.addAction(
@@ -231,13 +241,14 @@ public class CraftManager {
         if (Integrations.tacz()) {
             TaczRecipe.addType(event);
         }
-
-        event.addAutoCraftGuideGenerator(new GeneratorCraftingTable());
-        event.addAutoCraftGuideGenerator(new GeneratorSmithingTable());
-        event.addAutoCraftGuideGenerator(new GeneratorFurnace());
-        event.addAutoCraftGuideGenerator(new GeneratorStoneCutter());
-        event.addAutoCraftGuideGenerator(new GeneratorAltar());
-        event.addAutoCraftGuideGenerator(new GeneratorBrewing());
+        if (Integrations.createGenerator()) {
+            event.addAutoCraftGuideGenerator(new GeneratorCreatePress());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateCompact());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateMix());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateMilling());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateCrushing());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateFanRecipes());
+        }
     }
 
     public @Nullable ICraftType getType(ResourceLocation type) {

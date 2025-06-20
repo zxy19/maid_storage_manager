@@ -15,17 +15,24 @@ abstract public class AbstractDynamicAddedAction extends AbstractCraftActionCont
     boolean started = false;
 
     abstract public Result getList();
-    protected void addStep(CraftGuideStepData stepData){
+
+    protected void addStep(CraftGuideStepData stepData) {
         craftLayer.addStep(stepData);
     }
+
     @Override
     public Result start() {
+        if (craftLayer.getTotalStep() > 1) {
+            craftLayer.clearNonFirstStep();
+        }
         return getList();
     }
+
     @Override
     public Result tick() {
         return Result.SUCCESS;
     }
+
     @Override
     public void stop() {
     }

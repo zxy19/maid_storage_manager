@@ -13,7 +13,6 @@ import java.util.function.BiConsumer;
 
 public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
-
     public static class Node {
         public int id;
         public boolean related;
@@ -168,7 +167,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
                     ItemNode itemNode = getItemNodeOrCreate(input);
                     craftNode.addEdge(itemNode, input.getCount());
                 }
-                for (ItemStack output : craftNode.craftGuideData.getAllOutputItemsWithOptional()) {
+                for (ItemStack output : craftNode.craftGuideData.getAllOutputItems()) {
                     ItemNode itemNode = getItemNodeOrCreate(output);
                     itemNode.addEdge(craftNode, output.getCount());
                 }
@@ -234,5 +233,8 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             }
         }
         return init.init(items, craftGuides);
+    }
+    public int getNodeCount() {
+        return nodes.size();
     }
 }

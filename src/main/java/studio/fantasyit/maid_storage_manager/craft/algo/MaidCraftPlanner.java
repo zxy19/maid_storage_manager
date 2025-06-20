@@ -66,7 +66,8 @@ public class MaidCraftPlanner {
         if (Config.craftingGenerateCraftGuide) {
             autoGraphGenerator = new AutoGraphGenerator(
                     maid,
-                    notDone.stream().map(itemStack -> itemStack.getA()).toList()
+                    notDone.stream().map(itemStack -> itemStack.getA()).toList(),
+                    craftGuides
             );
         } else {
             initItems();
@@ -155,21 +156,21 @@ public class MaidCraftPlanner {
                         .stream().
                         filter(c ->
                                 !
-                                c.getOutput()
-                                .stream()
-                                .findFirst()
-                                .map(i1 ->
-                                        craftGuides
+                                        c.getOutput()
                                                 .stream()
-                                                .anyMatch(c2 -> c2
-                                                        .getOutput()
-                                                        .stream()
-                                                        .findFirst()
-                                                        .map(i -> ItemStackUtil.isSameInCrafting(i, i1))
-                                                        .orElse(false)
+                                                .findFirst()
+                                                .map(i1 ->
+                                                        craftGuides
+                                                                .stream()
+                                                                .anyMatch(c2 -> c2
+                                                                        .getOutput()
+                                                                        .stream()
+                                                                        .findFirst()
+                                                                        .map(i -> ItemStackUtil.isSameInCrafting(i, i1))
+                                                                        .orElse(false)
+                                                                )
                                                 )
-                                )
-                                .orElse(false)
+                                                .orElse(false)
                         )
                         .toList();
                 craftGuides.addAll(craftGuideData);

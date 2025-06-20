@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.craft.CollectCraftEvent;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorTACZ;
 import studio.fantasyit.maid_storage_manager.craft.type.TaczType;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class TaczRecipe {
                 10,
                 1
         );
+        event.addAutoCraftGuideGenerator(new GeneratorTACZ());
     }
 
     public static ResourceLocation getBlockId(Level level, BlockPos pos) {

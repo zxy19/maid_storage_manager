@@ -64,19 +64,19 @@ public class CraftGuideData {
                 if (!step.isOptional()) {
                     if (ItemStackUtil.removeIsMatchInList(outputs, item, ItemStackUtil::isSameInCrafting).isEmpty())
                         continue;
-                    ItemStackUtil.addToList(inputs, item, ItemStackUtil::isSameInCrafting);
+                    ItemStackUtil.addToList(inputs, item.copy(), ItemStackUtil::isSameInCrafting);
                 }
 
                 if (ItemStackUtil.removeIsMatchInList(outputsWithOptional, item, ItemStackUtil::isSameInCrafting).isEmpty())
                     continue;
-                ItemStackUtil.addToList(inputsWithOptional, item, ItemStackUtil::isSameInCrafting);
+                ItemStackUtil.addToList(inputsWithOptional, item.copy(), ItemStackUtil::isSameInCrafting);
             }
             for (ItemStack _item : step.getOutput()) {
                 if (_item.isEmpty()) continue;
                 ItemStack item = _item.copy();
                 if (!step.isOptional())
-                    ItemStackUtil.addToList(outputs, item, ItemStackUtil::isSameInCrafting);
-                ItemStackUtil.addToList(outputsWithOptional, item, ItemStackUtil::isSameInCrafting);
+                    ItemStackUtil.addToList(outputs, item.copy(), ItemStackUtil::isSameInCrafting);
+                ItemStackUtil.addToList(outputsWithOptional, item.copy(), ItemStackUtil::isSameInCrafting);
             }
         }
     }

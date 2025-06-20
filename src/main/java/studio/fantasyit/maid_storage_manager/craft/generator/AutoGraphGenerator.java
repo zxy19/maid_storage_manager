@@ -3,15 +3,18 @@ package studio.fantasyit.maid_storage_manager.craft.generator;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.AABB;
+import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
 import java.util.List;
 
@@ -27,7 +30,7 @@ public class AutoGraphGenerator {
     protected double currentMinDistance = Double.MAX_VALUE;
     protected BlockPos minPos;
 
-    public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList) {
+    public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList, List<CraftGuideData> hasExisted) {
         this.maid = maid;
         BlockPos center = maid.blockPosition();
         if (maid.hasRestriction())
@@ -47,6 +50,16 @@ public class AutoGraphGenerator {
                 .map(BlockPos::immutable)
                 .filter(maid::isWithinRestriction)
                 .toList();
+        MutableInt count = new MutableInt();
+        hasExisted.forEach(craftGuideData -> {
+            graph.addRecipe(
+                    new ResourceLocation("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
+                    craftGuideData.getAllInputItemsWithOptional().stream().map(Ingredient::of).toList(),
+                    craftGuideData.getAllInputItemsWithOptional().stream().map(ItemStack::getCount).toList(),
+                    craftGuideData.getAllOutputItems(),
+                    t -> null
+            );
+        });
     }
 
     public boolean processBlock() {
@@ -56,12 +69,17 @@ public class AutoGraphGenerator {
         while (index < blockPosList.size()) {
             BlockPos next = blockPosList.get(index++);
             if (generator.isBlockValid(maid.level(), next)) {
-                if (MoveUtil.getAllAvailablePosForTarget((ServerLevel) maid.level(), maid, next, pathfindingBFS).isEmpty())
+                if (!generator.positionalAvailable((ServerLevel) maid.level(), maid, next, pathfindingBFS))
                     continue;
-                double distance = maid.distanceToSqr(next.getCenter());
-                if (distance < currentMinDistance) {
-                    currentMinDistance = distance;
-                    minPos = next;
+                if (generator.allowMultiPosition()) {
+                    generator.generate(inventory, maid.level(), next, graph);
+                } else {
+                    //如果只允许一个位置，那么统计最近位置
+                    double distance = maid.distanceToSqr(next.getCenter());
+                    if (distance < currentMinDistance) {
+                        currentMinDistance = distance;
+                        minPos = next;
+                    }
                 }
             }
             if (++count > 2000)

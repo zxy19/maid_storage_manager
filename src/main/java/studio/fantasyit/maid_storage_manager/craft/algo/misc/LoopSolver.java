@@ -4,17 +4,14 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class LoopSolver {
     private AbstractBiCraftGraph graph;
     Stack<Pair<Integer, MutableInt>> queue = new Stack<>();
-    Stack<Pair<Integer, MutableInt>> queue2 = new Stack<>();
     List<Integer> path = new LinkedList<>();
     HashSet<Long> used = new HashSet<>();
+    HashMap<Integer, Integer> visited = new HashMap<>();
 
     public long compoundToLong(int a, int b) {
         return (((long) a) << 32) | (b & 0xffffffffL);
@@ -23,14 +20,14 @@ public class LoopSolver {
     public LoopSolver(AbstractBiCraftGraph graph, int startNodeId) {
         this.graph = graph;
         queue.add(new Pair<>(startNodeId, new MutableInt(0)));
-        queue2.add(new Pair<>(startNodeId, new MutableInt(0)));
         path.add(startNodeId);
+        visited.put(startNodeId, 0);
     }
 
     public boolean tick() {
         int c = 0;
         while (!queue.isEmpty()) {
-            if (c++ > 100)
+            if (c++ > 1000)
                 return false;
             Pair<Integer, MutableInt> nodeLayer = queue.peek();
             int nodeId = nodeLayer.getA();
@@ -41,11 +38,13 @@ public class LoopSolver {
                     craftNode.hasLoopIngredient = craftNode.edges
                             .stream().anyMatch(edge -> ((AbstractBiCraftGraph.ItemNode) graph.getNode(edge.getA())).isLoopedIngredient);
                 }
+                visited.put(node.id, visited.get(node.id) - 1);
                 queue.pop();
                 path.remove(path.size() - 1);
                 continue;
             }
-            AbstractBiCraftGraph.Node toNode = graph.getNode(node.edges.get(index.intValue()).getA());
+            Pair<Integer, Integer> edge = node.edges.get(index.intValue());
+            AbstractBiCraftGraph.Node toNode = graph.getNode(edge.getA());
             index.add(1);
 
             if (toNode instanceof AbstractBiCraftGraph.ItemNode && path.contains(toNode.id)) {
@@ -54,17 +53,20 @@ public class LoopSolver {
                     processLoop(path.indexOf(toNode.id));
                     c += 10;
                 }
+            } else if (toNode instanceof AbstractBiCraftGraph.ItemNode && visited.containsKey(toNode.id)) {
+                continue;
             } else {
                 queue.add(new Pair<>(toNode.id, new MutableInt(0)));
+                visited.put(toNode.id, visited.computeIfAbsent(toNode.id, t -> 0) + 1);
                 path.add(toNode.id);
             }
         }
-
         return true;
     }
 
     private void processLoop(int startNode) {
         boolean isSelfProductLoop = false;
+        boolean isMainBranchLoop = true;
         int startCount = -1;
         int finallyGain = -1;
         int[] counts = new int[path.size()];
@@ -86,6 +88,10 @@ public class LoopSolver {
                 } else throw new RuntimeException("Invalid graph");
 
                 counts[i - 1] = currentCount;
+
+                if (visited.get(nextNode.id) > 1 || visited.get(node.id) > 1) {
+                    isMainBranchLoop = false;
+                }
             }
             if (currentCount > c) {
                 isSelfProductLoop = true;
@@ -96,15 +102,15 @@ public class LoopSolver {
         }
 
         AbstractBiCraftGraph.ItemNode node = (AbstractBiCraftGraph.ItemNode) graph.getNode(path.get(startNode));
-        node.isLoopedIngredient = true;
         if (isSelfProductLoop) {
             node.loopInputIngredientCount = Math.max(startCount, node.loopInputIngredientCount);
             node.singleTimeCount = finallyGain;
+            node.isLoopedIngredient = true;
         } else {
             node.loopInputIngredientCount = 0;
-            //对于起始点，不允许计算非自增环（任何非自增环实际上都没有意义）
-            if (startNode == 0) {
-                node.isLoopedIngredient = false;
+            //对于主分支非自增环，其实际上没有意义（因为所求直接就是产物，那么循环也不会带来任何收益，直接设置false）
+            if (!isMainBranchLoop) {
+                node.isLoopedIngredient = true;
             }
         }
 

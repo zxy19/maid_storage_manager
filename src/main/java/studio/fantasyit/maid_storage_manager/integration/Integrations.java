@@ -30,6 +30,10 @@ public class Integrations {
                 && Config.enableCreateStorage;
     }
 
+    public static boolean createGenerator() {
+        return ModList.get().isLoaded("create");
+    }
+
     public static boolean createStockManager() {
         return ModList.get().isLoaded("create")
                 && ModList.get().getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("create")

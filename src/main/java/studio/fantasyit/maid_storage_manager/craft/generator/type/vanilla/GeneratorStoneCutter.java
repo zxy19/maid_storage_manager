@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.generator.type;
+package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -9,6 +9,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.StoneCuttingType;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 

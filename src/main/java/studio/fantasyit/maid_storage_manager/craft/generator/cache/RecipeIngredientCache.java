@@ -29,7 +29,12 @@ public class RecipeIngredientCache {
         return CACHE.containsKey(recipeId);
     }
 
-    public static boolean addCahcedRecipeToGraph(GeneratorGraph graph, ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier) {
+    public static boolean addCahcedRecipeToGraph(GeneratorGraph graph,
+                                                 ResourceLocation id,
+                                                 List<Ingredient> ingredients,
+                                                 List<Integer> ingredientCounts,
+                                                 List<ItemStack> output,
+                                                 Function<List<ItemStack>, CraftGuideData> craftGuideSupplier) {
         if (CACHE.containsKey(id)) {
             List<GeneratorGraph.IngredientNode> ingredientNodes = new ArrayList<>();
             for (int i = 0; i < ingredients.size(); i++) {

@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.generator.type;
+package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -15,6 +15,7 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeHooks;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 

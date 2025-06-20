@@ -23,7 +23,7 @@ public class GeneratorGraph {
     protected record AddRecipeData(ResourceLocation id,
                                    List<Ingredient> ingredients,
                                    List<Integer> ingredientCounts,
-                                   ItemStack output,
+                                   List<ItemStack> output,
                                    Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
     }
 
@@ -238,17 +238,21 @@ public class GeneratorGraph {
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
                 .toList();
-        addRecipeQueue.add(new AddRecipeData(
+        addRecipe(
                 recipe.getId(),
                 recipe.getIngredients(),
                 ingredientCounts,
                 recipe.getResultItem(registryAccess),
-                craftGuideSupplier)
+                craftGuideSupplier
         );
         pushedSteps++;
     }
 
     public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        addRecipe(id, ingredients, ingredientCounts, List.of(output), craftGuideSupplier);
+    }
+
+    public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         addRecipeQueue.add(new AddRecipeData(
                 id,
                 ingredients,
@@ -259,7 +263,7 @@ public class GeneratorGraph {
         pushedSteps++;
     }
 
-    protected int _addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    protected int _addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         processedSteps++;
         int affectFactor = ingredients.size() + 1;
         if (!RecipeIngredientCache.isCached(id)) {
@@ -270,7 +274,12 @@ public class GeneratorGraph {
         return affectFactor;
     }
 
-    public void addRecipeWithIngredients(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipeWithIngredients(ResourceLocation id,
+                                         List<Ingredient> ingredients,
+                                         List<Integer> ingredientCounts,
+                                         List<ItemStack> outputs,
+                                         List<IngredientNode> ingredientNodes,
+                                         Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         CraftNode craftNode = new CraftNode(nodes.size(), craftGuideSupplier, ingredientNodes, ingredientCounts);
         nodes.add(craftNode);
 
@@ -278,7 +287,7 @@ public class GeneratorGraph {
             ingredientNode.addEdge(craftNode, 1);
         }
 
-        craftNode.addEdge(getItemNodeOrCreate(output, false), 1);
+        outputs.forEach(output -> craftNode.addEdge(getItemNodeOrCreate(output, false), 1));
     }
 
     public boolean hasCachedIngredientNode(UUID ingredient) {
@@ -396,14 +405,14 @@ public class GeneratorGraph {
                                 ingredientNode
                                         .possibleItems
                                         .get(ingredientSelections.get(i))
-                                        .copyWithCount(craftNode.ingredientCounts.get(i))
                         );
                 }
-                CraftGuideData apply = craftNode.craftGuideSupplier.apply(
-                        craftNode.ingredientNodes.stream().map(
-                                ingredientNode -> ingredientId2ItemStack.get(ingredientNode.id).copy()
-                        ).toList()
-                );
+                List<ItemStack> items = new ArrayList<>();
+                for (int i = 0; i < craftNode.ingredientNodes.size(); i++) {
+                    ItemStack itemStack = ingredientId2ItemStack.get(craftNode.ingredientNodes.get(i).id);
+                    items.add(itemStack.copyWithCount(craftNode.ingredientCounts.get(i)));
+                }
+                CraftGuideData apply = craftNode.craftGuideSupplier.apply(items);
                 if (apply != null)
                     craftGuides.add(apply);
             }

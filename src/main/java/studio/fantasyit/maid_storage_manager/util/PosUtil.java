@@ -80,7 +80,7 @@ public class PosUtil {
     }
 
     static protected boolean isEmptyBlockPos(Level level, BlockPos pos) {
-        return level.getBlockState(pos).isAir() || level.getBlockState(pos).getCollisionShape(
+        return level.getBlockState(pos).getCollisionShape(
                 level,
                 pos,
                 CollisionContext.empty()

@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.generator.type;
+package studio.fantasyit.maid_storage_manager.craft.generator.type.misc;
 
 import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.AltarType;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 

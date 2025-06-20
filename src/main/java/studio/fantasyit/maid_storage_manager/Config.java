@@ -149,7 +149,7 @@ public class Config {
             .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
             .define("crafting.nbt.default", false);
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
-            .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
+            .comment("Specific those nbt that are ignored from comparing. Use syntax like 'a.b[c].d'.")
             .defineListAllowEmpty("crafting.nbt.no_matching_path", () -> List.of("Damage"), o -> o instanceof String);
     private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
             .comment("Generate craft guides for vanilla recipes.")

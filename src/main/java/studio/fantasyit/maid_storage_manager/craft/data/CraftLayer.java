@@ -91,6 +91,12 @@ public class CraftLayer {
         steps.add(stepData);
     }
 
+    public void clearNonFirstStep() {
+        while (steps.size() > 1)
+            steps.remove(1);
+        step = 0;
+    }
+
     /**
      * 尝试记忆合成物品，返回应该拿取多少该种物品。
      */

@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.craft.generator.type;
+package studio.fantasyit.maid_storage_manager.craft.generator.type.base;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -12,7 +12,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
