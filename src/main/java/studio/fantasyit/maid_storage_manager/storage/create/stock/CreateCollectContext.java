@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -64,7 +65,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
         super.start(maid, level, target);
-        targetPackageName = "maid_request:" + maid.getStringUUID();
+        targetPackageName = CreateIntegration.getAddress(maid, CreateIntegration.AddressType.REQUEST);
         rescanItemHandler();
         reselectChain();
         availableInv = maid.getAvailableInv(true);

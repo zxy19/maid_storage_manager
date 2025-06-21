@@ -14,9 +14,9 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -305,7 +305,7 @@ public class CraftMemory extends AbstractTargetMemory {
         if (storageBlock != null) {
             addVisitedPos(storageBlock);
             DebugData.sendDebug("[REQUEST_CRAFT]initial vis %s", storageBlock);
-            InvUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
                 addVisitedPos(storageBlock.sameType(pos, null));
                 DebugData.sendDebug("[REQUEST_CRAFT]initial vis %s", pos.toShortString());
             });

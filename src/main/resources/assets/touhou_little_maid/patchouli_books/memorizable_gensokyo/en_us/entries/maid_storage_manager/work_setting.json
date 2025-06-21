@@ -48,6 +48,11 @@
       "type": "text",
       "title": "Allow to seek for work meal",
       "text": "After opening, the maid will find something to eat from the warehouse by herself:)"
+    },
+    {
+      "type": "text",
+      "title": "Memorize Craft Guide",
+      "text": "The maid can read the craft guide from memory, so that there is no need to go to the warehouse to find them."
     }
   ]
 }

@@ -15,10 +15,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
-import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.Map;
 import java.util.Objects;
@@ -119,7 +116,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
             if (context.isDone() && !changed) {
                 Target target = MemoryUtil.getCrafting(maid).getTarget();
                 MemoryUtil.getCrafting(maid).addVisitedPos(target);
-                InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
+                StorageAccessUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
                     MemoryUtil.getCrafting(maid).addVisitedPos(target.sameType(pos, null));
                 });
             }

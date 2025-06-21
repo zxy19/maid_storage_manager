@@ -213,6 +213,7 @@ public class CraftManager {
         event.addAutoCraftGuideGenerator(new GeneratorAltar());
         event.addAutoCraftGuideGenerator(new GeneratorBrewing());
         event.addAutoCraftGuideGenerator(new GeneratorWatering());
+        event.addAutoCraftGuideGenerator(new GeneratorStripping());
 
         if (ModList.get().isLoaded("ae2") && Config.enableAe2Sup) {
             event.addCraftType(new AE2Type());
@@ -248,6 +249,8 @@ public class CraftManager {
             event.addAutoCraftGuideGenerator(new GeneratorCreateMilling());
             event.addAutoCraftGuideGenerator(new GeneratorCreateCrushing());
             event.addAutoCraftGuideGenerator(new GeneratorCreateFanRecipes());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateUse());
+            event.addAutoCraftGuideGenerator(new GeneratorCreateDeployer());
         }
     }
 

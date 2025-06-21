@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.ItemStackHandler;
+import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
@@ -26,7 +27,7 @@ public class CreatePlacePackageContext implements IStorageInsertableContext {
         if (be instanceof ChainConveyorBlockEntity tChainConveyor) {
             this.chainConveyor = tChainConveyor;
         }
-        targetPackageName = "maid_placed:" + maid.getStringUUID();
+        targetPackageName = CreateIntegration.getAddress(maid, CreateIntegration.AddressType.PLACED);
     }
 
     @Override

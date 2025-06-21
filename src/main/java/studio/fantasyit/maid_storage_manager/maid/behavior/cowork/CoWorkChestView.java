@@ -15,7 +15,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
             context = null;
             return;
         }
-        List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide(), false);
+        List<Target> possibleTargets = StorageAccessUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide(), false);
         if (possibleTargets.contains(interactedTarget))
             target = interactedTarget;
         else if (possibleTargets.size() > 0)

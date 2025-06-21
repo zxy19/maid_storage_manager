@@ -1,16 +1,29 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.create;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
-import com.simibubi.create.content.processing.basin.BasinRecipe;
+import com.simibubi.create.content.kinetics.mixer.CompactingRecipe;
+import com.simibubi.create.content.processing.recipe.HeatCondition;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 
-public class GeneratorCreateCompact extends GeneratorCreate<BasinRecipe, RecipeType<BasinRecipe>, Container> {
+import java.util.List;
+
+public class GeneratorCreateCompact extends GeneratorCreate<CompactingRecipe, RecipeType<CompactingRecipe>, Container> {
     @Override
     public ResourceLocation getType() {
         return new ResourceLocation(MaidStorageManager.MODID, "create_press_pot");
@@ -25,7 +38,44 @@ public class GeneratorCreateCompact extends GeneratorCreate<BasinRecipe, RecipeT
     }
 
     @Override
-    RecipeType<BasinRecipe> getRecipeType() {
-        return AllRecipeTypes.BASIN.getType();
+    RecipeType<CompactingRecipe> getRecipeType() {
+        return AllRecipeTypes.COMPACTING.getType();
+    }
+    @Override
+    protected void transformSteps(CompactingRecipe recipe, List<ItemStack> items, Level level, BlockPos pos, List<CraftGuideStepData> step, StepGenerateStep generateStep) {
+        if (recipe.getRequiredHeat() != HeatCondition.NONE && generateStep == StepGenerateStep.INPUT_ITEM) {
+            step.add(new CraftGuideStepData(
+                    Target.virtual(pos.below(), null),
+                    List.of(items.get(items.size() - 1)),
+                    List.of(),
+                    CommonUseAction.TYPE_R,
+                    true,
+                    new CompoundTag()
+            ));
+        }
+    }
+    @Override
+    public boolean allowMultiPosition() {
+        return true;
+    }
+    @Override
+    public void transformAllIngredients(CompactingRecipe recipe, List<Ingredient> all, List<Integer> counts) {
+        if (recipe.getRequiredHeat() == HeatCondition.HEATED) {
+            all.add(Ingredient.of(ItemTags.COALS));
+            counts.add(1);
+        } else if (recipe.getRequiredHeat() == HeatCondition.SUPERHEATED) {
+            all.add(Ingredient.of(AllItems.BLAZE_CAKE));
+            counts.add(1);
+        }
+    }
+    @Override
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+        addRecipeForPos(
+                level,
+                pos,
+                getRecipeType(),
+                graph,
+                t -> t.getRequiredHeat() == HeatCondition.NONE || level.getBlockState(pos.below()).is(AllBlocks.BLAZE_BURNER.get())
+        );
     }
 }

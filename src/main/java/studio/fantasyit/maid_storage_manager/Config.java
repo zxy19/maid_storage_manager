@@ -66,6 +66,9 @@ public class Config {
     private static final ForgeConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_H = BUILDER
             .comment("How far maid can control the stock ticker. Horizontally")
             .defineInRange("compat.create_stock_keeper_range_h", 7, 1, 64);
+    private static final ForgeConfigSpec.ConfigValue<String> CREATE_ADDRESS_PATTERN = BUILDER
+            .comment("The format of create package address.<UUID>,<UUID4>,<UUID8>,<TYPE>,<TYPE1>")
+            .define("compat.create_address_pattern", "maid<TYPE1>:<UUID4>");
 
 
     //速度控制选项
@@ -121,7 +124,7 @@ public class Config {
             .comment("Virtual Item Frame's render method allow access/no access/filter.")
             .defineEnum("render.virtual_item_frame_render", VirtualItemFrameRender.LARGE);
     private static final ForgeConfigSpec.BooleanValue RENDER_MAID_WHEN_INGREDIENT_REQUEST = BUILDER
-            .comment("Render the maid at the bottom of the screen when pressing Alt.")
+            .comment("Render the maid at the bottom of the screen when pressing ingredient request key.")
             .define("render.maid_render_ingredient_request", true);
 
     //性能
@@ -154,6 +157,10 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
             .comment("Generate craft guides for vanilla recipes.")
             .define("crafting.generate", false);
+    private static final ForgeConfigSpec.BooleanValue CRAFTING_NO_CALCULATOR = BUILDER
+            .comment("No need portable calculator for crafting")
+            .define("crafting.no_calculator", false);
+
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -165,8 +172,9 @@ public class Config {
     public static boolean enableCreateStorage;
     public static boolean enableCreateStockManager;
     public static boolean enableTacz;
-    public static double createStockKeeperRangeV;
-    public static double createStockKeeperRangeH;
+    public static int createStockKeeperRangeV;
+    public static int createStockKeeperRangeH;
+    public static String createAddress;
     public static double collectSpeed;
     public static double viewSpeed;
     public static double placeSpeed;
@@ -191,6 +199,7 @@ public class Config {
     public static boolean craftingMatchTag;
     public static List<String> noMatchPaths;
     public static boolean craftingGenerateCraftGuide;
+    public static boolean craftingNoCalculator;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -204,6 +213,7 @@ public class Config {
         enableTacz = ENABLE_TACZ.get();
         createStockKeeperRangeV = ENABLE_CREATE_STOCK_RANGE_V.get();
         createStockKeeperRangeH = ENABLE_CREATE_STOCK_RANGE_H.get();
+        createAddress = CREATE_ADDRESS_PATTERN.get();
         collectSpeed = COLLECT_SPEED.get();
         viewSpeed = VIEW_SPEED.get();
         placeSpeed = PLACE_SPEED.get();
@@ -228,5 +238,50 @@ public class Config {
         noMatchPaths = NBT_NO_MATCH_PATH.get().stream().map(t -> (String) t).toList();
         throwItemVector = THROW_ITEM_VECTOR.get();
         craftingGenerateCraftGuide = CRAFTING_GENERATE_CRAFT_GUIDE.get();
+        craftingNoCalculator = CRAFTING_NO_CALCULATOR.get();
+    }
+
+    public static void save() {
+        ENABLE_DEBUG.set(enableDebug);
+        ENABLE_AE2SUP.set(enableAe2Sup);
+        ENABLE_RS_SUP.set(enableRsSup);
+        ENABLE_JEI_INGREDIENT_REQUEST.set(enableJeiIngredientRequest);
+        ENABLE_EMI_INGREDIENT_REQUEST.set(enableEmiIngredientRequest);
+        ENABLE_CREATE_STORAGE.set(enableCreateStorage);
+        ENABLE_CREATE_STORAGE_MANAGER.set(enableCreateStockManager);
+        ENABLE_TACZ.set(enableTacz);
+        ENABLE_CREATE_STOCK_RANGE_V.set(createStockKeeperRangeV);
+        ENABLE_CREATE_STOCK_RANGE_H.set(createStockKeeperRangeH);
+        CREATE_ADDRESS_PATTERN.set(createAddress);
+        COLLECT_SPEED.set(collectSpeed);
+        VIEW_SPEED.set(viewSpeed);
+        PLACE_SPEED.set(placeSpeed);
+        MAX_STORE_TRIES.set(maxStoreTries);
+        MAX_CRAFT_TRIES.set(maxCraftTries);
+        MAX_LOGISTICS_TRIES.set(maxLogisticsTries);
+        CRAFT_WORK_SPEED.set(craftWorkSpeed);
+        VIRTUAL_ITEM_FRAME_RENDER.set(virtualItemFrameRender);
+        USE_ALL_STORAGE_BY_DEFAULT.set(useAllStorageByDefault);
+        VIEW_CHANGE_SPEED.set(viewChangeSpeed);
+        FOLLOW_SPEED.set(followSpeed);
+        TWO_STEP_AI_RESPONSE.set(twoStepAiResponse);
+        PICKUP_REQUIRE_WHEN_PLACE.set(pickupRequireWhenPlace);
+        FAST_PATH_SCHEDULE.set(fastPathSchedule);
+        REAL_WORK_SIM.set(realWorkSim);
+        AI_FUNCTIONS.set(aiFunctions);
+        GENERATE_VIRTUAL_ITEM_FRAME.set(generateVirtualItemFrame);
+        RENDER_MAID_WHEN_INGREDIENT_REQUEST.set(renderMaidWhenIngredientRequest);
+        CRAFTING_SOLVER.set(craftingSolver.stream().map(CraftSolver::name).toList());
+        PICKUP_IGNORE_DELAY.set(pickupIgnoreDelay);
+        USE_NBT.set(craftingMatchTag);
+        NBT_NO_MATCH_PATH.set(noMatchPaths);
+        THROW_ITEM_VECTOR.set(throwItemVector);
+        CRAFTING_GENERATE_CRAFT_GUIDE.set(craftingGenerateCraftGuide);
+        CRAFTING_NO_CALCULATOR.set(craftingNoCalculator);
+    }
+
+    public static void saveAfter(Runnable o) {
+        o.run();
+        Config.save();
     }
 }

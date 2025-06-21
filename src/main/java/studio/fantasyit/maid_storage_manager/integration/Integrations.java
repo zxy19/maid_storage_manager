@@ -51,4 +51,8 @@ public class Integrations {
     public static boolean tacz() {
         return ModList.get().isLoaded("tacz") && Config.enableTacz;
     }
+
+    public static boolean clothConfig() {
+        return ModList.get().isLoaded("cloth_config");
+    }
 }

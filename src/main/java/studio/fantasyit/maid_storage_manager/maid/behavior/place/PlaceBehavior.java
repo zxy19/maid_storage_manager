@@ -18,8 +18,8 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -117,7 +117,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getPlacingInv(maid).anySuccess();
             }
             MemoryUtil.getPlacingInv(maid).clearArrangeItems();
-            InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
         }

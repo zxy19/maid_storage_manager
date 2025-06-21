@@ -13,10 +13,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
-import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.List;
 import java.util.Map;
@@ -103,7 +100,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
 
             MemoryUtil.getPlacingInv(maid).resetVisitedPos();
             MemoryUtil.getPlacingInv(maid).addVisitedPos(target);
-            InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
             context.finish();

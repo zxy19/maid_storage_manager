@@ -20,6 +20,19 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class PosUtil {
+    static public @Nullable <T> T findInUpperSquare(BlockPos pos, int dx, int dy, int dz, Function<BlockPos, @Nullable T> consumer) {
+        for (int i = -dx; i <= dx; i++) {
+            for (int j = 0; j <= dy; j++) {
+                for (int k = -dz; k <= dz; k++) {
+                    BlockPos pos1 = pos.offset(i, j, k);
+                    T t = consumer.apply(pos1);
+                    if (t != null) return t;
+                }
+            }
+        }
+        return null;
+    }
+
     static public @Nullable <T> T findAround(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
         T tmp;
         if ((tmp = consumer.apply(pos)) != null) return tmp;

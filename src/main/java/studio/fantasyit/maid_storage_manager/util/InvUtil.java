@@ -1,38 +1,19 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
-import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class InvUtil {
@@ -115,48 +96,6 @@ public class InvUtil {
         return count;
     }
 
-    public static TagKey<Block> allowTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "mb_chests"));
-
-    public static void checkNearByContainers(ServerLevel level, BlockPos pos, Consumer<BlockPos> consumer) {
-        BlockState blockState = level.getBlockState(pos);
-        if (!blockState.is(allowTag)) {
-            return;
-        }
-        BlockEntity blockEntity1 = level.getBlockEntity(pos);
-        if (blockEntity1 == null) return;
-        @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
-        if (!optCap.isPresent()) return;
-        IItemHandler inv = optCap.orElseThrow(RuntimeException::new);
-        //确保清空第一个格子，再放入物品
-        Stack<ItemStack> tmpExtracted = new Stack<>();
-        while (inv.getStackInSlot(0).getCount() > 0)
-            tmpExtracted.add(inv.extractItem(0, inv.getStackInSlot(0).getCount(), false));
-        ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
-        CompoundTag tag = markItem.getOrCreateTag();
-        tag.putUUID("uuid", UUID.randomUUID());
-        markItem.setTag(tag);
-        inv.insertItem(0, markItem, false);
-        PosUtil.findAroundUpAndDown(pos, blockPos -> {
-            if (blockPos.equals(pos)) return null;
-            BlockEntity blockEntity = level.getBlockEntity(blockPos);
-            if (blockEntity != null) {
-                blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-                    for (int i = 0; i < itemHandler.getSlots(); i++) {
-                        if (ItemStack.isSameItemSameTags(itemHandler.getStackInSlot(i), markItem)) {
-                            consumer.accept(blockPos);
-                        }
-                    }
-                });
-            }
-            return null;
-        }, 1);
-
-        inv.extractItem(0, markItem.getCount(), false);
-        while (!tmpExtracted.isEmpty()) {
-            inv.insertItem(0, tmpExtracted.pop(), false);
-        }
-    }
-
     public static boolean isEmpty(CombinedInvWrapper availableInv) {
         for (int i = 0; i < availableInv.getSlots(); i++) {
             if (!availableInv.getStackInSlot(i).isEmpty()) {
@@ -233,32 +172,5 @@ public class InvUtil {
         ItemStack hand = maid.getMainHandItem();
         maid.setItemInHand(InteractionHand.MAIN_HAND, inv.getStackInSlot(slot));
         inv.setStackInSlot(slot, hand);
-    }
-
-    public static List<Pair<Target, ItemStack>> getMarksWithSameContainer(ServerLevel level, Target target) {
-        AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);
-        List<BlockPos> samePos = new ArrayList<>(List.of(target.pos));
-        InvUtil.checkNearByContainers(level, target.pos, samePos::add);
-        List<ItemFrame> frames = level.getEntities(
-                EntityTypeTest.forClass(ItemFrame.class),
-                aabb,
-                itemFrame -> {
-                    if (target.side != null && target.side != itemFrame.getDirection()) return false;
-                    BlockPos relative = itemFrame.blockPosition().relative(itemFrame.getDirection(), -1);
-                    return samePos.stream().anyMatch(t -> t.equals(relative));
-                }
-        );
-        return frames
-                .stream()
-                .map(frame -> {
-                    ItemStack t = frame.getItem();
-                    if (t.is(ItemRegistry.FILTER_LIST.get()) || t.is(ItemRegistry.NO_ACCESS.get()) || t.is(ItemRegistry.ALLOW_ACCESS.get())) {
-                        BlockPos relative = frame.blockPosition().relative(frame.getDirection(), -1);
-                        return new Pair<>(target.sameType(relative, frame.getDirection()), t);
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .toList();
     }
 }

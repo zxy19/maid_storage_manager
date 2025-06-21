@@ -97,7 +97,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
 
         //重算Inv
         MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
-        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+        StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
             MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
     }
@@ -279,7 +279,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             if (contextView.isDone()) {
                 Target target = MemoryUtil.getCrafting(maid).getTarget();
                 MemoryUtil.getCrafting(maid).addVisitedPos(target);
-                InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
+                StorageAccessUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
                     MemoryUtil.getCrafting(maid).addVisitedPos(target.sameType(pos, null));
                 });
             }
@@ -305,7 +305,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         } else {
             MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.FINISH);
         }
-        if (MoveUtil.findTargetRewrite(level, maid, target, false).isEmpty()) {
+        if (StorageAccessUtil.findTargetRewrite(level, maid, target, false).isEmpty()) {
             MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target);
         }
         MemoryUtil.getLogistics(maid).clearTarget();

@@ -2,32 +2,20 @@ package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
-import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +24,7 @@ import java.util.function.Predicate;
 
 public class MoveUtil {
     public static boolean isValidTarget(ServerLevel level, EntityMaid maid, Target target, boolean bypassNoAccess) {
-        List<Target> rewrite = findTargetRewrite(level, maid, target, bypassNoAccess);
+        List<Target> rewrite = StorageAccessUtil.findTargetRewrite(level, maid, target, bypassNoAccess);
         return rewrite.contains(target);
     }
 
@@ -83,7 +71,7 @@ public class MoveUtil {
         return PosUtil.findAroundUpAndDown(blockPos, (pos) -> {
             Target validTarget = MaidStorage.getInstance().isValidTarget(level, maid, pos);
             if (validTarget == null || !PosUtil.canTouch(level, blockPos, pos)) return null;
-            List<Target> list = findTargetRewrite(level, maid, validTarget, allowRequestOnly);
+            List<Target> list = StorageAccessUtil.findTargetRewrite(level, maid, validTarget, allowRequestOnly);
             for (Target storage : list) {
                 if (memory.isVisitedPos(storage))
                     continue;
@@ -93,79 +81,6 @@ public class MoveUtil {
             }
             return null;
         });
-    }
-
-    public static TagKey<Block> allowTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "default_storage_blocks"));
-
-    public static List<Target> findTargetRewrite(ServerLevel level, EntityMaid maid, Target target, boolean bypassNoAccess) {
-        BaubleItemHandler maidBauble = maid.getMaidBauble();
-        List<ItemStack> itemStack = new ArrayList<>();
-        for (int i = 0; i < maidBauble.getSlots(); i++) {
-            if (maidBauble.getStackInSlot(i).is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {
-                itemStack.add(maidBauble.getStackInSlot(i));
-            }
-        }
-        if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            CompoundTag tag = maid.getMainHandItem().getOrCreateTag();
-            ItemStack stack = ItemStack.of(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
-            if (!stack.isEmpty()) {
-                itemStack.add(stack);
-            }
-        }
-        List<Target> result = markedTargetOf(level, maid, target, bypassNoAccess);
-        if (result != null) {
-            if (Config.useAllStorageByDefault || level.getBlockState(target.getPos()).is(allowTag)) {
-                result.add(target);
-            }
-        } else {
-            result = new ArrayList<>();
-        }
-        if (itemStack.isEmpty()) return result;
-        for (ItemStack stack : itemStack) {
-            StorageDefineBauble.Mode mode = StorageDefineBauble.getMode(stack);
-            List<Target> storages = StorageDefineBauble.getStorages(stack);
-            List<Target> list = storages.stream().filter(storage -> storage.getPos().equals(target.getPos())).toList();
-            if (mode == StorageDefineBauble.Mode.REPLACE) {
-                result.clear();
-                result.addAll(list);
-            } else if (mode == StorageDefineBauble.Mode.APPEND) {
-                result.addAll(list);
-            } else if (mode == StorageDefineBauble.Mode.REMOVE) {
-                result.removeAll(list);
-            } else if (mode == StorageDefineBauble.Mode.REPLACE_SPEC) {
-                if (!list.isEmpty()) {
-                    result.clear();
-                    result.addAll(list);
-                }
-            }
-        }
-        return result;
-    }
-
-    private static List<Target> markedTargetOf(ServerLevel level, EntityMaid maid, Target target, boolean bypassNoAccess) {
-        List<Pair<Target, ItemStack>> marks = InvUtil.getMarksWithSameContainer(level, target);
-        List<Target> list = new ArrayList<>();
-        boolean hasAllowAccess = false;
-        boolean hasNoAccess = false;
-        for (Pair<Target, ItemStack> ti : marks) {
-            if (ti.getB().is(ItemRegistry.ALLOW_ACCESS.get())) {
-                list.add(ti.getA());
-                hasAllowAccess = true;
-            }
-        }
-        for (Pair<Target, ItemStack> ti : marks) {
-            if (ti.getB().is(ItemRegistry.NO_ACCESS.get())) {
-                hasNoAccess = true;
-                if (!bypassNoAccess)
-                    list = null;
-            }
-        }
-
-        if (hasAllowAccess && hasNoAccess) {
-            AdvancementTypes.triggerForMaid(maid, AdvancementTypes.LEFT_RIGHT_BRAINS_FIGHT);
-        }
-
-        return list;
     }
 
     public static boolean setMovementIfColliedTarget(ServerLevel level, EntityMaid maid, Target target) {

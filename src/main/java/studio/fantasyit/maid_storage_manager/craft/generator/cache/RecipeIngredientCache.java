@@ -35,7 +35,7 @@ public class RecipeIngredientCache {
                                                  List<Integer> ingredientCounts,
                                                  List<ItemStack> output,
                                                  Function<List<ItemStack>, CraftGuideData> craftGuideSupplier) {
-        if (CACHE.containsKey(id)) {
+        if (CACHE.containsKey(id) && CACHE.get(id).size() == ingredients.size()) {
             List<GeneratorGraph.IngredientNode> ingredientNodes = new ArrayList<>();
             for (int i = 0; i < ingredients.size(); i++) {
                 Ingredient ingredient = ingredients.get(i);

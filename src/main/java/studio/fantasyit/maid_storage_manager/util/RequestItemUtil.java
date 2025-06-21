@@ -195,7 +195,7 @@ public class RequestItemUtil {
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
             target.addVisitedPos(storageBlock);
-            InvUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
                 target.addVisitedPos(storageBlock.sameType(pos, null));
             });
         }

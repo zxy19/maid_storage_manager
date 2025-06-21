@@ -8,7 +8,6 @@ import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity;
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
-import com.simibubi.create.content.kinetics.fan.processing.FanProcessingTypeRegistry;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,6 +32,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
@@ -81,7 +81,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
             AirCurrent airCurrent = be.getAirCurrent();
             int dv = airCurrent.pushing ? 1 : -1;
             Direction dir = airCurrent.direction;
-            for (int i = 1; i < airCurrent.maxDistance; i++) {
+            for (int i = 1; i <= airCurrent.maxDistance; i++) {
                 BlockPos test = pos.relative(dir, i * dv);
                 if (level.getBlockState(test).is(AllBlocks.DEPOT.get())) {
                     FanProcessingType typeAt = airCurrent.getTypeAt(i);
@@ -152,7 +152,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
 
     @Override
     public void onCache(RecipeManager manager) {
-        FanProcessingTypeRegistry.SORTED_TYPES_VIEW.forEach(typeAt -> {
+        CreateIntegration.getFanProcessingTypes().forEach(typeAt -> {
             RecipeType<?> type = getRecipeType(typeAt);
             if (type == null) return;
             if (isProcessingRecipe(type)) {

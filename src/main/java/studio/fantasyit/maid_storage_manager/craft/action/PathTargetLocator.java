@@ -77,7 +77,8 @@ public class PathTargetLocator {
                 Vec3 offseted = target.pos.getCenter().relative(direction, f);
                 BlockHitResult clip = maid.level().clip(new ClipContext(eyePos, offseted, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, maid));
                 if ((clip.getType() == HitResult.Type.BLOCK && clip.getBlockPos().equals(target.pos)) || clip.getType() == HitResult.Type.MISS)
-                    return true;
+                    if (target.side == null || target.side == clip.getDirection())
+                        return true;
             }
         }
         return false;

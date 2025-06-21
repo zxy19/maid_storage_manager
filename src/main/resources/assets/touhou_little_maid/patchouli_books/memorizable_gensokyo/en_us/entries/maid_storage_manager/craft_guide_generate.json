@@ -1,0 +1,16 @@
+{
+  "sortnum": 14,
+  "name": "Craft Guide Generate",
+  "icon": "minecraft:redstone_torch",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "If you enable the crafting guide generation feature (crafting.generate) in the configuration, the maid will automatically analyze nearby work blocks and read their corresponding recipes. $(br2)The maid currently supports reading recipes for Vanilla log stripping/Water collection/Crafting table/Smithing table/Stonecutter/Furnace/Brewing stand/TACZ workbench/Create mod: Packing, Item Application, Pressing, Mixing, Crushing, Milling, Splashing, Haunting, Smoking/TLM altar recipes."
+    },
+    {
+      "type": "text",
+      "text": "If you want your maid to do some block interaction crafting, like stripping, you will need to place an allow access on ground and keep it's around with enough space."
+    }
+  ]
+}

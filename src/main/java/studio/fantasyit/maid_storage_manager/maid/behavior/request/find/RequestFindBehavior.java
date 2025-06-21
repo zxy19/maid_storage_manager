@@ -15,10 +15,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.*;
-import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.List;
 import java.util.Map;
@@ -82,7 +79,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 canPick = true;
                 if (context instanceof IStorageInteractContext) {
                     MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
-                    InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+                    StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
                         MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
                     });
                 }
@@ -154,7 +151,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             if (context.isDone()) {
                 Target target = MemoryUtil.getRequestProgress(maid).getTarget();
                 MemoryUtil.getRequestProgress(maid).addVisitedPos(target);
-                InvUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
+                StorageAccessUtil.checkNearByContainers(level, target.getPos(), (pos) -> {
                     MemoryUtil.getRequestProgress(maid).addVisitedPos(target.sameType(pos, null));
                 });
             }

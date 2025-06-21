@@ -14,9 +14,9 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.Map;
 import java.util.UUID;
@@ -83,7 +83,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         if (storageBlock != null) {
             MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock);
             DebugData.sendDebug("[REQUEST]initial vis %s", storageBlock);
-            InvUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
                 MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock.sameType(pos, null));
                 DebugData.sendDebug("[REQUEST]initial vis %s", pos.toShortString());
             });

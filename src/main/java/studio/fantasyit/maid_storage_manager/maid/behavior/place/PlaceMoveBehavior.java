@@ -25,10 +25,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
-import studio.fantasyit.maid_storage_manager.util.PosUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,7 +117,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             }
 
 
-            if (MoveUtil.findTargetRewrite(level, maid, blockPos.getKey(), false).isEmpty()) {
+            if (StorageAccessUtil.findTargetRewrite(level, maid, blockPos.getKey(), false).isEmpty()) {
                 continue;
             }
 

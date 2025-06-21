@@ -176,6 +176,7 @@ repositories {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
     }
+    maven { url "https://maven.shedaniel.me/" }
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
     maven { url = "https://maven.createmod.net" }
 }
@@ -223,6 +224,7 @@ dependencies {
     compileOnly fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:1.0.78")
     compileOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
     compileOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6632240")
+    compileOnly(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
@@ -236,6 +238,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:curios-309927:6058834")
     runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
     runtimeOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6632240")
+    runtimeOnly(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
 //    runtimeOnly fg.deobf("curse.maven:toms-storage-378609:6418133")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:libIPN-forge-1.20:4.0.2")

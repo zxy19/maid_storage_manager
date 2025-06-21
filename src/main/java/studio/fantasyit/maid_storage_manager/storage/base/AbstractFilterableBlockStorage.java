@@ -9,8 +9,8 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class AbstractFilterableBlockStorage implements IFilterable, IStorageCont
         init(level, target);
     }
     public void init(ServerLevel level, Target target) {
-        List<Pair<Target, ItemStack>> marksWithSameContainer = InvUtil.getMarksWithSameContainer(level, target);
+        List<Pair<Target, ItemStack>> marksWithSameContainer = StorageAccessUtil.getMarksWithSameContainer(level, target);
         if (marksWithSameContainer.isEmpty()) {
             filtered = new ArrayList<>();
             isBlackMode = true;

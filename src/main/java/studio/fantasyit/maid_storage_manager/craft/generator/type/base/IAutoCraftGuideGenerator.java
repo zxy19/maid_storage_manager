@@ -11,8 +11,8 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MoveUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public interface IAutoCraftGuideGenerator {
     }
 
     default boolean positionalAvailable(ServerLevel level, EntityMaid maid, BlockPos pos, MaidPathFindingBFS pathFinding) {
-        if (InvUtil
+        if (StorageAccessUtil
                 .getMarksWithSameContainer((ServerLevel) maid.level(), Target.virtual(pos, null))
                 .stream()
                 .anyMatch(t -> t.getB().is(ItemRegistry.NO_ACCESS.get())))

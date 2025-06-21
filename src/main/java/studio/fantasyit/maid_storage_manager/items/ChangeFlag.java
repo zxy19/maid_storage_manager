@@ -26,9 +26,8 @@ import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,7 @@ public class ChangeFlag extends Item {
                 }
                 storages.forEach(interactedTarget -> {
                     Target target;
-                    List<Target> possibleTargets = MoveUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide(), false);
+                    List<Target> possibleTargets = StorageAccessUtil.findTargetRewrite(level, maid, interactedTarget.withoutSide(), false);
                     if (possibleTargets.contains(interactedTarget))
                         target = interactedTarget;
                     else if (possibleTargets.size() > 0)
@@ -144,7 +143,7 @@ public class ChangeFlag extends Item {
 
     public static void clearVisForMemories(ServerLevel level, AbstractTargetMemory memory, Target storage) {
         memory.removeVisitedPos(storage);
-        InvUtil.checkNearByContainers(level, storage.getPos(), pos -> {
+        StorageAccessUtil.checkNearByContainers(level, storage.getPos(), pos -> {
             memory.removeVisitedPos(storage.sameType(pos, null));
         });
     }

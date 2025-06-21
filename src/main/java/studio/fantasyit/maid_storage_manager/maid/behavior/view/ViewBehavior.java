@@ -16,8 +16,8 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -58,7 +58,7 @@ public class ViewBehavior extends MaidCheckRateTask {
         MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getViewedInventory(maid).getTarget();
         MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
-        InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+        StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
             MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
         context = MaidStorage
@@ -99,7 +99,7 @@ public class ViewBehavior extends MaidCheckRateTask {
         MemoryUtil.setWorking(maid, false);
         if (context != null) {
             MemoryUtil.getViewedInventory(maid).addVisitedPos(target);
-            InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
                 MemoryUtil.getViewedInventory(maid).addVisitedPos(target.sameType(pos, null));
             });
             MemoryUtil.getViewedInventory(maid).clearTarget();
@@ -117,7 +117,7 @@ public class ViewBehavior extends MaidCheckRateTask {
             MemoryUtil.getResorting(maid).setNeedToResort(mismatchFilter);
             MemoryUtil.getResorting(maid).setTarget(target);
             MemoryUtil.getResorting(maid).addVisitedPos(target);
-            InvUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
                 MemoryUtil.getResorting(maid).addVisitedPos(target.sameType(pos, null));
             });
         } else if (workMeal.getValue() != null) {

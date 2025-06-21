@@ -9,8 +9,8 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -248,7 +248,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         if (viewedInventory.containsKey(storage.toStoreString()))
             return storage;
         MutableObject<Target> realTarget = new MutableObject<>(storage);
-        InvUtil.checkNearByContainers(level, storage.getPos(), pos -> {
+        StorageAccessUtil.checkNearByContainers(level, storage.getPos(), pos -> {
             Target m = storage.sameType(pos, null);
             if (viewedInventory.containsKey(m.toStoreString()))
                 realTarget.setValue(m);

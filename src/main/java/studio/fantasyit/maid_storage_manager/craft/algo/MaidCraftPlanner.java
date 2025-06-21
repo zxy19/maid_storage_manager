@@ -25,7 +25,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -76,8 +76,10 @@ public class MaidCraftPlanner {
 
     protected boolean precheck() {
         if (PortableCraftCalculatorBauble.getCalculator(maid).isEmpty()) {
-            DebugData.sendDebug("[REQUEST_CRAFT]No Calculator found");
-            return false;
+            if(!Config.craftingNoCalculator) {
+                DebugData.sendDebug("[REQUEST_CRAFT]No Calculator found");
+                return false;
+            }
         }
         if (RequestListItem.isBlackMode(maid.getMainHandItem())) {
             DebugData.sendDebug("[REQUEST_CRAFT]Black list, no crafting");
@@ -106,7 +108,7 @@ public class MaidCraftPlanner {
         MemoryUtil.getViewedInventory(maid).positionFlatten()
                 .forEach((pos, itemStacks) -> {
                     if (pos.equals(storage)) return;
-                    if (MoveUtil.findTargetRewrite(level, maid, pos, false).isEmpty()) return;
+                    if (StorageAccessUtil.findTargetRewrite(level, maid, pos, false).isEmpty()) return;
                     for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
                         boolean flag = false;
                         for (int i = 0; i < items.size(); i++) {

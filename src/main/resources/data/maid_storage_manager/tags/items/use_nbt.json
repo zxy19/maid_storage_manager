@@ -13,6 +13,14 @@
     {
       "id": "tacz:ammo",
       "required": "false"
+    },
+    {
+      "id": "tacz:attachment",
+      "required": "false"
+    },
+    {
+      "id": "tacz:modern_kinetic_gun",
+      "required": "false"
     }
   ]
 }
