@@ -4,12 +4,14 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,6 +26,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -35,12 +38,13 @@ public class StorageAccessUtil {
 
     /**
      * 获取目标集合上的标记
+     *
      * @param level
      * @param target
      * @param posSet
      * @return
      */
-    public static List<Pair<Target, ItemStack>> getMarksForPosSet(ServerLevel level, Target target, List<BlockPos> posSet) {
+    public static List<Pair<Target, ItemStack>> getMarksForPosSet(Level level, Target target, List<BlockPos> posSet) {
         AABB aabb = AABB.ofSize(target.pos.getCenter(), 5, 5, 5);
         List<ItemFrame> frames = level.getEntities(
                 EntityTypeTest.forClass(ItemFrame.class),
@@ -67,11 +71,12 @@ public class StorageAccessUtil {
 
     /**
      * 获取当前容器上标注的所有的标记
+     *
      * @param level
      * @param target
      * @return
      */
-    public static List<Pair<Target, ItemStack>> getMarksWithSameContainer(ServerLevel level, Target target) {
+    public static List<Pair<Target, ItemStack>> getMarksWithSameContainer(Level level, Target target) {
         List<BlockPos> samePos = new ArrayList<>(List.of(target.pos));
         checkNearByContainers(level, target.pos, samePos::add);
         return getMarksForPosSet(level, target, samePos);
@@ -80,9 +85,10 @@ public class StorageAccessUtil {
 
     /**
      * 获取被标记的目标
-     * @param level level
-     * @param maid maid
-     * @param target 目标位置
+     *
+     * @param level          level
+     * @param maid           maid
+     * @param target         目标位置
      * @param bypassNoAccess 忽略禁止访问
      * @return 被标记的目标
      */
@@ -118,9 +124,9 @@ public class StorageAccessUtil {
     /**
      * 重写目标列表。对于特定的目标，根据允许访问和禁止访问，将其重写为新的列表。
      *
-     * @param level level
-     * @param maid maid
-     * @param target 被重写目标
+     * @param level          level
+     * @param maid           maid
+     * @param target         被重写目标
      * @param bypassNoAccess 忽略禁止访问
      * @return 新的目标列表
      */
@@ -171,9 +177,10 @@ public class StorageAccessUtil {
 
     /**
      * 目标是否合法
-     * @param level Level
-     * @param maid maid
-     * @param target 目标
+     *
+     * @param level          Level
+     * @param maid           maid
+     * @param target         目标
      * @param bypassNoAccess 是否无视noAccess的标记
      * @return 是否合法
      */
@@ -189,7 +196,7 @@ public class StorageAccessUtil {
      * @param pos      起始位置
      * @param consumer Consumer
      */
-    public static void checkNearByContainers(ServerLevel level, BlockPos pos, Consumer<BlockPos> consumer) {
+    public static void checkNearByContainers(Level level, BlockPos pos, Consumer<BlockPos> consumer) {
         BlockState blockState = level.getBlockState(pos);
         if (!blockState.is(allowTag)) {
             return;
@@ -227,5 +234,87 @@ public class StorageAccessUtil {
         while (!tmpExtracted.isEmpty()) {
             inv.insertItem(0, tmpExtracted.pop(), false);
         }
+    }
+
+    public static class Filter {
+        public List<Pair<ItemStack, Boolean>> filtered;
+        public boolean isBlackMode;
+
+        public Filter(List<Pair<ItemStack, Boolean>> filtered, boolean isBlackMode) {
+            this.filtered = filtered;
+            this.isBlackMode = isBlackMode;
+        }
+
+        public boolean isAvailable(ItemStack itemStack) {
+            for (Pair<ItemStack, Boolean> pair : filtered) {
+                if (ItemStackUtil.isSame(pair.getA(), itemStack, pair.getB())) {
+                    return !isBlackMode;
+                }
+            }
+            return isBlackMode;
+        }
+
+        public boolean isWhitelist() {
+            return !isBlackMode;
+        }
+    }
+
+    /**
+     * 获取指定位置的所有过滤器。
+     *
+     * @param level
+     * @param target
+     * @return A：是否黑名单过滤器。B：列表。元素A：物品，B：是否匹配NBT
+     */
+    public static Filter getFilterForTarget(Level level, Target target) {
+        List<Pair<Target, ItemStack>> marksWithSameContainer = StorageAccessUtil.getMarksWithSameContainer(level, target);
+        List<Pair<ItemStack, Boolean>> filtered;
+        boolean isBlackMode;
+        if (marksWithSameContainer.isEmpty()) {
+            filtered = new ArrayList<>();
+            isBlackMode = true;
+        } else {
+            List<CompoundTag> items = marksWithSameContainer
+                    .stream()
+                    .map(Pair::getB)
+                    .filter(t -> t.is(ItemRegistry.FILTER_LIST.get()))
+                    .map(ItemStack::getOrCreateTag).toList();
+            isBlackMode = items.stream().allMatch(t -> t.getBoolean(FilterListItem.TAG_BLACK_MODE));
+            filtered = new ArrayList<>();
+            items
+                    .stream()
+                    .filter(t -> !t.getBoolean(FilterListItem.TAG_BLACK_MODE))
+                    .forEach(t -> {
+                        ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+                        for (int i = 0; i < list.size(); i++) {
+                            CompoundTag tmp = list.getCompound(i);
+                            ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                            filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
+                        }
+                    });
+            items
+                    .stream()
+                    .filter(t -> t.getBoolean(FilterListItem.TAG_BLACK_MODE))
+                    .forEach(t -> {
+                        ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+                        for (int i = 0; i < list.size(); i++) {
+                            CompoundTag tmp = list.getCompound(i);
+                            ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                            if (isBlackMode)
+                                filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
+                            else {
+                                //白名单模式下，黑名单列表的合并方式：移除撞车的
+                                for (int j = 0; j < filtered.size(); j++) {
+                                    Pair<ItemStack, Boolean> pair = filtered.get(j);
+                                    if (ItemStackUtil.isSame(pair.getA(), item, tmp.getBoolean(FilterListItem.TAG_MATCH_TAG) && pair.getB())) {
+                                        filtered.remove(pair);
+                                        j--;
+                                    }
+                                }
+                            }
+                        }
+                    });
+        }
+        return new Filter(filtered, isBlackMode);
     }
 }

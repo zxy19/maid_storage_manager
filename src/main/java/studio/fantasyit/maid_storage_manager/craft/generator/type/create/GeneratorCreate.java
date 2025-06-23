@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.fluid.FluidIngredient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -25,16 +26,15 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -116,11 +116,12 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
 
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         addRecipeForPos(level, pos, getRecipeType(), graph, t -> true);
     }
 
     protected void addRecipeForPos(Level level, BlockPos pos, R type, GeneratorGraph graph, Predicate<T> predicate) {
+        StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(type)
                 .stream()
@@ -141,6 +142,8 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                             .ifPresent(results::add);
                     transformFluidStacks(recipe.getFluidResults(), multiplier)
                             .ifPresent(results::addAll);
+                    if (results.isEmpty() || !posFilter.isAvailable(results.get(0)))
+                        return;
 
                     //计算输入原材料数量序列
                     List<Integer> counts = new ArrayList<>();

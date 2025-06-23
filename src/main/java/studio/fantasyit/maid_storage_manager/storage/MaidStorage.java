@@ -6,9 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
@@ -16,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
 import studio.fantasyit.maid_storage_manager.storage.create.stock.CreateStockTickerStorage;
+import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
 import studio.fantasyit.maid_storage_manager.storage.rs.RSStorage;
 
 import java.util.ArrayList;
@@ -35,15 +34,18 @@ public class MaidStorage {
     public void collectStorage() {
         ArrayList<IMaidStorage> list = new ArrayList<>();
 
-        if (ModList.get().isLoaded("ae2") && Config.enableAe2Sup) {
+        if (Integrations.ae2Storage()) {
             list.add(new Ae2Storage());
         }
-        if (ModList.get().isLoaded("refinedstorage") && Config.enableRsSup) {
+        if (Integrations.rsStorage()) {
             list.add(new RSStorage());
         }
-        if (ModList.get().isLoaded("create") && Integrations.createStorage()) {
+        if (Integrations.createStorage()) {
             list.add(new CreateStockTickerStorage());
             list.add(new CreateChainConveyorStorage());
+        }
+        if (Integrations.mekanismStorage()) {
+            list.add(new QIOStorage());
         }
         list.add(new ItemHandlerStorage());
 

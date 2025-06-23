@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -37,5 +38,9 @@ public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Con
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
         return level.getBlockState(pos).is(WorkBlockTags.STONE_CUTTER);
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.stone_cutter");
     }
 }

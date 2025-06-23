@@ -76,7 +76,7 @@ public class MaidCraftPlanner {
 
     protected boolean precheck() {
         if (PortableCraftCalculatorBauble.getCalculator(maid).isEmpty()) {
-            if(!Config.craftingNoCalculator) {
+            if (!Config.craftingNoCalculator) {
                 DebugData.sendDebug("[REQUEST_CRAFT]No Calculator found");
                 return false;
             }
@@ -176,6 +176,7 @@ public class MaidCraftPlanner {
                         )
                         .toList();
                 craftGuides.addAll(craftGuideData);
+                autoGraphGenerator.cache();
                 autoGraphGenerator = null;
                 initItems();
             }

@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -23,32 +24,80 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeWrapper>, RecipeType<ProcessingRecipe<RecipeWrapper>>, RecipeWrapper> {
+    ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
+            "count",
+            8,
+            Component.translatable("config.maid_storage_manager.crafting.generating.create.fan.count"),
+            ConfigTypes.ConfigTypeEnum.Integer
+    );
+    ConfigTypes.ConfigType<Boolean> BLASTING = new ConfigTypes.ConfigType<>(
+            "blasting",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.create.fan.blasting"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+    ConfigTypes.ConfigType<Boolean> SMOKING = new ConfigTypes.ConfigType<>(
+            "smoking",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.create.fan.smoking"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+    ConfigTypes.ConfigType<Boolean> HAUNTING = new ConfigTypes.ConfigType<>(
+            "haunting",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.create.fan.haunting"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+    ConfigTypes.ConfigType<Boolean> SPLASHING = new ConfigTypes.ConfigType<>(
+            "splashing",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.create.fan.splashing"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+    ConfigTypes.ConfigType<Boolean> REPLACE_FURNACE = new ConfigTypes.ConfigType<>(
+            "replace_furnace",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.create.fan.replace_furnace"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+
     @Override
     public ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "create_fan");
+        return new ResourceLocation("create", "fan");
     }
 
     @Override
     public boolean allowMultiPosition() {
         return true;
+    }
+
+    @Override
+    public boolean canCacheGraph() {
+        return false;
     }
 
     @Override
@@ -65,7 +114,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
     protected int getMinFullBucketCount(ProcessingRecipe<RecipeWrapper> recipe) {
         if (recipe.getResultItem(RegistryAccess.EMPTY).getMaxStackSize() == 1)
             return super.getMinFullBucketCount(recipe);
-        return MathUtil.lcm(super.getMinFullBucketCount(recipe), 8);
+        return MathUtil.lcm(super.getMinFullBucketCount(recipe), COUNT.getValue());
     }
 
     @Deprecated
@@ -75,7 +124,8 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        Pair<MutableBoolean, MutableBoolean> furnaceReplace = new Pair<>(new MutableBoolean(), new MutableBoolean());
         BlockEntity _be = level.getBlockEntity(pos);
         if (_be instanceof EncasedFanBlockEntity be) {
             AirCurrent airCurrent = be.getAirCurrent();
@@ -86,15 +136,17 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                 if (level.getBlockState(test).is(AllBlocks.DEPOT.get())) {
                     FanProcessingType typeAt = airCurrent.getTypeAt(i);
                     if (typeAt != null) {
-                        generateFor(typeAt, level, test, graph);
+                        generateFor(typeAt, level, test, graph, furnaceReplace);
                     }
                 } else if (level.getBlockState(test.below()).is(AllBlocks.DEPOT.get())) {
                     FanProcessingType typeAt = airCurrent.getTypeAt(i);
                     if (typeAt != null) {
-                        generateFor(typeAt, level, test.below(), graph);
+                        generateFor(typeAt, level, test.below(), graph, furnaceReplace);
                     }
                 }
             }
+            if (furnaceReplace.getA().getValue() && furnaceReplace.getB().getValue() && REPLACE_FURNACE.getValue())
+                graph.blockType(FurnaceType.TYPE);
         }
     }
 
@@ -102,27 +154,39 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
         return recipe == AllRecipeTypes.HAUNTING.getType() || recipe == AllRecipeTypes.SPLASHING.getType();
     }
 
-    private static RecipeType<?> getRecipeType(FanProcessingType typeAt) {
-        if (typeAt instanceof AllFanProcessingTypes.BlastingType)
-            return RecipeType.BLASTING;
-        else if (typeAt instanceof AllFanProcessingTypes.SmokingType)
-            return RecipeType.SMOKING;
-        else if (typeAt instanceof AllFanProcessingTypes.HauntingType)
-            return AllRecipeTypes.HAUNTING.getType();
-        else if (typeAt instanceof AllFanProcessingTypes.SplashingType)
-            return AllRecipeTypes.SPLASHING.getType();
+    private RecipeType<?> getRecipeType(FanProcessingType typeAt) {
+        if (typeAt instanceof AllFanProcessingTypes.BlastingType) {
+            if (BLASTING.getValue())
+                return RecipeType.BLASTING;
+        } else if (typeAt instanceof AllFanProcessingTypes.SmokingType) {
+            if (SMOKING.getValue())
+                return RecipeType.SMOKING;
+        } else if (typeAt instanceof AllFanProcessingTypes.HauntingType) {
+            if (HAUNTING.getValue())
+                return AllRecipeTypes.HAUNTING.getType();
+        } else if (typeAt instanceof AllFanProcessingTypes.SplashingType) {
+            if (SPLASHING.getValue())
+                return AllRecipeTypes.SPLASHING.getType();
+        }
         return null;
     }
 
-    private void generateFor(FanProcessingType typeAt, Level level, BlockPos test, GeneratorGraph graph) {
+    private void generateFor(FanProcessingType typeAt, Level level, BlockPos test, GeneratorGraph graph, Pair<MutableBoolean, MutableBoolean> furnaceReplace) {
         RecipeType<?> type = getRecipeType(typeAt);
         if (type != null) {
+            if (typeAt instanceof AllFanProcessingTypes.BlastingType)
+                furnaceReplace.getA().setTrue();
+            if (typeAt instanceof AllFanProcessingTypes.SmokingType)
+                furnaceReplace.getB().setTrue();
             if (isProcessingRecipe(type))
                 addRecipeForPos(level, test, (RecipeType<ProcessingRecipe<RecipeWrapper>>) type, graph, recipe -> true);
-            else
+            else {
+                StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, test);
                 level.getRecipeManager()
                         .getAllRecipesFor((RecipeType<Recipe<Container>>) type)
                         .forEach((recipe) -> {
+                            if (!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
+                                return;
                             graph.addRecipe(recipe, items -> {
                                 List<CraftGuideStepData> steps = new ArrayList<>();
                                 each3items(items, t -> steps.add(new CraftGuideStepData(
@@ -147,6 +211,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                                 );
                             });
                         });
+            }
         }
     }
 
@@ -176,5 +241,22 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                 manager.getAllRecipesFor((RecipeType<Recipe<Container>>) type).forEach(RecipeIngredientCache::addRecipeCache);
             }
         });
+    }
+
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.create.fan");
+    }
+
+    @Override
+    public List<ConfigTypes.ConfigType<?>> getConfigurations() {
+        return List.of(
+                COUNT,
+                SPLASHING,
+                HAUNTING,
+                SMOKING,
+                BLASTING,
+                REPLACE_FURNACE
+        );
     }
 }

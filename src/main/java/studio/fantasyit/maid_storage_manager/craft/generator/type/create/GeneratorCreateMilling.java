@@ -4,16 +4,16 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.millstone.MillingRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 public class GeneratorCreateMilling extends GeneratorCreate<MillingRecipe, RecipeType<MillingRecipe>, RecipeWrapper> {
     @Override
     public ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "create_milling");
+        return AllRecipeTypes.MILLING.getId();
     }
 
     @Override
@@ -26,5 +26,9 @@ public class GeneratorCreateMilling extends GeneratorCreate<MillingRecipe, Recip
     @Override
     RecipeType<MillingRecipe> getRecipeType() {
         return AllRecipeTypes.MILLING.getType();
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.create.milling");
     }
 }

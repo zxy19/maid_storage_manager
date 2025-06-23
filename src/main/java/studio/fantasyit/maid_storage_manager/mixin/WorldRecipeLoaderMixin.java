@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import studio.fantasyit.maid_storage_manager.craft.generator.cache.GraphCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 
 @Mixin(ReloadableServerResources.class)
@@ -18,5 +19,6 @@ public abstract class WorldRecipeLoaderMixin {
     @Inject(method = "updateRegistryTags(Lnet/minecraft/core/RegistryAccess;)V", at = @At("RETURN"))
     private void load(RegistryAccess p_206869_, CallbackInfo ci) {
         RecipeIngredientCache.preFetchCache(this.getRecipeManager());
+        GraphCache.invalidateAll();
     }
 }

@@ -225,6 +225,7 @@ dependencies {
     compileOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
     compileOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6632240")
     compileOnly(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
+    compileOnly fg.deobf("mekanism:Mekanism:${mekanism_version}")// Mekanism
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
@@ -239,6 +240,10 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
     runtimeOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6632240")
     runtimeOnly(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}")// Mekanism
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:additions")// Mekanism: Additions
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:generators")// Mekanism: Generators
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:tools")// Mekanism: Tools
 //    runtimeOnly fg.deobf("curse.maven:toms-storage-378609:6418133")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:libIPN-forge-1.20:4.0.2")

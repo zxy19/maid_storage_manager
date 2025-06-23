@@ -4,16 +4,16 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 public class GeneratorCreatePress extends GeneratorCreate<PressingRecipe, RecipeType<PressingRecipe>, RecipeWrapper> {
     @Override
     public ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "create_press");
+        return AllRecipeTypes.PRESSING.getId();
     }
 
     @Override
@@ -27,5 +27,9 @@ public class GeneratorCreatePress extends GeneratorCreate<PressingRecipe, Recipe
     @Override
     RecipeType<PressingRecipe> getRecipeType() {
         return AllRecipeTypes.PRESSING.getType();
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.create.pressing");
     }
 }

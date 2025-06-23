@@ -1,0 +1,206 @@
+package studio.fantasyit.maid_storage_manager.craft.generator.type.ae2;
+
+import appeng.api.config.Settings;
+import appeng.api.config.YesNo;
+import appeng.blockentity.misc.InscriberBlockEntity;
+import appeng.core.definitions.AEBlocks;
+import appeng.recipes.handlers.InscriberProcessType;
+import appeng.recipes.handlers.InscriberRecipe;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.level.Level;
+import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
+import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
+import studio.fantasyit.maid_storage_manager.storage.Target;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
+    @Override
+    public ResourceLocation getType() {
+        return new ResourceLocation("ae2", "inscriber");
+    }
+
+    @Override
+    public boolean isBlockValid(Level level, BlockPos pos) {
+        if (!level.getBlockState(pos).is(AEBlocks.INSCRIBER.block())) return false;
+        if (level.getBlockEntity(pos) instanceof InscriberBlockEntity inscriber) {
+            return inscriber.getConfigManager().getSetting(Settings.AUTO_EXPORT) != YesNo.YES;
+        }
+        return false;
+    }
+
+    public ResourceLocation transformRecipeId(ResourceLocation recipeId, boolean skipFirst) {
+        if (skipFirst)
+            return new ResourceLocation(recipeId.getNamespace(), recipeId.getPath() + "_skipped_first");
+        return recipeId;
+    }
+
+    @Override
+    public boolean allowMultiPosition() {
+        return true;
+    }
+
+    @Override
+    public boolean canCacheGraph() {
+        return false;
+    }
+
+    @Override
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        if (level.getBlockEntity(pos) instanceof InscriberBlockEntity inscriber) {
+            ItemStack topItem = inscriber.getInternalInventory().getStackInSlot(0);
+            level.getRecipeManager()
+                    .getAllRecipesFor(InscriberRecipe.TYPE)
+                    .forEach(recipe -> {
+                        boolean available = true;
+                        boolean hasPriority = false;
+                        boolean skipFirst;
+                        if (recipe.getTopOptional().isEmpty()) {
+                            skipFirst = true;
+                        } else if (recipe.getProcessType() == InscriberProcessType.INSCRIBE) {
+                            //压印类型，如果不分离侧面，则要求必须顶部存在物品，否则放入的物品无法取出
+                            if (inscriber.getConfigManager().getSetting(Settings.INSCRIBER_SEPARATE_SIDES) == YesNo.NO) {
+                                if (!topItem.isEmpty() && recipe.getTopOptional().test(topItem)) {
+                                    skipFirst = true;
+                                    hasPriority = true;
+                                } else {
+                                    skipFirst = false;
+                                    available = false;
+                                }
+                            } else {
+                                skipFirst = false;
+                            }
+                        } else {
+                            skipFirst = false;
+                        }
+                        if (available) {
+                            List<Ingredient> ingredients = new ArrayList<>();
+                            if (!skipFirst)
+                                ingredients.add(recipe.getTopOptional());
+                            ingredients.add(recipe.getMiddleInput());
+                            if (!recipe.getBottomOptional().isEmpty())
+                                ingredients.add(recipe.getBottomOptional());
+
+                            ItemStack result = recipe.getResultItem();
+                            if (hasPriority)
+                                graph.blockRecipe(transformRecipeId(recipe.getId(), false));
+                            graph.addRecipe(
+                                    transformRecipeId(recipe.getId(), skipFirst),
+                                    ingredients,
+                                    ingredients
+                                            .stream()
+                                            .map(Ingredient::getItems)
+                                            .map(items -> Arrays.stream(items).findFirst().map(ItemStack::getCount).orElse(0))
+                                            .toList(),
+                                    result,
+                                    (List<ItemStack> items) -> {
+                                        List<CraftGuideStepData> steps = new ArrayList<>();
+                                        int id = 0;
+                                        if (!skipFirst)
+                                            steps.add(new CraftGuideStepData(
+                                                    new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
+                                                    List.of(items.get(id++)),
+                                                    List.of(),
+                                                    CommonPlaceItemAction.TYPE,
+                                                    false,
+                                                    new CompoundTag()
+                                            ));
+                                        steps.add(new CraftGuideStepData(
+                                                new Target(ItemHandlerStorage.TYPE, pos, Direction.WEST),
+                                                List.of(items.get(id++)),
+                                                List.of(),
+                                                CommonPlaceItemAction.TYPE,
+                                                false,
+                                                new CompoundTag()
+                                        ));
+                                        if (id < items.size())
+                                            steps.add(new CraftGuideStepData(
+                                                    new Target(ItemHandlerStorage.TYPE, pos, Direction.DOWN),
+                                                    List.of(items.get(id++)),
+                                                    List.of(),
+                                                    CommonPlaceItemAction.TYPE,
+                                                    false,
+                                                    new CompoundTag()
+                                            ));
+                                        steps.add(new CraftGuideStepData(
+                                                new Target(ItemHandlerStorage.TYPE, pos),
+                                                List.of(),
+                                                List.of(result),
+                                                CommonTakeItemAction.TYPE,
+                                                false,
+                                                new CompoundTag()
+                                        ));
+                                        //如果输入物品保留第一个而且需要取回
+                                        if (!skipFirst && recipe.getProcessType() == InscriberProcessType.INSCRIBE)
+                                            steps.add(new CraftGuideStepData(
+                                                    new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
+                                                    List.of(),
+                                                    List.of(items.get(0)),
+                                                    CommonTakeItemAction.TYPE,
+                                                    false,
+                                                    new CompoundTag()
+                                            ));
+
+
+                                        return new CraftGuideData(
+                                                steps,
+                                                CommonType.TYPE
+                                        );
+                                    }
+                            );
+                        }
+                    });
+
+        }
+    }
+
+    @Override
+    public void onCache(RecipeManager manager) {
+        manager.getAllRecipesFor(InscriberRecipe.TYPE)
+                .forEach(recipe -> {
+                    if (recipe.getProcessType() == InscriberProcessType.INSCRIBE && !recipe.getTopOptional().isEmpty()) {
+                        List<Ingredient> ingredients = new ArrayList<>();
+                        ingredients.add(recipe.getMiddleInput());
+                        if (!recipe.getBottomOptional().isEmpty())
+                            ingredients.add(recipe.getBottomOptional());
+                        RecipeIngredientCache.addRecipeCache(
+                                transformRecipeId(recipe.getId(), true),
+                                ingredients
+                        );
+                    }
+                    List<Ingredient> ingredientsFull = new ArrayList<>();
+                    if (!recipe.getTopOptional().isEmpty())
+                        ingredientsFull.add(recipe.getTopOptional());
+                    ingredientsFull.add(recipe.getMiddleInput());
+                    if (!recipe.getBottomOptional().isEmpty())
+                        ingredientsFull.add(recipe.getBottomOptional());
+                    RecipeIngredientCache.addRecipeCache(
+                            transformRecipeId(recipe.getId(), false),
+                            ingredientsFull
+                    );
+                });
+    }
+
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.ae2.inscriber");
+    }
+}

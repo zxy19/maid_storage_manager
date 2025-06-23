@@ -27,7 +27,10 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableCon
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
 import studio.fantasyit.maid_storage_manager.util.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class LogisticsInputBehavior extends Behavior<EntityMaid> {
@@ -64,7 +67,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         } else if (failCount > Config.maxLogisticsTries) {
             return false;
         }
-        return context != null && !context.isDone();
+        return !context.isDone();
     }
 
     @Override
@@ -79,7 +82,9 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         target = MemoryUtil.getLogistics(maid).getTarget();
-        IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(target.getType()));
+        IMaidStorage storage = MaidStorage.getInstance().getStorage(target.getType());
+        if (storage == null)
+            return;
         contextView = storage.onStartView(level, maid, target);
         failCount = 0;
         layer = null;

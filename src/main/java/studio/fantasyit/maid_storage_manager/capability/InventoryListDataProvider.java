@@ -118,6 +118,8 @@ public class InventoryListDataProvider implements ICapabilityProvider, INBTSeria
                             }
                             List<InventoryItem> matches = dataMap.get(uuid).get(key).stream().filter(
                                     p -> ItemStackUtil.isSameInCrafting(p.itemStack, itemStack)
+                                            //目标不能是当前物品
+                                            && !ItemStackUtil.isSame(p.itemStack, existingItem.itemStack, true)
                             ).toList();
                             if (!matches.isEmpty()) {
                                 existingItem.posAndSlot.forEach(p -> matches.forEach(p1 -> p1.addCraftGuidePos(p.pos())));

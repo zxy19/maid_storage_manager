@@ -18,8 +18,13 @@ import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Charger;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Inscriber;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2ItemTransform;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.create.*;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.mekanism.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla.*;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
@@ -43,7 +48,7 @@ public class CraftManager {
     protected Map<ResourceLocation, ICraftType> typesMap;
     protected List<CraftAction> actions;
     protected Map<ResourceLocation, CraftAction> actionsMap;
-    protected Map<ResourceLocation, IAutoCraftGuideGenerator> autoCraftGuideGenerators;
+    protected List<IAutoCraftGuideGenerator> autoCraftGuideGenerators;
 
     public void collect() {
         ArrayList<ICraftType> list = new ArrayList<>();
@@ -64,10 +69,8 @@ public class CraftManager {
         for (CraftAction action : actions) {
             this.actionsMap.put(action.type(), action);
         }
-        this.autoCraftGuideGenerators = new HashMap<>();
-        for (IAutoCraftGuideGenerator autoCraftGuideGenerator : autoCraftGuideGenerators) {
-            this.autoCraftGuideGenerators.put(autoCraftGuideGenerator.getType(), autoCraftGuideGenerator);
-        }
+        this.autoCraftGuideGenerators = autoCraftGuideGenerators;
+        GeneratingConfig.load();
     }
 
     private void fireInternal(CollectCraftEvent event) {
@@ -252,6 +255,20 @@ public class CraftManager {
             event.addAutoCraftGuideGenerator(new GeneratorCreateUse());
             event.addAutoCraftGuideGenerator(new GeneratorCreateDeployer());
         }
+        if (Integrations.mekanism()) {
+            event.addAutoCraftGuideGenerator(new GeneratorMekEnrichment());
+            event.addAutoCraftGuideGenerator(new GeneratorMekInfusion());
+            event.addAutoCraftGuideGenerator(new GeneratorMekCrushing());
+            event.addAutoCraftGuideGenerator(new GeneratorMekSawing());
+            event.addAutoCraftGuideGenerator(new GeneratorMekOsmiumComp());
+            event.addAutoCraftGuideGenerator(new GeneratorMekCombine());
+            event.addAutoCraftGuideGenerator(new GeneratorMekSmelter());
+        }
+        if (Integrations.ae2()) {
+            event.addAutoCraftGuideGenerator(new GeneratorAE2Inscriber());
+            event.addAutoCraftGuideGenerator(new GeneratorAE2Charger());
+            event.addAutoCraftGuideGenerator(new GeneratorAE2ItemTransform());
+        }
     }
 
     public @Nullable ICraftType getType(ResourceLocation type) {
@@ -308,6 +325,6 @@ public class CraftManager {
     }
 
     public List<IAutoCraftGuideGenerator> getAutoCraftGuideGenerators() {
-        return this.autoCraftGuideGenerators.values().stream().toList();
+        return this.autoCraftGuideGenerators;
     }
 }

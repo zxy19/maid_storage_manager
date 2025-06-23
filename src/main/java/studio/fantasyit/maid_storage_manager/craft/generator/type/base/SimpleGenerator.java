@@ -14,14 +14,13 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> implements IAutoCraftGuideGenerator {
     protected abstract RecipeType<T> getRecipeType();
@@ -82,7 +81,8 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(getRecipeType())
                 .forEach((T recipe) -> {
@@ -90,6 +90,8 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
                         return;
                     List<Ingredient> ingredients = ingredientsTransform(inventory, level, recipe);
                     ItemStack output = outputTransform(inventory, level, recipe);
+                    if (!posFilter.isAvailable(output))
+                        return;
                     List<Integer> ingredientCounts = ingredientCountsTransform(inventory, level, recipe, ingredients);
                     graph.addRecipe(recipe.getId(), ingredients, ingredientCounts, output, (items) -> {
                         C container = getWrappedContainer(level, recipe, items);

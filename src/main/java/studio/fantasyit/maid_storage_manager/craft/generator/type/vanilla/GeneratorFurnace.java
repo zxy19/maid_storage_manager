@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
@@ -74,5 +75,9 @@ public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, Container>
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
         return level.getBlockState(pos).is(WorkBlockTags.FURNACE);
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.furnace");
     }
 }

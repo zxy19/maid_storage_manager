@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
 import com.github.tartaricacid.touhoulittlemaid.inventory.AltarRecipeInventory;
 import com.github.tartaricacid.touhoulittlemaid.tileentity.TileEntityAltar;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -46,5 +47,10 @@ public class GeneratorAltar extends SimpleGenerator<AltarRecipe, AltarRecipeInve
     @Override
     protected boolean isValid(AltarRecipe recipe) {
         return recipe.isItemCraft();
+    }
+
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.altar");
     }
 }

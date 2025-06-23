@@ -9,26 +9,33 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.mutable.MutableInt;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.cache.GraphCache;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
-import java.util.List;
+import java.util.*;
 
 public class AutoGraphGenerator {
+    private static final ResourceLocation INTERNAL_TYPE = new ResourceLocation(MaidStorageManager.MODID, "_maid_storage_internal_existed");
     private final EntityMaid maid;
     protected final GeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
     protected final List<InventoryItem> inventory;
     protected final MaidPathFindingBFS pathfindingBFS;
+    Map<ResourceLocation, List<BlockPos>> recognizedTypePositions;
+    Set<ResourceLocation> hasDoneTypes;
     private final List<BlockPos> blockPosList;
     protected int index = 0;
     protected int craftGeneratorTypeIndex = 0;
     protected double currentMinDistance = Double.MAX_VALUE;
     protected BlockPos minPos;
+    protected GraphCache.CacheRecord cacheRecord;
 
     public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList, List<CraftGuideData> hasExisted) {
         this.maid = maid;
@@ -43,7 +50,6 @@ public class AutoGraphGenerator {
                 distance
         );
         inventory = MemoryUtil.getViewedInventory(maid).flatten();
-        graph = new GeneratorGraph(inventory.stream().map(i -> i.itemStack).toList(), maid.level().registryAccess(), itemList);
         iAutoCraftGuideGenerators = CraftManager.getInstance().getAutoCraftGuideGenerators();
         blockPosList = BlockPos
                 .betweenClosedStream(new AABB(center).inflate(distance, 6, distance))
@@ -51,6 +57,19 @@ public class AutoGraphGenerator {
                 .filter(maid::isWithinRestriction)
                 .toList();
         MutableInt count = new MutableInt();
+        GraphCache.CacheRecord cache = GraphCache.getAndValidate(maid.level(), maid, iAutoCraftGuideGenerators);
+        hasDoneTypes = new HashSet<>();
+        if (cache != null) {
+            graph = cache.graph();
+            recognizedTypePositions = cache.targets();
+            hasDoneTypes.addAll(recognizedTypePositions.keySet());
+            graph.invalidAllCraftWithType(INTERNAL_TYPE);
+        } else {
+            graph = new GeneratorGraph(maid.level().registryAccess());
+            recognizedTypePositions = new HashMap<>();
+        }
+        graph.setItems(inventory.stream().map(i -> i.itemStack).toList(), itemList);
+        graph.setCurrentGeneratorType(INTERNAL_TYPE, true);
         hasExisted.forEach(craftGuideData -> {
             graph.addRecipe(
                     new ResourceLocation("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
@@ -66,13 +85,21 @@ public class AutoGraphGenerator {
         int count = 0;
         if (craftGeneratorTypeIndex >= iAutoCraftGuideGenerators.size()) return true;
         IAutoCraftGuideGenerator generator = iAutoCraftGuideGenerators.get(craftGeneratorTypeIndex);
+        if (!GeneratingConfig.isEnabled(generator.getType()) || hasDoneTypes.contains(generator.getType())) {
+            craftGeneratorTypeIndex++;
+            return false;
+        }
+        if (!recognizedTypePositions.containsKey(generator.getType()))
+            recognizedTypePositions.put(generator.getType(), new ArrayList<>());
         while (index < blockPosList.size()) {
             BlockPos next = blockPosList.get(index++);
             if (generator.isBlockValid(maid.level(), next)) {
                 if (!generator.positionalAvailable((ServerLevel) maid.level(), maid, next, pathfindingBFS))
                     continue;
                 if (generator.allowMultiPosition()) {
-                    generator.generate(inventory, maid.level(), next, graph);
+                    graph.setCurrentGeneratorType(generator);
+                    generator.generate(inventory, maid.level(), next, graph, recognizedTypePositions);
+                    recognizedTypePositions.get(generator.getType()).add(next);
                 } else {
                     //如果只允许一个位置，那么统计最近位置
                     double distance = maid.distanceToSqr(next.getCenter());
@@ -86,11 +113,14 @@ public class AutoGraphGenerator {
                 return false;
         }
         if (minPos != null) {
-            generator.generate(inventory, maid.level(), minPos, graph);
+            graph.setCurrentGeneratorType(generator);
+            generator.generate(inventory, maid.level(), minPos, graph, recognizedTypePositions);
+            recognizedTypePositions.get(generator.getType()).add(minPos);
         }
         minPos = null;
         currentMinDistance = Double.MAX_VALUE;
         index = 0;
+        hasDoneTypes.add(generator.getType());
         craftGeneratorTypeIndex++;
         return craftGeneratorTypeIndex >= iAutoCraftGuideGenerators.size();
     }
@@ -129,5 +159,9 @@ public class AutoGraphGenerator {
         } else {
             return graph.process();
         }
+    }
+
+    public void cache() {
+        GraphCache.putCache(maid, recognizedTypePositions, graph);
     }
 }

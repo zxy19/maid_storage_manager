@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
@@ -15,7 +16,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonAttackAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
@@ -24,6 +24,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -35,6 +36,7 @@ import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
@@ -49,7 +51,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
 
     @Override
     public ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "create_using");
+        return AllRecipeTypes.ITEM_APPLICATION.getId();
     }
 
     @Override
@@ -68,12 +70,16 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.ITEM_APPLICATION.getType())
                 .forEach((recipe) -> {
                     if ((Recipe<?>) recipe instanceof ManualApplicationRecipe manualApplicationRecipe) {
                         if (manualApplicationRecipe.getRequiredHeldItem().isEmpty()) {
+                            return;
+                        }
+                        if (!posFilter.isAvailable(manualApplicationRecipe.getResultItem(level.registryAccess()))) {
                             return;
                         }
                         List<Ingredient> ingredients = new ArrayList<>(manualApplicationRecipe.getIngredients());
@@ -151,5 +157,9 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                         );
                     }
                 });
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.create.application");
     }
 }

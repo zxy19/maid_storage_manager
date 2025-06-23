@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,24 +21,30 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.BrewingType;
 import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     protected record BrewingData(int index, Ingredient input, Ingredient ingredient, ItemStack output) {
     }
 
+    ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
+            "count",
+            3,
+            Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.brewing.count"),
+            ConfigTypes.ConfigTypeEnum.Integer
+    );
     List<BrewingData> brewingData = new ArrayList<>();
 
     @Override
@@ -51,11 +58,14 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         brewingData.forEach(data -> {
+            if (!posFilter.isAvailable(data.output))
+                return;
             graph.addRecipe(new ResourceLocation("brewing", String.format("recipe_%d", data.index)),
                     List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient),
-                    List.of(1, 3, 1),
+                    List.of(1, COUNT.getValue(), 1),
                     data.output,
                     (items) -> {
                         Optional<IBrewingRecipe> brewingRecipe = RecipeUtil.getBrewingRecipe(level, items.get(1), items.get(2));
@@ -94,7 +104,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     }
 
 
-    protected static void forEachRecipeIO(Consumer<BrewingData> io) {
+    protected void forEachRecipeIO(Consumer<BrewingData> io) {
         MutableInt index = new MutableInt();
         PotionBrewing.POTION_MIXES.forEach(potionMix -> {
             HashMap<Item, ItemStack> container2ItemStack = new HashMap<>();
@@ -107,7 +117,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                             index.getAndIncrement(),
                             Ingredient.of(from1),
                             potionMix.ingredient,
-                            to1.copyWithCount(3)
+                            to1.copyWithCount(COUNT.getValue())
                     ));
                     container2ItemStack.put(container1, to1);
                 }
@@ -120,7 +130,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                             index.getAndIncrement(),
                             Ingredient.of(from2),
                             potionMix.ingredient,
-                            to2.copyWithCount(3)
+                            to2.copyWithCount(COUNT.getValue())
                     ));
                     container2ItemStack.put(container2, to2);
                 }
@@ -133,7 +143,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                     ItemStack t2 = PotionBrewing.mix(ingredients[0], t1);
                     if (t2 != t1) {
                         container2ItemStack.put(containerMix.to.get(), t2);
-                        io.accept(new BrewingData(index.getAndIncrement(), Ingredient.of(t1), containerMix.ingredient, t2.copyWithCount(3)));
+                        io.accept(new BrewingData(index.getAndIncrement(), Ingredient.of(t1), containerMix.ingredient, t2.copyWithCount(COUNT.getValue())));
                     }
                 }
             }
@@ -144,8 +154,18 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                 .getRecipes()
                 .forEach(recipe -> {
                     if (recipe instanceof BrewingRecipe br) {
-                        io.accept(new BrewingData(index.getAndIncrement(), br.getInput(), br.getIngredient(), br.getOutput().copyWithCount(3)));
+                        io.accept(new BrewingData(index.getAndIncrement(), br.getInput(), br.getIngredient(), br.getOutput().copyWithCount(COUNT.getValue())));
                     }
                 });
+    }
+
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.brewing");
+    }
+
+    @Override
+    public List<ConfigTypes.ConfigType<?>> getConfigurations() {
+        return List.of(COUNT);
     }
 }

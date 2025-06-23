@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -25,8 +27,22 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.PosUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class GeneratorWatering implements IAutoCraftGuideGenerator {
+    ConfigTypes.ConfigType<Boolean> BUCKET = new ConfigTypes.ConfigType<Boolean>(
+            "bucket",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.watering.bucket"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+    ConfigTypes.ConfigType<Boolean> BOTTLE = new ConfigTypes.ConfigType<Boolean>(
+            "bottle",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.watering.bottle"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+
     @Override
     public ResourceLocation getType() {
         return new ResourceLocation(MaidStorageManager.MODID, "watering");
@@ -45,47 +61,49 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
-        graph.addRecipe(
-                new ResourceLocation(MaidStorageManager.MODID, "watering_bottle"),
-                List.of(Ingredient.of(Items.GLASS_BOTTLE)),
-                List.of(1),
-                List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
-                items -> {
-                    CraftGuideStepData step = new CraftGuideStepData(
-                            Target.virtual(pos, null),
-                            items,
-                            List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
-                            CommonUseAction.TYPE_R,
-                            false,
-                            new CompoundTag()
-                    );
-                    return new CraftGuideData(
-                            List.of(step),
-                            CommonType.TYPE
-                    );
-                }
-        );
-        graph.addRecipe(
-                new ResourceLocation(MaidStorageManager.MODID, "watering_bucket"),
-                List.of(Ingredient.of(Items.BUCKET)),
-                List.of(1),
-                List.of(new ItemStack(Items.WATER_BUCKET)),
-                items -> {
-                    CraftGuideStepData step = new CraftGuideStepData(
-                            Target.virtual(pos, null),
-                            items,
-                            List.of(new ItemStack(Items.WATER_BUCKET)),
-                            CommonUseAction.TYPE_R,
-                            false,
-                            new CompoundTag()
-                    );
-                    return new CraftGuideData(
-                            List.of(step),
-                            CommonType.TYPE
-                    );
-                }
-        );
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        if (BOTTLE.getValue())
+            graph.addRecipe(
+                    new ResourceLocation(MaidStorageManager.MODID, "watering_bottle"),
+                    List.of(Ingredient.of(Items.GLASS_BOTTLE)),
+                    List.of(1),
+                    List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
+                    items -> {
+                        CraftGuideStepData step = new CraftGuideStepData(
+                                Target.virtual(pos, null),
+                                items,
+                                List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
+                                CommonUseAction.TYPE_R,
+                                false,
+                                new CompoundTag()
+                        );
+                        return new CraftGuideData(
+                                List.of(step),
+                                CommonType.TYPE
+                        );
+                    }
+            );
+        if (BUCKET.getValue())
+            graph.addRecipe(
+                    new ResourceLocation(MaidStorageManager.MODID, "watering_bucket"),
+                    List.of(Ingredient.of(Items.BUCKET)),
+                    List.of(1),
+                    List.of(new ItemStack(Items.WATER_BUCKET)),
+                    items -> {
+                        CraftGuideStepData step = new CraftGuideStepData(
+                                Target.virtual(pos, null),
+                                items,
+                                List.of(new ItemStack(Items.WATER_BUCKET)),
+                                CommonUseAction.TYPE_R,
+                                false,
+                                new CompoundTag()
+                        );
+                        return new CraftGuideData(
+                                List.of(step),
+                                CommonType.TYPE
+                        );
+                    }
+            );
     }
 
     @Override
@@ -98,5 +116,15 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                 new ResourceLocation(MaidStorageManager.MODID, "watering_bucket"),
                 List.of(Ingredient.of(Items.BUCKET))
         );
+    }
+
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.water");
+    }
+
+    @Override
+    public List<ConfigTypes.ConfigType<?>> getConfigurations() {
+        return List.of(BUCKET, BOTTLE);
     }
 }

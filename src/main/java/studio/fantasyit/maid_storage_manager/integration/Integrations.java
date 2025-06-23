@@ -55,4 +55,24 @@ public class Integrations {
     public static boolean clothConfig() {
         return ModList.get().isLoaded("cloth_config");
     }
+
+    public static boolean mekanism() {
+        return ModList.get().isLoaded("mekanism");
+    }
+    public static boolean mekanismStorage() {
+        return ModList.get().isLoaded("mekanism") && Config.enableMekSup;
+    }
+
+
+    public static boolean ae2Storage() {
+        return ModList.get().isLoaded("ae2") && Config.enableAe2Sup;
+    }
+
+    public static boolean ae2() {
+        return ModList.get().isLoaded("ae2");
+    }
+
+    public static boolean rsStorage() {
+        return ModList.get().isLoaded("refinedstorage") && Config.enableRsSup;
+    }
 }

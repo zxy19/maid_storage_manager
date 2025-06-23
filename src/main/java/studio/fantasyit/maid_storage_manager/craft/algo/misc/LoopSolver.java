@@ -51,7 +51,7 @@ public class LoopSolver {
                 if (!used.contains(compoundToLong(toNode.id, node.id))) {
                     used.add(compoundToLong(toNode.id, node.id));
                     processLoop(path.indexOf(toNode.id));
-                    c += 10;
+                    c += 100;
                 }
             } else if (toNode instanceof AbstractBiCraftGraph.ItemNode && visited.containsKey(toNode.id)) {
                 continue;

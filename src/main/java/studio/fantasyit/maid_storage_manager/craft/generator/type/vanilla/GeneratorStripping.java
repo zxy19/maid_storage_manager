@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
@@ -36,6 +37,7 @@ import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class GeneratorStripping implements IAutoCraftGuideGenerator {
     @Override
@@ -59,7 +61,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         Arrays.stream(Ingredient.of(ItemTags.LOGS)
                         .getItems())
                 .forEach(itemStack -> {
@@ -139,5 +141,9 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                         );
                     }
                 });
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.stripping");
     }
 }

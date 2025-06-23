@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -66,5 +67,9 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
                 inputs.set(i, items.get(i));
         }
         return inputs;
+    }
+    @Override
+    public Component getConfigName() {
+        return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.crafting");
     }
 }

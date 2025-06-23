@@ -34,7 +34,7 @@ public class RecipeIngredientCache {
                                                  List<Ingredient> ingredients,
                                                  List<Integer> ingredientCounts,
                                                  List<ItemStack> output,
-                                                 Function<List<ItemStack>, CraftGuideData> craftGuideSupplier) {
+                                                 Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
         if (CACHE.containsKey(id) && CACHE.get(id).size() == ingredients.size()) {
             List<GeneratorGraph.IngredientNode> ingredientNodes = new ArrayList<>();
             for (int i = 0; i < ingredients.size(); i++) {
@@ -43,7 +43,7 @@ public class RecipeIngredientCache {
                 GeneratorGraph.IngredientNode ingredientNode = graph.addOrGetCahcedIngredientNode(ingredient, uuid);
                 ingredientNodes.add(ingredientNode);
             }
-            graph.addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier);
+            graph.addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier, type, isOneTime);
             return true;
         }
         return false;

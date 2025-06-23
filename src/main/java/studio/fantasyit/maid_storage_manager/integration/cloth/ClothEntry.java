@@ -3,13 +3,19 @@ package studio.fantasyit.maid_storage_manager.integration.cloth;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.impl.builders.AbstractFieldBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.fml.ModLoadingContext;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -27,6 +33,11 @@ public class ClothEntry {
 
     public static void createEntry(ConfigBuilder root, ConfigEntryBuilder entryBuilder) {
         ConfigCategory category = root.getOrCreateCategory(Component.translatable("config.maid_storage_manager.title"));
+        category.addEntry(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.debug"), Config.enableDebug)
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.enableDebug = t))
+                        .build()
+        );
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.integration"), ClothEntry::addEntryIntegration);
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.behavior"), ClothEntry::addEntryBehavior);
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.speed"), ClothEntry::addEntrySpeed);
@@ -39,6 +50,7 @@ public class ClothEntry {
 
     private static void subCategory(ConfigCategory category, ConfigEntryBuilder entryBuilder, Component title, BiConsumer<SubCategoryBuilder, ConfigEntryBuilder> builder) {
         SubCategoryBuilder sb = entryBuilder.startSubCategory(title);
+        sb.setExpanded(true);
         builder.accept(sb, entryBuilder);
         category.addEntry(sb.build());
     }
@@ -52,6 +64,11 @@ public class ClothEntry {
         builder.add(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.integration.rs"), Config.enableAe2Sup)
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.enableRsSup = t))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.integration.mek"), Config.enableMekSup)
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.enableMekSup = t))
                         .build()
         );
         builder.add(
@@ -262,10 +279,71 @@ public class ClothEntry {
                         .build()
         );
         builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate_partial"), Config.generatePartial)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.generate_partial.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.generatePartial = t))
+                        .build()
+        );
+        builder.add(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.no_calculator"), Config.craftingNoCalculator)
                         .setTooltip(Component.translatable("config.maid_storage_manager.crafting.no_calculator.tooltip"))
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingNoCalculator = t))
                         .build()
         );
+
+        SubCategoryBuilder b = entryBuilder.startSubCategory(Component.translatable("config.maid_storage_manager.crafting.generating"));
+        b.setExpanded(true);
+        addEntryGenerating(b, entryBuilder);
+        builder.add(b.build());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addEntryGenerating(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
+        Map<String, SubCategoryBuilder> categories = new HashMap<>();
+        CraftManager.getInstance()
+                .getAutoCraftGuideGenerators()
+                .forEach(generator -> {
+                    String namespace = generator.getType().getNamespace();
+                    if (!categories.containsKey(namespace))
+                        categories.put(namespace, entryBuilder.startSubCategory(Component.translatable("config.maid_storage_manager.crafting.generating." + namespace)).setExpanded(true));
+                    SubCategoryBuilder sub = categories.get(namespace);
+                    //启用-通用项目
+                    sub.add(
+                            entryBuilder.startBooleanToggle(
+                                            Component.translatable(
+                                                    "config.maid_storage_manager.crafting.generating.common.enable",
+                                                    generator.getConfigName()
+                                            ),
+                                            GeneratingConfig.isEnabled(generator.getType())
+                                    ).setSaveConsumer(b -> GeneratingConfig.setEnable(generator.getType(), b))
+                                    .build()
+                    );
+                    for (ConfigTypes.ConfigType<?> configType : generator.getConfigurations()) {
+                        Component translatableName = Component.translatable("config.maid_storage_manager.crafting.generating.common.sub",
+                                generator.getConfigName(),
+                                configType.getTranslatableName()
+                        );
+                        AbstractFieldBuilder<?, ?, ?> e =
+                                switch (configType.type) {
+                                    case String ->
+                                            entryBuilder.startStrField(translatableName, (String) configType.getValue())
+                                                    .setSaveConsumer(((ConfigTypes.ConfigType<String>) configType)::setValue);
+                                    case Integer ->
+                                            entryBuilder.startIntField(translatableName, (Integer) configType.getValue())
+                                                    .setSaveConsumer(((ConfigTypes.ConfigType<Integer>) configType)::setValue);
+                                    case Boolean ->
+                                            entryBuilder.startBooleanToggle(translatableName, (Boolean) configType.getValue())
+                                                    .setSaveConsumer(((ConfigTypes.ConfigType<Boolean>) configType)::setValue);
+                                    case Double ->
+                                            entryBuilder.startDoubleField(translatableName, (Double) configType.getValue())
+                                                    .setSaveConsumer(((ConfigTypes.ConfigType<Double>) configType)::setValue);
+                                    default -> null;
+                                };
+                        if (e != null) {
+                            sub.add(e.build());
+                        }
+                    }
+                });
+        builder.addAll(categories.values().stream().map(t -> t.setExpanded(true)).map(SubCategoryBuilder::build).toList());
     }
 }

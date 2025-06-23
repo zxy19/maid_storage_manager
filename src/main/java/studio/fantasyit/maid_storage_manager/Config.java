@@ -45,6 +45,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue ENABLE_RS_SUP = BUILDER
             .comment("Enable rs support(Maid may pickup things from rs)")
             .define("compat.rs_support", true);
+    private static final ForgeConfigSpec.BooleanValue ENABLE_MEK_SUP = BUILDER
+            .comment("Enable Mekanism QIO support(Maid may pickup things from rs)")
+            .define("compat.mek_support", true);
     private static final ForgeConfigSpec.BooleanValue ENABLE_JEI_INGREDIENT_REQUEST = BUILDER
             .comment("Ingredient request for JEI")
             .define("compat.jei_ingredient_request", true);
@@ -157,6 +160,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
             .comment("Generate craft guides for vanilla recipes.")
             .define("crafting.generate", false);
+    private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATING_PARTIAL = BUILDER
+            .comment("Generate recipes that has not all ingredients available.")
+            .define("crafting.generating.keep_partial", false);
     private static final ForgeConfigSpec.BooleanValue CRAFTING_NO_CALCULATOR = BUILDER
             .comment("No need portable calculator for crafting")
             .define("crafting.no_calculator", false);
@@ -167,6 +173,7 @@ public class Config {
     public static boolean enableDebug;
     public static boolean enableAe2Sup;
     public static boolean enableRsSup;
+    public static boolean enableMekSup;
     public static boolean enableJeiIngredientRequest;
     public static boolean enableEmiIngredientRequest;
     public static boolean enableCreateStorage;
@@ -200,12 +207,14 @@ public class Config {
     public static List<String> noMatchPaths;
     public static boolean craftingGenerateCraftGuide;
     public static boolean craftingNoCalculator;
+    public static boolean generatePartial;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         enableDebug = ENABLE_DEBUG.get();
         enableAe2Sup = ENABLE_AE2SUP.get();
         enableRsSup = ENABLE_RS_SUP.get();
+        enableMekSup = ENABLE_MEK_SUP.get();
         enableJeiIngredientRequest = ENABLE_JEI_INGREDIENT_REQUEST.get();
         enableEmiIngredientRequest = ENABLE_EMI_INGREDIENT_REQUEST.get();
         enableCreateStorage = ENABLE_CREATE_STORAGE.get();
@@ -239,12 +248,14 @@ public class Config {
         throwItemVector = THROW_ITEM_VECTOR.get();
         craftingGenerateCraftGuide = CRAFTING_GENERATE_CRAFT_GUIDE.get();
         craftingNoCalculator = CRAFTING_NO_CALCULATOR.get();
+        generatePartial = CRAFTING_GENERATING_PARTIAL.get();
     }
 
     public static void save() {
         ENABLE_DEBUG.set(enableDebug);
         ENABLE_AE2SUP.set(enableAe2Sup);
         ENABLE_RS_SUP.set(enableRsSup);
+        ENABLE_MEK_SUP.set(enableMekSup);
         ENABLE_JEI_INGREDIENT_REQUEST.set(enableJeiIngredientRequest);
         ENABLE_EMI_INGREDIENT_REQUEST.set(enableEmiIngredientRequest);
         ENABLE_CREATE_STORAGE.set(enableCreateStorage);
@@ -278,6 +289,7 @@ public class Config {
         THROW_ITEM_VECTOR.set(throwItemVector);
         CRAFTING_GENERATE_CRAFT_GUIDE.set(craftingGenerateCraftGuide);
         CRAFTING_NO_CALCULATOR.set(craftingNoCalculator);
+        CRAFTING_GENERATING_PARTIAL.set(generatePartial);
     }
 
     public static void saveAfter(Runnable o) {
