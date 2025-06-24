@@ -167,6 +167,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 logger.log("Item exceed += %d", crafted - context.oMaxRequire.getValue());
                 pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - context.oMaxRequire.getValue());
             }
+            if (context.remainToCraft.getValue() > 0)
+                node.maxSuccess = context.oMaxRequire.getValue() - context.remainToCraft.getValue();
             setReturnValue(Math.max(context.oMaxRequire.getValue() - context.remainToCraft.getValue(), 0));
         }
     }
@@ -183,11 +185,20 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(),
                 new MutableBoolean()
         ));
+        if (push.node.maxSuccess < push.restRequire.getValue())
+            push.restRequire.setValue(push.node.maxSuccess);
         //无原料合成，直接返回全部成功
         if (push.node.edges.isEmpty()) {
             push.totalSuccess.setValue(push.maxRequire);
             push.simulateRequire.setValue(0);
             push.restRequire.setValue(0);
+        } else {
+            for (Pair<Integer, Integer> toNodePair : push.node.edges) {
+                Node toNodeN = getNode(toNodePair.getA());
+                if (push.simulateRequire.getValue() * toNodePair.getB() > toNodeN.maxSuccess) {
+                    push.simulateRequire.setValue(toNodeN.maxSuccess / toNodePair.getB());
+                }
+            }
         }
     }
 
@@ -266,6 +277,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             }
         }
         pushHistory(context.node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
+        if (totalSuccess < context.maxRequire)
+            context.node.maxSuccess = totalSuccess;
         setReturnValue(totalSuccess);
     }
 

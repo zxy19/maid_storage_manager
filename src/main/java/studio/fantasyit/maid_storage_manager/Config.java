@@ -151,6 +151,16 @@ public class Config {
                     List.of(CraftSolver.DFS_QUEUED.name()),
                     o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
             );
+
+    private static final ForgeConfigSpec.IntValue LOOP_SOLVER_MAX_KEEP_LENGTH = BUILDER
+            .comment("Max length to calculate in loop solver.")
+            .defineInRange("crafting.loop_solver.max_length", 10, 0, 100);
+    private static final ForgeConfigSpec.BooleanValue LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY = BUILDER
+            .comment("Prevent item in loop that are fully input outside the loop.")
+            .define("crafting.loop_solver.prevent_indirect", true);
+    private static final ForgeConfigSpec.BooleanValue LOOP_SOLVER_PREVENT_NEW_BYPRODUCT = BUILDER
+            .comment("Prevent new byproduct from loop that's not available in graph.")
+            .define("crafting.loop_solver.prevent_new_byproduct", false);
     private static final ForgeConfigSpec.BooleanValue USE_NBT = BUILDER
             .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
             .define("crafting.nbt.default", false);
@@ -204,6 +214,9 @@ public class Config {
     public static boolean pickupIgnoreDelay;
     public static List<CraftSolver> craftingSolver;
     public static boolean craftingMatchTag;
+    public static int craftingLoopSolverMaxSize;
+    public static boolean craftingLoopSolverPreventIndirect;
+    public static boolean craftingLoopSolverPreventNewByProduct;
     public static List<String> noMatchPaths;
     public static boolean craftingGenerateCraftGuide;
     public static boolean craftingNoCalculator;
@@ -249,6 +262,9 @@ public class Config {
         craftingGenerateCraftGuide = CRAFTING_GENERATE_CRAFT_GUIDE.get();
         craftingNoCalculator = CRAFTING_NO_CALCULATOR.get();
         generatePartial = CRAFTING_GENERATING_PARTIAL.get();
+        craftingLoopSolverMaxSize = LOOP_SOLVER_MAX_KEEP_LENGTH.get();
+        craftingLoopSolverPreventIndirect = LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY.get();
+        craftingLoopSolverPreventNewByProduct = LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.get();
     }
 
     public static void save() {
@@ -290,6 +306,9 @@ public class Config {
         CRAFTING_GENERATE_CRAFT_GUIDE.set(craftingGenerateCraftGuide);
         CRAFTING_NO_CALCULATOR.set(craftingNoCalculator);
         CRAFTING_GENERATING_PARTIAL.set(generatePartial);
+        LOOP_SOLVER_MAX_KEEP_LENGTH.set(craftingLoopSolverMaxSize);
+        LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY.set(craftingLoopSolverPreventIndirect);
+        LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.set(craftingLoopSolverPreventNewByProduct);
     }
 
     public static void saveAfter(Runnable o) {

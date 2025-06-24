@@ -266,12 +266,12 @@ public class ClothEntry {
                         .build()
         );
         builder.add(
-                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.match_tag_description")).build()
-        );
-        builder.add(
                 entryBuilder.startStrList(Component.translatable("config.maid_storage_manager.crafting.no_matching_path"), Config.noMatchPaths)
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.noMatchPaths = t))
                         .build()
+        );
+        builder.add(
+                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.match_tag_description")).build()
         );
         builder.add(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate"), Config.craftingGenerateCraftGuide)
@@ -285,9 +285,29 @@ public class ClothEntry {
                         .build()
         );
         builder.add(
+                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.generate_description")).build()
+        );
+        builder.add(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.no_calculator"), Config.craftingNoCalculator)
                         .setTooltip(Component.translatable("config.maid_storage_manager.crafting.no_calculator.tooltip"))
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingNoCalculator = t))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startIntField(Component.translatable("config.maid_storage_manager.crafting.loop_solver_max_keep_length"), Config.craftingLoopSolverMaxSize)
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingLoopSolverMaxSize = t))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.loop_solver_prevent_indirect"), Config.craftingLoopSolverPreventIndirect)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.loop_solver_prevent_indirect.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingLoopSolverPreventIndirect = t))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.loop_solver_new_byproduct"), Config.craftingLoopSolverPreventIndirect)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.loop_solver_new_byproduct.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingLoopSolverPreventNewByProduct = t))
                         .build()
         );
 

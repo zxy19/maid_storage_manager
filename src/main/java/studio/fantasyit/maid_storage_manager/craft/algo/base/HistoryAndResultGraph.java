@@ -33,6 +33,8 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
     public Stack<HistoryAndResultGraph.HistoryRecord> history = new Stack<>();
 
     public void pushHistory(Node node, int id, int value) {
+        if (value == 0)
+            return;
         this.history.push(new HistoryAndResultGraph.HistoryRecord(historyId.addAndGet(1), node, id, value));
         switch (id) {
             case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {

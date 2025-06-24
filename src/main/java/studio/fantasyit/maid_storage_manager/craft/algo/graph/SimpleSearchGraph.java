@@ -43,7 +43,6 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
             return alignedRequire;
         }
-
         // 本步骤的消耗。正常情况下，消耗所有的。
         int stepCost = node.getCurrentRemain();
 
@@ -65,7 +64,6 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 stepCost = 0;
         }
         node.minStepRequire = maxRequire;
-
 
         MutableInt remainToCraft = new MutableInt(maxRequire - stepCost);
         logger.log("Item %s use -= %d", node.itemStack, stepCost);
@@ -107,11 +105,15 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             logger.log("Item exceed += %d", crafted - oMaxRequire);
             pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - oMaxRequire);
         }
+        if (remainToCraft.getValue() > 0)
+            node.maxSuccess = oMaxRequire - remainToCraft.getValue();
         return Math.max(oMaxRequire - remainToCraft.getValue(), 0);
     }
 
     public int dfsCalcCraftNode(CraftNode node, int maxRequire) {
         int restRequire = maxRequire;
+        if (node.maxSuccess < restRequire)
+            restRequire = node.maxSuccess;
         int simulateRequire = maxRequire;
         int totalSuccess = 0;
         //无原料合成，直接返回全部成功
@@ -119,6 +121,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             totalSuccess = maxRequire;
             simulateRequire = 0;
             restRequire = 0;
+        } else {
+            for (Pair<Integer, Integer> toNodePair : node.edges) {
+                Node toNode = getNode(toNodePair.getA());
+                if (simulateRequire * toNodePair.getB() > toNode.maxSuccess) {
+                    simulateRequire = toNode.maxSuccess / toNodePair.getB();
+                }
+            }
         }
         //对合成进行模拟。假设每次合成simulateRequire个
         while (simulateRequire > 0) {
@@ -168,6 +177,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             }
         }
         pushHistory(node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
+        if (totalSuccess < maxRequire)
+            node.maxSuccess = totalSuccess;
         return totalSuccess;
     }
 

@@ -1,6 +1,8 @@
 package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
@@ -8,14 +10,16 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.Map;
 
 public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     public static class Node {
         public int id;
         public boolean related;
+        public int maxSuccess;
         public final List<Pair<Integer, Integer>> edges;
         public final List<Pair<Integer, Integer>> revEdges;
 
@@ -24,17 +28,12 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             this.related = related;
             this.edges = new ArrayList<>();
             this.revEdges = new ArrayList<>();
+            maxSuccess = Integer.MAX_VALUE;
         }
 
         public void addEdge(Node to, int weight) {
             this.edges.add(new Pair<>(to.id, weight));
             to.revEdges.add(new Pair<>(this.id, weight));
-        }
-
-        public void forEachEdge(BiConsumer<Integer, Integer> visitor) {
-            for (Pair<Integer, Integer> edge : this.edges) {
-                visitor.accept(edge.getA(), edge.getB());
-            }
         }
     }
 
@@ -95,6 +94,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     }
 
     List<Node> nodes;
+    Map<ResourceLocation, List<ItemNode>> itemNodeMap;
 
     public Node getNode(int a) {
         return nodes.get(a);
@@ -102,6 +102,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     public AbstractBiCraftGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
         this.nodes = new ArrayList<>();
+        this.itemNodeMap = new HashMap<>();
         for (Pair<ItemStack, Integer> item : items) {
             ItemNode itemNode = getItemNodeOrCreate(item.getA());
             itemNode.addCount(item.getB());
@@ -119,19 +120,24 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     }
 
     public ItemNode getItemNode(ItemStack itemStack) {
-        for (Node node : nodes) {
-            if (node instanceof ItemNode in) {
-                if (ItemStackUtil.isSameInCrafting(itemStack, in.itemStack)) {
-                    return in;
-                }
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
+        if (itemId == null) return null;
+        if (!itemNodeMap.containsKey(itemId)) return null;
+        for (ItemNode in : itemNodeMap.get(itemId)) {
+            if (ItemStackUtil.isSameInCrafting(itemStack, in.itemStack)) {
+                return in;
             }
         }
         return null;
     }
 
     public ItemNode addItemNode(ItemStack itemStack) {
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
         ItemNode itemNode = new ItemNode(nodes.size(), false, itemStack);
         nodes.add(itemNode);
+        if (!itemNodeMap.containsKey(itemId))
+            itemNodeMap.put(itemId, new ArrayList<>());
+        itemNodeMap.get(itemId).add(itemNode);
         return itemNode;
     }
 
@@ -194,6 +200,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     public void restoreCurrent() {
         for (Node node : nodes) {
             node.related = false;
+            node.maxSuccess = Integer.MAX_VALUE;
             if (node instanceof ItemNode itemNode) {
                 itemNode.minStepRequire = Integer.MAX_VALUE;
                 itemNode.required = 0;
@@ -234,6 +241,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         }
         return init.init(items, craftGuides);
     }
+
     public int getNodeCount() {
         return nodes.size();
     }
