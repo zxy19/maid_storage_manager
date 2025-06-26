@@ -16,6 +16,7 @@ import net.minecraftforge.common.brewing.BrewingRecipe;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
 import net.minecraftforge.common.brewing.IBrewingRecipe;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -48,7 +49,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     List<BrewingData> brewingData = new ArrayList<>();
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return BrewingType.TYPE;
     }
 

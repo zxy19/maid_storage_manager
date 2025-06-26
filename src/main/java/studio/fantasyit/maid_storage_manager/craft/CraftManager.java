@@ -245,10 +245,10 @@ public class CraftManager {
                     1
             );
         }
-        if (Integrations.tacz()) {
+        if (Integrations.taczRecipe()) {
             TaczRecipe.addType(event);
         }
-        if (Integrations.createGenerator()) {
+        if (Integrations.create()) {
             event.addAutoCraftGuideGenerator(new GeneratorCreatePress());
             event.addAutoCraftGuideGenerator(new GeneratorCreateCompact());
             event.addAutoCraftGuideGenerator(new GeneratorCreateMix());

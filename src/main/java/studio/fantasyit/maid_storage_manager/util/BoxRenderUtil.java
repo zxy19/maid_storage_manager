@@ -24,10 +24,26 @@ import java.util.Map;
 public class BoxRenderUtil {
     public static boolean useSeeThroughBox = false;
 
+    /**
+     * 渲染存储对象
+     * @param storage 存储对象
+     * @param colors 颜色
+     * @param event 渲染事件
+     * @param key 名字
+     * @param floating 浮动位置列表
+     */
     public static void renderStorage(Target storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating) {
         renderStorage(storage, colors, event, key, floating, 0xffffff);
     }
-
+    /**
+     * 渲染存储对象
+     * @param storage 存储对象
+     * @param colors 颜色
+     * @param event 渲染事件
+     * @param key 名字
+     * @param floating 浮动位置列表
+     * @param textColor 文本颜色
+     */
     public static void renderStorage(Target storage, float[] colors, RenderLevelStageEvent event, String key, Map<BlockPos, Integer> floating, int textColor) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
@@ -79,10 +95,25 @@ public class BoxRenderUtil {
         }
     }
 
+    /**
+     * 渲染目标实体
+     * @param entity 目标实体
+     * @param colors 颜色
+     * @param event 渲染事件
+     * @param key 名字
+     */
     public static void renderEntity(Entity entity, float[] colors, RenderLevelStageEvent event, String key) {
         renderEntity(entity, colors, event, key, 0xffffff);
     }
 
+    /**
+     * 渲染目标实体
+     * @param entity 目标实体
+     * @param colors 颜色
+     * @param event 渲染事件
+     * @param key 名字
+     * @param textColor 文字颜色
+     */
     public static void renderEntity(Entity entity, float[] colors, RenderLevelStageEvent event, String key, int textColor) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {

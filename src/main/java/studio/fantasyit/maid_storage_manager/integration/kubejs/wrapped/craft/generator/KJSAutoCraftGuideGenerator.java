@@ -13,13 +13,16 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.CacheOperator;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.GeneratorConfigOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.GraphOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.util.FunctionUtil;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.util.TypeCastingUtil;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.base.AbstractObjectWrapped;
 
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ public class KJSAutoCraftGuideGenerator extends AbstractObjectWrapped implements
     }
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return get("type", this::resourceLocationParser).orElseThrow();
     }
 
@@ -79,10 +82,7 @@ public class KJSAutoCraftGuideGenerator extends AbstractObjectWrapped implements
             if (t instanceof NativeArray array) {
                 List<ConfigTypes.ConfigType<?>> result = new ArrayList<>();
                 for (int i = 0; i < array.getLength(); i++) {
-                    if (array.get(i) instanceof ConfigTypes.ConfigType<?> config)
-                        result.add(config);
-                    else
-                        throw new RuntimeException("ConfigType is not ConfigTypes.ConfigType");
+                    result.add(TypeCastingUtil.castOrThrow(array.get(i), ConfigTypes.ConfigType.class));
                 }
                 return result;
             } else if (t instanceof List<?> list) {
@@ -93,7 +93,7 @@ public class KJSAutoCraftGuideGenerator extends AbstractObjectWrapped implements
                 }
             }
             return null;
-        }).orElseGet(IAutoCraftGuideGenerator.super::getConfigurations);
+        }, GeneratorConfigOperator.INSTANCE).orElseGet(IAutoCraftGuideGenerator.super::getConfigurations);
     }
 
     @Override
@@ -133,7 +133,7 @@ public class KJSAutoCraftGuideGenerator extends AbstractObjectWrapped implements
 
     @ApiStatus.Internal
     @Override
-    public List<ConfigTypes.ConfigType<?>> configurations() {
-        return getConfigurations();
+    public ConfigTypes.ConfigType<?>[] configurations(GeneratorConfigOperator operator) {
+        return null;
     }
 }

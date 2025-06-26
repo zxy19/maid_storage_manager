@@ -14,6 +14,13 @@ public class CompoundTagUtil {
         return tag;
     }
 
+    /**
+     * 删除tag中的key
+     * @param tag 待删除的tag
+     * @param key 待删除的key
+     * @param depth 当前深度
+     * @return 删除后的tag
+     */
     public static CompoundTag removeKeyFrom(CompoundTag tag, String[] key, int depth) {
         if (depth >= key.length) return tag;
         String k = key[depth];
@@ -38,6 +45,13 @@ public class CompoundTagUtil {
         return tag;
     }
 
+    /**
+     * 删除tag中的key
+     * @param tag 待删除的tag
+     * @param key 待删除的key
+     * @param depth 当前深度
+     * @return 删除后的tag
+     */
     public static ListTag removeKeyFrom(ListTag tag, String[] key, int depth) {
         if (depth >= key.length) return tag;
         String k = key[depth];

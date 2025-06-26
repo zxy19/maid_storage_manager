@@ -3,6 +3,9 @@ package studio.fantasyit.maid_storage_manager.util;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import studio.fantasyit.maid_storage_manager.Config;
 
+/**
+ * 女仆行为“呼吸”控制对象。用于降低女仆的工作效率
+ */
 public class BehaviorBreath {
     int breath = 5;
 

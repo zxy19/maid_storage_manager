@@ -206,6 +206,8 @@ public class StorageAccessUtil {
         @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
         if (!optCap.isPresent()) return;
         IItemHandler inv = optCap.orElseThrow(RuntimeException::new);
+        if (inv.getStackInSlot(0).getCount() > 1e9)
+            return;
         //确保清空第一个格子，再放入物品
         Queue<ItemStack> tmpExtracted = new LinkedList<>();
         while (inv.getStackInSlot(0).getCount() > 0 && !inv.extractItem(0, inv.getStackInSlot(0).getCount(), true).isEmpty())
@@ -235,7 +237,7 @@ public class StorageAccessUtil {
         if (itemStack.isEmpty() || !ItemStackUtil.isSame(itemStack, markItem, true)) {
             tmpExtracted.add(itemStack);
             InvUtil.tryExtract(inv, markItem, true);
-        }else{
+        } else {
             inv.extractItem(0, markItem.getCount(), false);
         }
         while (!tmpExtracted.isEmpty()) {

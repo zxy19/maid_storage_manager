@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
@@ -28,7 +29,7 @@ import java.util.Map;
 
 public class GeneratorTACZ implements IAutoCraftGuideGenerator {
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return TaczType.TYPE;
     }
 

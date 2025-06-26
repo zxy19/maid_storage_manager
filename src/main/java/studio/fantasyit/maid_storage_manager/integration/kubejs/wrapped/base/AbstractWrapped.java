@@ -29,7 +29,7 @@ public class AbstractWrapped {
         Component casted = cast(t, Component.class);
         if (casted != null)
             return casted;
-        return Component.literal(context.toString(t));
+        return Component.translatable(context.toString(t));
     }
 
     protected Boolean booleanParser(Object t) {

@@ -6,6 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.CraftGuideOperator;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.GeneratorConfigOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.TargetOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.item.KJSItemPair;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 public class KJSMSMUtilities {
     public TargetOperator TARGETS = TargetOperator.INSTANCE;
     public CraftGuideOperator CRAFT_GUIDES = CraftGuideOperator.INSTANCE;
+    public GeneratorConfigOperator GENERATOR_CONFIGS = GeneratorConfigOperator.INSTANCE;
 
     public ViewedInventoryMemory getViewed(EntityMaid maid) {
         return MemoryUtil.getViewedInventory(maid);

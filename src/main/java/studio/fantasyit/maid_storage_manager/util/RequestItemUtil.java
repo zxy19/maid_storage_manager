@@ -162,6 +162,14 @@ public class RequestItemUtil {
         client.chat(llmMessages, config, callback);
     }
 
+    /**
+     * 创建虚拟的请求列表（显示为女仆事务且玩家不可使用，结束后自动销毁）
+     * @param list 物品列表
+     * @param target 目标
+     * @param targetEntity 目标实体
+     * @param virtual_source 来源。用于回调事件。还在设计中。
+     * @return 虚拟物品
+     */
     public static ItemStack makeVirtualItemStack(List<ItemStack> list, @Nullable Target target, @Nullable Entity targetEntity, String virtual_source) {
         ItemStack itemStack = ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
         CompoundTag tag = itemStack.getOrCreateTag();
@@ -191,6 +199,12 @@ public class RequestItemUtil {
         return itemStack;
     }
 
+    /**
+     * 设置当前请求列表的目标为已访问的
+     * @param level
+     * @param maid
+     * @param target
+     */
     public static void markVisForCurrentRequestList(ServerLevel level, EntityMaid maid, AbstractTargetMemory target) {
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {

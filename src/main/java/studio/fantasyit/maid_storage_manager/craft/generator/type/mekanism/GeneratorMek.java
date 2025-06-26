@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -36,7 +37,7 @@ public abstract class GeneratorMek<T extends MekanismRecipe, C extends IInputRec
     protected abstract MekanismRecipeType<T, C> getRecipeType();
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return getRecipeType().getRegistryName();
     }
 

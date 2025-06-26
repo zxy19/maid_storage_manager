@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -34,7 +35,7 @@ import java.util.Map;
 
 public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return new ResourceLocation("ae2", "inscriber");
     }
 

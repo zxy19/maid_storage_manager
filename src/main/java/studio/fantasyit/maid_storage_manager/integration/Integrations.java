@@ -30,8 +30,14 @@ public class Integrations {
                 && Config.enableCreateStorage;
     }
 
-    public static boolean createGenerator() {
+    public static boolean create() {
         return ModList.get().isLoaded("create");
+    }
+
+    public static boolean create6() {
+        return ModList.get().isLoaded("create")
+                && ModList.get().getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("create")
+                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0);
     }
 
     public static boolean createStockManager() {
@@ -48,8 +54,12 @@ public class Integrations {
                 && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0);
     }
 
-    public static boolean tacz() {
+    public static boolean taczRecipe() {
         return ModList.get().isLoaded("tacz") && Config.enableTacz;
+    }
+
+    public static boolean tacz() {
+        return ModList.get().isLoaded("tacz");
     }
 
     public static boolean clothConfig() {
@@ -59,6 +69,7 @@ public class Integrations {
     public static boolean mekanism() {
         return ModList.get().isLoaded("mekanism");
     }
+
     public static boolean mekanismStorage() {
         return ModList.get().isLoaded("mekanism") && Config.enableMekSup;
     }
@@ -72,10 +83,15 @@ public class Integrations {
         return ModList.get().isLoaded("ae2");
     }
 
+    public static boolean rs() {
+        return ModList.get().isLoaded("refinedstorage");
+    }
+
     public static boolean rsStorage() {
         return ModList.get().isLoaded("refinedstorage") && Config.enableRsSup;
     }
-    public static boolean kjs(){
+
+    public static boolean kjs() {
         return ModList.get().isLoaded("kubejs");
     }
 }

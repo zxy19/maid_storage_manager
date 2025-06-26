@@ -13,6 +13,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -44,7 +45,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     );
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return new ResourceLocation(MaidStorageManager.MODID, "watering");
     }
 

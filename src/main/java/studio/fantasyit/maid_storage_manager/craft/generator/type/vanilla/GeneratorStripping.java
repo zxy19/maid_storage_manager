@@ -15,6 +15,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -41,7 +42,7 @@ import java.util.Map;
 
 public class GeneratorStripping implements IAutoCraftGuideGenerator {
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return new ResourceLocation(MaidStorageManager.MODID, "stripping");
     }
 

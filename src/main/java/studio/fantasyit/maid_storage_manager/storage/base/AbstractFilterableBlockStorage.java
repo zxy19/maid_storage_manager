@@ -6,6 +6,9 @@ import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
+/**
+ * 可过滤方块存储
+ */
 public class AbstractFilterableBlockStorage implements IFilterable, IStorageContext {
 
     private StorageAccessUtil.Filter filter;

@@ -17,6 +17,9 @@ import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import java.util.Optional;
 
 public class Conditions {
+    /**
+     * 女仆是否手持请求列表或者正在处理请求列表
+     */
     public static boolean takingRequestList(EntityMaid maid) {
         if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting() && MemoryUtil.getCrafting(maid).hasCurrent())
             return true;
@@ -27,38 +30,61 @@ public class Conditions {
         return true;
     }
 
+    /**
+     * 女仆是否背包未满
+     */
     public static boolean inventoryNotFull(EntityMaid maid) {
         return InvUtil.hasAnyFree(maid.getAvailableInv(false));
     }
 
+    /**
+     * 女仆是否背包已满
+     */
     public static boolean inventoryFull(EntityMaid maid) {
         return !inventoryNotFull(maid);
     }
 
+    /**
+     * 当前请求列表是否有绑定存储方块
+     */
     public static boolean hasStorageBlock(EntityMaid maid) {
         return RequestListItem.getStorageBlock(maid.getMainHandItem()) != null;
     }
 
+    /**
+     * 请求列表是否未完成
+     */
     public static boolean listNotDone(EntityMaid maid) {
         if (RequestListItem.isBlackMode(maid.getMainHandItem()))
             return !RequestListItem.isBlackModeDone(maid.getMainHandItem());
         return RequestListItem.getItemStacksNotDone(maid.getMainHandItem()).size() != 0;
     }
 
+    /**
+     * 请求列表是否完成
+     */
     public static boolean listAllDone(EntityMaid maid) {
         return !listNotDone(maid);
     }
 
+    /**
+     * 请求列表是否存储完毕
+     */
     public static boolean listAllStored(EntityMaid maid) {
         if (RequestListItem.isBlackMode(maid.getMainHandItem()))
             return false;
         return RequestListItem.isAllStored(maid.getMainHandItem());
     }
 
+    /**
+     * 是否已经到达目标，如果不合法则重置目标
+     */
     public static boolean hasReachedValidTargetOrReset(EntityMaid maid) {
         return hasReachedValidTargetOrReset(maid, 2);
     }
-
+    /**
+     * 是否已经到达目标，如果不合法则重置目标
+     */
     public static boolean hasReachedValidTargetOrReset(EntityMaid maid, double pathCloseEnoughThreshold) {
         Brain<EntityMaid> brain = maid.getBrain();
         return brain.getMemory(InitEntities.TARGET_POS.get()).map(targetPos -> {
@@ -74,10 +100,16 @@ public class Conditions {
         }).orElse(false);
     }
 
+    /**
+     * 是否正在闲置等待（一般是因为未绑定的请求列表结束）
+     */
     public static boolean isWaitingForReturn(EntityMaid maid) {
         return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.RETURN_TO_SCHEDULE_AT.get());
     }
 
+    /**
+     * 是否没有需要放置的物品
+     */
     public static boolean isNothingToPlace(EntityMaid maid) {
         return InvUtil.forSlotMatches(
                 maid.getAvailableInv(false),
@@ -91,6 +123,9 @@ public class Conditions {
         ).stream().allMatch(stack -> stack.isEmpty());
     }
 
+    /**
+     * 是否应该停止放置物品并前往拾取物品
+     */
     public static boolean shouldStopAndPickUpItems(EntityMaid maid) {
         if (MemoryUtil.isWorking(maid))
             return false;
@@ -101,10 +136,16 @@ public class Conditions {
         return false;
     }
 
+    /**
+     * 请求存放次数到达最大次数
+     */
     public static boolean triesReach(EntityMaid maid) {
         return MemoryUtil.getRequestProgress(maid).getTries() > Config.maxStoreTries;
     }
 
+    /**
+     * 是否应该使用优先（记忆匹配的）目标
+     */
     public static boolean usePriorityTarget(EntityMaid maid) {
         return switch (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).memoryAssistant()) {
             case MEMORY_ONLY, MEMORY_FIRST -> true;
@@ -112,6 +153,9 @@ public class Conditions {
         };
     }
 
+    /**
+     * 是否应该使用扫描（非记忆匹配的）目标
+     */
     public static boolean useScanTarget(EntityMaid maid) {
         return switch (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).memoryAssistant()) {
             case MEMORY_ONLY -> false;
@@ -119,10 +163,16 @@ public class Conditions {
         };
     }
 
+    /**
+     * 存放是否不分类
+     */
     public static boolean noSortPlacement(EntityMaid maid) {
         return maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).noSortPlacement();
     }
 
+    /**
+     * 是否应该先进行存储检查
+     */
     public static boolean shouldCheckStock(EntityMaid maid) {
         ItemStack mainHandItem = maid.getMainHandItem();
         if (RequestListItem.getStorageBlock(mainHandItem) == null) return false;

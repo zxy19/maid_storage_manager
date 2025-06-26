@@ -10,6 +10,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPickupItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonThrowItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -28,7 +29,7 @@ import java.util.Map;
 
 public class GeneratorAE2ItemTransform implements IAutoCraftGuideGenerator {
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return new ResourceLocation("ae2", "item_transform");
     }
 

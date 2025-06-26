@@ -9,10 +9,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.NotNull;
 
 public class GeneratorCreatePress extends GeneratorCreate<PressingRecipe, RecipeType<PressingRecipe>, RecipeWrapper> {
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.PRESSING.getId();
     }
 

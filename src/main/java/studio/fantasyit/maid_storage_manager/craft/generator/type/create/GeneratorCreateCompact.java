@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
@@ -26,7 +27,7 @@ import java.util.Map;
 
 public class GeneratorCreateCompact extends GeneratorCreate<CompactingRecipe, RecipeType<CompactingRecipe>, Container> {
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.COMPACTING.getId();
     }
 

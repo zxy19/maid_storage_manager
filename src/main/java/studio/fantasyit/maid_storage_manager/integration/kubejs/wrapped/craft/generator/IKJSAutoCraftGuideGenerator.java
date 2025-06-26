@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.CacheOperator;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.GeneratorConfigOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.GraphOperator;
 
 import java.util.List;
@@ -35,6 +36,6 @@ public interface IKJSAutoCraftGuideGenerator {
 
         boolean positionalAvailable(Supplier<Boolean> parent, ServerLevel level, EntityMaid maid, BlockPos pos, MaidPathFindingBFS pathFinding);
 
-        List<ConfigTypes.ConfigType<?>> configurations();
+        ConfigTypes.ConfigType<?>[] configurations(GeneratorConfigOperator operator);
     }
 }

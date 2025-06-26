@@ -1,10 +1,14 @@
 package studio.fantasyit.maid_storage_manager.integration.kubejs.binding;
 
 import net.minecraft.resources.ResourceLocation;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.common.*;
+import studio.fantasyit.maid_storage_manager.craft.context.special.AeCraftingAction;
+import studio.fantasyit.maid_storage_manager.craft.context.special.RsCraftingAction;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
@@ -13,46 +17,65 @@ import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
 import studio.fantasyit.maid_storage_manager.storage.rs.RSStorage;
 
 public class KJSMSMBinding {
-    public ResourceLocation CRAFT_TYPE_COMMON = CommonType.TYPE;
-    public ResourceLocation CRAFT_TYPE_AE2 = AE2Type.TYPE;
-    public ResourceLocation CRAFT_TYPE_ALTAR = AltarType.TYPE;
-    public ResourceLocation CRAFT_TYPE_ANVIL = AnvilType.TYPE;
-    public ResourceLocation CRAFT_TYPE_BREWING = BrewingType.TYPE;
-    public ResourceLocation CRAFT_TYPE_CRAFTING = CraftingType.TYPE;
-    public ResourceLocation CRAFT_TYPE_FURNACE = FurnaceType.TYPE;
-    public ResourceLocation CRAFT_TYPE_RS = RSType.TYPE;
-    public ResourceLocation CRAFT_TYPE_SMITHING = SmithingType.TYPE;
-    public ResourceLocation CRAFT_TYPE_STONECUTTING = StoneCuttingType.TYPE;
-    public ResourceLocation CRAFT_TYPE_TACZ = TaczType.TYPE;
+    public final ResourceLocation UNAVAILABLE = new ResourceLocation(MaidStorageManager.MODID, "unavailable");
 
-    public ResourceLocation CRAFT_ACTION_COMMON_TAKE_ITEM = CommonTakeItemAction.TYPE;
-    public ResourceLocation CRAFT_ACTION_COMMON_ATTACK = CommonAttackAction.TYPE;
-    public ResourceLocation CRAFT_ACTION_COMMON_PLACE_ITEM = CommonPlaceItemAction.TYPE;
-    public ResourceLocation CRAFT_ACTION_COMMON_USE = CommonUseAction.TYPE;
-    public ResourceLocation CRAFT_ACTION_COMMON_THROW = CommonTakeItemAction.TYPE;
-    public ResourceLocation CRAFT_ACTION_COMMON_PICKUP = CommonPickupItemAction.TYPE;
-    public ResourceLocation CRAFT_ACTION_AE2 = AE2Type.TYPE;
-    public ResourceLocation CRAFT_ACTION_ALTAR = AltarType.TYPE;
-    public ResourceLocation CRAFT_ACTION_ANVIL = AnvilType.TYPE;
-    public ResourceLocation CRAFT_ACTION_BREWING = BrewingType.TYPE;
-    public ResourceLocation CRAFT_ACTION_CRAFTING = CraftingType.TYPE;
-    public ResourceLocation CRAFT_ACTION_FURNACE = FurnaceType.TYPE;
-    public ResourceLocation CRAFT_ACTION_RS = RSType.TYPE;
-    public ResourceLocation CRAFT_ACTION_SMITHING = SmithingType.TYPE;
-    public ResourceLocation CRAFT_ACTION_STONECUTTING = StoneCuttingType.TYPE;
-    public ResourceLocation CRAFT_ACTION_TACZ = TaczType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_COMMON = CommonType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_AE2;
+    public final ResourceLocation CRAFT_TYPE_ALTAR = AltarType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_ANVIL = AnvilType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_BREWING = BrewingType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_CRAFTING = CraftingType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_FURNACE = FurnaceType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_RS;
+    public final ResourceLocation CRAFT_TYPE_SMITHING = SmithingType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_STONECUTTING = StoneCuttingType.TYPE;
+    public final ResourceLocation CRAFT_TYPE_TACZ;
 
-    public ResourceLocation STORAGE_ITEM_HANDLER = ItemHandlerStorage.TYPE;
-    public ResourceLocation STORAGE_AE2 = Ae2Storage.TYPE;
-    public ResourceLocation STORAGE_RS = RSStorage.TYPE;
-    public ResourceLocation STORAGE_CREATE_STOCK_TICKER = CreateStockTickerStorage.TYPE;
-    public ResourceLocation STORAGE_CREATE_CHAIN_CONVEYOR = CreateChainConveyorStorage.TYPE;
-    public ResourceLocation STORAGE_QIO = QIOStorage.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_TAKE_ITEM = CommonTakeItemAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_ATTACK = CommonAttackAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_PLACE_ITEM = CommonPlaceItemAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_USE = CommonUseAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_THROW = CommonTakeItemAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_PICKUP = CommonPickupItemAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_AE2;
+    public final ResourceLocation CRAFT_ACTION_ALTAR = AltarType.TYPE;
+    public final ResourceLocation CRAFT_ACTION_ANVIL = AnvilType.TYPE;
+    public final ResourceLocation CRAFT_ACTION_BREWING = BrewingType.TYPE;
+    public final ResourceLocation CRAFT_ACTION_CRAFTING = CraftingType.TYPE;
+    public final ResourceLocation CRAFT_ACTION_FURNACE = FurnaceType.TYPE;
+    public final ResourceLocation CRAFT_ACTION_RS;
+    public final ResourceLocation CRAFT_ACTION_SMITHING = SmithingType.TYPE;
+    public final ResourceLocation CRAFT_ACTION_STONECUTTING = StoneCuttingType.TYPE;
 
-    public CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_BESIDE_OR_EXACTLY = PathTargetLocator::besidePosOrExactlyPos;
-    public CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_COMMON = PathTargetLocator::commonNearestAvailablePos;
-    public CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_EXACTLY = PathTargetLocator::exactlySidedPos;
-    public CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_TOUCH = PathTargetLocator::touchPos;
-    public CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_THROW_ITEM = PathTargetLocator::throwItemPos;
-    public CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_NO_LIMITATION = PathTargetLocator::nearByNoLimitation;
+    public final ResourceLocation STORAGE_ITEM_HANDLER = ItemHandlerStorage.TYPE;
+    public final ResourceLocation STORAGE_AE2;
+    public final ResourceLocation STORAGE_RS;
+    public final ResourceLocation STORAGE_CREATE_STOCK_TICKER;
+    public final ResourceLocation STORAGE_CREATE_CHAIN_CONVEYOR;
+    public final ResourceLocation STORAGE_QIO;
+
+    public final CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_BESIDE_OR_EXACTLY = PathTargetLocator::besidePosOrExactlyPos;
+    public final CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_COMMON = PathTargetLocator::commonNearestAvailablePos;
+    public final CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_EXACTLY = PathTargetLocator::exactlySidedPos;
+    public final CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_TOUCH = PathTargetLocator::touchPos;
+    public final CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_THROW_ITEM = PathTargetLocator::throwItemPos;
+    public final CraftAction.CraftActionPathFindingTargetProvider PATH_FINDING_NO_LIMITATION = PathTargetLocator::nearByNoLimitation;
+
+    public KJSMSMBinding() {
+        CRAFT_TYPE_AE2 = Integrations.ae2() ? AE2Type.TYPE : UNAVAILABLE;
+        CRAFT_TYPE_RS = Integrations.rs() ? RSType.TYPE : UNAVAILABLE;
+        CRAFT_TYPE_TACZ = Integrations.tacz() ? TaczType.TYPE : UNAVAILABLE;
+        CRAFT_ACTION_AE2 = Integrations.ae2() ? AeCraftingAction.TYPE : UNAVAILABLE;
+        CRAFT_ACTION_RS = Integrations.rs() ? RsCraftingAction.TYPE : UNAVAILABLE;
+
+        STORAGE_AE2 = Integrations.ae2() ? Ae2Storage.TYPE : UNAVAILABLE;
+        STORAGE_RS = Integrations.rs() ? RSStorage.TYPE : UNAVAILABLE;
+        STORAGE_QIO = Integrations.mekanism() ? QIOStorage.TYPE : UNAVAILABLE;
+        STORAGE_CREATE_STOCK_TICKER = Integrations.create6() ? CreateStockTickerStorage.TYPE : UNAVAILABLE;
+        STORAGE_CREATE_CHAIN_CONVEYOR = Integrations.create6() ? CreateChainConveyorStorage.TYPE : UNAVAILABLE;
+    }
+
+    public boolean isAvailable(ResourceLocation type) {
+        return !type.equals(UNAVAILABLE);
+    }
 }

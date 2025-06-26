@@ -19,6 +19,11 @@ import java.util.UUID;
 
 @OnlyIn(Dist.CLIENT)
 public class InventoryListUtil {
+    /**
+     * 获取玩家背包中的仓储列表UUID
+     * @param inv 玩家背包
+     * @return
+     */
     public static @Nullable UUID getInventoryListUUIDFromPlayerInv(List<ItemStack> inv) {
         return inv
                 .stream()
@@ -29,6 +34,12 @@ public class InventoryListUtil {
                 .orElse(null);
     }
 
+    /**
+     * 获取和物品列表匹配的仓储清单记录的物品
+     * @param uuid 仓储清单UUID
+     * @param itemStack 物品列表
+     * @return 物品
+     */
     public static @Nullable ItemStack getMatchingFromInventory(UUID uuid, List<ItemStack> itemStack) {
         for (ItemStack itemStack1 : itemStack) {
             Optional<CraftGuideData> craftable = InventoryListDataClient.getInstance().get(uuid)
@@ -51,6 +62,11 @@ public class InventoryListUtil {
         return null;
     }
 
+    /**
+     * 获取当前玩家对目标物品列表的最佳匹配（包括身上的存储清单）
+     * @param itemStack 目标物品
+     * @return 最佳匹配物品
+     */
     public static ItemStack getMatchingForPlayer(List<ItemStack> itemStack) {
         if( itemStack.isEmpty())
             return ItemStack.EMPTY;
@@ -60,6 +76,12 @@ public class InventoryListUtil {
         return getMatchingForPlayerOrFirst(player, itemStack);
     }
 
+    /**
+     * 获取当前玩家对目标物品列表的最佳匹配（包括身上的存储清单）
+     * @param player 玩家
+     * @param itemStack 目标物品列表
+     * @return 最佳匹配物品
+     */
     public static ItemStack getMatchingForPlayerOrFirst(LocalPlayer player, List<ItemStack> itemStack) {
         if( itemStack.isEmpty())
             return ItemStack.EMPTY;

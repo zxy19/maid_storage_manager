@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -86,7 +87,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
     );
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return new ResourceLocation("create", "fan");
     }
 

@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -35,17 +36,17 @@ public class KJSCraftType extends AbstractObjectWrapped implements IKJSCraftType
     }
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return get("type", this::resourceLocationParser).orElseThrow();
     }
 
     @Override
-    public ResourceLocation getActionType() {
+    public @NotNull ResourceLocation getActionType() {
         return get("actionType", this::resourceLocationParser).orElseThrow();
     }
 
     @Override
-    public ItemStack getIcon() {
+    public @NotNull ItemStack getIcon() {
         return get("icon", this.classTest(ItemStack.class)).orElse(ItemStack.EMPTY);
     }
 
@@ -55,7 +56,7 @@ public class KJSCraftType extends AbstractObjectWrapped implements IKJSCraftType
     }
 
     @Override
-    public List<CraftGuideStepData> transformSteps(List<CraftGuideStepData> steps) {
+    public @NotNull List<CraftGuideStepData> transformSteps(List<CraftGuideStepData> steps) {
         return get("transformSteps", t -> {
             if (t instanceof NativeArray array) {
                 List<CraftGuideStepData> result = new ArrayList<>();

@@ -15,6 +15,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonAttackAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
@@ -50,7 +51,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
     );
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.ITEM_APPLICATION.getId();
     }
 

@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPickupItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -38,7 +39,7 @@ public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRec
     );
 
     @Override
-    public ResourceLocation getType() {
+    public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.CRUSHING.getId();
     }
 
