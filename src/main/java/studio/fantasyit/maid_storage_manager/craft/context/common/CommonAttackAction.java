@@ -38,7 +38,7 @@ import java.util.List;
 import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 public class CommonAttackAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE_L = new ResourceLocation(MaidStorageManager.MODID, "destroy");
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "destroy");
     FakePlayer fakePlayer;
     boolean startDestroyBlock = false;
     float progress = 0.0f;

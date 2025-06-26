@@ -75,4 +75,7 @@ public class Integrations {
     public static boolean rsStorage() {
         return ModList.get().isLoaded("refinedstorage") && Config.enableRsSup;
     }
+    public static boolean kjs(){
+        return ModList.get().isLoaded("kubejs");
+    }
 }

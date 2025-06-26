@@ -207,14 +207,14 @@ public class StorageAccessUtil {
         if (!optCap.isPresent()) return;
         IItemHandler inv = optCap.orElseThrow(RuntimeException::new);
         //确保清空第一个格子，再放入物品
-        Stack<ItemStack> tmpExtracted = new Stack<>();
-        while (inv.getStackInSlot(0).getCount() > 0)
+        Queue<ItemStack> tmpExtracted = new LinkedList<>();
+        while (inv.getStackInSlot(0).getCount() > 0 && !inv.extractItem(0, inv.getStackInSlot(0).getCount(), true).isEmpty())
             tmpExtracted.add(inv.extractItem(0, inv.getStackInSlot(0).getCount(), false));
         ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
         CompoundTag tag = markItem.getOrCreateTag();
         tag.putUUID("uuid", UUID.randomUUID());
         markItem.setTag(tag);
-        inv.insertItem(0, markItem, false);
+        inv.insertItem(0, markItem.copy(), false);
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
             if (blockPos.equals(pos)) return null;
             BlockEntity blockEntity = level.getBlockEntity(blockPos);
@@ -230,9 +230,16 @@ public class StorageAccessUtil {
             return null;
         }, 1);
 
-        inv.extractItem(0, markItem.getCount(), false);
+        //第一格有可能拿到的不是MarkItem？判断。如果存在问题，扫描容器查找MarkItem
+        ItemStack itemStack = inv.extractItem(0, markItem.getCount(), true);
+        if (itemStack.isEmpty() || !ItemStackUtil.isSame(itemStack, markItem, true)) {
+            tmpExtracted.add(itemStack);
+            InvUtil.tryExtract(inv, markItem, true);
+        }else{
+            inv.extractItem(0, markItem.getCount(), false);
+        }
         while (!tmpExtracted.isEmpty()) {
-            inv.insertItem(0, tmpExtracted.pop(), false);
+            inv.insertItem(0, tmpExtracted.poll(), false);
         }
     }
 

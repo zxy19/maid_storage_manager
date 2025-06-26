@@ -544,8 +544,10 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                         ItemStack itemstack = ItemStack.of(missingList.getCompound(idx));
                         itemstack.grow(ti.getCount());
                         missingList.set(idx, itemStack.save(new CompoundTag()));
-                    } else missingList.add(ti.save(new CompoundTag()));
+                    } else if (missingList.size() < 15)
+                        missingList.add(ti.save(new CompoundTag()));
                 }
+
                 tmp.put(TAG_ITEMS_MISSING, missingList);
                 list.set(i, tmp);
                 break;

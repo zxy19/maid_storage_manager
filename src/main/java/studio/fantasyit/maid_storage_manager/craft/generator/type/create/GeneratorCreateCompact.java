@@ -49,7 +49,7 @@ public class GeneratorCreateCompact extends GeneratorCreate<CompactingRecipe, Re
                     Target.virtual(pos.below(), null),
                     List.of(items.get(items.size() - 1)),
                     List.of(),
-                    CommonUseAction.TYPE_R,
+                    CommonUseAction.TYPE,
                     true,
                     new CompoundTag()
             ));

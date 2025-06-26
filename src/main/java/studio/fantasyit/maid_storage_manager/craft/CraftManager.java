@@ -29,6 +29,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.Generator
 import studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla.*;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.KJSEventPort;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
 
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public class CraftManager {
         CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators);
         fireInternal(event);
         MinecraftForge.EVENT_BUS.post(event);
+        if (Integrations.kjs())
+            KJSEventPort.postCraftCollect(event);
 
         this.types = event.getCraftTypes();
         this.typesMap = new HashMap<>();
@@ -119,7 +122,7 @@ public class CraftManager {
                 3
         );
         event.addAction(
-                CommonUseAction.TYPE_R,
+                CommonUseAction.TYPE,
                 CommonUseAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
@@ -128,7 +131,7 @@ public class CraftManager {
                 1
         );
         event.addAction(
-                CommonAttackAction.TYPE_L,
+                CommonAttackAction.TYPE,
                 CommonAttackAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
@@ -326,5 +329,13 @@ public class CraftManager {
 
     public List<IAutoCraftGuideGenerator> getAutoCraftGuideGenerators() {
         return this.autoCraftGuideGenerators;
+    }
+
+    public List<CraftAction> getActions() {
+        return this.actions;
+    }
+
+    public List<ICraftType> getTypes() {
+        return this.types;
     }
 }

@@ -16,7 +16,6 @@ import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, CraftingContainer> {
 
@@ -33,11 +32,6 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
     @Override
     protected ResourceLocation getCraftType() {
         return CraftingType.TYPE;
-    }
-
-    @Override
-    protected Optional<CraftingRecipe> validateAndGetRealRecipe(Level level, CraftingRecipe recipe, List<ItemStack> inputs, CraftingContainer container) {
-        return RecipeUtil.getCraftingRecipe(level, container);
     }
 
     @Override

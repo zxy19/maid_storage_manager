@@ -83,7 +83,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(items.get(0)),
                                             List.of(),
-                                            CommonUseAction.TYPE_R,
+                                            CommonUseAction.TYPE,
                                             false,
                                             new CompoundTag()
                                     ));
@@ -91,7 +91,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos.above(), Direction.UP),
                                             List.of(items.get(1)),
                                             List.of(),
-                                            CommonUseAction.TYPE_R,
+                                            CommonUseAction.TYPE,
                                             false,
                                             new CompoundTag()
                                     ));
@@ -99,7 +99,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos.above()),
                                             List.of(items.get(1)),
                                             List.of(strippedItem),
-                                            CommonAttackAction.TYPE_L,
+                                            CommonAttackAction.TYPE,
                                             false,
                                             new CompoundTag()
                                     ));

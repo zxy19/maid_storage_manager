@@ -181,6 +181,11 @@ public class CraftGuide extends Item implements MenuProvider {
                 steps.add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), specialType));
                 craftGuideData.type = specialType;
             }
+            if (craftGuideData.type != CommonType.TYPE) {
+                CraftManager.getInstance()
+                        .getType(craftGuideData.type)
+                        .onTypeUsing(serverPlayer, itemInHand, craftGuideData);
+            }
             craftGuideData.saveToItemStack(itemInHand);
             CraftGuideRenderData.recalculateItemStack(itemInHand);
             return InteractionResult.CONSUME;

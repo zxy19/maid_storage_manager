@@ -15,7 +15,6 @@ import studio.fantasyit.maid_storage_manager.craft.type.AltarType;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 public class GeneratorAltar extends SimpleGenerator<AltarRecipe, AltarRecipeInventory> {
     @Override
@@ -26,11 +25,6 @@ public class GeneratorAltar extends SimpleGenerator<AltarRecipe, AltarRecipeInve
     @Override
     protected ResourceLocation getCraftType() {
         return AltarType.TYPE;
-    }
-
-    @Override
-    protected Optional<AltarRecipe> validateAndGetRealRecipe(Level level, AltarRecipe recipe, List<ItemStack> inputs, AltarRecipeInventory container) {
-        return RecipeUtil.getAltarRecipe(level, container);
     }
 
     @Override

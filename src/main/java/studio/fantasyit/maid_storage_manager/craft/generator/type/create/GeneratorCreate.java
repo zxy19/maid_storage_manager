@@ -182,7 +182,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                                         new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                                         List.of(bucket),
                                                                         List.of(Items.BUCKET.getDefaultInstance().copyWithCount(bucket.getCount())),
-                                                                        CommonUseAction.TYPE_R,
+                                                                        CommonUseAction.TYPE,
                                                                         false,
                                                                         new CompoundTag()
                                                                 )
@@ -250,7 +250,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                         new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                         List.of(Items.BUCKET.getDefaultInstance()),
                                                         List.of(output),
-                                                        CommonUseAction.TYPE_R,
+                                                        CommonUseAction.TYPE,
                                                         false,
                                                         new CompoundTag()
                                                 ));

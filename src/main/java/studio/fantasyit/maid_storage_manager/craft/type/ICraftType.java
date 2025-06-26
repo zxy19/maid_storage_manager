@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +31,10 @@ public interface ICraftType {
      * 识别特殊类型方块
      */
     boolean isSpecialType(ServerLevel level, BlockPos pos, Direction direction);
+
+    default void onTypeUsing(ServerPlayer player, ItemStack itemStack, CraftGuideData craftGuideData){
+
+    }
 
     default List<CraftGuideStepData> transformSteps(List<CraftGuideStepData> steps) {
         return steps;

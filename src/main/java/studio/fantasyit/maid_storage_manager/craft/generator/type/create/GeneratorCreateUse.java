@@ -98,7 +98,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(items.get(0)),
                                             List.of(),
-                                            CommonUseAction.TYPE_R,
+                                            CommonUseAction.TYPE,
                                             false,
                                             new CompoundTag()
                                     ));
@@ -106,7 +106,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos.above(), Direction.UP),
                                             List.of(items.get(1)),
                                             List.of(),
-                                            CommonUseAction.TYPE_R,
+                                            CommonUseAction.TYPE,
                                             false,
                                             new CompoundTag()
                                     ));
@@ -115,7 +115,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos.above()),
                                             items.size() > 2 ? List.of(items.get(2)) : List.of(),
                                             List.of(manualApplicationRecipe.getResultItem(level.registryAccess())),
-                                            CommonAttackAction.TYPE_L,
+                                            CommonAttackAction.TYPE,
                                             false,
                                             new CompoundTag()
                                     ));

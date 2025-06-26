@@ -47,7 +47,7 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
                         Target.virtual(data.get(i), null),
                         List.of(inputs.get(i)),
                         List.of(ItemStack.EMPTY),
-                        CommonUseAction.TYPE_R,
+                        CommonUseAction.TYPE,
                         false,
                         new CompoundTag()
                 ));

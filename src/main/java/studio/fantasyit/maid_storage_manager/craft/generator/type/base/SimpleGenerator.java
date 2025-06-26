@@ -20,14 +20,15 @@ import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> implements IAutoCraftGuideGenerator {
     protected abstract RecipeType<T> getRecipeType();
 
     protected abstract ResourceLocation getCraftType();
-
-    abstract protected Optional<T> validateAndGetRealRecipe(Level level, T recipe, List<ItemStack> inputs, C container);
 
     abstract protected C getWrappedContainer(Level level, T recipe, List<ItemStack> inputs);
 
@@ -95,16 +96,11 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
                     List<Integer> ingredientCounts = ingredientCountsTransform(inventory, level, recipe, ingredients);
                     graph.addRecipe(recipe.getId(), ingredients, ingredientCounts, output, (items) -> {
                         C container = getWrappedContainer(level, recipe, items);
-                        Optional<T> realRecipe = validateAndGetRealRecipe(level, recipe, items, container);
-                        if (realRecipe.isEmpty() || !realRecipe.get().getId().equals(recipe.getId())) {
-                            return null;
-                        }
-                        T validRecipe = realRecipe.get();
-                        List<ItemStack> result = new ArrayList<>(List.of(validRecipe.getResultItem(level.registryAccess())));
+                        List<ItemStack> result = new ArrayList<>(List.of(recipe.getResultItem(level.registryAccess())));
                         CraftGuideStepData step = new CraftGuideStepData(
                                 new Target(CraftingType.TYPE, pos),
                                 wrapInputs(level, recipe, items),
-                                wrapOutputs(level, validRecipe, items, container, result),
+                                wrapOutputs(level, recipe, items, container, result),
                                 getCraftType(),
                                 false,
                                 new CompoundTag()

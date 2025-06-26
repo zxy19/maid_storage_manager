@@ -1,0 +1,7 @@
++studio.fantasyit.maid_storage_manager.craft
++studio.fantasyit.maid_storage_manager.craft.context
++studio.fantasyit.maid_storage_manager.craft.type
++studio.fantasyit.maid_storage_manager.storage
++studio.fantasyit.maid_storage_manager.util
++studio.fantasyit.maid_storage_manager.data
++studio.fantasyit.maid_storage_manager.maid

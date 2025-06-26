@@ -70,6 +70,10 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
             level.getRecipeManager()
                     .getAllRecipesFor(InscriberRecipe.TYPE)
                     .forEach(recipe -> {
+                        //复制配方，全都不处理。
+                        if (!recipe.getTopOptional().isEmpty() && recipe.getTopOptional().test(recipe.getResultItem())) {
+                            return;
+                        }
                         boolean available = true;
                         boolean hasPriority = false;
                         boolean skipFirst;

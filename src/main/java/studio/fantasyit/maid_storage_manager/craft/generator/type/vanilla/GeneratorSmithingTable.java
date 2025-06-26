@@ -15,10 +15,8 @@ import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.SmithingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
-import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Container> {
 
@@ -35,11 +33,6 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Cont
     @Override
     protected ResourceLocation getCraftType() {
         return SmithingType.TYPE;
-    }
-
-    @Override
-    protected Optional<SmithingRecipe> validateAndGetRealRecipe(Level level, SmithingRecipe recipe, List<ItemStack> inputs, Container container) {
-        return RecipeUtil.getSmithingRecipe(level, inputs);
     }
 
     @Override

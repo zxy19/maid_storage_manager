@@ -14,14 +14,11 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeHooks;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
-import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, Container> {
     @Override
@@ -54,13 +51,6 @@ public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, Container>
                     Ingredient.of(ItemTags.COALS)
             );
         }
-    }
-
-    @Override
-    protected Optional<SmeltingRecipe> validateAndGetRealRecipe(Level level, SmeltingRecipe recipe, List<ItemStack> inputs, Container container) {
-        if (inputs.size() <= 1 || ForgeHooks.getBurnTime(inputs.get(1), RecipeType.SMELTING) == 0)
-            return Optional.empty();
-        return RecipeUtil.getSmeltingRecipe(level, inputs.get(0));
     }
 
     @Override

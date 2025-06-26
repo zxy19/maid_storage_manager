@@ -73,7 +73,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                                 Target.virtual(pos, null),
                                 items,
                                 List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
-                                CommonUseAction.TYPE_R,
+                                CommonUseAction.TYPE,
                                 false,
                                 new CompoundTag()
                         );
@@ -94,7 +94,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                                 Target.virtual(pos, null),
                                 items,
                                 List.of(new ItemStack(Items.WATER_BUCKET)),
-                                CommonUseAction.TYPE_R,
+                                CommonUseAction.TYPE,
                                 false,
                                 new CompoundTag()
                         );

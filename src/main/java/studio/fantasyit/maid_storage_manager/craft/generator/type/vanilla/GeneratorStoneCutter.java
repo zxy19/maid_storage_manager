@@ -12,10 +12,8 @@ import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.StoneCuttingType;
-import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Container> {
     @Override
@@ -26,11 +24,7 @@ public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Con
     protected ResourceLocation getCraftType() {
         return StoneCuttingType.TYPE;
     }
-    @Override
-    protected Optional<StonecutterRecipe> validateAndGetRealRecipe(Level level, StonecutterRecipe recipe, List<ItemStack> inputs, Container container) {
-        List<StonecutterRecipe> stonecuttingRecipe = RecipeUtil.getStonecuttingRecipe(level, inputs.get(0));
-        return stonecuttingRecipe.stream().filter(r -> r.getId().equals(recipe.getId())).findFirst();
-    }
+
     @Override
     protected Container getWrappedContainer(Level level, StonecutterRecipe recipe, List<ItemStack> inputs) {
         return new SimpleContainer(inputs.get(0));
