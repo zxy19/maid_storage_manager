@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.graph;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -68,7 +69,9 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         MutableInt remainToCraft = new MutableInt(maxRequire - stepCost);
         logger.log("Item %s use -= %d", node.itemStack, stepCost);
         pushHistory(node, HistoryRecord.RECORD_REQUIRED, stepCost);
-        for (int i = 0; i < node.edges.size(); i++) {
+        int startsAt = dfsCalcItemNodeStartsAt(node, remainToCraft.getValue());
+        for (int _i = 0; _i < node.edges.size(); _i++) {
+            int i = (_i + startsAt) % node.edges.size();
             int to = node.edges.get(i).getA();
             int weight = node.edges.get(i).getB();
             CraftNode toNode = (CraftNode) getNode(to);
@@ -108,6 +111,48 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         if (remainToCraft.getValue() > 0)
             node.maxSuccess = oMaxRequire - remainToCraft.getValue();
         return Math.max(oMaxRequire - remainToCraft.getValue(), 0);
+    }
+
+    private int dfsCalcItemNodeStartsAt(ItemNode node, int maxRequire) {
+        if (!Config.craftingPreferShortestPath) return 0;
+        if (node.bestRecipeStartAt != -1) return node.bestRecipeStartAt;
+        //循环配方，直接返回当前作为起点。寻找最短环作为目标
+        if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient) return maxRequire;
+        if (node.edges.size() <= 1) return 0;
+        node.bestRecipeStartAtCalculating = true;
+        int historyId = this.historyId.getValue();
+        int resultId = results.size();
+
+        int maxCollected = 0;
+        int minStepCosted = Integer.MAX_VALUE;
+        int startAt = 0;
+
+        for (int i = 0; i < node.edges.size(); i++) {
+            if (node.bestRecipeStartAt != -1 && i != node.bestRecipeStartAt) continue;
+
+            int to = node.edges.get(i).getA();
+            int weight = node.edges.get(i).getB();
+            CraftNode toNode = (CraftNode) getNode(to);
+            int maxRequiredForCurrentCraftNode = (maxRequire + weight - 1) / weight;
+            if (toNode.hasLoopIngredient)
+                maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
+            logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
+            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
+            logger.logExitLevel("Craft Finish=%d", available);
+            int collect = Math.min(available * weight, maxRequire);
+
+            if (collect > maxCollected || (collect == maxCollected && results.size() < minStepCosted)) {
+                maxCollected = collect;
+                minStepCosted = results.size();
+                startAt = i;
+            }
+
+            popHistoryAt(historyId);
+            while (resultId < results.size()) results.removeLast();
+        }
+        node.bestRecipeStartAt = startAt;
+        node.bestRecipeStartAtCalculating = false;
+        return startAt;
     }
 
     public int dfsCalcCraftNode(CraftNode node, int maxRequire) {

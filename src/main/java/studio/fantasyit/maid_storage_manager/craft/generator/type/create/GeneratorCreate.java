@@ -23,7 +23,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItem
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends RecipeType<T>, C extends Container> implements IAutoCraftGuideGenerator {
+public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends RecipeType<T>, C extends Container, S> implements IAutoCraftGuideGenerator {
     protected enum StepGenerateStep {
         INIT,
         INPUT_ITEM,
@@ -101,6 +101,10 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
 
     abstract R getRecipeType();
 
+    protected S getState(Level level, BlockPos pos, T recipe, ICachableGeneratorGraph graph) {
+        return null;
+    }
+
     protected int getMinFullBucketCount(T recipe) {
         MutableInt minFullBucketCount = new MutableInt(1);
         recipe.getFluidIngredients().forEach(fluidIngredient -> {
@@ -116,11 +120,11 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
 
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         addRecipeForPos(level, pos, getRecipeType(), graph, t -> true);
     }
 
-    protected void addRecipeForPos(Level level, BlockPos pos, R type, GeneratorGraph graph, Predicate<T> predicate) {
+    protected void addRecipeForPos(Level level, BlockPos pos, R type, ICachableGeneratorGraph graph, Predicate<T> predicate) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(type)
@@ -153,6 +157,9 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                     recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.getRequiredAmount() * multiplier / 1000));
 
                     transformAllIngredients(recipe, all, counts);
+
+                    S state = getState(level, pos, recipe, graph);
+
                     graph.addRecipe(recipe.getId(),
                             all,
                             counts,
@@ -173,7 +180,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                                 )
                                                         ))
                                         );
-                                transformSteps(recipe, items, level, pos, step, StepGenerateStep.INPUT_ITEM);
+                                transformSteps(recipe, items, state, step, StepGenerateStep.INPUT_ITEM);
                                 //流体桶输入
                                 optionalItemStackList(items.subList(itemIngredients.size(), itemIngredients.size() + fluidBuckets.size()))
                                         .ifPresent(bucketList ->
@@ -189,7 +196,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                         )
                                                 )
                                         );
-                                transformSteps(recipe, items, level, pos, step, StepGenerateStep.INPUT_FLUID);
+                                transformSteps(recipe, items, state, step, StepGenerateStep.INPUT_FLUID);
                                 //其他物品输出，1chance部分
                                 each3items(
                                         recipe.getRollableResults()
@@ -208,7 +215,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                     new CompoundTag()
                                             ));
                                         });
-                                transformSteps(recipe, items, level, pos, step, StepGenerateStep.OUTPUT_ITEM);
+                                transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_ITEM);
                                 //输出物品的可选部分
                                 each3items(
                                         recipe.getRollableResults()
@@ -227,7 +234,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                     new CompoundTag()
                                             ));
                                         });
-                                transformSteps(recipe, items, level, pos, step, StepGenerateStep.OUTPUT_ITEM_SELECTIVE);
+                                transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_ITEM_SELECTIVE);
                                 if (recipe.getRollableResults().isEmpty()) {
                                     CompoundTag compoundTag = new CompoundTag();
                                     compoundTag.putInt("time", 100 * multiplier);
@@ -240,7 +247,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                             false,
                                             compoundTag
                                     ));
-                                    transformSteps(recipe, items, level, pos, step, StepGenerateStep.OUTPUT_FLUID_IDLE);
+                                    transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_FLUID_IDLE);
                                 }
                                 //流体输出
                                 transformFluidStacks(recipe.getFluidResults(), multiplier)
@@ -256,7 +263,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                 ));
                                             });
                                         });
-                                transformSteps(recipe, items, level, pos, step, StepGenerateStep.OUTPUT_FLUID);
+                                transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_FLUID);
                                 return new CraftGuideData(
                                         step,
                                         CommonType.TYPE
@@ -268,7 +275,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
     public void transformAllIngredients(T recipe, List<Ingredient> all, List<Integer> counts) {
     }
 
-    protected void transformSteps(T recipe, List<ItemStack> items, Level level, BlockPos pos, List<CraftGuideStepData> step, StepGenerateStep generateStep) {
+    protected void transformSteps(T recipe, List<ItemStack> items, S state, List<CraftGuideStepData> step, StepGenerateStep generateStep) {
     }
 
     @Override

@@ -20,7 +20,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceIte
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
@@ -50,7 +50,7 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.DEPLOYING.getType())
@@ -82,7 +82,8 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
 
     }
 
-    protected Function<List<ItemStack>, @Nullable CraftGuideData> getCraftGuideSupplier(GeneratorGraph graph, Recipe<?> recipe, Level level, BlockPos pos) {
+    protected Function<List<ItemStack>, @Nullable CraftGuideData> getCraftGuideSupplier(ICachableGeneratorGraph graph, Recipe<?> recipe, Level level, BlockPos pos) {
+        ItemStack resultItem = recipe.getResultItem(level.registryAccess());
         return ((outputs) -> {
             List<CraftGuideStepData> craftGuideData = new ArrayList<>();
             craftGuideData.add(new CraftGuideStepData(
@@ -105,7 +106,7 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
             craftGuideData.add(new CraftGuideStepData(
                     new Target(ItemHandlerStorage.TYPE, pos),
                     List.of(),
-                    List.of(recipe.getResultItem(level.registryAccess()).copyWithCount(outputs.get(0).getCount())),
+                    List.of(resultItem.copyWithCount(outputs.get(0).getCount())),
                     CommonTakeItemAction.TYPE,
                     false,
                     new CompoundTag()

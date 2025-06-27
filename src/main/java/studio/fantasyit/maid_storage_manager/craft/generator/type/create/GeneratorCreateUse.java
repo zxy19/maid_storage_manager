@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -22,7 +23,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleActi
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
@@ -71,7 +72,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.ITEM_APPLICATION.getType())
@@ -80,19 +81,20 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                         if (manualApplicationRecipe.getRequiredHeldItem().isEmpty()) {
                             return;
                         }
-                        if (!posFilter.isAvailable(manualApplicationRecipe.getResultItem(level.registryAccess()))) {
+                        ItemStack resultItem = manualApplicationRecipe.getResultItem(level.registryAccess());
+                        if (!posFilter.isAvailable(resultItem)) {
                             return;
                         }
                         List<Ingredient> ingredients = new ArrayList<>(manualApplicationRecipe.getIngredients());
                         Optional<Ingredient> toolOptional = GenerateIngredientUtil.optionalIngredient(
-                                GenerateIngredientUtil.getIngredientForDestroyBlockItem(manualApplicationRecipe.getResultItem(level.registryAccess()))
+                                GenerateIngredientUtil.getIngredientForDestroyBlockItem(resultItem)
                         );
                         toolOptional.ifPresent(ingredients::add);
                         graph.addRecipe(
                                 manualApplicationRecipe.getId(),
                                 ingredients,
                                 ingredients.stream().map(t -> 1).toList(),
-                                manualApplicationRecipe.getResultItem(level.registryAccess())
+                                resultItem
                                 , (items) -> {
                                     List<CraftGuideStepData> craftGuideData = new ArrayList<>();
                                     craftGuideData.add(new CraftGuideStepData(
@@ -115,7 +117,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above()),
                                             items.size() > 2 ? List.of(items.get(2)) : List.of(),
-                                            List.of(manualApplicationRecipe.getResultItem(level.registryAccess())),
+                                            List.of(resultItem),
                                             CommonAttackAction.TYPE,
                                             false,
                                             new CompoundTag()

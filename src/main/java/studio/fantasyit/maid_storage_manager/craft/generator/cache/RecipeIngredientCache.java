@@ -7,7 +7,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.IngredientNode;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
@@ -29,18 +30,18 @@ public class RecipeIngredientCache {
         return CACHE.containsKey(recipeId);
     }
 
-    public static boolean addCahcedRecipeToGraph(GeneratorGraph graph,
+    public static boolean addCahcedRecipeToGraph(ICachableGeneratorGraph graph,
                                                  ResourceLocation id,
                                                  List<Ingredient> ingredients,
                                                  List<Integer> ingredientCounts,
                                                  List<ItemStack> output,
                                                  Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
         if (CACHE.containsKey(id) && CACHE.get(id).size() == ingredients.size()) {
-            List<GeneratorGraph.IngredientNode> ingredientNodes = new ArrayList<>();
+            List<IngredientNode> ingredientNodes = new ArrayList<>();
             for (int i = 0; i < ingredients.size(); i++) {
                 Ingredient ingredient = ingredients.get(i);
                 UUID uuid = CACHE.get(id).get(i);
-                GeneratorGraph.IngredientNode ingredientNode = graph.addOrGetCahcedIngredientNode(ingredient, uuid);
+                IngredientNode ingredientNode = graph.addOrGetCahcedIngredientNode(ingredient, uuid);
                 ingredientNodes.add(ingredientNode);
             }
             graph.addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier, type, isOneTime);
@@ -73,7 +74,7 @@ public class RecipeIngredientCache {
         CACHE.put(id, cachedIngredientNodeUUID);
     }
 
-    public static int getUncachedRecipeIngredient(ResourceLocation id, List<Ingredient> ingredients, GeneratorGraph generatorGraph) {
+    public static int getUncachedRecipeIngredient(ResourceLocation id, List<Ingredient> ingredients, ICachableGeneratorGraph generatorGraph) {
         if (!isCached(id)) return ingredients.size();
         int c = 0;
         for (UUID ingredient : CACHE.get(id)) {

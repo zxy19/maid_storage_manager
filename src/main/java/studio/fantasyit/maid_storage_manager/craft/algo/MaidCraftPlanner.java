@@ -10,6 +10,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.base.BiCraftCountCalcula
 import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.FlattenSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.SimpleSearchGraph;
+import studio.fantasyit.maid_storage_manager.craft.algo.graph.ThreadedSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.TopologyCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
@@ -94,6 +95,7 @@ public class MaidCraftPlanner {
                     case TOPOLOGY -> (ICraftGraphLike.CraftAlgorithmInit<?>) TopologyCraftGraph::new;
                     case DFS -> (ICraftGraphLike.CraftAlgorithmInit<?>) SimpleSearchGraph::new;
                     case DFS_QUEUED -> (ICraftGraphLike.CraftAlgorithmInit<?>) FlattenSearchGraph::new;
+                    case DFS_THREADED -> (ICraftGraphLike.CraftAlgorithmInit<?>) ThreadedSearchGraph::new;
                 }))
                 .toList();
     }

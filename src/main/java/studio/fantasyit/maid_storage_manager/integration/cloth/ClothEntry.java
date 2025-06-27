@@ -261,6 +261,37 @@ public class ClothEntry {
                         .build()
         );
         builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.no_calculator"), Config.craftingNoCalculator)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.no_calculator.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingNoCalculator = t))
+                        .build()
+        );
+        {
+            SubCategoryBuilder b = entryBuilder.startSubCategory(Component.translatable("config.maid_storage_manager.crafting.nbt_matching"));
+            b.setExpanded(true);
+            addEntryCraftingTag(b, entryBuilder);
+            builder.add(b.build());
+        }
+        {
+            SubCategoryBuilder b = entryBuilder.startSubCategory(Component.translatable("config.maid_storage_manager.crafting.loop_solver"));
+            b.setExpanded(true);
+            addEntryCraftingLoopSolver(b, entryBuilder);
+            builder.add(b.build());
+        }
+        {
+            SubCategoryBuilder b = entryBuilder.startSubCategory(Component.translatable("config.maid_storage_manager.crafting.generating"));
+            b.setExpanded(true);
+            addEntryCraftingGenerating(b, entryBuilder);
+            builder.add(b.build());
+        }
+    }
+
+
+    private static void addEntryCraftingTag(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
+        builder.add(
+                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.match_tag.desc")).build()
+        );
+        builder.add(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.match_tag"), Config.craftingMatchTag)
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingMatchTag = t))
                         .build()
@@ -270,28 +301,11 @@ public class ClothEntry {
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.noMatchPaths = t))
                         .build()
         );
+    }
+
+    private static void addEntryCraftingLoopSolver(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
         builder.add(
-                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.match_tag_description")).build()
-        );
-        builder.add(
-                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate"), Config.craftingGenerateCraftGuide)
-                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingGenerateCraftGuide = t))
-                        .build()
-        );
-        builder.add(
-                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate_partial"), Config.generatePartial)
-                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.generate_partial.tooltip"))
-                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.generatePartial = t))
-                        .build()
-        );
-        builder.add(
-                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.generate_description")).build()
-        );
-        builder.add(
-                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.no_calculator"), Config.craftingNoCalculator)
-                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.no_calculator.tooltip"))
-                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingNoCalculator = t))
-                        .build()
+                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.loop_solver.desc")).build()
         );
         builder.add(
                 entryBuilder.startIntField(Component.translatable("config.maid_storage_manager.crafting.loop_solver_max_keep_length"), Config.craftingLoopSolverMaxSize)
@@ -310,15 +324,30 @@ public class ClothEntry {
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingLoopSolverPreventNewByProduct = t))
                         .build()
         );
-
-        SubCategoryBuilder b = entryBuilder.startSubCategory(Component.translatable("config.maid_storage_manager.crafting.generating"));
-        b.setExpanded(true);
-        addEntryGenerating(b, entryBuilder);
-        builder.add(b.build());
     }
 
     @SuppressWarnings("unchecked")
-    private static void addEntryGenerating(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
+    private static void addEntryCraftingGenerating(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
+        builder.add(
+                entryBuilder.startTextDescription(Component.translatable("config.maid_storage_manager.crafting.generate.desc")).build()
+        );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate"), Config.craftingGenerateCraftGuide)
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingGenerateCraftGuide = t))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startEnumSelector(Component.translatable("config.maid_storage_manager.crafting.generate_generator"), Config.CraftGenerator.class, Config.craftingGenerator)
+                        .setEnumNameProvider(t -> Component.translatable("config.maid_storage_manager.crafting.generate_generator." + t.name().toLowerCase()))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingGenerator = t))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate_partial"), Config.generatePartial)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.generate_partial.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.generatePartial = t))
+                        .build()
+        );
         Map<String, SubCategoryBuilder> categories = new HashMap<>();
         CraftManager.getInstance()
                 .getAutoCraftGuideGenerators()

@@ -44,7 +44,7 @@ public class GeneratorMekSawing extends GeneratorMek<SawmillRecipe, InputRecipeC
     }
 
     @Override
-    protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, SawmillRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, SawmillRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         if (inputSide == null || outputSide == null)

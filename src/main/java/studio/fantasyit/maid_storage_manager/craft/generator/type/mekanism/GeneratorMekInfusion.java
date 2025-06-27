@@ -29,7 +29,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceIte
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -76,7 +76,7 @@ public class GeneratorMekInfusion extends GeneratorMek<MetallurgicInfuserRecipe,
     }
 
     @Override
-    protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, MetallurgicInfuserRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, MetallurgicInfuserRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         Direction extra = getTypeDirection(machine, List.of(DataType.EXTRA));
@@ -101,7 +101,7 @@ public class GeneratorMekInfusion extends GeneratorMek<MetallurgicInfuserRecipe,
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
-                List.of(recipe.getResultItem(level.registryAccess()).copyWithCount(inputs.get(0).getCount())),
+                List.of(outputs.get(0).copyWithCount(inputs.get(0).getCount())),
                 CommonTakeItemAction.TYPE,
                 false,
                 new CompoundTag()
@@ -110,7 +110,7 @@ public class GeneratorMekInfusion extends GeneratorMek<MetallurgicInfuserRecipe,
     }
 
     @Override
-    public void generate(MetallurgicInfuserRecipe recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+    public void generate(MetallurgicInfuserRecipe recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
         boolean alwaysEnrich = false;
         if (recognizedTypePositions.containsKey(MekanismRecipeType.ENRICHING.getRegistryName()) && !recognizedTypePositions.get(MekanismRecipeType.ENRICHING.getRegistryName()).isEmpty()) {
             alwaysEnrich = true;
@@ -131,7 +131,7 @@ public class GeneratorMekInfusion extends GeneratorMek<MetallurgicInfuserRecipe,
 
             graph.addRecipe(id, inputs, counts, outputs, (items) -> {
                 List<CraftGuideStepData> step = new ArrayList<>();
-                if (addSteps(level, pos, machine, recipe, items, outputs, step)) {
+                if (addSteps(pos, machine, recipe, items, outputs, step)) {
                     return new CraftGuideData(step, CommonType.TYPE);
                 }
                 return null;
@@ -145,6 +145,12 @@ public class GeneratorMekInfusion extends GeneratorMek<MetallurgicInfuserRecipe,
             return true;
         return level.getBlockEntity(pos) instanceof TileEntityMetallurgicInfuser;
     }
+
+    @Override
+    public boolean canCacheGraph() {
+        return false;
+    }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.meta_infuser");

@@ -47,8 +47,9 @@ public class ViewBehavior extends MaidCheckRateTask {
 
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
-        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW) return false;
-        if (!Conditions.isNothingToPlace(maid)) return false;
+        //无论如何，女仆都必须完成View才能响应其他工作。否则会产生不完整记忆。
+//        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW) return false;
+//        if (!Conditions.isNothingToPlace(maid)) return false;
         return context != null && !context.isDone();
     }
 

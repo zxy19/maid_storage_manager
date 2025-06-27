@@ -231,7 +231,7 @@ dependencies {
     compileOnly fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
     compileOnly fg.deobf("dev.latvian.mods:rhino-forge:${rhino_version}")
     compileOnly fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
-
+    compileOnly fg.deobf("curse.maven:botania-225643:5594997")
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
@@ -243,7 +243,7 @@ dependencies {
     runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
     runtimeOnly fg.deobf("curse.maven:botania-225643:5594997")
     runtimeOnly fg.deobf("curse.maven:curios-309927:6058834")
-//    runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
+    runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")
     runtimeOnly fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6632240")
     runtimeOnly(fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.136"))
     runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}")// Mekanism

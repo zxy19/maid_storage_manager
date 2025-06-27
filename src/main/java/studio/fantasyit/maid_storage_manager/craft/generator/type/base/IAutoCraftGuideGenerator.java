@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -93,7 +93,7 @@ public interface IAutoCraftGuideGenerator {
      * @param graph                   生成图
      * @param recognizedTypePositions 已经生成过的生成器类型和位置
      */
-    void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions);
+    void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions);
 
     /**
      * 缓存回调。缓存发生在数据包加载后。你可以在此为配方添加缓存。<b>缓存的配方原料必须和下次添加同ID配方时完全一致，否则可能出现不可预料的错误</b>

@@ -29,7 +29,13 @@ public class Config {
     public enum CraftSolver {
         TOPOLOGY,
         DFS,
-        DFS_QUEUED
+        DFS_QUEUED,
+        DFS_THREADED
+    }
+
+    public enum CraftGenerator {
+        RELEVANCE,
+        RELEVANCE_THREADED
     }
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
@@ -146,12 +152,11 @@ public class Config {
             .comment("Generate virtual item frame entity when shift right-click with certain items.")
             .define("utility.generate_virtual_item_frame", true);
     private static final ForgeConfigSpec.ConfigValue<List<String>> CRAFTING_SOLVER = BUILDER
-            .comment("Crafting solver to use. [DFS/DFS_QUEUED/TOPOLOGY]. Topology algorithm costs least but dose not support circular recipes.")
+            .comment("Crafting solver to use. [DFS/DFS_QUEUED/DFS_THREADED/TOPOLOGY]. Topology algorithm costs least but dose not support circular recipes.")
             .define("crafting.solver",
-                    List.of(CraftSolver.DFS_QUEUED.name()),
+                    List.of(CraftSolver.DFS_THREADED.name()),
                     o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
             );
-
     private static final ForgeConfigSpec.IntValue LOOP_SOLVER_MAX_KEEP_LENGTH = BUILDER
             .comment("Max length to calculate in loop solver.")
             .defineInRange("crafting.loop_solver.max_length", 10, 0, 100);
@@ -173,9 +178,15 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATING_PARTIAL = BUILDER
             .comment("Generate recipes that has not all ingredients available.")
             .define("crafting.generating.keep_partial", false);
+    private static final ForgeConfigSpec.EnumValue<CraftGenerator> CRAFTING_GENERATOR = BUILDER
+            .comment("Crafting generator algorithm to use.")
+            .defineEnum("crafting.generating.algorithm", CraftGenerator.RELEVANCE_THREADED, CraftGenerator.values());
     private static final ForgeConfigSpec.BooleanValue CRAFTING_NO_CALCULATOR = BUILDER
             .comment("No need portable calculator for crafting")
             .define("crafting.no_calculator", false);
+    private static final ForgeConfigSpec.BooleanValue CRAFTING_PREFER_SHORTEST_PATH = BUILDER
+            .comment("No need portable calculator for crafting")
+            .define("crafting.prefer_shortest_path", true);
 
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -220,7 +231,9 @@ public class Config {
     public static List<String> noMatchPaths;
     public static boolean craftingGenerateCraftGuide;
     public static boolean craftingNoCalculator;
+    public static boolean craftingPreferShortestPath;
     public static boolean generatePartial;
+    public static CraftGenerator craftingGenerator;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -265,6 +278,8 @@ public class Config {
         craftingLoopSolverMaxSize = LOOP_SOLVER_MAX_KEEP_LENGTH.get();
         craftingLoopSolverPreventIndirect = LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY.get();
         craftingLoopSolverPreventNewByProduct = LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.get();
+        craftingGenerator = CRAFTING_GENERATOR.get();
+        craftingPreferShortestPath = CRAFTING_PREFER_SHORTEST_PATH.get();
     }
 
     public static void save() {
@@ -309,6 +324,8 @@ public class Config {
         LOOP_SOLVER_MAX_KEEP_LENGTH.set(craftingLoopSolverMaxSize);
         LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY.set(craftingLoopSolverPreventIndirect);
         LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.set(craftingLoopSolverPreventNewByProduct);
+        CRAFTING_GENERATOR.set(craftingGenerator);
+        CRAFTING_PREFER_SHORTEST_PATH.set(craftingPreferShortestPath);
     }
 
     public static void saveAfter(Runnable o) {

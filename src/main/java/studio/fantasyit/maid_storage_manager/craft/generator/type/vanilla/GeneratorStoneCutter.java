@@ -26,7 +26,7 @@ public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Con
     }
 
     @Override
-    protected Container getWrappedContainer(Level level, StonecutterRecipe recipe, List<ItemStack> inputs) {
+    protected Container getWrappedContainer(StonecutterRecipe recipe, List<ItemStack> inputs) {
         return new SimpleContainer(inputs.get(0));
     }
     @Override

@@ -14,13 +14,12 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.brewing.BrewingRecipe;
 import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
-import net.minecraftforge.common.brewing.IBrewingRecipe;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
@@ -29,11 +28,12 @@ import studio.fantasyit.maid_storage_manager.craft.type.BrewingType;
 import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class GeneratorBrewing implements IAutoCraftGuideGenerator {
@@ -59,7 +59,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         brewingData.forEach(data -> {
             if (!posFilter.isAvailable(data.output))
@@ -69,17 +69,10 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                     List.of(1, COUNT.getValue(), 1),
                     data.output,
                     (items) -> {
-                        Optional<IBrewingRecipe> brewingRecipe = RecipeUtil.getBrewingRecipe(level, items.get(1), items.get(2));
-                        if (brewingRecipe.isEmpty())
-                            return null;
-                        ItemStack output = brewingRecipe.get().getOutput(items.get(1).copy(), items.get(2).copy())
-                                .copyWithCount(items.get(1).getCount());
-                        if (!ItemStackUtil.isSameInCrafting(output, data.output))
-                            return null;
                         CraftGuideStepData step = new CraftGuideStepData(
                                 new Target(CraftingType.TYPE, pos),
                                 items,
-                                List.of(output),
+                                List.of(data.output),
                                 BrewingType.TYPE,
                                 false,
                                 new CompoundTag()

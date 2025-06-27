@@ -28,7 +28,7 @@ public class GeneratorAltar extends SimpleGenerator<AltarRecipe, AltarRecipeInve
     }
 
     @Override
-    protected AltarRecipeInventory getWrappedContainer(Level level, AltarRecipe recipe, List<ItemStack> inputs) {
+    protected AltarRecipeInventory getWrappedContainer(AltarRecipe recipe, List<ItemStack> inputs) {
         return RecipeUtil.wrapAltarRecipeInventory(inputs);
     }
 

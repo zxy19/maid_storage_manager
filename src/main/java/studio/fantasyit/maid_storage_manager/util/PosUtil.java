@@ -12,6 +12,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -147,26 +148,32 @@ public class PosUtil {
 
             BlockPos xPos = poll.offset(xOffset, 0, 0);
             if (xPos.equals(touchPos)) return true;
-            if (!vis.contains(xPos) && isBetween(standPos, touchPos, xPos) && serverLevel.getBlockState(xPos).isAir()) {
+            if (!vis.contains(xPos) && isBetween(standPos, touchPos, xPos) && isTreatedAsEmpty(serverLevel, xPos)) {
                 vis.add(xPos);
                 queue.add(xPos);
             }
 
             BlockPos yPos = poll.offset(0, yOffset, 0);
             if (yPos.equals(touchPos)) return true;
-            if (!vis.contains(yPos) && isBetween(standPos, touchPos, yPos) && serverLevel.getBlockState(yPos).isAir()) {
+            if (!vis.contains(yPos) && isBetween(standPos, touchPos, yPos) && isTreatedAsEmpty(serverLevel, yPos)) {
                 vis.add(yPos);
                 queue.add(yPos);
             }
 
             BlockPos zPos = poll.offset(0, 0, zOffset);
             if (zPos.equals(touchPos)) return true;
-            if (!vis.contains(zPos) && isBetween(standPos, touchPos, zPos) && serverLevel.getBlockState(zPos).isAir()) {
+            if (!vis.contains(zPos) && isBetween(standPos, touchPos, zPos) && isTreatedAsEmpty(serverLevel, zPos)) {
                 vis.add(zPos);
                 queue.add(zPos);
             }
         }
         return false;
+    }
+
+    private static boolean isTreatedAsEmpty(ServerLevel serverLevel, BlockPos pos) {
+        VoxelShape collisionShape = serverLevel.getBlockState(pos).getCollisionShape(serverLevel, pos);
+        if (collisionShape.isEmpty()) return true;
+        return collisionShape.bounds().getSize() < 0.16;
     }
 
     public static void walkThroughWithinEyesight(ServerLevel level, EntityMaid origin, AABB aabb, Consumer<BlockPos> consumer) {

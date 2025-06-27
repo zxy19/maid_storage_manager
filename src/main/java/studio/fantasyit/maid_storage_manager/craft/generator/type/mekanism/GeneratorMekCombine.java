@@ -41,7 +41,7 @@ public class GeneratorMekCombine extends GeneratorMek<CombinerRecipe, InputRecip
     }
 
     @Override
-    protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, CombinerRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, CombinerRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         Direction extraSide = getTypeDirection(machine, List.of(DataType.EXTRA));
@@ -66,7 +66,7 @@ public class GeneratorMekCombine extends GeneratorMek<CombinerRecipe, InputRecip
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
-                List.of(recipe.getResultItem(level.registryAccess())),
+                outputs,
                 CommonTakeItemAction.TYPE,
                 false,
                 new CompoundTag()

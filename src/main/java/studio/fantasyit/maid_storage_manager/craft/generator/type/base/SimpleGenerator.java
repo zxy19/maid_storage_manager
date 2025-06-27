@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
@@ -31,13 +31,13 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
 
     protected abstract ResourceLocation getCraftType();
 
-    abstract protected C getWrappedContainer(Level level, T recipe, List<ItemStack> inputs);
+    abstract protected C getWrappedContainer(T recipe, List<ItemStack> inputs);
 
-    protected List<ItemStack> wrapInputs(Level level, T recipe, List<ItemStack> inputs) {
+    protected List<ItemStack> wrapInputs(T recipe, List<ItemStack> inputs) {
         return inputs;
     }
 
-    protected List<ItemStack> wrapOutputs(Level level, T recipe, List<ItemStack> inputs, C container, List<ItemStack> outputs) {
+    protected List<ItemStack> wrapOutputs(T recipe, List<ItemStack> inputs, C container, List<ItemStack> outputs) {
         recipe
                 .getRemainingItems(container)
                 .stream()
@@ -83,7 +83,7 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(getRecipeType())
@@ -95,13 +95,14 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
                     if (!posFilter.isAvailable(output))
                         return;
                     List<Integer> ingredientCounts = ingredientCountsTransform(inventory, level, recipe, ingredients);
+                    List<ItemStack> resultItem = List.of(recipe.getResultItem(level.registryAccess()));
                     graph.addRecipe(recipe.getId(), ingredients, ingredientCounts, output, (items) -> {
-                        C container = getWrappedContainer(level, recipe, items);
-                        List<ItemStack> result = new ArrayList<>(List.of(recipe.getResultItem(level.registryAccess())));
+                        C container = getWrappedContainer(recipe, items);
+                        List<ItemStack> result = new ArrayList<>(resultItem);
                         CraftGuideStepData step = new CraftGuideStepData(
                                 new Target(CraftingType.TYPE, pos),
-                                wrapInputs(level, recipe, items),
-                                wrapOutputs(level, recipe, items, container, result),
+                                wrapInputs(recipe, items),
+                                wrapOutputs(recipe, items, container, result),
                                 getCraftType(),
                                 false,
                                 new CompoundTag()

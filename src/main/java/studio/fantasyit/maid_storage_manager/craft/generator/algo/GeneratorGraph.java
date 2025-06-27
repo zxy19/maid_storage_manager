@@ -8,19 +8,21 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.CraftNode;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.IngredientNode;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.ItemNode;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class GeneratorGraph {
+public class GeneratorGraph  implements ICachableGeneratorGraph{
 
     protected record AddRecipeData(ResourceLocation id,
                                    List<Ingredient> ingredients,
@@ -37,121 +39,8 @@ public class GeneratorGraph {
     public int pushedSteps = 0;
     public int processedSteps = 0;
 
-    public static class Node {
-        public int id;
-        public boolean inqueue;
-        public boolean related;
-        public final List<Pair<Integer, Integer>> edges;
-        public final List<Pair<Integer, Integer>> edgesRev;
 
 
-        public Node(int id) {
-            this.id = id;
-            this.edges = new ArrayList<>();
-            this.edgesRev = new ArrayList<>();
-            this.related = false;
-        }
-
-        public void addEdge(Node to, int weight) {
-            this.edges.add(new Pair<>(to.id, weight));
-            to.edgesRev.add(new Pair<>(this.id, weight));
-        }
-
-        public void forEachEdge(BiConsumer<Integer, Integer> visitor) {
-            for (Pair<Integer, Integer> edge : this.edges) {
-                visitor.accept(edge.getA(), edge.getB());
-            }
-        }
-
-        public void forEachRev(BiConsumer<Integer, Integer> visitor) {
-            for (Pair<Integer, Integer> edge : this.edgesRev) {
-                visitor.accept(edge.getA(), edge.getB());
-            }
-        }
-
-        public void removeAllEdges(GeneratorGraph graph) {
-            this.edges.forEach(edge -> graph.getNode(edge.getA())
-                    .edgesRev
-                    .removeIf(edgeRev -> edgeRev.getA() == this.id && Objects.equals(edgeRev.getB(), edge.getB()))
-            );
-            this.edgesRev.forEach(edge -> graph.getNode(edge.getA())
-                    .edges
-                    .removeIf(edgeRev -> edgeRev.getA() == this.id && Objects.equals(edgeRev.getB(), edge.getB()))
-            );
-            this.edges.clear();
-            this.edgesRev.clear();
-        }
-    }
-
-    public static class ItemNode extends Node {
-        public final ItemStack itemStack;
-        public boolean isAvailable;
-
-        public ItemNode(int id, boolean available, ItemStack itemStack) {
-            super(id);
-            this.itemStack = itemStack;
-            this.isAvailable = available;
-        }
-    }
-
-    public static class CraftNode extends Node {
-        public final ResourceLocation recipeId;
-        public final Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier;
-        public HashSet<List<Integer>> used;
-        public final List<IngredientNode> independentIngredients;
-        public final List<IngredientNode> ingredientNodes;
-        public final List<Integer> ingredientCounts;
-        public final ResourceLocation type;
-        public final boolean isOneTime;
-
-        public CraftNode(ResourceLocation resourceLocation, int id,
-                         Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier,
-                         List<IngredientNode> ingredients,
-                         List<Integer> ingredientCounts, ResourceLocation type, boolean isOneTime) {
-            super(id);
-            this.recipeId = resourceLocation;
-            this.craftGuideSupplier = craftGuideSupplier;
-            this.used = new HashSet<>();
-            this.ingredientNodes = ingredients;
-            this.ingredientCounts = ingredientCounts;
-            this.isOneTime = isOneTime;
-            this.type = type;
-            HashSet<Integer> independentIngredientsId = new HashSet<>();
-            independentIngredients = new ArrayList<>();
-            for (IngredientNode ingredientNode : ingredients) {
-                if (!independentIngredientsId.contains(ingredientNode.id)) {
-                    independentIngredientsId.add(ingredientNode.id);
-                    independentIngredients.add(ingredientNode);
-                }
-            }
-        }
-    }
-
-    public static class IngredientNode extends Node {
-        public List<ItemStack> possibleItems;
-        public List<ItemNode> possibleItemNodes;
-        public boolean anyAvailable;
-        public @Nullable UUID cachedUUID;
-
-        public IngredientNode(int id, List<ItemNode> possibleItemNodes) {
-            super(id);
-            this.possibleItemNodes = possibleItemNodes;
-            this.possibleItems = possibleItemNodes.stream().map(i -> i.itemStack).toList();
-            this.anyAvailable = false;
-        }
-
-        public boolean isEqualTo(Ingredient ingredient) {
-            ItemStack[] items = ingredient.getItems();
-            if (items.length != possibleItems.size())
-                return false;
-            for (int i = 0; i < items.length; i++) {
-                if (!ItemStackUtil.isSameInCrafting(items[i], possibleItems.get(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
 
     List<Node> nodes;
     HashMap<ResourceLocation, List<ItemNode>> itemNodeMap = new HashMap<>();
@@ -276,7 +165,7 @@ public class GeneratorGraph {
     }
 
 
-    public void addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(Recipe<?> recipe,Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
@@ -323,6 +212,21 @@ public class GeneratorGraph {
 
     public void removeBlockedType(ResourceLocation type) {
         notToAddType.remove(type);
+    }
+
+    @Override
+    public List<CraftGuideData> getCraftGuides() {
+        return craftGuides;
+    }
+
+    @Override
+    public int getProcessedSteps() {
+        return processedSteps;
+    }
+
+    @Override
+    public int getPushedSteps() {
+        return pushedSteps;
     }
 
 

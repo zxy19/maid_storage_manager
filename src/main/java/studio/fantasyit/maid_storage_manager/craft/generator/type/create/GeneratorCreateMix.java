@@ -18,14 +18,14 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorCreateMix extends GeneratorCreate<MixingRecipe, RecipeType<MixingRecipe>, Container> {
+public class GeneratorCreateMix extends GeneratorCreate<MixingRecipe, RecipeType<MixingRecipe>, Container, BlockPos> {
     @Override
     public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.MIXING.getId();
@@ -61,10 +61,15 @@ public class GeneratorCreateMix extends GeneratorCreate<MixingRecipe, RecipeType
     }
 
     @Override
-    protected void transformSteps(MixingRecipe recipe, List<ItemStack> items, Level level, BlockPos pos, List<CraftGuideStepData> step, StepGenerateStep generateStep) {
+    protected BlockPos getState(Level level, BlockPos pos, MixingRecipe recipe, ICachableGeneratorGraph graph) {
+        return pos.below();
+    }
+
+    @Override
+    protected void transformSteps(MixingRecipe recipe, List<ItemStack> items, BlockPos state, List<CraftGuideStepData> step, StepGenerateStep generateStep) {
         if (recipe.getRequiredHeat() != HeatCondition.NONE && generateStep == StepGenerateStep.INPUT_ITEM) {
             step.add(new CraftGuideStepData(
-                    Target.virtual(pos.below(), null),
+                    Target.virtual(state, null),
                     List.of(items.get(items.size() - 1)),
                     List.of(),
                     CommonUseAction.TYPE,
@@ -76,15 +81,17 @@ public class GeneratorCreateMix extends GeneratorCreate<MixingRecipe, RecipeType
 
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+        boolean hasBurner = level.getBlockState(pos.below()).is(AllBlocks.BLAZE_BURNER.get());
         addRecipeForPos(
                 level,
                 pos,
                 getRecipeType(),
                 graph,
-                t -> t.getRequiredHeat() == HeatCondition.NONE || level.getBlockState(pos.below()).is(AllBlocks.BLAZE_BURNER.get())
+                t -> t.getRequiredHeat() == HeatCondition.NONE || hasBurner
         );
     }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.create.mixing");

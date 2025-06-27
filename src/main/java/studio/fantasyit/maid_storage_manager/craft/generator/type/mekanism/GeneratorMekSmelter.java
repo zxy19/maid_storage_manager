@@ -20,7 +20,7 @@ import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -44,7 +44,7 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         super.generate(inventory, level, pos, graph, recognizedTypePositions);
         if (REPLACE_FURNACE.getValue())
             graph.blockType(FurnaceType.TYPE);
@@ -56,7 +56,7 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
     }
 
     @Override
-    protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, ItemStackToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         if (inputSide == null || outputSide == null)
@@ -72,7 +72,7 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
-                List.of(recipe.getResultItem(level.registryAccess())),
+                outputs,
                 CommonTakeItemAction.TYPE,
                 false,
                 new CompoundTag()

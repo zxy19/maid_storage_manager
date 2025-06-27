@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.jetbrains.annotations.NotNull;
 
-public class GeneratorCreateMilling extends GeneratorCreate<MillingRecipe, RecipeType<MillingRecipe>, RecipeWrapper> {
+public class GeneratorCreateMilling extends GeneratorCreate<MillingRecipe, RecipeType<MillingRecipe>, RecipeWrapper,Object> {
     @Override
     public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.MILLING.getId();

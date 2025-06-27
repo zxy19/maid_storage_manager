@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -14,6 +15,7 @@ import java.util.Stack;
 public class FlattenSearchGraph extends HistoryAndResultGraph {
     Integer retVal = null;
     final Stack<Object> layers;
+    private Object lastLayer;
     private int speed = 90;
     private boolean waitInit = false;
 
@@ -24,7 +26,18 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                         MutableInt oMaxRequire,
                         MutableInt tNodeMinRequire,
                         MutableBoolean tKeepIngredient,
-                        MutableBoolean keepCurrently
+                        MutableBoolean keepCurrently,
+                        MutableInt startAt
+    ) {
+    }
+
+    record DfsLayerStartAt(ItemNode node, int maxRequire,
+                           MutableInt i,
+                           Integer historyId,
+                           int resultId,
+                           MutableInt maxCollected,
+                           MutableInt minStepCosted,
+                           MutableInt startAt
     ) {
     }
 
@@ -39,6 +52,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     ) {
     }
 
+
     public FlattenSearchGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
         super(items, craftGuides);
         layers = new Stack<>();
@@ -47,7 +61,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     private void setReturnValue(int value) {
         retVal = value;
         if (!layers.isEmpty())
-            layers.pop();
+            lastLayer = layers.pop();
     }
 
 
@@ -120,6 +134,12 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         context.tKeepIngredient.setValue(tKeepIngredient);
         context.keepCurrently.setValue(keepCurrently);
         context.realMaxRequire.setValue(maxRequire);
+
+        dfsStartAtAdd(node, maxRequire);
+    }
+
+    private void dfsItemStartAtReturn(DfsLayerItem context, int startAt) {
+        context.startAt.setValue(startAt);
     }
 
     private void dfsItemLoopCall(DfsLayerItem context) {
@@ -137,8 +157,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     }
 
     private void dfsItemLoopReturn(DfsLayerItem context, int available) {
-        int i = context.i.getValue();
         ItemNode node = context.node;
+        int i = (context.i.getValue() + context.startAt.getValue()) % node.edges.size();
         int weight = node.edges.get(i).getB();
         logger.logExitLevel("Craft Finish=%d", available);
         int collect = Math.min(available * weight, context.remainToCraft.getValue());
@@ -173,6 +193,83 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         }
     }
 
+    public void dfsItemAdd(ItemNode node, int maxRequire, int stepCount) {
+        DfsLayerItem push = (DfsLayerItem) layers.push(new DfsLayerItem(node,
+                maxRequire,
+                stepCount,
+                new MutableInt(),
+                new MutableInt(maxRequire),
+                new MutableInt(),
+                new MutableInt(),
+                new MutableInt(),
+                new MutableBoolean(),
+                new MutableBoolean(),
+                new MutableInt(-1)
+        ));
+        dfsItemPre(push);
+    }
+
+
+    public void dfsStartAtAdd(ItemNode node, int maxRequire) {
+        layers.add(new DfsLayerStartAt(node, maxRequire,
+                new MutableInt(0),
+                historyId.getValue(),
+                results.size(),
+                new MutableInt(0),
+                new MutableInt(Integer.MAX_VALUE),
+                new MutableInt(0)
+        ));
+        if (!Config.craftingPreferShortestPath)
+            setReturnValue(0);
+        else if (node.bestRecipeStartAt != -1)
+            setReturnValue(node.bestRecipeStartAt);
+            //循环配方，直接返回当前作为起点。寻找最短环作为目标
+        else if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient)
+            setReturnValue(maxRequire);
+        else if (node.edges.size() <= 1)
+            setReturnValue(0);
+        else
+            node.bestRecipeStartAtCalculating = true;
+    }
+
+    public void dfsStartAtCall(DfsLayerStartAt context) {
+        while (context.i.getValue() < context.node.edges.size())
+            if (context.node.bestRecipeStartAt != -1 && context.i.getValue() != context.node.bestRecipeStartAt)
+                context.i.add(1);
+            else break;
+        if (context.i.getValue() >= context.node.edges.size()) {
+            context.node.bestRecipeStartAt = context.startAt.getValue();
+            context.node.bestRecipeStartAtCalculating = false;
+            setReturnValue(context.startAt.getValue());
+            return;
+        }
+
+        int to = context.node.edges.get(context.i.getValue()).getA();
+        int weight = context.node.edges.get(context.i.getValue()).getB();
+        CraftNode toNode = (CraftNode) getNode(to);
+        int maxRequiredForCurrentCraftNode = (context.maxRequire + weight - 1) / weight;
+        if (toNode.hasLoopIngredient)
+            maxRequiredForCurrentCraftNode = (context.node.singleTimeCount + weight - 1) / weight;
+        logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
+        dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode);
+    }
+
+    public void dfsStartAtRet(DfsLayerStartAt context, int available) {
+        int weight = context.node.edges.get(context.i.getValue()).getB();
+        logger.logExitLevel("Craft Finish=%d", available);
+        int collect = Math.min(available * weight, context.maxRequire);
+
+        if (collect > context.maxCollected.getValue() || (collect == context.maxCollected.getValue() && results.size() < context.minStepCosted.getValue())) {
+            context.maxCollected.setValue(collect);
+            context.minStepCosted.setValue(results.size());
+            context.startAt.setValue(context.i.getValue());
+        }
+
+        popHistoryAt(context.historyId);
+        while (context.resultId < results.size()) results.removeLast();
+        context.i.add(1);
+    }
+
     public void dfsCraftAdd(CraftNode toNode, int maxRequiredForCurrentCraftNode) {
         DfsLayerCraft push = (DfsLayerCraft) layers.push(new DfsLayerCraft(
                 toNode,
@@ -200,21 +297,6 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 }
             }
         }
-    }
-
-    public void dfsItemAdd(ItemNode node, int maxRequire, int stepCount) {
-        DfsLayerItem push = (DfsLayerItem) layers.push(new DfsLayerItem(node,
-                maxRequire,
-                stepCount,
-                new MutableInt(),
-                new MutableInt(maxRequire),
-                new MutableInt(),
-                new MutableInt(),
-                new MutableInt(),
-                new MutableBoolean(),
-                new MutableBoolean()
-        ));
-        dfsItemPre(push);
     }
 
     public void dfsCraftCall(DfsLayerCraft context) {
@@ -314,7 +396,10 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
             if (top instanceof DfsLayerItem item) {
                 if (retVal != null) {
-                    dfsItemLoopReturn(item, copyGetRetValue());
+                    if (lastLayer instanceof DfsLayerStartAt)
+                        dfsItemStartAtReturn(item, copyGetRetValue());
+                    else
+                        dfsItemLoopReturn(item, copyGetRetValue());
                 } else {
                     dfsItemLoopCall(item);
                 }
@@ -323,6 +408,12 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                     dfsCraftRet(craft, copyGetRetValue());
                 } else {
                     dfsCraftCall(craft);
+                }
+            } else if (top instanceof DfsLayerStartAt startAt) {
+                if (retVal != null) {
+                    dfsStartAtRet(startAt, copyGetRetValue());
+                } else {
+                    dfsStartAtCall(startAt);
                 }
             }
         }

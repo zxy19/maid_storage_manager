@@ -54,7 +54,7 @@ public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, Container>
     }
 
     @Override
-    protected Container getWrappedContainer(Level level, SmeltingRecipe recipe, List<ItemStack> inputs) {
+    protected Container getWrappedContainer(SmeltingRecipe recipe, List<ItemStack> inputs) {
         SimpleContainer c = new SimpleContainer(2);
         for (int i = 0; i < Math.min(2, inputs.size()); i++) {
             c.setItem(i, inputs.get(i));

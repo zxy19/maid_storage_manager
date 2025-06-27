@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -31,7 +32,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceIte
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
@@ -48,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeWrapper>, RecipeType<ProcessingRecipe<RecipeWrapper>>, RecipeWrapper> {
+public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeWrapper>, RecipeType<ProcessingRecipe<RecipeWrapper>>, RecipeWrapper,BlockPos> {
     ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
             "count",
             8,
@@ -125,7 +126,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         Pair<MutableBoolean, MutableBoolean> furnaceReplace = new Pair<>(new MutableBoolean(), new MutableBoolean());
         BlockEntity _be = level.getBlockEntity(pos);
         if (_be instanceof EncasedFanBlockEntity be) {
@@ -172,7 +173,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
         return null;
     }
 
-    private void generateFor(FanProcessingType typeAt, Level level, BlockPos test, GeneratorGraph graph, Pair<MutableBoolean, MutableBoolean> furnaceReplace) {
+    private void generateFor(FanProcessingType typeAt, Level level, BlockPos test, ICachableGeneratorGraph graph, Pair<MutableBoolean, MutableBoolean> furnaceReplace) {
         RecipeType<?> type = getRecipeType(typeAt);
         if (type != null) {
             if (typeAt instanceof AllFanProcessingTypes.BlastingType)
@@ -186,7 +187,8 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                 level.getRecipeManager()
                         .getAllRecipesFor((RecipeType<Recipe<Container>>) type)
                         .forEach((recipe) -> {
-                            if (!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
+                            ItemStack resultItem = recipe.getResultItem(level.registryAccess());
+                            if (!posFilter.isAvailable(resultItem))
                                 return;
                             graph.addRecipe(recipe, items -> {
                                 List<CraftGuideStepData> steps = new ArrayList<>();
@@ -201,7 +203,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                                 steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, test),
                                         List.of(),
-                                        List.of(recipe.getResultItem(level.registryAccess())),
+                                        List.of(resultItem),
                                         CommonTakeItemAction.TYPE,
                                         false,
                                         new CompoundTag()

@@ -52,7 +52,7 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Cont
     }
 
     @Override
-    protected List<ItemStack> wrapOutputs(Level level, SmithingRecipe recipe, List<ItemStack> inputs, Container container, List<ItemStack> outputs) {
+    protected List<ItemStack> wrapOutputs(SmithingRecipe recipe, List<ItemStack> inputs, Container container, List<ItemStack> outputs) {
         if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
             return List.of(smithingTransformRecipe.result);
         } else {
@@ -61,7 +61,7 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Cont
     }
 
     @Override
-    protected Container getWrappedContainer(Level level, SmithingRecipe recipe, List<ItemStack> inputs) {
+    protected Container getWrappedContainer(SmithingRecipe recipe, List<ItemStack> inputs) {
         SimpleContainer simpleContainer = new SimpleContainer(3);
         for (int i = 0; i < Math.min(3, inputs.size()); i++) {
             simpleContainer.setItem(i, inputs.get(i));

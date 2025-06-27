@@ -94,4 +94,7 @@ public class Integrations {
     public static boolean kjs() {
         return ModList.get().isLoaded("kubejs");
     }
+    public static boolean botania(){
+        return ModList.get().isLoaded("botania");
+    }
 }

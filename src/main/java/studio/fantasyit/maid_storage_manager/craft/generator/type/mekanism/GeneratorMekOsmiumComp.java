@@ -28,7 +28,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceIte
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -76,7 +76,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
     }
 
     @Override
-    protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, ItemStackGasToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackGasToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         if (machine instanceof TileEntityOsmiumCompressor oc)
             oc.getGasManager();
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
@@ -103,7 +103,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
-                List.of(recipe.getResultItem(level.registryAccess()).copyWithCount(inputs.get(0).getCount())),
+                List.of(outputs.get(0).copyWithCount(inputs.get(0).getCount())),
                 CommonTakeItemAction.TYPE,
                 false,
                 new CompoundTag()
@@ -112,7 +112,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
     }
 
     @Override
-    public void generate(ItemStackGasToItemStackRecipe recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+    public void generate(ItemStackGasToItemStackRecipe recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
         List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput());
         Ingredient ingredient = Ingredient.of(recipe.getItemInput().getRepresentations().stream());
         for (Pair<ItemStack, Integer> pair : possibleInfusion) {
@@ -128,7 +128,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
             ResourceLocation id = new ResourceLocation(oid.getNamespace(), oid.getPath() + "_" + itemKey.getNamespace() + "_" + itemKey.getPath());
             graph.addRecipe(id, inputs, counts, outputs, (items) -> {
                 List<CraftGuideStepData> step = new ArrayList<>();
-                if (addSteps(level, pos, machine, recipe, items, outputs, step)) {
+                if (addSteps(pos, machine, recipe, items, outputs, step)) {
                     return new CraftGuideData(step, CommonType.TYPE);
                 }
                 return null;

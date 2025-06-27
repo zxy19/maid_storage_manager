@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.jetbrains.annotations.NotNull;
 
-public class GeneratorCreatePress extends GeneratorCreate<PressingRecipe, RecipeType<PressingRecipe>, RecipeWrapper> {
+public class GeneratorCreatePress extends GeneratorCreate<PressingRecipe, RecipeType<PressingRecipe>, RecipeWrapper,Object> {
     @Override
     public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.PRESSING.getId();

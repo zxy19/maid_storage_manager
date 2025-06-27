@@ -38,7 +38,7 @@ public class GeneratorMekCrushing extends GeneratorMek<ItemStackToItemStackRecip
     }
 
     @Override
-    protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, ItemStackToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         if (inputSide == null || outputSide == null)
@@ -54,7 +54,7 @@ public class GeneratorMekCrushing extends GeneratorMek<ItemStackToItemStackRecip
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
-                List.of(recipe.getResultItem(level.registryAccess())),
+                outputs,
                 CommonTakeItemAction.TYPE,
                 false,
                 new CompoundTag()

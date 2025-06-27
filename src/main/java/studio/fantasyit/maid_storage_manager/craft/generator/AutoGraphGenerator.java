@@ -3,16 +3,20 @@ package studio.fantasyit.maid_storage_manager.craft.generator;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.AABB;
 import org.apache.commons.lang3.mutable.MutableInt;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ThreadedGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.GraphCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
@@ -24,7 +28,7 @@ import java.util.*;
 public class AutoGraphGenerator {
     private static final ResourceLocation INTERNAL_TYPE = new ResourceLocation(MaidStorageManager.MODID, "_maid_storage_internal_existed");
     private final EntityMaid maid;
-    protected final GeneratorGraph graph;
+    protected final ICachableGeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
     protected final List<InventoryItem> inventory;
     protected final MaidPathFindingBFS pathfindingBFS;
@@ -35,7 +39,13 @@ public class AutoGraphGenerator {
     protected int craftGeneratorTypeIndex = 0;
     protected double currentMinDistance = Double.MAX_VALUE;
     protected BlockPos minPos;
-    protected GraphCache.CacheRecord cacheRecord;
+
+    protected ICachableGeneratorGraph getGraph(RegistryAccess registryAccess) {
+        return switch (Config.craftingGenerator) {
+            case RELEVANCE -> new GeneratorGraph(registryAccess);
+            case RELEVANCE_THREADED -> new ThreadedGeneratorGraph(registryAccess);
+        };
+    }
 
     public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList, List<CraftGuideData> hasExisted) {
         this.maid = maid;
@@ -65,7 +75,7 @@ public class AutoGraphGenerator {
             hasDoneTypes.addAll(recognizedTypePositions.keySet());
             graph.invalidAllCraftWithType(INTERNAL_TYPE);
         } else {
-            graph = new GeneratorGraph(maid.level().registryAccess());
+            graph = getGraph(maid.level().registryAccess());
             recognizedTypePositions = new HashMap<>();
         }
         graph.setItems(inventory.stream().map(i -> i.itemStack).toList(), itemList);
@@ -97,6 +107,7 @@ public class AutoGraphGenerator {
                 if (!generator.positionalAvailable((ServerLevel) maid.level(), maid, next, pathfindingBFS))
                     continue;
                 if (generator.allowMultiPosition()) {
+                    count++;
                     graph.setCurrentGeneratorType(generator);
                     generator.generate(inventory, maid.level(), next, graph, recognizedTypePositions);
                     recognizedTypePositions.get(generator.getType()).add(next);
@@ -109,7 +120,7 @@ public class AutoGraphGenerator {
                     }
                 }
             }
-            if (++count > 2000)
+            if (count > 5)
                 return false;
         }
         if (minPos != null) {
@@ -126,19 +137,19 @@ public class AutoGraphGenerator {
     }
 
     public List<CraftGuideData> getCraftGuideData() {
-        return graph.craftGuides;
+        return graph.getCraftGuides();
     }
 
     public int getDone() {
         if (isProcessingBlocks)
             return index + craftGeneratorTypeIndex * blockPosList.size();
-        return graph.processedSteps;
+        return graph.getProcessedSteps();
     }
 
     public int getTotal() {
         if (isProcessingBlocks)
             return blockPosList.size() * iAutoCraftGuideGenerators.size();
-        return graph.pushedSteps;
+        return graph.getPushedSteps();
     }
 
     public float getProgress() {

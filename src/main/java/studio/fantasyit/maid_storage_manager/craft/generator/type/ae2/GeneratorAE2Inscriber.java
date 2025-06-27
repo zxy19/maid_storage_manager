@@ -20,13 +20,15 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceIte
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,12 +67,15 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         if (level.getBlockEntity(pos) instanceof InscriberBlockEntity inscriber) {
+            StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
             ItemStack topItem = inscriber.getInternalInventory().getStackInSlot(0);
             level.getRecipeManager()
                     .getAllRecipesFor(InscriberRecipe.TYPE)
                     .forEach(recipe -> {
+                        if (!posFilter.isAvailable(recipe.getResultItem()))
+                            return;
                         //复制配方，全都不处理。
                         if (!recipe.getTopOptional().isEmpty() && recipe.getTopOptional().test(recipe.getResultItem())) {
                             return;

@@ -35,12 +35,12 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
     }
 
     @Override
-    protected CraftingContainer getWrappedContainer(Level level, CraftingRecipe recipe, List<ItemStack> inputs) {
+    protected CraftingContainer getWrappedContainer(CraftingRecipe recipe, List<ItemStack> inputs) {
         return RecipeUtil.wrapCraftingContainer(inputs, recipe);
     }
 
     @Override
-    protected List<ItemStack> wrapInputs(Level level, CraftingRecipe recipe, List<ItemStack> inputs) {
+    protected List<ItemStack> wrapInputs(CraftingRecipe recipe, List<ItemStack> inputs) {
         return wrapInputsForRecipe(inputs, recipe);
     }
 

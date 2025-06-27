@@ -5,19 +5,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GraphCache {
     public record CacheRecord(UUID maid, BlockPos restrictCenter, Map<ResourceLocation, List<BlockPos>> targets,
-                              GeneratorGraph graph) {
+                              ICachableGeneratorGraph graph) {
     }
 
-    public static final Map<UUID, CacheRecord> CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+    public static final Map<UUID, CacheRecord> CACHE = new ConcurrentHashMap<>();
 
     public static @Nullable CacheRecord get(UUID maid) {
         return CACHE.get(maid);
@@ -49,7 +50,7 @@ public class GraphCache {
         return cacheRecord;
     }
 
-    public static void putCache(EntityMaid maid, Map<ResourceLocation, List<BlockPos>> targets, GeneratorGraph generatorGraph) {
+    public static void putCache(EntityMaid maid, Map<ResourceLocation, List<BlockPos>> targets, ICachableGeneratorGraph generatorGraph) {
         CacheRecord cacheRecord = new CacheRecord(maid.getUUID(), maid.getRestrictCenter(), targets, generatorGraph);
         CACHE.put(maid.getUUID(), cacheRecord);
     }

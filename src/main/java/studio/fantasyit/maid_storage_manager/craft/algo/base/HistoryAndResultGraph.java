@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.base;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LevelBasedLogger;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -131,6 +132,8 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
 
     @Override
     public Optional<Integer> getMaxAvailable() {
+        if (Config.craftingPreferShortestPath)
+            return Optional.empty();
         if (targetAvailable == -1)
             return super.getMaxAvailable();
         return Optional.of(targetAvailable);

@@ -49,6 +49,9 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         public boolean hasKeepIngredient;
         public int maxLack;
 
+        public int bestRecipeStartAt;
+        public boolean bestRecipeStartAtCalculating;
+
         public ItemNode(int id, boolean related, ItemStack itemStack) {
             super(id, related);
             this.itemStack = itemStack;
@@ -65,6 +68,8 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             this.minStepRequire = Integer.MAX_VALUE;
             this.maxLack = 0;
             this.singleTimeCount = 1;
+            this.bestRecipeStartAt = -1;
+            this.bestRecipeStartAtCalculating = false;
         }
 
         public void addCount(int count) {
@@ -205,6 +210,8 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
                 itemNode.minStepRequire = Integer.MAX_VALUE;
                 itemNode.required = 0;
                 itemNode.crafted = 0;
+                itemNode.bestRecipeStartAtCalculating = false;
+                itemNode.bestRecipeStartAt = -1;
             } else if (node instanceof CraftNode craftNode) {
                 craftNode.scheduled = 0;
                 craftNode.hasLoopIngredient = false;

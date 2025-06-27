@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
@@ -62,10 +62,10 @@ public abstract class GeneratorMek<T extends MekanismRecipe, C extends IInputRec
         return null;
     }
 
-    abstract protected boolean addSteps(Level level, BlockPos pos, TileEntityConfigurableMachine machine, T recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps);
+    abstract protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, T recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps);
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         if (level.getBlockEntity(pos) instanceof TileEntityConfigurableMachine machine) {
             level.getRecipeManager()
@@ -74,19 +74,19 @@ public abstract class GeneratorMek<T extends MekanismRecipe, C extends IInputRec
         }
     }
 
-    public void generate(T recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, GeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+    public void generate(T recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
         List<Ingredient> ingredient = getRecipeIngredients(recipe, level.getRecipeManager(), recognizedTypePositions);
         List<Integer> counts = getIngredientCounts(recipe, ingredient);
         List<ItemStack> outputs = getRecipeOutputs(recipe, level.registryAccess());
         if (outputs.isEmpty() || !posFilter.isAvailable(outputs.get(0)))
             return;
-        generateForIOR(recipe, machine, level, pos, graph, ingredient, counts, outputs);
+        generateForIOR(recipe, machine, pos, graph, ingredient, counts, outputs);
     }
 
-    protected void generateForIOR(T recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, GeneratorGraph graph, List<Ingredient> ingredient, List<Integer> counts, List<ItemStack> outputs) {
+    protected void generateForIOR(T recipe, TileEntityConfigurableMachine machine, BlockPos pos, ICachableGeneratorGraph graph, List<Ingredient> ingredient, List<Integer> counts, List<ItemStack> outputs) {
         graph.addRecipe(recipe.getId(), ingredient, counts, outputs, (items) -> {
             List<CraftGuideStepData> step = new ArrayList<>();
-            if (addSteps(level, pos, machine, recipe, items, outputs, step)) {
+            if (addSteps(pos, machine, recipe, items, outputs, step)) {
                 return new CraftGuideData(step, CommonType.TYPE);
             }
             return null;

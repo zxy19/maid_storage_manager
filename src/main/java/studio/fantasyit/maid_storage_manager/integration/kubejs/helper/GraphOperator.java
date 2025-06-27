@@ -7,16 +7,16 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
 public class GraphOperator{
-    public GeneratorGraph graph;
+    public ICachableGeneratorGraph graph;
 
-    public GraphOperator(GeneratorGraph graph) {
+    public GraphOperator(ICachableGeneratorGraph graph) {
         this.graph = graph;
     }
 

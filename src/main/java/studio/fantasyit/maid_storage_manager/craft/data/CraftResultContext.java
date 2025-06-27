@@ -11,7 +11,6 @@ public class CraftResultContext {
     int slotConsume;
 
     public CraftResultContext(List<CraftLayer> layers) {
-
         this.layers = layers;
         this.itemConsumeCount = new HashMap<>();
         this.slotConsume = 0;
