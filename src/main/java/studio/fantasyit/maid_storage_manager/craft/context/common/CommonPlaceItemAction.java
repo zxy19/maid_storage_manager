@@ -17,15 +17,18 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageSplitInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"insert");
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "insert");
     protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
+    boolean split = false;
+
     public CommonPlaceItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
@@ -46,8 +49,23 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         if (storageContext == null) {
             return Result.FAIL;
         }
+        if (craftGuideStepData.extraData.contains("split") && craftGuideStepData.extraData.getBoolean("split")) {
+            split = true;
+            if (!(storageContext instanceof IStorageSplitInsertableContext))
+                return Result.FAIL;
+        } else if (!(storageContext instanceof IStorageInsertableContext)) {
+            return Result.FAIL;
+        }
         storageContext.start(maid, level, validTarget);
         return Result.CONTINUE;
+    }
+
+    protected ItemStack insert(ItemStack item) {
+        if (split) {
+            return ((IStorageSplitInsertableContext) storageContext).splitInsert(item);
+        } else {
+            return ((IStorageInsertableContext) storageContext).insert(item);
+        }
     }
 
     @Override
@@ -56,52 +74,49 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         boolean hasChange = false;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
-        if (storageContext instanceof IStorageInsertableContext isic) {
-            boolean shouldDoPlace = false;
-            int count = 0;
-            for (; slot < inv.getSlots(); slot++) {
-                //物品匹配且还需继续放入
-                @NotNull ItemStack item = inv.getStackInSlot(slot);
-                if (item.isEmpty()) continue;
-                if (count++ > 10) break;
-                if (ItemStackUtil.isSameInCrafting(stepItem, item)) {
-                    if (craftLayer.getCurrentStepCount(ingredientIndex) < stepItem.getCount()) {
-                        shouldDoPlace = true;
-                        break;
-                    }
+
+        boolean shouldDoPlace = false;
+        int count = 0;
+        for (; slot < inv.getSlots(); slot++) {
+            //物品匹配且还需继续放入
+            @NotNull ItemStack item = inv.getStackInSlot(slot);
+            if (item.isEmpty()) continue;
+            if (count++ > 10) break;
+            if (ItemStackUtil.isSameInCrafting(stepItem, item)) {
+                if (craftLayer.getCurrentStepCount(ingredientIndex) < stepItem.getCount()) {
+                    shouldDoPlace = true;
+                    break;
                 }
             }
-            if (shouldDoPlace) {
-                @NotNull ItemStack item = inv.getStackInSlot(slot);
-                int placed = craftLayer.getCurrentStepCount(ingredientIndex);
-                int required = stepItem.getCount();
-                int pick = Math.min(
-                        required - placed,
-                        item.getCount()
-                );
-                ItemStack copy = item.copyWithCount(pick);
-                ItemStack rest = isic.insert(copy);
-                item.shrink(pick - rest.getCount());
-                craftLayer.addCurrentStepPlacedCounts(ingredientIndex, pick - rest.getCount());
-                if (pick - rest.getCount() != 0) {
-                    hasChange = true;
-                } else if (craftLayer.getStep() == 1)
-                    slot++;
-            }
+        }
+        if (shouldDoPlace) {
+            @NotNull ItemStack item = inv.getStackInSlot(slot);
+            int placed = craftLayer.getCurrentStepCount(ingredientIndex);
+            int required = stepItem.getCount();
+            int pick = Math.min(
+                    required - placed,
+                    item.getCount()
+            );
+            ItemStack copy = item.copyWithCount(pick);
+            ItemStack rest = insert(copy);
+            item.shrink(pick - rest.getCount());
+            craftLayer.addCurrentStepPlacedCounts(ingredientIndex, pick - rest.getCount());
+            if (pick - rest.getCount() != 0) {
+                hasChange = true;
+            } else if (craftLayer.getStep() == 1)
+                slot++;
+        }
 
-            if (craftLayer.getCurrentStepCount(ingredientIndex) >= stepItem.getCount()) {
+        if (craftLayer.getCurrentStepCount(ingredientIndex) >= stepItem.getCount()) {
+            ingredientIndex++;
+            slot = 0;
+        } else if (slot >= inv.getSlots()) {
+            if (craftGuideStepData.isOptional())//尽力满足输入，而非必须全部输入
                 ingredientIndex++;
-                slot = 0;
-            } else if (slot >= inv.getSlots()) {
-                if (craftGuideStepData.isOptional())//尽力满足输入，而非必须全部输入
-                    ingredientIndex++;
-                slot = 0;
-            }
-            if (ingredientIndex >= craftGuideStepData.getNonEmptyInput().size()) {
-                return Result.SUCCESS;
-            }
-        } else {
-            return Result.FAIL;
+            slot = 0;
+        }
+        if (ingredientIndex >= craftGuideStepData.getNonEmptyInput().size()) {
+            return Result.SUCCESS;
         }
         return hasChange ? Result.CONTINUE : Result.NOT_DONE;
     }

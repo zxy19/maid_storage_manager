@@ -6,16 +6,19 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SimpleSearchGraph extends HistoryAndResultGraph {
     public SimpleSearchGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
         super(items, craftGuides);
     }
 
-    private int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount) {
+    private int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount, boolean estimating) {
         logger.log("Item use available: %d", node.getCurrentRemain());
         //CASE:物品数量够用：直接返回不需要计算方案
         if (node.getCurrentRemain() >= maxRequire) {
@@ -68,8 +71,10 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
         MutableInt remainToCraft = new MutableInt(maxRequire - stepCost);
         logger.log("Item %s use -= %d", node.itemStack, stepCost);
+        logger.logEntryNewLevel("START OF ESTIMATING FOR %s", node.itemStack);
         pushHistory(node, HistoryRecord.RECORD_REQUIRED, stepCost);
         int startsAt = dfsCalcItemNodeStartsAt(node, remainToCraft.getValue());
+        logger.logExitLevel("END OF ESTIMATING %s", node.itemStack);
         for (int _i = 0; _i < node.edges.size(); _i++) {
             int i = (_i + startsAt) % node.edges.size();
             int to = node.edges.get(i).getA();
@@ -78,8 +83,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
             if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
             logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
-            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
-
+            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, estimating);
             logger.logExitLevel("Craft Finish=%d", available);
             int collect = Math.min(available * weight, remainToCraft.getValue());
             if (available > 0) {
@@ -91,7 +95,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 }
                 logger.log("Item use -= available %d", collect);
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, collect);
-                i--;
+                _i--;
             }
             remainToCraft.subtract(collect);
             if (remainToCraft.getValue() <= 0) {
@@ -114,7 +118,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
     }
 
     private int dfsCalcItemNodeStartsAt(ItemNode node, int maxRequire) {
-        if (!Config.craftingPreferShortestPath) return 0;
+        if (Config.craftingShortestPathEvaluator == CraftPlanEvaluator.NONE) return 0;
         if (node.bestRecipeStartAt != -1) return node.bestRecipeStartAt;
         //循环配方，直接返回当前作为起点。寻找最短环作为目标
         if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient) return maxRequire;
@@ -124,7 +128,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         int resultId = results.size();
 
         int maxCollected = 0;
-        int minStepCosted = Integer.MAX_VALUE;
+        int minScore = Integer.MAX_VALUE;
         int startAt = 0;
 
         for (int i = 0; i < node.edges.size(); i++) {
@@ -136,26 +140,32 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             int maxRequiredForCurrentCraftNode = (maxRequire + weight - 1) / weight;
             if (toNode.hasLoopIngredient)
                 maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
-            logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
-            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode);
-            logger.logExitLevel("Craft Finish=%d", available);
+            logger.logEntryNewLevel("Estimating Cost: Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
+            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, true);
+            if (toNode.hasLoopIngredient && available == maxRequiredForCurrentCraftNode) {
+                available = maxRequire;
+            }
+            logger.logExitLevel("Estimating Cost: Finish=%d", available);
             int collect = Math.min(available * weight, maxRequire);
 
-            if (collect > maxCollected || (collect == maxCollected && results.size() < minStepCosted)) {
+            Map<Integer, Integer> changeMap = popHistoryAtAndCollectChanges(historyId);
+            List<CraftResultNode> addResults = new ArrayList<>();
+            while (resultId < results.size()) addResults.add(results.removeLast());
+
+            int score = Config.craftingShortestPathEvaluator.getScore(changeMap, addResults, this);
+
+            if (collect > maxCollected || (collect == maxCollected && score < minScore)) {
                 maxCollected = collect;
-                minStepCosted = results.size();
+                minScore = score;
                 startAt = i;
             }
-
-            popHistoryAt(historyId);
-            while (resultId < results.size()) results.removeLast();
         }
         node.bestRecipeStartAt = startAt;
         node.bestRecipeStartAtCalculating = false;
         return startAt;
     }
 
-    public int dfsCalcCraftNode(CraftNode node, int maxRequire) {
+    public int dfsCalcCraftNode(CraftNode node, int maxRequire, boolean estimating) {
         int restRequire = maxRequire;
         if (node.maxSuccess < restRequire)
             restRequire = node.maxSuccess;
@@ -188,7 +198,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 //当前物品可以获取的最大数量
                 int currentRequire = dfsCalcItemNodeRequired(toNode,
                         simulateRequire * edge.getB(),
-                        edge.getB());
+                        edge.getB(),
+                        estimating);
                 logger.log("Item Finish=%d", currentRequire);
                 currentRequire /= edge.getB();
                 logger.logExitLevel("Co Craft Finish=%d", currentRequire);
@@ -229,7 +240,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
     @Override
     public boolean process() {
-        targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount);
+        targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
         return true;
     }
 }

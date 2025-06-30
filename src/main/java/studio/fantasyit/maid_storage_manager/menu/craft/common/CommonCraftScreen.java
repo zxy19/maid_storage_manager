@@ -49,7 +49,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         SORT_REMOVE,
         SORT_DOWN,
         OPTIONAL,
-        TIME
+        TIME,
+        SPLIT
     }
 
     protected enum BUTTON_TYPE_SPECIAL {BLOCK}
@@ -175,6 +176,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     v == 0 ? Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_tick") : Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_second")
             );
         }, this)));
+
 
         EditBox editBox = addRenderableWidget(new EditBox(font,
                 getGuiLeft() + 90,

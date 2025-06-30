@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LevelBasedLogger;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
@@ -65,6 +66,28 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
                 }
             }
         }
+    }
+
+    public Map<Integer, Integer> popHistoryAtAndCollectChanges(int index) {
+        Map<Integer, Integer> changes = new HashMap<>();
+        while (!this.history.isEmpty() && this.history.peek().historyStackId > index) {
+            HistoryAndResultGraph.HistoryRecord pop = this.history.pop();
+            if (!changes.containsKey(pop.node.id))
+                changes.put(pop.node.id, 0);
+            changes.put(pop.node.id, changes.get(pop.node.id) - pop.value);
+            switch (pop.id) {
+                case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {
+                    ((ItemNode) pop.node).crafted -= pop.value;
+                }
+                case HistoryAndResultGraph.HistoryRecord.RECORD_REQUIRED -> {
+                    ((ItemNode) pop.node).required -= pop.value;
+                }
+                case HistoryAndResultGraph.HistoryRecord.RECORD_SCHEDULED -> {
+                    ((CraftNode) pop.node).scheduled -= pop.value;
+                }
+            }
+        }
+        return changes;
     }
 
     @Override
@@ -132,7 +155,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
 
     @Override
     public Optional<Integer> getMaxAvailable() {
-        if (Config.craftingPreferShortestPath)
+        if (Config.craftingShortestPathEvaluator != CraftPlanEvaluator.NONE)
             return Optional.empty();
         if (targetAvailable == -1)
             return super.getMaxAvailable();

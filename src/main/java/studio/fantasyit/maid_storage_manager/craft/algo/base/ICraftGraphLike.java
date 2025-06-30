@@ -73,6 +73,7 @@ public interface ICraftGraphLike {
 
     /**
      * 复制，迁移到其他算法
+     *
      * @param init
      * @return
      */
@@ -80,6 +81,7 @@ public interface ICraftGraphLike {
 
     /**
      * 添加剩余物品。如果算法不能自己统计合成余产物，此处接收
+     *
      * @param item
      * @param count
      */
@@ -88,6 +90,7 @@ public interface ICraftGraphLike {
 
     /**
      * 如果当前算法可以统计成功合成数量，返回
+     *
      * @return
      */
     default Optional<Integer> getMaxAvailable() {

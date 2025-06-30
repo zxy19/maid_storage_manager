@@ -4,6 +4,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,7 @@ public class Config {
         RELEVANCE,
         RELEVANCE_THREADED
     }
+
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
@@ -184,9 +186,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue CRAFTING_NO_CALCULATOR = BUILDER
             .comment("No need portable calculator for crafting")
             .define("crafting.no_calculator", false);
-    private static final ForgeConfigSpec.BooleanValue CRAFTING_PREFER_SHORTEST_PATH = BUILDER
-            .comment("No need portable calculator for crafting")
-            .define("crafting.prefer_shortest_path", true);
+    private static final ForgeConfigSpec.EnumValue<CraftPlanEvaluator> CRAFTING_PREFER_SHORTEST_PATH = BUILDER
+            .comment("The way to select the correct crafting path.")
+            .defineEnum("crafting.shortest_path_evaluator", CraftPlanEvaluator.CRAFT_GUIDES, CraftPlanEvaluator.values());
 
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
@@ -231,7 +233,7 @@ public class Config {
     public static List<String> noMatchPaths;
     public static boolean craftingGenerateCraftGuide;
     public static boolean craftingNoCalculator;
-    public static boolean craftingPreferShortestPath;
+    public static CraftPlanEvaluator craftingShortestPathEvaluator;
     public static boolean generatePartial;
     public static CraftGenerator craftingGenerator;
 
@@ -279,7 +281,7 @@ public class Config {
         craftingLoopSolverPreventIndirect = LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY.get();
         craftingLoopSolverPreventNewByProduct = LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.get();
         craftingGenerator = CRAFTING_GENERATOR.get();
-        craftingPreferShortestPath = CRAFTING_PREFER_SHORTEST_PATH.get();
+        craftingShortestPathEvaluator = CRAFTING_PREFER_SHORTEST_PATH.get();
     }
 
     public static void save() {
@@ -325,7 +327,7 @@ public class Config {
         LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY.set(craftingLoopSolverPreventIndirect);
         LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.set(craftingLoopSolverPreventNewByProduct);
         CRAFTING_GENERATOR.set(craftingGenerator);
-        CRAFTING_PREFER_SHORTEST_PATH.set(craftingPreferShortestPath);
+        CRAFTING_PREFER_SHORTEST_PATH.set(craftingShortestPathEvaluator);
     }
 
     public static void saveAfter(Runnable o) {

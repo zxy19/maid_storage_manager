@@ -98,4 +98,38 @@ public class MoveUtil {
         }
         return true;
     }
+
+    public static boolean setMovementIfNotReached(EntityMaid maid) {
+        BlockPos targetPos = MemoryUtil.getTargetPos(maid);
+        if (targetPos == null) return false;
+        double maidX = maid.getX();
+        double maidZ = maid.getZ();
+        Vec3 center = targetPos.getCenter();
+        double targetCenterX = center.x;
+        double targetCenterZ = center.z;
+        if (Math.abs(maidX - targetCenterX) > 0.3 || Math.abs(maidZ - targetCenterZ) > 0.3) {
+            maid.setDeltaMovement(
+                    new Vec3(targetCenterX - maidX, 0, targetCenterZ - maidZ)
+                            .normalize()
+                            .scale(0.1)
+            );
+            return true;
+        }
+        return false;
+    }
+
+    public static void setMovementTowardsTargetSlowly(EntityMaid maid) {
+        BlockPos targetPos = MemoryUtil.getTargetPos(maid);
+        if (targetPos == null) return;
+        double maidX = maid.getX();
+        double maidZ = maid.getZ();
+        Vec3 center = targetPos.getCenter();
+        double targetCenterX = center.x;
+        double targetCenterZ = center.z;
+        maid.setDeltaMovement(
+                new Vec3(targetCenterX - maidX, 0, targetCenterZ - maidZ)
+                        .normalize()
+                        .scale(0.1)
+        );
+    }
 }

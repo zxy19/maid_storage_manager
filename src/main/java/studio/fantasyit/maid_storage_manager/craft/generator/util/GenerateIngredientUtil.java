@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class GenerateIngredientUtil {
     public static Ingredient getIngredientForDestroyBlockItem(ItemStack itemStack) {
@@ -29,5 +30,12 @@ public class GenerateIngredientUtil {
 
     public static Optional<Ingredient> optionalIngredient(Ingredient ingredient) {
         return ingredient.isEmpty() ? Optional.empty() : Optional.of(ingredient);
+    }
+
+    public static void each3items(List<ItemStack> itemStackList, Consumer<List<ItemStack>> consumer) {
+        for (int i = 0; i < itemStackList.size(); i += 3) {
+            List<ItemStack> itemStackList1 = itemStackList.subList(i, Math.min(itemStackList.size(), i + 3));
+            consumer.accept(itemStackList1);
+        }
     }
 }

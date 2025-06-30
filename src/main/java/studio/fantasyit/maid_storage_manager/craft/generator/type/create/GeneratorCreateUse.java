@@ -9,9 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -42,15 +40,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
-    protected static final List<Ingredient> possibleToolTries = List.of(
-            Ingredient.of(ItemTags.AXES),
-            Ingredient.of(ItemTags.HOES),
-            Ingredient.of(ItemTags.PICKAXES),
-            Ingredient.of(ItemTags.SHOVELS),
-            Ingredient.of(Items.SHEARS),
-            Ingredient.EMPTY
-    );
-
     @Override
     public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.ITEM_APPLICATION.getId();

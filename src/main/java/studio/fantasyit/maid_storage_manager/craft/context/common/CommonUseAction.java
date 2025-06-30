@@ -65,9 +65,10 @@ public class CommonUseAction extends AbstractCraftActionContext {
         if (!MoveUtil.setMovementIfColliedTarget((ServerLevel) maid.level(), maid, craftGuideStepData.storage))
             return Result.CONTINUE;
         maid.swing(InteractionHand.MAIN_HAND);
+        MoveUtil.setMovementTowardsTargetSlowly(maid);
         @Nullable List<ItemStack> ret = interactWithItemAndGetReturn();
         if (ret == null) {
-            if (++failCount > 5) {
+            if (++failCount > 10) {
                 if (craftGuideStepData.isOptional())
                     return Result.SUCCESS;
                 else

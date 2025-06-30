@@ -445,6 +445,7 @@ public class GeneratorGraph  implements ICachableGeneratorGraph{
         reversedQueue.clear();
         notToAddRecipe.clear();
         notToAddType.clear();
+        craftGuides.clear();
     }
 
     public void invalidAllCraftWithType(ResourceLocation type) {

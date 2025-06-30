@@ -17,6 +17,10 @@ public class LevelBasedLogger {
         log(message, a);
         level--;
     }
+    public void exitLogLevel(String message, Object... a) {
+        level--;
+        log(message, a);
+    }
 
     public void log(String message, Object... a) {
         if (!Config.enableDebug) return;

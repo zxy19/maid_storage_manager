@@ -6,11 +6,11 @@
   "pages": [
     {
       "type": "text",
-      "text": "If you enable the crafting guide generation feature (crafting.generate) in the configuration, the maid will automatically analyze nearby work blocks and read their corresponding recipes. $(br2)The maid currently supports reading recipes for Vanilla log stripping/Water collection/Crafting table/Smithing table/Stonecutter/Furnace/Brewing stand/TACZ workbench/Create mod: Packing, Item Application, Pressing, Mixing, Crushing, Milling, Splashing, Haunting, Smoking/TLM altar recipes."
+      "text": "If you enable the crafting guide generation feature (crafting.generate) in the configuration, the maid will automatically analyze nearby work blocks and read their corresponding recipes. $(br2)If you want your maid to do some block interaction crafting, like stripping, you will need to place an allow access on ground and keep it's around with enough space."
     },
     {
       "type": "text",
-      "text": "If you want your maid to do some block interaction crafting, like stripping, you will need to place an allow access on ground and keep it's around with enough space."
+      "text": "The maid currently supports reading recipes for Vanilla log stripping/Water collection/Crafting table/Smithing table/Stonecutter/Furnace/Brewing stand/TACZ workbench/Create mod: Packing, Item Application, Pressing, Mixing, Crushing, Milling, Splashing, Haunting, Smoking/TLM altar, AE2 Inscriber, Charger, World Interaction (excluding explosions); Botania Mystical Flower duplication, Apothecary, Runic Altar, Elf trading, White Daisy, Mana Infusion; Ars Nouveau Imbuement Chamber, Enchanting Apparatus, and enchanting recipes."
     }
   ]
 }

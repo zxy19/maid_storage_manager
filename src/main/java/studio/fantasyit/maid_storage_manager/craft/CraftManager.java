@@ -22,7 +22,11 @@ import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingCo
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Charger;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Inscriber;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2ItemTransform;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ars.GeneratorArsNouveauApparatus;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ars.GeneratorArsNouveauEnchanting;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ars.GeneratorArsNouveauImbuement;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.botania.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.create.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.mekanism.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
@@ -271,6 +275,19 @@ public class CraftManager {
             event.addAutoCraftGuideGenerator(new GeneratorAE2Inscriber());
             event.addAutoCraftGuideGenerator(new GeneratorAE2Charger());
             event.addAutoCraftGuideGenerator(new GeneratorAE2ItemTransform());
+        }
+        if (Integrations.botania()) {
+            event.addAutoCraftGuideGenerator(new GeneratorBotaniaRunicAltar());
+            event.addAutoCraftGuideGenerator(new GeneratorBotaniaApothecary());
+            event.addAutoCraftGuideGenerator(new GeneratorBotaniaManaInfuse());
+            event.addAutoCraftGuideGenerator(new GeneratorBotaniaMythicalFlower());
+            event.addAutoCraftGuideGenerator(new GeneratorBotaniaElven());
+            event.addAutoCraftGuideGenerator(new GeneratorBotaniaDaisy());
+        }
+        if (Integrations.ars()) {
+            event.addAutoCraftGuideGenerator(new GeneratorArsNouveauImbuement());
+            event.addAutoCraftGuideGenerator(new GeneratorArsNouveauApparatus());
+            event.addAutoCraftGuideGenerator(new GeneratorArsNouveauEnchanting());
         }
     }
 

@@ -27,6 +27,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGener
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
@@ -92,10 +93,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
     }
 
     protected static void each3items(List<ItemStack> itemStackList, Consumer<List<ItemStack>> consumer) {
-        for (int i = 0; i < itemStackList.size(); i += 3) {
-            List<ItemStack> itemStackList1 = itemStackList.subList(i, Math.min(itemStackList.size(), i + 3));
-            consumer.accept(itemStackList1);
-        }
+        GenerateIngredientUtil.each3items(itemStackList, consumer);
     }
 
 
