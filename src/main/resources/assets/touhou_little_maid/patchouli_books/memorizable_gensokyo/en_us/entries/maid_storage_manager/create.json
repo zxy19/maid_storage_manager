@@ -1,0 +1,39 @@
+{
+  "sortnum": 101,
+  "name": "Integration with Create",
+  "flag": "mod:create",
+  "icon": "create:cogwheel",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "1. Access Chain Network: After access is granted on an Chain Conveyor, Maids will treat it as part of a storage network, automatically storing items as packages on the chain; note this access is unidirectional—Maids only deposit packages and never take any (including their own)."
+    },
+    {
+      "type": "image",
+      "title": "Allowed Chain Conveyor",
+      "images": [
+        "maid_storage_manager:textures/book/create1.png"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "$(br)2. Access Stock Ticker: If a Stock Ticker is within the range, she can act as Create's stock manager; the stock ticker functions without requiring a seated entity nearby, and you may access its interface via the right-side button in the maid's GUI."
+    },
+    {
+      "type": "image",
+      "title": "Stock Ticker Button",
+      "images": [
+        "maid_storage_manager:textures/book/create2.png"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "$(br)3. Access Stock Ticker+: When a maid requires items (e.g., for auto-crafting), she will request them from Create's storage network via the Stock Ticker; the requested items will be packaged into the logistics network."
+    },
+    {
+      "type": "text",
+      "text": "$(br2)Note: Packages must be delivered within the maid’s working range (≈5 blocks) via conveyors/chains for retrieval; additionally, packages requested by the maid on chains will automatically pathfind to the closest accessible point to her."
+    }
+  ]
+}

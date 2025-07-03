@@ -25,7 +25,6 @@ public class SelectButtonWidget<T> extends AbstractWidget {
     public record Option<T>(T data, ImageAsset image, ImageAsset hoverImage, Component tooltip) {
     }
 
-    private boolean visible;
     private Option<T> option;
     private final Function<@Nullable T, Option<T>> getNext;
     private final AbstractContainerScreen<?> screen;

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CommonCraftRecipeHandler implements IUniversalRecipeTransferHandler<CommonCraftMenu> {
+public class JEICommonRecipeHandler implements IUniversalRecipeTransferHandler<CommonCraftMenu> {
 
     @Override
     public @NotNull Class getContainerClass() {

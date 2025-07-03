@@ -1,0 +1,39 @@
+{
+  "sortnum": 101,
+  "name": "与机械动力的联动",
+  "flag": "mod:create",
+  "icon": "create:cogwheel",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "其一 访问锁链网络$(br)在锁链传动轮贴上允许访问后,女仆便会将传动轮视为存储网络的一部分。被女仆存放到传动轮上的物品会自动形成一个包裹挂在锁链上。$(br2)请注意，这种访问是单向的，在一般情况下，女仆仅会向锁链网络存放包裹，而不会取下任何包裹（包括她自己挂的包裹）。"
+    },
+    {
+      "type": "image",
+      "title": "被允许访问的传动轮",
+      "images": [
+        "maid_storage_manager:textures/book/create1.png"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "$(br)其二 访问仓储发报机$(br)如果女仆工作范围内有仓储发报机,女仆可以充当机械动力的仓库管理员。$(br2)此时发报机不需要旁边坐着生物即可使用，你也可以打开女仆的GUI，从右侧按钮进入发报机界面。"
+    },
+    {
+      "type": "image",
+      "title": "仓储发报机按钮",
+      "images": [
+        "maid_storage_manager:textures/book/create2.png"
+      ]
+    },
+    {
+      "type": "text",
+      "text": "$(br)其三 访问仓储发报机+$(br)如果女仆当前有需求的物品（如自动合成寻找物品等）在机械动力仓库里，女仆会尝试从发报机向仓库请求物品。对应的物品会被打成包裹进入物流网络。"
+    },
+    {
+      "type": "text",
+      "text": "$(br2)注意：你需要用传送带或锁链等手段将包裹送到女仆工作范围内，女仆才能拿到包裹（女仆触及范围大约五格）。$(br)另外，女仆请求的锁链上的包裹会被自动送到离女仆尽可能近的地方。"
+    }
+  ]
+}

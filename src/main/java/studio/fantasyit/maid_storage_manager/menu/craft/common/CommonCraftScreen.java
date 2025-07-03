@@ -23,7 +23,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
@@ -49,8 +48,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         SORT_REMOVE,
         SORT_DOWN,
         OPTIONAL,
-        TIME,
-        SPLIT
+        TIME
     }
 
     protected enum BUTTON_TYPE_SPECIAL {BLOCK}
@@ -63,6 +61,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     public final List<List<Integer>> buttonYOffset = new ArrayList<>();
     SelectButtonWidget<?> pageUpBtn;
     SelectButtonWidget<?> pageDownBtn;
+    CommonActionSelectionWidget actionSelector;
 
     public CommonCraftScreen(CommonCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
@@ -85,8 +84,6 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         buttonYOffset.clear();
         otherButton.clear();
         editBoxes.clear();
-        //TODO:目前配方树计算需要使用准确物品进行匹配，暂时不支持模糊物品作为配方拓扑的节点。
-        // 所以忽略NBT功能暂时不能实现。也许节点中的ItemStack应该被更换?
 
         for (int i = 0; i < this.menu.steps.size(); i++) {
             HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> objects = new HashMap<>();
@@ -126,7 +123,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             protected void renderWidget(GuiGraphics graphics, int x, int y, float p_282542_) {
                 if (isMouseOver(x, y)) {
                     graphics.pose().pushPose();
-                    graphics.pose().translate(0, 0, 1000);
+                    graphics.pose().translate(0, 0, 200);
                     graphics.fill(getX(), getY(), getX() + width, getY() + font.lineHeight, 0x80000000);
                     graphics.drawString(font, getStorageSideTranslate(menu.steps.get(i).step.storage), getX(), getY(), 0xFFFFFFFF);
                     graphics.pose().popPose();
@@ -193,14 +190,12 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void addActionButton(Map<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons, List<Integer> yOffsets, int sy, int i) {
+        actionSelector = new CommonActionSelectionWidget(0, 0, this);
+        addWidget(actionSelector);
         buttons.put(BUTTON_TYPE_COMMON.ACTION, addRenderableWidget(new SelectButtonWidget<CraftAction>(94, SLOT_Y[i % 3], (value) -> {
             if (value == null) value = menu.craftGuideData.steps.get(i).actionType;
             else {
-                value = CraftManager.getInstance().getNextAction(value);
-                CompoundTag data = new CompoundTag();
-                data.putString("ns", value.type().getNamespace());
-                data.putString("id", value.type().getPath());
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_MODE, i, data));
+                startSelectActionFor(i);
             }
             return new SelectButtonWidget.Option<>(
                     value,
@@ -331,8 +326,10 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     @Override
     protected void renderTooltip(@NotNull GuiGraphics graphics, int x, int y) {
+        if (actionSelector.visible) return;
         graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 5000);
+        graphics.pose().translate(0, 0, 400);
+        RenderSystem.enableDepthTest();
         if (this.menu.getCarried().isEmpty()) {
             int inGuiX = x - this.getGuiLeft();
             int inGuiY = y - this.getGuiTop();
@@ -362,30 +359,37 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             });
         }
         super.renderTooltip(graphics, x, y);
+        graphics.flush();
         graphics.pose().popPose();
     }
 
     @Override
     public void render(GuiGraphics graphics, int p_283661_, int p_281248_, float p_281886_) {
+        RenderSystem.disableDepthTest();
+        renderUnderLine(graphics);
+        RenderSystem.disableDepthTest();
+        renderBlockIndicator(graphics);
+        RenderSystem.disableDepthTest();
         super.render(graphics, p_283661_, p_281248_, p_281886_);
         RenderSystem.disableDepthTest();
         renderNumberLabel(graphics);
+        RenderSystem.disableDepthTest();
         renderButtonIcon(graphics);
-        renderBlockIndicator(graphics);
-        renderUnderLine(graphics);
+        RenderSystem.disableDepthTest();
         renderArrow(graphics);
+        RenderSystem.disableDepthTest();
         renderTooltip(graphics, p_283661_, p_281248_);
+        RenderSystem.disableDepthTest();
+        actionSelector.render(graphics, p_283661_, p_281248_, p_281886_);
         RenderSystem.enableDepthTest();
     }
 
     private void renderUnderLine(@NotNull GuiGraphics graphics) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 1000);
         for (EditBox editBox : editBoxes) {
             if (editBox.isVisible())
                 graphics.blit(background, editBox.getX(), editBox.getY() + editBox.getHeight(), 197, 100, editBox.getWidth() + 1, 1);
         }
-        graphics.pose().popPose();
+        graphics.flush();
     }
 
     private void renderArrow(@NotNull GuiGraphics graphics) {
@@ -396,11 +400,10 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 }
             }
         }
+        graphics.flush();
     }
 
     private void renderNumberLabel(@NotNull GuiGraphics graphics) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 1000);
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
         for (Slot slot : this.getMenu().slots) {
@@ -413,6 +416,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     }
                     graphics.pose().pushPose();
                     graphics.pose().scale(0.6f, 0.6f, 1);
+                    graphics.pose().translate(0, 0, 350);
+                    RenderSystem.enableDepthTest();
                     graphics.drawString(this.font, text,
                             (int) ((relX + filterSlot.x + 16 - this.font.width(text) * 0.6) / 0.6f),
                             (int) ((relY + filterSlot.y + 16 - this.font.lineHeight * 0.6) / 0.6f),
@@ -421,15 +426,11 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 }
             }
         }
-
-        graphics.pose().popPose();
+        graphics.flush();
     }
 
     @SuppressWarnings("unchecked")
     private void renderButtonIcon(@NotNull GuiGraphics graphics) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 1100);
-
         for (int i = 0; i < buttonsByRow.size(); i++) {
             if (menu.isIdCurrentPage(i)) {
                 SelectButtonWidget<CraftAction> cab = (SelectButtonWidget<CraftAction>) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.ACTION);
@@ -450,22 +451,21 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                             0,
                             0,
                             0xFFFFFF);
+                    RenderSystem.disableDepthTest();
                     graphics.pose().popPose();
                 }
             }
         }
-
-
-        graphics.pose().popPose();
+        graphics.flush();
     }
 
     private void renderBlockIndicator(@NotNull GuiGraphics graphics) {
         graphics.pose().pushPose();
         float scale = 1.3f;
         graphics.pose().scale(scale, scale, 1);
-
         for (int i = 0; i < menu.targetBlockSlots.size(); i++) {
             if (menu.isIdCurrentPage(i)) {
+                RenderSystem.disableDepthTest();
                 graphics.renderItem(
                         menu.targetBlockSlots.get(i).getItem(),
                         (int) ((this.leftPos + menu.targetBlockSlots.get(i).x + 1) / scale),
@@ -473,7 +473,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 );
             }
         }
-
+        graphics.flush();
         graphics.pose().popPose();
     }
 
@@ -488,10 +488,13 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     relY + SLOT_Y[i] + 28
             );
         }
+
+        graphics.flush();
     }
 
     @Override
     public boolean mouseScrolled(double x, double y, double p_94688_) {
+        if (actionSelector.visible) return actionSelector.mouseScrolled(x, y, p_94688_);
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof CommonStepDataContainer sdc) {
             MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
@@ -619,5 +622,29 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                                 target.getSide().map(t -> t.name().toLowerCase()).orElse("none")
                 )
         );
+    }
+
+
+    private void startSelectActionFor(int i) {
+        SelectButtonWidget<?> btn = buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.ACTION);
+        actionSelector.setSelectedAction((CraftAction) btn.getData());
+        actionSelector.setCallback(value -> {
+            CompoundTag data = new CompoundTag();
+            data.putString("ns", value.type().getNamespace());
+            data.putString("id", value.type().getPath());
+            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_MODE, i, data));
+            btn.setOption(null);
+        });
+        actionSelector.expandFrom(btn);
+    }
+
+    @Override
+    public boolean mouseClicked(double p_97748_, double p_97749_, int p_97750_) {
+        if (actionSelector.visible) {
+            if (!actionSelector.isMouseOver(p_97748_, p_97749_)) {
+                actionSelector.hide();
+            } else return actionSelector.mouseClicked(p_97748_, p_97749_, p_97750_);
+        }
+        return super.mouseClicked(p_97748_, p_97749_, p_97750_);
     }
 }

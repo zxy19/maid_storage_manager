@@ -99,6 +99,15 @@ public class CraftManager {
                 0
         );
         event.addAction(
+                CommonSplitItemAction.TYPE,
+                CommonSplitItemAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                true,
+                3,
+                0
+        );
+        event.addAction(
                 CommonTakeItemAction.TYPE,
                 CommonTakeItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,

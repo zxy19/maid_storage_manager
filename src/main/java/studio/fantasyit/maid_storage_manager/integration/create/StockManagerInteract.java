@@ -12,6 +12,7 @@ import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.api.ICreateStockKeeperMaidChecker;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.network.CreateStockManagerPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 
@@ -33,6 +34,9 @@ public class StockManagerInteract {
     }
 
     public static boolean onPlayerInteract(Player player, EntityMaid maid) {
+        if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+            return false;
+        }
         if (player.getMainHandItem().is(AllItems.SHOPPING_LIST.get())) {
             BlockPos pos = getStockTickerAround(maid);
             if (pos == null) {
@@ -54,8 +58,11 @@ public class StockManagerInteract {
     }
 
     public static void onHandleStockManager(ServerPlayer player, EntityMaid maid, BlockPos ticker) {
+        if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+            return;
+        }
         StockTickerInteractionHandler.interactWithLogisticsManagerAt(player, player.level(), ticker);
-        if(player.containerMenu instanceof ICreateStockKeeperMaidChecker icsk){
+        if (player.containerMenu instanceof ICreateStockKeeperMaidChecker icsk) {
             icsk.maid_storage_manager$setMaid(maid);
         }
     }

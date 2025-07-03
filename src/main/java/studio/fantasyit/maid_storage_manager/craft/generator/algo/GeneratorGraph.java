@@ -22,7 +22,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.*;
 import java.util.function.Function;
 
-public class GeneratorGraph  implements ICachableGeneratorGraph{
+public class GeneratorGraph implements ICachableGeneratorGraph {
 
     protected record AddRecipeData(ResourceLocation id,
                                    List<Ingredient> ingredients,
@@ -38,8 +38,6 @@ public class GeneratorGraph  implements ICachableGeneratorGraph{
     private final RegistryAccess registryAccess;
     public int pushedSteps = 0;
     public int processedSteps = 0;
-
-
 
 
     List<Node> nodes;
@@ -165,7 +163,7 @@ public class GeneratorGraph  implements ICachableGeneratorGraph{
     }
 
 
-    public void addRecipe(Recipe<?> recipe,Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
@@ -243,11 +241,14 @@ public class GeneratorGraph  implements ICachableGeneratorGraph{
             return 1;
         processedSteps++;
         int affectFactor = ingredients.size() + 1;
-        if (!RecipeIngredientCache.isCached(id)) {
-            affectFactor += (ingredients.size() + 1) + RecipeIngredientCache.getUncachedRecipeIngredient(id, ingredients, this) * 5;
-            RecipeIngredientCache.addRecipeCache(id, ingredients);
+        if (RecipeIngredientCache.isCached(id)) {
+            if (RecipeIngredientCache.addCahcedRecipeToGraph(this, id, ingredients, ingredientCounts, output, craftGuideSupplier, type, isOneTime))
+                return affectFactor;
         }
-        RecipeIngredientCache.addCahcedRecipeToGraph(this, id, ingredients, ingredientCounts, output, craftGuideSupplier, type, isOneTime);
+        affectFactor += (ingredients.size() + 1) + RecipeIngredientCache.getUncachedRecipeIngredient(id, ingredients, this) * 5;
+        RecipeIngredientCache.addRecipeCache(id, ingredients);
+
+
         return affectFactor;
     }
 

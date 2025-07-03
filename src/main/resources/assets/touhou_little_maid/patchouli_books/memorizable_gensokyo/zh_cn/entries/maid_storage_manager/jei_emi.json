@@ -1,8 +1,8 @@
 {
-  "sortnum": 13,
+  "sortnum": 100,
   "name": "原材料请求",
   "flag": "|mod:jei,mod:emi",
-  "icon": "maid_storage_manager:textures/book/ingredient_request.png",
+  "icon": "maid_storage_manager:textures/book/get_button.png",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
     {
@@ -11,7 +11,7 @@
     },
     {
       "type": "text",
-      "text": "在你查看配方的时候，按下原材料请求键($(k:maid_storage_manager.request_ingredient))，你将会看到一个类似狐狸耳朵的按钮。如果你附近有满足条件的女仆，则她会被渲染在GUI下方，且按钮会亮起。按下按钮后，女仆将自动收集这些原材料并将其扔到你的身上。$(br2)你可以在按下$(k:maid_storage_manager.request_ingredient)的同时使用鼠标滚轮来调节请求的数量。"
+      "text": "在你查看配方的时候，按下“原材料请求键”($(k:maid_storage_manager.request_ingredient)键)，你将会看到一个类似狐狸耳朵的按钮。如果你附近有满足条件的女仆，则她会被渲染在GUI下方，且按钮会亮起。按下按钮后，女仆将自动收集这些原材料并将其扔到你的身上。$(br2)你可以在按下$(k:maid_storage_manager.request_ingredient)的同时使用鼠标滚轮来调节请求的数量。"
     },
     {
       "type": "image",

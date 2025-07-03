@@ -25,6 +25,8 @@
   "advancements.maid_storage_manager.storage_manager.title": "箱子海里的管理员",
   "advancements.maid_storage_manager.view.desc": "女仆查看了一个箱子的内容",
   "advancements.maid_storage_manager.view.title": "这里有个箱子",
+  "advancements.maid_storage_manager.craft_guide_generate.desc": "女仆根据附近的工作方块自动读取了合成指南。",
+  "advancements.maid_storage_manager.craft_guide_generate.title": "聆听系统之音",
   "chat_bubbles.maid_storage_manager.check_mark_changed": "遵命！立刻扫描箱子喵～",
   "chat_bubbles.maid_storage_manager.chest_full": "箱子要爆炸啦～快清理！",
   "chat_bubbles.maid_storage_manager.cowork_disable": "主人离开确认——",
@@ -198,6 +200,7 @@
   "craft_guide.action.maid_storage_manager.furnace": "熔炉",
   "craft_guide.action.maid_storage_manager.idle": "闲置",
   "craft_guide.action.maid_storage_manager.insert": "输入",
+  "craft_guide.action.maid_storage_manager.split": "分离",
   "craft_guide.action.maid_storage_manager.pickup": "拾取",
   "craft_guide.action.maid_storage_manager.smithing": "锻造台",
   "craft_guide.action.maid_storage_manager.stone_cutting": "切石机",
@@ -380,5 +383,7 @@
   "tooltip.maid_storage_manager.request_list.time.str": "%s日 (%s:%s)",
   "tooltip.maid_storage_manager.request_list.virtual": "「女仆事务，请勿插手 (´• ω •`)ﾉ」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s 个存储位置",
-  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本"
+  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本",
+  "gui.maid_storage_manager.craft_guide.common.split": "Split Stacks",
+  "gui.maid_storage_manager.craft_guide.common.no_split": "Merge Stacks"
 }

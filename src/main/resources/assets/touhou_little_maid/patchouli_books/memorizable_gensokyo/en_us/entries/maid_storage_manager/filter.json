@@ -7,7 +7,7 @@
         {
             "type": "spotlight",
             "item": "maid_storage_manager:filter_list",
-            "text": "Filters determine what the maid can and cannot put into the chest. Filters need to be placed in the item frame aside the chest to take effect."
+            "text": "Filters determine what the maid can and cannot put into the chest. Filters need to be placed in the item frame aside the chest to take effect.(Now you can also attach it directly to the chest)"
         },
         {
             "type": "image",

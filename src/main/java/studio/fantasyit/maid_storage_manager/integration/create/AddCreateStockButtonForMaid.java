@@ -5,9 +5,13 @@ import com.github.tartaricacid.touhoulittlemaid.api.event.client.MaidContainerGu
 import com.simibubi.create.AllBlocks;
 import net.minecraft.core.BlockPos;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class AddCreateStockButtonForMaid {
     public static void addStockButton(MaidContainerGuiEvent.Init t) {
+        if (!t.getGui().getMaid().getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+            return;
+        }
         BlockPos.betweenClosedStream(
                         t.getGui().getMaid().getBoundingBox().inflate(Config.createStockKeeperRangeV, Config.createStockKeeperRangeH, Config.createStockKeeperRangeV)
                 )

@@ -49,6 +49,8 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
     }
 
     public void setAction(ResourceLocation action) {
+        int currentInputs = inputCount;
+        int currentOutputs = outputCount;
         step.setAction(action);
 
         actionType = step.actionType;

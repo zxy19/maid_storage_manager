@@ -34,6 +34,7 @@ public class KJSMSMBinding {
     public final ResourceLocation CRAFT_ACTION_COMMON_TAKE_ITEM = CommonTakeItemAction.TYPE;
     public final ResourceLocation CRAFT_ACTION_COMMON_ATTACK = CommonAttackAction.TYPE;
     public final ResourceLocation CRAFT_ACTION_COMMON_PLACE_ITEM = CommonPlaceItemAction.TYPE;
+    public final ResourceLocation CRAFT_ACTION_COMMON_SPLIT_ITEM = CommonSplitItemAction.TYPE;
     public final ResourceLocation CRAFT_ACTION_COMMON_USE = CommonUseAction.TYPE;
     public final ResourceLocation CRAFT_ACTION_COMMON_THROW = CommonTakeItemAction.TYPE;
     public final ResourceLocation CRAFT_ACTION_COMMON_PICKUP = CommonPickupItemAction.TYPE;

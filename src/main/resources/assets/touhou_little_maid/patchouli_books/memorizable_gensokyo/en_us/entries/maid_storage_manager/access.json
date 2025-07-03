@@ -7,7 +7,7 @@
     {
       "type": "spotlight",
       "item": "maid_storage_manager:no_access",
-      "text": "Maid will NOT visit any container that was labelled by No Access. No Access need to be place in an item frame aside the container block."
+      "text": "Maid will NOT visit any container that was labelled by No Access. No Access need to be place in an item frame aside the container block.(Now you can also attach it directly to the chest)"
     },
     {
       "type": "altar_recipe",

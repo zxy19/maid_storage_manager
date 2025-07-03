@@ -46,7 +46,7 @@
     {
       "type": "text",
       "title": "Advanced Configuration Ⅳ",
-      "text": "Finally, the bottom left corner of the list is a place to put the $(l:maid_storage_manager/storage_define) storage define $(/l).If a storage define is placed, the maid will follow the instructions of the storage define."
+      "text": "If an $(l:maid_storage_manager/inventory_list)Inventory List$(/l) is in your inventory, click the left-side button [in GUI] to select items from it for the request list. The bottom-left slot of the list accepts a $(l:maid_storage_manager/storage_define)Storage Define(/l). If placed, the maid will follow the Storage Define’s rules when executing tasks from the request list."
     },
     {
       "type": "image",

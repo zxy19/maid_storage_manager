@@ -16,17 +16,18 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
-import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageSplitInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
-public class CommonPlaceItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"insert");
+public class CommonSplitItemAction extends AbstractCraftActionContext {
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "split");
     protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
-    public CommonPlaceItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
+
+    public CommonSplitItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
 
@@ -56,7 +57,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         boolean hasChange = false;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
-        if (storageContext instanceof IStorageInsertableContext isic) {
+        if (storageContext instanceof IStorageSplitInsertableContext issic) {
             boolean shouldDoPlace = false;
             int count = 0;
             for (; slot < inv.getSlots(); slot++) {
@@ -80,7 +81,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
                         item.getCount()
                 );
                 ItemStack copy = item.copyWithCount(pick);
-                ItemStack rest = isic.insert(copy);
+                ItemStack rest = issic.splitInsert(copy);
                 item.shrink(pick - rest.getCount());
                 craftLayer.addCurrentStepPlacedCounts(ingredientIndex, pick - rest.getCount());
                 if (pick - rest.getCount() != 0) {

@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
@@ -47,6 +48,13 @@ public class RecipeIngredientCache {
             graph.addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier, type, isOneTime);
             return true;
         }
+        if (CACHE.containsKey(id))
+            Logger.error(
+                    "Recipe %s was cached with incorrect ingredient count [%d cached and %d added]",
+                    id,
+                    CACHE.get(id).size(),
+                    ingredients.size()
+            );
         return false;
     }
 

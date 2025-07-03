@@ -14,7 +14,7 @@ import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.handler.JEIRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.brewing.BrewingCraftMenu;
-import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftRecipeHandler;
+import studio.fantasyit.maid_storage_manager.menu.craft.common.JEICommonRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingTableCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftMenu;
@@ -39,7 +39,7 @@ public class Plugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addUniversalRecipeTransferHandler(new RequestRecipeHandler());
-        registration.addUniversalRecipeTransferHandler(new CommonCraftRecipeHandler());
+        registration.addUniversalRecipeTransferHandler(new JEICommonRecipeHandler());
         registration.addRecipeTransferHandler(
                 new JEIRecipeHandler<>(
                         CraftingTableCraftMenu.class,

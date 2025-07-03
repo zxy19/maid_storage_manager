@@ -6,8 +6,8 @@
   "pages": [
     {
       "type": "spotlight",
-      "item": "maid_storage_manager:inventory_list",
-      "text": "Inventory lists show you exactly what's inside the warehouse and where it is stored. $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
+      "item": "maid_storage_manager:written_inventory_list",
+      "text": "Inventory lists show you exactly what's inside the warehouse and those are craftable(see $(l:maid_storage_manager/craft)Auto Craft(/l)). $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
     },
     {
       "type": "image",
@@ -20,7 +20,7 @@
     {
       "type": "text",
       "title": "Looking for something",
-      "text": "When viewing the inventory list, you can click on an item to have its storage location marked, which is very handy when looking for items."
+      "text": "When viewing the inventory list, you can click on an item to have its storage location marked, which is very handy when looking for items. $(br2)Tips:You can press 'See-Through Mark Box'($(k:maid_storage_manager.see_through_mark_box)) to see through the highlight boxes, this function is also available to other highlight boxes in this mod."
     },
     {
       "type": "image",

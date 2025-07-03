@@ -1,0 +1,20 @@
+{
+  "sortnum": 102,
+  "name": "Integration with AE2",
+  "flag": "mod:ae2",
+  "icon": "ae2:controller",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "text",
+      "text": "Maids can access items from terminals by default. The exact position of the action is the cable where the terminal at , so if you don't want the maid to access the terminal, just put a disable access on any side of the cable. $(br2) Additionally, if a maid needs a synthesizable item that is not stored in the terminal, the maid can request an auto-crafting."
+    },
+    {
+      "type": "image",
+      "title": "ME terminals with No Access",
+      "images": [
+        "maid_storage_manager:textures/book/ae21.png"
+      ]
+    }
+  ]
+}

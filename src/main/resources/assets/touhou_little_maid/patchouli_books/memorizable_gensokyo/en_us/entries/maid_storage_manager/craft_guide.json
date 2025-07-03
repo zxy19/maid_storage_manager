@@ -7,7 +7,7 @@
     {
       "type": "spotlight",
       "item": "maid_storage_manager:craft_guide",
-      "text": "The Craft Guide requires a bind work block to continue  configure. With this item in hand, sneak right-click on a supported work block to bind the recipe type. $(br2) Recipe types currently supported: $(br) Crafting Table, Furnace, Stone Cutter, Smithing Table, Anvil, and Touhou Little Maid's Multi-Block Altar (sneak-right-click anywhere on the altar to bind)."
+      "text": "The Craft Guide requires a bind work block to continue  configure. With this item in hand, sneak right-click on a supported work block to bind the recipe type. $(br2) Recipe types currently supported: $(br) Crafting Table, Furnace, Stone Cutter, Smithing Table, Anvil, Brewing Stand and Touhou Little Maid's Multi-Block Altar (sneak-right-click anywhere on the altar to bind) and TACZ workbench."
     },
     {
       "type": "image",
@@ -60,14 +60,31 @@
       "type": "text",
       "title": "Working modes",
       "anchor": "craft_mode",
-      "text": "1.Place, place items into target block.$(br)2.Extract, extract item from target block.$(br)3.Throw, throw item as an entity item to target position.$(br)4.Pick Up, pick up item entity from target position.$(br)5.Use, use the item in the left slot on the target block and take back the item in the right grid.(Both can be empty)$(br)6.Destroy, use the item in the left slot to destroy(Simulate the left click) target block and try to take back the item in the right slot.(Both can be empty)$(br)7.Idle, wait for a while at the target position. Click 's' or 't' to switch unit and use mouse wheel to adjust."
+      "text": "Tapping the Work Mode button opens a small picklist. Scroll wheel or tap to change the working mode of the current step."
+    },
+    {
+      "type": "text",
+      "title": "Working Modes1",
+      "text": "1. Insert: Insert items into the bound block; 2. Split: Input items into the bound block without stacking across different slots (e.g., for Cook Pot); 3. Extract: Extract target items from the bound block; 4. Throw: Throw items as entities at the bound position; 5. PickUp: Pick up target item entities from the bound position."
     },
     {
       "type": "image",
       "images": [
-        "maid_storage_manager:textures/book/craft_guide5.png"
+        "maid_storage_manager:textures/book/craft_guide6.png"
       ],
-      "title": "Multiple Work Modes",
+      "title": "Working Modes1"
+    },
+    {
+      "type": "text",
+      "title": "Working Modes2",
+      "text": "6. Use: Right-click bound position with input item to get the output item (both can be empty, e.g., for log stripping); 7. Destroy: Destroy bound block with input item and get the output item; 8. Idle: Wait at bound position for specified time (press T/S to switch time units, scroll to adjust – e.g., to avoid processing timeouts)."
+    },
+    {
+      "type": "image",
+      "images": [
+        "maid_storage_manager:textures/book/craft_guide7.png"
+      ],
+      "title": "Working Modes2",
       "text": "Tips: Item mark in idle mode will be considered as 'Acquired' when maid was waiting. Sometimes maybe useful to solve some recipe."
     },
     {

@@ -45,14 +45,14 @@
     {
       "type": "text",
       "title": "请求列表配置 其四",
-      "text": "最后，列表左下角的位置可以放入$(l:maid_storage_manager/storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
+      "text": "如果背包里有$(l:maid_storage_manager/inventory_list)库存清单$(/l)，点击左侧按钮可以在库存清单中选择物品填入请求列表。$(br2)而列表左下角的位置则可以放入$(l:maid_storage_manager/storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
     },
     {
       "type": "image",
       "images": [
           "maid_storage_manager:textures/book/request_setting4.png"
       ],
-      "title": "存储定义槽",
+      "title": "存储定义 库存清单",
       "text": ""
     }
   ]
