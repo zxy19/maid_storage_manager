@@ -17,7 +17,6 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.*;
 import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Charger;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Inscriber;
@@ -32,6 +31,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.type.mekanism.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla.*;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.KJSEventPort;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
@@ -94,7 +94,7 @@ public class CraftManager {
                 CommonPlaceItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true,
+                true,false,
                 3,
                 0
         );
@@ -103,7 +103,7 @@ public class CraftManager {
                 CommonSplitItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true,
+                true,false,
                 3,
                 0
         );
@@ -112,7 +112,7 @@ public class CraftManager {
                 CommonTakeItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true,
+                true,false,
                 0,
                 3
         );
@@ -121,7 +121,7 @@ public class CraftManager {
                 CommonThrowItemAction::new,
                 PathTargetLocator::throwItemPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,
+                true,false,
                 3,
                 0
         );
@@ -130,7 +130,7 @@ public class CraftManager {
                 CommonPickupItemAction::new,
                 PathTargetLocator::besidePosOrExactlyPos,
                 CraftAction.PathEnoughLevel.VERY_CLOSE.value,
-                true,
+                true,false,
                 0,
                 3
         );
@@ -139,7 +139,7 @@ public class CraftManager {
                 CommonUseAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,
+                true,false,
                 1,
                 1
         );
@@ -148,7 +148,7 @@ public class CraftManager {
                 CommonAttackAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,
+                true,false,
                 1,
                 1
         );
@@ -157,7 +157,7 @@ public class CraftManager {
                 CommonIdleAction::new,
                 PathTargetLocator::nearByNoLimitation,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,
+                true,false,
                 0,
                 3
         );
@@ -166,7 +166,7 @@ public class CraftManager {
                 CraftingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,true,
                 9,
                 10
         );
@@ -175,7 +175,7 @@ public class CraftManager {
                 AltarRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,false,
                 6,
                 1
         );
@@ -184,7 +184,7 @@ public class CraftManager {
                 VirtualAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,false,
                 2,
                 1
         );
@@ -193,7 +193,7 @@ public class CraftManager {
                 VirtualAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,false,
                 3,
                 1
         );
@@ -202,7 +202,7 @@ public class CraftManager {
                 SmithingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,true,
                 3,
                 1
         );
@@ -211,7 +211,7 @@ public class CraftManager {
                 AnvilRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,false,
                 2,
                 1
         );
@@ -220,7 +220,7 @@ public class CraftManager {
                 StoneCuttingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,true,
                 1,
                 1
         );
@@ -241,7 +241,7 @@ public class CraftManager {
                     AeCraftingAction::new,
                     PathTargetLocator::commonNearestAvailablePos,
                     CraftAction.PathEnoughLevel.NORMAL.value,
-                    false,
+                    false,true,
                     0,
                     1
             );
@@ -253,7 +253,7 @@ public class CraftManager {
                     RsCraftingAction::new,
                     PathTargetLocator::commonNearestAvailablePos,
                     CraftAction.PathEnoughLevel.NORMAL.value,
-                    false,
+                    false,true,
                     0,
                     1
             );

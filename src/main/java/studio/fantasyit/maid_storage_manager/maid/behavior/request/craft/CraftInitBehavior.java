@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
@@ -31,7 +32,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getRequestProgress(p_22539_).isReturning()) return false;
         if (!MemoryUtil.getRequestProgress(p_22539_).isTryCrafting()) return false;
         //女仆当前没有生成合成任务，应该立刻计算所有合成
-        return !MemoryUtil.getCrafting(p_22539_).hasTasks();
+        return !MemoryUtil.getCrafting(p_22539_).hasPlan();
     }
 
     @Override
@@ -43,9 +44,8 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
-        MemoryUtil.getCrafting(maid).clearLayers();
+        MemoryUtil.getCrafting(maid).clearPlan();
         MemoryUtil.getCrafting(maid).resetVisitedPos();
-        MemoryUtil.getCrafting(maid).startWorking(false);
         if (StorageManagerConfigData.get(maid).useMemorizedCraftGuide()) {
             CraftMemory crafting = MemoryUtil.getCrafting(maid);
             MemoryUtil.getViewedInventory(maid).flatten().forEach(item -> {
@@ -73,8 +73,12 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
             MemoryUtil.getRequestProgress(maid).setReturn(true);
             DebugData.sendDebug("[REQUEST_CRAFT] Failed to find recipe for any items");
+        } else {
+            MemoryUtil.getCrafting(maid).setPlan(planner.getPlan());
+            MemoryUtil.getCrafting(maid).addIgnoreTargetFromRequest(maid, p_22548_);
         }
-        MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(p_22548_, maid);
+        CraftBlockOccupyDataProvider.get(p_22548_).removeAllOccupiesFor(maid);
+        MemoryUtil.getCrafting(maid).resetAndMarkVis(p_22548_, maid);
         MemoryUtil.clearTarget(maid);
     }
 

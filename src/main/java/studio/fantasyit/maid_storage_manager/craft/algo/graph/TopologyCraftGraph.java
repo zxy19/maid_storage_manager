@@ -5,7 +5,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;

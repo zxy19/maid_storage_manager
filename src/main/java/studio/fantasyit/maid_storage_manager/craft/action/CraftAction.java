@@ -7,12 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 public record CraftAction(ResourceLocation type, CraftActionProvider provider,
                           CraftActionPathFindingTargetProvider pathFindingTargetProvider,
                           double pathCloseEnoughThreshold,
                           boolean canBeCommon,
+                          boolean noOccupation,
                           int inputCount,
                           int outputCount) {
     @FunctionalInterface

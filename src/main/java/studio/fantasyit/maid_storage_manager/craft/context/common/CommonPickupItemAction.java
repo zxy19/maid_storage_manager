@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -11,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -25,6 +26,17 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
 
     public CommonPickupItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
+    }
+
+    @Override
+    public void loadEnv(CompoundTag env) {
+        ingredientIndex = env.contains("ingredientIndex") ? env.getInt("ingredientIndex") : 0;
+    }
+
+    @Override
+    public CompoundTag saveEnv(CompoundTag env) {
+        env.putInt("ingredientIndex", ingredientIndex);
+        return super.saveEnv(env);
     }
 
     @Override
@@ -43,7 +55,10 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
         int hasTaken = craftLayer.getCurrentStepCount(ingredientIndex);
         if (hasTaken >= current.getCount()) {
             ingredientIndex++;
-            ingredientIndex %= ingredients.size();
+            if (ingredientIndex >= ingredients.size()) {
+                ingredientIndex %= ingredients.size();
+                return Result.NOT_DONE_INTERRUPTABLE;
+            }
             return Result.NOT_DONE;
         }
         if (entities == null)
@@ -79,7 +94,10 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
         if (ingredientIndex >= ingredients.size() && craftGuideStepData.isOptional()) {
             return Result.SUCCESS;
         }
-        ingredientIndex %= ingredients.size();
+        if (ingredientIndex >= ingredients.size()) {
+            ingredientIndex %= ingredients.size();
+            return Result.NOT_DONE_INTERRUPTABLE;
+        }
         return Result.NOT_DONE;
     }
 

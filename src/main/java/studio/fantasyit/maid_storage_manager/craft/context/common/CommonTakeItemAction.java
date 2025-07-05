@@ -10,7 +10,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
@@ -26,12 +26,11 @@ import java.util.function.Function;
 public class CommonTakeItemAction extends AbstractCraftActionContext {
     public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "extract");
     protected IStorageContext storageContext;
-    int slot = 0;
-    int ingredientIndex = 0;
 
     public CommonTakeItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
+
 
     @Override
     public Result start() {
@@ -90,8 +89,10 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
         if (storageContext.isDone())
             if (craftGuideStepData.isOptional())
                 return Result.SUCCESS;
-            else
+            else {
                 storageContext.reset();
+                return hasChange.getValue() ? Result.CONTINUE_INTERRUPTABLE : Result.NOT_DONE_INTERRUPTABLE;
+            }
         return hasChange.getValue() ? Result.CONTINUE : Result.NOT_DONE;
     }
 

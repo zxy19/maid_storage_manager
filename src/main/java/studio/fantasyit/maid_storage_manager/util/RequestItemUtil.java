@@ -28,8 +28,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.AiUtils;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
+import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.network.JEIRequestResultPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -162,11 +164,20 @@ public class RequestItemUtil {
         client.chat(llmMessages, config, callback);
     }
 
+    private static void splitTaskDone(EntityMaid maid, ItemStack reqList, Entity targetEntity) {
+        if (!(targetEntity instanceof EntityMaid toMaid)) return;
+        CraftMemory crafting = MemoryUtil.getCrafting(toMaid);
+        if (!crafting.hasPlan()) return;
+        CraftLayerChain plan = crafting.plan();
+        
+    }
+
     /**
      * 创建虚拟的请求列表（显示为女仆事务且玩家不可使用，结束后自动销毁）
-     * @param list 物品列表
-     * @param target 目标
-     * @param targetEntity 目标实体
+     *
+     * @param list           物品列表
+     * @param target         目标
+     * @param targetEntity   目标实体
      * @param virtual_source 来源。用于回调事件。还在设计中。
      * @return 虚拟物品
      */
@@ -201,6 +212,7 @@ public class RequestItemUtil {
 
     /**
      * 设置当前请求列表的目标为已访问的
+     *
      * @param level
      * @param maid
      * @param target

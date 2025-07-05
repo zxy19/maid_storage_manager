@@ -22,8 +22,8 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(p_22539_) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!Conditions.takingRequestList(p_22539_)) return false;
         if (!MemoryUtil.getRequestProgress(p_22539_).isTryCrafting()) return false;
-        if (!MemoryUtil.getCrafting(p_22539_).hasTasks()) return false;
-        return !MemoryUtil.getCrafting(p_22539_).hasCurrent();
+        if (!MemoryUtil.getCrafting(p_22539_).hasPlan()) return false;
+        return MemoryUtil.getCrafting(p_22539_).plan().isDone();
     }
 
 
@@ -32,7 +32,7 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
         DebugData.sendDebug("[REQUEST_CRAFT]Exit");
         RequestListItem.markAllDone(maid.getMainHandItem());
         MemoryUtil.getCrafting(maid).clearCraftGuides();
-        MemoryUtil.getCrafting(maid).clearLayers();
+        MemoryUtil.getCrafting(maid).clearPlan();
         ChatTexts.removeSecondary(maid);
         MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
         MemoryUtil.getRequestProgress(maid).setReturn(true);

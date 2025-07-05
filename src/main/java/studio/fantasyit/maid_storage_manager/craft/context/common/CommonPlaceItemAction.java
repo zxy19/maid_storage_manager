@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
@@ -22,12 +23,26 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.List;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID,"insert");
+    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "insert");
     protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
+
     public CommonPlaceItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
+    }
+
+    @Override
+    public void loadEnv(CompoundTag env) {
+        slot = env.contains("slot") ? env.getInt("slot") : 0;
+        ingredientIndex = env.contains("ingredientIndex") ? env.getInt("ingredientIndex") : 0;
+    }
+
+    @Override
+    public CompoundTag saveEnv(CompoundTag env) {
+        env.putInt("slot", slot);
+        env.putInt("ingredientIndex", ingredientIndex);
+        return super.saveEnv(env);
     }
 
     @Override
@@ -54,6 +69,7 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
     public Result tick() {
         if (allDone()) return Result.SUCCESS;
         boolean hasChange = false;
+        boolean reTryStart = false;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
         if (storageContext instanceof IStorageInsertableContext isic) {
@@ -95,6 +111,8 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
             } else if (slot >= inv.getSlots()) {
                 if (craftGuideStepData.isOptional())//尽力满足输入，而非必须全部输入
                     ingredientIndex++;
+                else
+                    reTryStart = true;
                 slot = 0;
             }
             if (ingredientIndex >= craftGuideStepData.getNonEmptyInput().size()) {
@@ -103,6 +121,8 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         } else {
             return Result.FAIL;
         }
+        if (reTryStart)
+            return hasChange ? Result.CONTINUE_INTERRUPTABLE : Result.NOT_DONE_INTERRUPTABLE;
         return hasChange ? Result.CONTINUE : Result.NOT_DONE;
     }
 

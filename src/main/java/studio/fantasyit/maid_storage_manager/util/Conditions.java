@@ -21,7 +21,7 @@ public class Conditions {
      * 女仆是否手持请求列表或者正在处理请求列表
      */
     public static boolean takingRequestList(EntityMaid maid) {
-        if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting() && MemoryUtil.getCrafting(maid).hasCurrent())
+        if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting() && MemoryUtil.getCrafting(maid).hasPlan())
             return true;
         if (!maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get()))
             return false;
@@ -82,6 +82,7 @@ public class Conditions {
     public static boolean hasReachedValidTargetOrReset(EntityMaid maid) {
         return hasReachedValidTargetOrReset(maid, 2);
     }
+
     /**
      * 是否已经到达目标，如果不合法则重置目标
      */

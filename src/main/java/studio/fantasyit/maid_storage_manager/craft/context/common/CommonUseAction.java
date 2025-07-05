@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.capability.PowerCapabilityProvid
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -24,7 +25,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.*;
 
@@ -42,6 +43,17 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
     public CommonUseAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
+    }
+
+    @Override
+    public void loadEnv(CompoundTag env) {
+        failCount = env.contains("failCount") ? env.getInt("failCount") : 0;
+    }
+
+    @Override
+    public CompoundTag saveEnv(CompoundTag env) {
+        env.putInt("failCount", failCount);
+        return super.saveEnv(env);
     }
 
     @Override
@@ -74,7 +86,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
                 else
                     return Result.FAIL;
             }
-            return Result.CONTINUE;
+            return Result.CONTINUE_INTERRUPTABLE;
         }
 
         int resultPlaced = 0;

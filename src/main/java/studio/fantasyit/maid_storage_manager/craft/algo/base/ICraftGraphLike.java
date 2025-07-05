@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.base;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.List;
 import java.util.Optional;

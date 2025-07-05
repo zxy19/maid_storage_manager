@@ -26,6 +26,7 @@ public class CollectCraftEvent extends Event {
 
     /**
      * 添加一个合成类型
+     *
      * @param craftType 合成类型
      */
     public void addCraftType(ICraftType craftType) {
@@ -34,20 +35,29 @@ public class CollectCraftEvent extends Event {
 
     /**
      * 添加一个合成操作
-     * @param type 类型ID
-     * @param craftActionProvider 操作类型提供者。一般为类构造函数
+     *
+     * @param type                                 类型ID
+     * @param craftActionProvider                  操作类型提供者。一般为类构造函数
      * @param craftActionPathFindingTargetProvider 寻路提供者。一般可以在PathTargetLocator中找到
-     * @param closeEnoughThreshold 距离阈值。判断到达目标的条件
-     * @param isCommon 是否可以在一般类型中选择
-     * @param hasInput 输入数量
-     * @param hasOutput 输出数量
+     * @param closeEnoughThreshold                 距离阈值。判断到达目标的条件
+     * @param isCommon                             是否可以在一般类型中选择
+     * @param hasInput                             输入数量
+     * @param hasOutput                            输出数量
      */
-    public void addAction(ResourceLocation type, CraftAction.CraftActionProvider craftActionProvider, CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider, double closeEnoughThreshold, boolean isCommon, int hasInput, int hasOutput) {
-        this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, hasInput, hasOutput));
+    public void addAction(ResourceLocation type,
+                          CraftAction.CraftActionProvider craftActionProvider,
+                          CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
+                          double closeEnoughThreshold,
+                          boolean isCommon,
+                          boolean noOccupation,
+                          int hasInput,
+                          int hasOutput) {
+        this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, noOccupation, hasInput, hasOutput));
     }
 
     /**
      * 添加一个自动合成指南生成器
+     *
      * @param autoCraftGuideGenerator 自动合成指南生成器
      */
     public void addAutoCraftGuideGenerator(IAutoCraftGuideGenerator autoCraftGuideGenerator) {

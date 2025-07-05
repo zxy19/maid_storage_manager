@@ -28,7 +28,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.*;
 
@@ -72,7 +72,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         if (!MoveUtil.setMovementIfColliedTarget((ServerLevel) maid.level(), maid, craftGuideStepData.storage.pos))
             return Result.CONTINUE;
         if (!hasBlockOnTarget())
-            return Result.NOT_DONE;
+            return Result.NOT_DONE_INTERRUPTABLE;
         maid.swing(InteractionHand.MAIN_HAND);
         @Nullable List<ItemStack> ret = interactWithItemAndGetReturn();
 

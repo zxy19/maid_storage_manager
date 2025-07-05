@@ -31,7 +31,7 @@ public class TaczRecipe {
                 TaczRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,
+                false,true,
                 10,
                 1
         );

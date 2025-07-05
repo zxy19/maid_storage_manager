@@ -6,7 +6,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -18,7 +19,6 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContex
 import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
@@ -26,36 +26,30 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     IStorageContext context;
     private Target target;
     boolean changed = false;
+    CraftLayerChain plan;
+    CraftLayer layer;
 
     public RequestCraftGatherBehavior() {
         super(Map.of());
     }
 
-    @Override
-    protected boolean canStillUse(ServerLevel level, EntityMaid maid, long p_22547_) {
-        if (!Conditions.takingRequestList(maid)) return false;
-        if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
-        if (MemoryUtil.getCrafting(maid).hasCurrent()) {
-            if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll())
-                return false;
-        }
-        return context != null && !context.isDone();
-    }
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
-        if (MemoryUtil.getCrafting(maid).hasStartWorking()) return false;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return false;
-        if (!MemoryUtil.getCrafting(maid).hasCurrent()) return false;
+        if (!MemoryUtil.getCrafting(maid).hasPlan()) return false;
+        if (!MemoryUtil.getCrafting(maid).plan().isCurrentGathering()) return false;
         return Conditions.hasReachedValidTargetOrReset(maid);
     }
 
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
+        plan = MemoryUtil.getCrafting(maid).plan();
+        layer = plan.getCurrentLayer();
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return;
         target = MemoryUtil.getCrafting(maid).getTarget();
         IMaidStorage storage = MaidStorage.getInstance().getStorage(target.getType());
@@ -66,15 +60,24 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         context = storage.onStartCollect(level, maid, target);
         if (context != null)
             context.start(maid, level, target);
-        MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
+        plan.showCraftingProgress(maid);
+    }
+
+    @Override
+    protected boolean canStillUse(ServerLevel level, EntityMaid maid, long p_22547_) {
+        if (!Conditions.takingRequestList(maid)) return false;
+        if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
+        if (MemoryUtil.getCrafting(maid).hasPlan()) {
+            if (layer.hasCollectedAll())
+                return false;
+        }
+        return context != null && !context.isDone();
     }
 
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
         if (!breath.breathTick(maid)) return;
-        if (!MemoryUtil.getCrafting(maid).hasCurrent()) return;
-        CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
             if (maxStore > 0) {
@@ -125,8 +128,8 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
 
-        if (MemoryUtil.getCrafting(maid).hasCurrent() && MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
-            MemoryUtil.getCrafting(maid).finishGathering(maid);
+        if (layer.hasCollectedAll()) {
+            plan.finishGathering(maid);
         }
     }
 

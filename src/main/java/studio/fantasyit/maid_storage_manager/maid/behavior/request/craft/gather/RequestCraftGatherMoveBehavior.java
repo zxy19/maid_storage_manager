@@ -5,6 +5,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.AbstractGatherMoveBehavior;
@@ -15,7 +17,6 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 手上持有物品清单，尝试前往附近所有的箱子
@@ -24,15 +25,19 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
     public RequestCraftGatherMoveBehavior() {
         super((float) Config.collectSpeed);
     }
+
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
-        if (MemoryUtil.getCrafting(owner).hasStartWorking()) return false;
-        if (!MemoryUtil.getCrafting(owner).hasCurrent()) return false;
+        if (!MemoryUtil.getCrafting(owner).hasPlan()) return false;
+        if (!MemoryUtil.getCrafting(owner).plan().isCurrentGathering()) return false;
         return true;
     }
+
+    CraftLayerChain plan;
+    CraftLayer layer;
 
     @Override
     protected AbstractTargetMemory getMemory(EntityMaid maid) {
@@ -41,8 +46,11 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
 
     @Override
     protected boolean hasFinishedPre(ServerLevel level, EntityMaid maid) {
-        if (MemoryUtil.getCrafting(maid).getCurrentLayer().hasCollectedAll()) {
-            MemoryUtil.getCrafting(maid).finishGathering(maid);
+        plan = MemoryUtil.getCrafting(maid).plan();
+        layer = plan.getCurrentLayer();
+        plan.ifChanged(() -> MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid));
+        if (layer.hasCollectedAll()) {
+            plan.finishGathering(maid);
             return true;
         }
         return false;
@@ -55,7 +63,7 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
 
     @Override
     protected void noTarget(ServerLevel level, EntityMaid maid) {
-        MemoryUtil.getCrafting(maid).finishGathering(maid);
+        plan.finishGathering(maid);
     }
 
     @Override
@@ -65,6 +73,6 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
 
     @Override
     protected @NotNull List<ItemStack> getPriorityItems(ServerLevel level, EntityMaid maid) {
-        return Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer()).getUnCollectedItems();
+        return layer.getUnCollectedItems();
     }
 }

@@ -45,8 +45,6 @@ public class PortableCraftCalculatorBauble extends MaidInteractItem implements I
             tag.putInt(TAG_STORED_RECIPE, MemoryUtil.getCrafting(maid).craftGuides.size());
         else
             tag.remove(TAG_STORED_RECIPE);
-        tag.putInt(TAG_STORED_LAYERS, MemoryUtil.getCrafting(maid).layers.size());
-        tag.putInt(TAG_PROGRESS, MemoryUtil.getCrafting(maid).getCurrentLayerIndex());
         calculator.setTag(tag);
     }
 

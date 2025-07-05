@@ -52,6 +52,17 @@ public class KJSCraftEvent extends EventJS {
                 PathTargetLocator::commonNearestAvailablePos,
                 2,
                 isCommon,
+                false,
+                input,
+                output);
+    }
+    public void addActionSimpleNoOccupation(ResourceLocation type, IKJSCraftContextSupplier craftActionProvider, boolean isCommon, int input, int output) {
+        event.addAction(type,
+                (a, b, c, d) -> new KJSWrapCraftContext(a, b, c, d, craftActionProvider.get()),
+                PathTargetLocator::commonNearestAvailablePos,
+                2,
+                isCommon,
+                true,
                 input,
                 output);
     }
@@ -62,6 +73,19 @@ public class KJSCraftEvent extends EventJS {
                 craftActionPathFindingTargetProvider,
                 closeEnoughThreshold,
                 isCommon,
+                false,
+                hasInput,
+                hasOutput);
+    }
+
+
+    public void addActionNoOccupation(ResourceLocation type, IKJSCraftContextSupplier craftActionProvider, CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider, double closeEnoughThreshold, boolean isCommon, int hasInput, int hasOutput) {
+        event.addAction(type,
+                (a, b, c, d) -> new KJSWrapCraftContext(a, b, c, d, craftActionProvider.get()),
+                craftActionPathFindingTargetProvider,
+                closeEnoughThreshold,
+                isCommon,
+                true,
                 hasInput,
                 hasOutput);
     }
@@ -71,6 +95,7 @@ public class KJSCraftEvent extends EventJS {
                 PathTargetLocator::commonNearestAvailablePos,
                 2,
                 false,
+                true,
                 hasInput,
                 hasOutput);
     }

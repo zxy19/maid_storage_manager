@@ -124,7 +124,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (context != null)
             context.finish();
         //正在合成过程中，合成树还未结束，直接返回合成
-        if (MemoryUtil.getCrafting(maid).hasTasks()) {
+        if (MemoryUtil.getCrafting(maid).hasPlan()) {
             MemoryUtil.getRequestProgress(maid).setReturn(false);
             MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
             MemoryUtil.getRequestProgress(maid).clearTarget();

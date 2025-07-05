@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.context;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 public class VirtualAction extends AbstractCraftActionContext {
 

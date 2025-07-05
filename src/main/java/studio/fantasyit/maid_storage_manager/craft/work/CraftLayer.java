@@ -1,15 +1,19 @@
-package studio.fantasyit.maid_storage_manager.craft.data;
+package studio.fantasyit.maid_storage_manager.craft.work;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 //每一个请求寻找层。初始层的craftData为空
@@ -21,10 +25,15 @@ public class CraftLayer {
                     Codec.INT.listOf().fieldOf("collectedCounts").forGetter(CraftLayer::getCollectedCounts),
                     Codec.INT.fieldOf("count").forGetter(CraftLayer::getCount),
                     Codec.INT.fieldOf("doneCount").forGetter(CraftLayer::getDoneCount),
+                    Codec.INT.fieldOf("tryTick").forGetter(CraftLayer::getTryTick),
                     Codec.INT.listOf().fieldOf("currentStepPlacedCounts").forGetter(CraftLayer::getCurrentStepCounts),
-                    Codec.INT.fieldOf("step").forGetter(CraftLayer::getStep)
+                    Codec.INT.fieldOf("step").forGetter(CraftLayer::getStep),
+                    CompoundTag.CODEC.orElseGet(CompoundTag::new).fieldOf("env").forGetter(CraftLayer::getEnv)
             ).apply(instance, CraftLayer::new)
     );
+
+    protected int tryTick;
+    protected CompoundTag env;
     protected CraftGuideData craftData;
     protected List<CraftGuideStepData> steps;
 
@@ -41,8 +50,11 @@ public class CraftLayer {
                       List<Integer> collectedCounts,
                       Integer count,
                       Integer doneCount,
+                      Integer tryTick,
                       List<Integer> currentStepCounts,
-                      int step) {
+                      int step,
+                      CompoundTag env
+    ) {
         this.craftData = craftData.orElse(null);
         this.steps = new ArrayList<>(craftData.map(CraftGuideData::getTransformedSteps).orElse(new ArrayList<>()));
         this.items = new ArrayList<>(items);
@@ -51,12 +63,15 @@ public class CraftLayer {
         this.doneCount = doneCount;
         this.currentStepCounts = new ArrayList<>(currentStepCounts);
         this.step = step;
+        this.tryTick = tryTick;
+        this.env = env;
     }
 
     public CraftLayer(Optional<CraftGuideData> craftData, List<ItemStack> items, Integer count) {
         this.craftData = craftData.orElse(null);
         this.steps = new ArrayList<>(craftData.map(CraftGuideData::getTransformedSteps).orElse(new ArrayList<>()));
         this.items = new ArrayList<>(items);
+        this.tryTick = 0;
         this.collectedCounts = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) {
             this.collectedCounts.add(0);
@@ -65,6 +80,7 @@ public class CraftLayer {
         this.doneCount = 0;
         this.step = 0;
         this.currentStepCounts = new ArrayList<>();
+        this.env = new CompoundTag();
     }
 
     public Integer getCount() {
@@ -131,6 +147,8 @@ public class CraftLayer {
      */
     public void nextStep() {
         currentStepCounts = new ArrayList<>();
+        tryTick = 0;
+        env = new CompoundTag();
         if (doneCount >= count) return;
         step++;
         if (step == steps.size()) {
@@ -179,6 +197,7 @@ public class CraftLayer {
 
     public void resetStep() {
         this.step = 0;
+        this.tryTick = 0;
     }
 
     public List<Integer> getCurrentStepCounts() {
@@ -204,5 +223,32 @@ public class CraftLayer {
 
     public void setCount(int i) {
         this.count = i;
+    }
+
+    public int addAndGetTryTick() {
+        return ++tryTick;
+    }
+
+    public int getTryTick() {
+        return tryTick;
+    }
+
+    public void setTryTick(int i) {
+        tryTick = i;
+    }
+
+    public CompoundTag getEnv() {
+        return env;
+    }
+
+    public void setEnv(CompoundTag env) {
+        this.env = env;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof CraftLayer craftLayer &&
+                craftLayer.getCount().equals(this.count) &&
+                Objects.equals(craftLayer.getCraftData().orElse(null), this.craftData);
     }
 }

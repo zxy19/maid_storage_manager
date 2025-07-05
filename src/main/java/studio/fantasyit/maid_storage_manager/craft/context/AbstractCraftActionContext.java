@@ -1,9 +1,10 @@
 package studio.fantasyit.maid_storage_manager.craft.context;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.nbt.CompoundTag;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 public abstract class AbstractCraftActionContext {
 
@@ -11,22 +12,35 @@ public abstract class AbstractCraftActionContext {
         SUCCESS,
         FAIL,
         CONTINUE,
-        NOT_DONE
+        CONTINUE_INTERRUPTABLE,
+        NOT_DONE,
+        NOT_DONE_INTERRUPTABLE
     }
+
     protected CraftGuideStepData craftGuideStepData;
     protected CraftGuideData craftGuideData;
     protected int idx;
     protected EntityMaid maid;
     protected CraftLayer craftLayer;
-    public AbstractCraftActionContext(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer){
+
+    public AbstractCraftActionContext(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         this.craftGuideData = craftGuideData;
         this.craftGuideStepData = craftGuideStepData;
         this.maid = maid;
         this.craftLayer = layer;
     }
+
     public abstract Result start();
 
     public abstract Result tick();
 
     public abstract void stop();
+
+    public void loadEnv(CompoundTag env) {
+
+    }
+
+    public CompoundTag saveEnv(CompoundTag env) {
+        return new CompoundTag();
+    }
 }

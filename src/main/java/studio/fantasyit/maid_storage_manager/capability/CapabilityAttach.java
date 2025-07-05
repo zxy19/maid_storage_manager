@@ -24,6 +24,7 @@ public class CapabilityAttach {
                 if (level.dimension().location().equals(new ResourceLocation("minecraft", "overworld")))
                     event.addCapability(new ResourceLocation(MaidStorageManager.MODID, "inventory_list"),
                             new InventoryListDataProvider());
+                event.addCapability(new ResourceLocation(MaidStorageManager.MODID, "block_occupy"),new CraftBlockOccupyDataProvider());
             }
         }
     }

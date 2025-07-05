@@ -68,7 +68,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         }
         //背包已满，停止工作，将清单丢掉
         if (Conditions.inventoryFull(maid)) {
-            RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null,null);
+            RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null, null);
             return;
         }
 
@@ -76,7 +76,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getRequestProgress(maid).newWork(RequestListItem.getUUID(maid.getMainHandItem()));
         MemoryUtil.clearReturnWorkSchedule(maid);
         MemoryUtil.getCrafting(maid).clearCraftGuides();
-        MemoryUtil.getCrafting(maid).clearLayers();
+        MemoryUtil.getCrafting(maid).clearPlan();
 
         //标黑存储箱子相连的所有箱子
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());

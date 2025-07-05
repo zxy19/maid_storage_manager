@@ -15,7 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -25,7 +26,6 @@ import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 合成工作1
@@ -35,6 +35,8 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT));
     }
 
+    CraftLayerChain plan;
+    CraftLayer layer;
     Target target;
 
     @Override
@@ -42,15 +44,16 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
-        if (!MemoryUtil.getCrafting(owner).hasStartWorking()) return false;
-        if (!MemoryUtil.getCrafting(owner).hasCurrent()) return false;
-        if (!MemoryUtil.getCrafting(owner).getCurrentLayer().hasCollectedAll()) return false;
+        if (!MemoryUtil.getCrafting(owner).hasPlan()) return false;
+        if (!MemoryUtil.getCrafting(owner).plan().isCurrentWorking()) return false;
         return true;
     }
 
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        plan = MemoryUtil.getCrafting(maid).plan();
+        layer = plan.getCurrentLayer();
         for (int i = 0; i < 3; i++) {
             if (targeting(level, maid))
                 return;
@@ -58,7 +61,6 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
     }
 
     private boolean targeting(ServerLevel level, EntityMaid maid) {
-        CraftLayer layer = Objects.requireNonNull(MemoryUtil.getCrafting(maid).getCurrentLayer());
         CraftGuideStepData step = layer.getStepData();
         if (step == null) {
             if (!layer.getItems().isEmpty())
@@ -79,53 +81,46 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                 );
             }
             MemoryUtil.getCrafting(maid).lastSuccess();
-            MemoryUtil.getCrafting(maid).nextLayer();
-            MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
-            MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
+            plan.finishCurrentLayer();
+            plan.showCraftingProgress(maid);
+            MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid);
             //立刻安排返回存储
             MemoryUtil.getRequestProgress(maid).setReturn();
             MemoryUtil.getRequestProgress(maid).clearTarget();
             MemoryUtil.clearTarget(maid);
             return true;
         }
-        Target storage = step.getStorage();
-        if (storage == null || step.actionType == null) {
-            //当前合成不存在，直接进行下一步
-            DebugData.sendDebug("[REQUEST_CRAFT_WORK]No current step. Next.");
-            layer.nextStep();
-            if (layer.isDone()) {
-                MemoryUtil.getCrafting(maid).nextLayer();
-                MemoryUtil.getCrafting(maid).showCraftingProgress(maid);
-                MemoryUtil.getCrafting(maid).resetAndMarkVisForRequest(level, maid);
+        //如果当前layer被占用，那就不用开始走过去了
+        if (plan.checkIsCurrentOccupied(level, maid)) {
+            if (plan.tryReleaseAndStartNext()) {
+                MemoryUtil.getCrafting(maid).clearTarget();
+                MemoryUtil.clearTarget(maid);
+                return true;
             }
-            //遇到这种情况需要重新选择
-            return false;
+        }
+        Target storage = step.getStorage();
+        DebugData.sendDebug(
+                String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
+                        layer.getStep(),
+                        layer.getDoneCount(),
+                        layer.getCount(),
+                        storage
+                )
+        );
+        MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
+        BlockPos blockPos = step.actionType.pathFindingTargetProvider().find(maid, layer.getCraftData().get(), step, layer, pathFinding);
+        if (blockPos != null) {
+            MemoryUtil.setTarget(maid, blockPos, (float) Config.craftWorkSpeed);
+            MemoryUtil.getCrafting(maid).setTarget(storage);
+            MemoryUtil.setLookAt(maid, storage.getPos());
+            MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
         } else {
-            DebugData.sendDebug(
-                    String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
-                            layer.getStep(),
-                            layer.getDoneCount(),
-                            layer.getCount(),
-                            storage
-                    )
-            );
-            MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
-            BlockPos blockPos = step.actionType.pathFindingTargetProvider().find(maid, layer.getCraftData().get(), step, layer, pathFinding);
-            if (blockPos != null) {
-                MemoryUtil.setTarget(maid, blockPos, (float) Config.craftWorkSpeed);
-                MemoryUtil.getCrafting(maid).setTarget(storage);
-                MemoryUtil.setLookAt(maid, storage.getPos());
+            MemoryUtil.getCrafting(maid).addPathFindingFailCount();
+            if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
+                List<ItemStack> missing = layer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of());
+                DebugData.sendDebug("[REQUEST_CRAFT_WORK]Path finding fail.");
+                plan.failCurrent(maid, missing, "tooltip.maid_storage_manager.request_list.fail_cannot_path_reach_crafting");
                 MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
-            } else {
-                MemoryUtil.getCrafting(maid).addPathFindingFailCount();
-                if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
-                    CraftLayer currentLayer = MemoryUtil.getCrafting(maid).getCurrentLayer();
-                    List<ItemStack> missing = currentLayer == null ? List.of() :
-                            currentLayer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of());
-                    DebugData.sendDebug("[REQUEST_CRAFT_WORK]Path finding fail.");
-                    MemoryUtil.getCrafting(maid).failCurrent(maid, missing, "tooltip.maid_storage_manager.request_list.fail_cannot_path_reach_crafting");
-                    MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
-                }
             }
         }
         return true;

@@ -15,8 +15,9 @@ import studio.fantasyit.maid_storage_manager.craft.algo.graph.TopologyCraftGraph
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.generator.AutoGraphGenerator;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -48,6 +49,8 @@ public class MaidCraftPlanner {
     AutoGraphGenerator autoGraphGenerator;
     private List<CraftGuideData> craftGuides;
 
+    CraftLayerChain plan;
+
     public MaidCraftPlanner(ServerLevel level, EntityMaid maid) {
         this.maid = maid;
         this.level = level;
@@ -73,6 +76,8 @@ public class MaidCraftPlanner {
         } else {
             initItems();
         }
+
+        plan = new CraftLayerChain(maid);
     }
 
     protected boolean precheck() {
@@ -246,7 +251,7 @@ public class MaidCraftPlanner {
             RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
         } else {
             ResultListOptimizer.optimize(results).forEach(craftLayer -> {
-                MemoryUtil.getCrafting(maid).addLayer(craftLayer);
+                plan.addLayer(craftLayer);
             });
 
             DebugData.sendDebug(
@@ -290,5 +295,9 @@ public class MaidCraftPlanner {
 
     public boolean anySuccess() {
         return success > 0;
+    }
+
+    public CraftLayerChain getPlan() {
+        return plan;
     }
 }

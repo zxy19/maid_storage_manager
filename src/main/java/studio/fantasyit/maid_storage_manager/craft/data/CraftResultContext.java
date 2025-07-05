@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.data;
 
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -17,12 +18,12 @@ public class CraftResultContext {
 
         for (CraftLayer layer : layers) {
             //女仆优先使用合成树上找到的剩余物品
-            layer.items.forEach(i -> removeConsumeCount(i, i.getCount()));
+            layer.getItems().forEach(i -> removeConsumeCount(i, i.getCount()));
             //如果是最后一层，那么移除终产物即可
             Optional<CraftGuideData> craftData = layer.getCraftData();
             if (craftData.isEmpty()) break;
             //否则，加入该层物品需要占用的背包空间
-            layer.items.forEach(i -> addConsumeCount(i, i.getCount()));
+            layer.getItems().forEach(i -> addConsumeCount(i, i.getCount()));
             craftData.get().getAllOutputItemsWithOptional().forEach(i -> addConsumeCount(i, i.getCount() * layer.getCount()));
             //记录最大背包占用
             this.slotConsume = Math.max(this.slotConsume, itemConsumeCount.keySet().size());

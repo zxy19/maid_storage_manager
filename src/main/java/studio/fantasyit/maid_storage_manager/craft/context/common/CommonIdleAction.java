@@ -7,7 +7,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftLayer;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.Objects;
 
@@ -21,20 +21,35 @@ public class CommonIdleAction extends AbstractCraftActionContext {
     int endTick = 0;
 
     @Override
+    public void loadEnv(CompoundTag env) {
+        if (env.contains("endTick"))
+            endTick = env.getInt("endTick");
+        else
+            endTick = 0;
+    }
+
+    @Override
+    public CompoundTag saveEnv(CompoundTag env) {
+        env.putInt("endTick", endTick);
+        return super.saveEnv(env);
+    }
+
+    @Override
     public Result start() {
         CompoundTag extraData = craftGuideStepData.getExtraData();
         int time = extraData.getInt("time");
         int u = extraData.getInt("u");
         int v = time * (u == 0 ? 1 : 20);
-        endTick = Objects.requireNonNull(maid.level().getServer()).getTickCount() + v;
+        if (endTick == 0)
+            endTick = Objects.requireNonNull(maid.level().getServer()).getTickCount() + v;
         return Result.CONTINUE;
     }
 
     @Override
     public Result tick() {
-        if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE;
+        if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE_INTERRUPTABLE;
         if (Objects.requireNonNull(maid.level().getServer()).getTickCount() < endTick)
-            return Result.CONTINUE;
+            return Result.CONTINUE_INTERRUPTABLE;
         return Result.SUCCESS;
     }
 
