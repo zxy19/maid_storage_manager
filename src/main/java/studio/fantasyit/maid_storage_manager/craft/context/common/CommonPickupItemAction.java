@@ -62,7 +62,7 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
             return Result.NOT_DONE;
         }
         if (entities == null)
-            entities = maid.level().getEntities(maid, maid.getBoundingBox().inflate(2),
+            entities = maid.level().getEntities(maid, maid.getBoundingBox().inflate(2.8),
                     e -> e instanceof ItemEntity ie && EntityMaid.canInsertItem(ie.getItem()) && (!ie.hasPickUpDelay() || Config.pickupIgnoreDelay)
             );
         for (Entity entity : entities) {

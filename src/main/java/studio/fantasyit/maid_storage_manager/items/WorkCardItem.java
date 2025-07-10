@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -19,12 +20,14 @@ import studio.fantasyit.maid_storage_manager.craft.work.SolvedCraftLayer;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
+import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     @Override
@@ -57,15 +60,11 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         CraftMemory crafting = MemoryUtil.getCrafting(maid);
         if (!crafting.hasPlan() || !crafting.plan().isMaster()) return;
         CraftLayerChain plan = crafting.plan();
+        if (plan.getIsStoppingAdding()) return;
 
 
         // 寻找范围内的可分发的女仆
-        Level level = maid.level();
-        level.getEntities(
-                EntityTypeTest.forClass(EntityMaid.class),
-                getMaidFindingBBox(maid),
-                t -> hasBaubleAndAvailable(t, baubleItem)
-        ).forEach(toMaid -> {
+        getNearbyMaidsSameGroup(maid, baubleItem, true).forEach(toMaid -> {
             //获取可分发的层
             @Nullable Pair<CraftLayer, SolvedCraftLayer> dispatchLayerData = plan.getAndDispatchLayer(toMaid);
             if (dispatchLayerData == null) return;
@@ -115,30 +114,95 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
             MemoryUtil.getCrafting(toMaid).clearIgnoreTargets();
             MemoryUtil.getCrafting(toMaid).addIgnoreTargets(crafting.getIgnoreTargets());
             MemoryUtil.getCrafting(toMaid).resetAndMarkVis((ServerLevel) maid.level(), toMaid);
-            ChatTexts.send(toMaid, ChatTexts.CHAT_CRAFT_DISPATCHED);
+            newPlan.setStatusMessage(toMaid, Component.translatable(ChatTexts.CHAT_CRAFT_DISPATCHED));
         });
     }
 
-    private AABB getMaidFindingBBox(EntityMaid maid) {
-        if (maid.hasRestriction())
-            return new AABB(maid.getRestrictCenter()).inflate(maid.getRestrictRadius());
-        return new AABB(maid.blockPosition()).inflate(7);
-    }
 
-    protected boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source) {
-        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW) return false;
-        if (!maid.getMainHandItem().isEmpty()) return false;
+    protected static boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source, boolean requireAvailable) {
+        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW && requireAvailable) return false;
+        if (!maid.getMainHandItem().isEmpty() && requireAvailable) return false;
         BaubleItemHandler t = maid.getMaidBauble();
         for (int i = 0; i < t.getSlots(); i++)
             if (t.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
                 //如果当前物品存在名字，而且目标物品也存在名字，而且不一样，那么跳过
                 if (t.getStackInSlot(i).hasCustomHoverName()) {
-                    if (source.hasCustomHoverName() && source.getHoverName().equals(t.getStackInSlot(i).getHoverName())) {
+                    if (source.hasCustomHoverName() && !source.getHoverName().equals(t.getStackInSlot(i).getHoverName())) {
                         continue;
                     }
                 }
                 return true;
             }
         return false;
+    }
+
+    public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, boolean requireAvailable, boolean propagate) {
+        List<EntityMaid> maids = new ArrayList<>();
+        Set<Component> hasChecked = new HashSet<>();
+        Queue<ItemStack> queue = new LinkedList<>();
+        BaubleItemHandler inv = maid.getMaidBauble();
+        for (int i = 0; i < inv.getSlots(); i++) {
+            if (inv.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
+                queue.add(inv.getStackInSlot(i));
+                // 空名字天然匹配一切，可以直接跳过
+                if (!inv.getStackInSlot(i).hasCustomHoverName())
+                    return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable);
+                hasChecked.add(inv.getStackInSlot(i).getHoverName());
+            }
+        }
+        // 如果匹配到空的名字，那么可以直接退出。所有的相关的都能被匹配
+        while (!queue.isEmpty()) {
+            ItemStack stack = queue.poll();
+            List<EntityMaid> tmp = getNearbyMaidsSameGroup(maid, stack, requireAvailable);
+            for (EntityMaid nearbyMaid : tmp) {
+                if (maids.stream().noneMatch(m -> m.getUUID().equals(nearbyMaid.getUUID()))) {
+                    maids.add(nearbyMaid);
+                }
+                if (!propagate) continue;
+                BaubleItemHandler tt = nearbyMaid.getMaidBauble();
+                for (int i = 0; i < tt.getSlots(); i++) {
+                    if (!tt.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) continue;
+                    if (!tt.getStackInSlot(i).hasCustomHoverName())
+                        return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable);
+                    if (!hasChecked.contains(tt.getStackInSlot(i).getHoverName())) {
+                        queue.add(tt.getStackInSlot(i));
+                        hasChecked.add(tt.getStackInSlot(i).getHoverName());
+                    }
+                }
+            }
+        }
+        return maids;
+    }
+
+    public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, ItemStack baubleItem, boolean requireAvailable) {
+        Level level = maid.level();
+        return level.getEntities(
+                EntityTypeTest.forClass(EntityMaid.class),
+                getMaidFindingBBox(maid),
+                t -> hasBaubleAndAvailable(t, baubleItem, requireAvailable)
+        );
+    }
+
+    private static AABB getMaidFindingBBox(EntityMaid maid) {
+        if (maid.hasRestriction())
+            return new AABB(maid.getRestrictCenter()).inflate(maid.getRestrictRadius());
+        return new AABB(maid.blockPosition()).inflate(7);
+    }
+
+    public static void syncStorageOn(EntityMaid maid, Target target) {
+        List<ViewedInventoryMemory.ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target);
+        ServerLevel level = (ServerLevel) maid.level();
+        getNearbyMaidsSameGroup(maid, false, true)
+                .forEach(toMaid -> {
+                    if (StorageAccessUtil.isValidTarget(level, toMaid, target, false)) {
+                        ViewedInventoryMemory toMem = MemoryUtil.getViewedInventory(toMaid);
+                        toMem.resetViewedInvForPos(target);
+                        StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
+                            toMem.resetViewedInvForPos(target.sameType(pos, null));
+                        });
+                        itemsAt.forEach(itemCount -> toMem.addItem(target, itemCount.getItem(), itemCount.getCount()));
+                        toMem.addVisitedPos(target);
+                    }
+                });
     }
 }

@@ -8,6 +8,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.entity.ai.IExtraMaidBrain;
 import com.github.tartaricacid.touhoulittlemaid.client.overlay.MaidTipsOverlay;
 import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleRegister;
 import com.github.tartaricacid.touhoulittlemaid.entity.data.TaskDataRegister;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
@@ -25,6 +26,7 @@ import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
+import studio.fantasyit.maid_storage_manager.render.CraftingChatBubbleData;
 
 import java.util.Collection;
 import java.util.List;
@@ -109,5 +111,10 @@ public class MaidExtension implements ILittleMaid {
                 DebugData::commonTargets,
                 DebugData::placeSuppresses
         );
+    }
+
+    @Override
+    public void registerChatBubble(ChatBubbleRegister register) {
+        register.register(CraftingChatBubbleData.ID, new CraftingChatBubbleData.CraftingChatSerializer());
     }
 }

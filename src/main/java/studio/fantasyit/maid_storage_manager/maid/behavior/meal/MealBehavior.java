@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -74,6 +75,7 @@ public class MealBehavior extends MaidWorkMealTask {
                     hasTaken.setTrue();
                     ItemStack copy = itemStack.copyWithCount(1);
                     MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, 1);
+                    WorkCardItem.syncStorageOn(maid, target);
                     InvUtil.tryPlace(maidInv, copy);
                     //放完了直接开吃。
                     super.start(level, maid, p_22553_);

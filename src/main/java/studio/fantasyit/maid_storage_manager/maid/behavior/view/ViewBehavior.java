@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -106,6 +107,8 @@ public class ViewBehavior extends MaidCheckRateTask {
             MemoryUtil.getViewedInventory(maid).clearTarget();
             context.finish();
         }
+        if(target != null)
+            WorkCardItem.syncStorageOn(maid, target);
         MemoryUtil.clearTarget(maid);
         LinkedList<Target> markChanged = MemoryUtil.getViewedInventory(maid).getMarkChanged();
         if (!markChanged.isEmpty() && markChanged.peek().equals(target)) {

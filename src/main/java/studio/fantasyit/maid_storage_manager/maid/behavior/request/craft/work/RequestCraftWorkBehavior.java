@@ -64,7 +64,8 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         layer = plan.getCurrentLayer();
         craftGuideStepData = layer.getStepData();
         plan.showCraftingProgress(maid);
-        ChatTexts.progress(maid,
+        plan.setStatusMessage(maid,
+                (double) (layer.getDoneCount()) / layer.getCount(),
                 Component.translatable(
                         ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
                         layer
@@ -74,8 +75,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                                 .orElse(Component.empty()),
                         layer.getDoneCount().toString(),
                         layer.getCount().toString()
-                ),
-                (double) (layer.getDoneCount()) / layer.getCount()
+                )
         );
         if (craftGuideStepData == null) {
             MemoryUtil.getCrafting(maid).lastSuccess();
@@ -189,7 +189,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 plan.removeOccupied(level, maid);
                 DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
                 plan.finishCurrentLayer();
-                MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid); // TODO:REMOVE
+                MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid);
                 plan.showCraftingProgress(maid);
             } else {
                 plan.checkInputInbackpack(maid);

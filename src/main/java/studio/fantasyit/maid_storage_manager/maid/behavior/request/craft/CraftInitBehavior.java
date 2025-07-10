@@ -9,6 +9,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -31,6 +32,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         if (!Conditions.takingRequestList(p_22539_)) return false;
         if (MemoryUtil.getRequestProgress(p_22539_).isReturning()) return false;
         if (!MemoryUtil.getRequestProgress(p_22539_).isTryCrafting()) return false;
+        if (MemoryUtil.getCrafting(p_22539_).isGoPlacingBeforeCraft()) return false;
         //女仆当前没有生成合成任务，应该立刻计算所有合成
         return !MemoryUtil.getCrafting(p_22539_).hasPlan();
     }
@@ -73,6 +75,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
             MemoryUtil.getRequestProgress(maid).setReturn(true);
             DebugData.sendDebug("[REQUEST_CRAFT] Failed to find recipe for any items");
+            ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE_NO_RESULT);
         } else {
             MemoryUtil.getCrafting(maid).setPlan(planner.getPlan());
             MemoryUtil.getCrafting(maid).addIgnoreTargetFromRequest(maid, p_22548_);

@@ -47,9 +47,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
+        if (thrown != null) return true;
         if (currentSlot >= maid.getAvailableInv(false).getSlots())
             return false;
-        return (context != null && !context.isDone()) || targetEntity != null || thrown != null;
+        return (context != null && !context.isDone()) || targetEntity != null;
     }
 
     @Override
@@ -94,8 +95,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                 thrown.setNoPickUpDelay();
                 if (!targetMaid.pickupItem(thrown, false))
                     DebugData.sendDebug("[RET]Failed to pickup item %s", targetMaid.getName().getString());
-            }
-            thrown = null;
+                if (!thrown.isAlive())
+                    thrown = null;
+            } else
+                thrown = null;
             return;
         }
         CombinedInvWrapper inv = maid.getAvailableInv(false);
@@ -109,7 +112,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                 item.setCount(restCount);
                 thrown = InvUtil.throwItem(maid, toThrowStack, targetDir, !(targetEntity instanceof EntityMaid));
                 if (targetEntity instanceof EntityMaid)
-                    thrown.setNeverPickUp();
+                    thrown.setPickUpDelay(400);
                 inv.setStackInSlot(currentSlot - 1, item);
                 break;
             }

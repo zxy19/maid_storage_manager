@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.work;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -112,6 +113,10 @@ public class CraftLayerChain {
      * 当前并行
      */
     private int currentParallel;
+    private Component statusMessage = Component.empty();
+    private double oprogress = 0;
+    private double oprogress1 = 0;
+    private double progress1 = 0;
 
     protected enum StoppingAdding {
         NONE(false),
@@ -513,16 +518,42 @@ public class CraftLayerChain {
                 isCurrentWorking() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_WORK) :
                         Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_GATHER)
         );
-
+        toShow.append("\n");
         if (!dispatchedTaskMapping.isEmpty()) {
             if (isMaster) {
-                toShow.append(Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_DISPATCHED, dispatchedTaskMapping.size()));
+                toShow.append(Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_STATUS_MAIN, currentParallel, dispatchedTaskMapping.size()).withStyle(ChatFormatting.GRAY));
             } else {
-                toShow.append(Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_SUB_TASK));
+                toShow.append(Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_STATUS_SUB).withStyle(ChatFormatting.GRAY));
             }
+        } else {
+            toShow.append(Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_STATUS_NO_DISPATCHING, currentParallel).withStyle(ChatFormatting.GRAY));
         }
+        toShow
+                .append("\n")
+                .append(statusMessage);
 
-        ChatTexts.showSecondary(maid, toShow, ((double) done / total));
+
+        ChatTexts.showSecondaryCrafting(maid, toShow, ((double) done / total), progress1, this.oprogress, this.oprogress1, isStoppingAdding != StoppingAdding.NONE);
+        this.oprogress = (double) done / total;
+    }
+
+    public void setStatusMessage(Component message, double progress1) {
+        statusMessage = message;
+        oprogress1 = this.progress1;
+        this.progress1 = progress1;
+    }
+
+    public void setStatusMessage(Component message) {
+        setStatusMessage(message, 0);
+    }
+
+    public void setStatusMessage(EntityMaid maid, double progress1, Component message) {
+        setStatusMessage(message, progress1);
+        showCraftingProgress(maid);
+    }
+
+    public void setStatusMessage(EntityMaid maid, Component message) {
+        setStatusMessage(maid, 0, message);
     }
 
 
@@ -585,11 +616,12 @@ public class CraftLayerChain {
     public void failCurrent(EntityMaid maid, List<ItemStack> missing, String additional) {
         CraftLayer layer = getCurrentLayer();
         SolvedCraftLayer node = getCurrentNode();
+        removeOccupied((ServerLevel) maid.level(), maid);
         failLayer(maid, missing, additional, layer, node);
     }
 
     public void failLayer(EntityMaid maid, List<ItemStack> missing, String additional, CraftLayer layer, SolvedCraftLayer node) {
-        ChatTexts.send(
+        setStatusMessage(
                 maid,
                 Component.translatable(
                         ChatTexts.CHAT_CRAFTING_FAIL,
@@ -598,7 +630,7 @@ public class CraftLayerChain {
                                 .map(CraftGuideData::getOutput)
                                 .map(l -> l.get(0).getHoverName())
                                 .orElse(Component.empty())
-                )
+                ).withStyle(ChatFormatting.RED)
         );
         node.progress().setValue(SolvedCraftLayer.Progress.FAILED);
         // 设置缺少物品信息
@@ -657,6 +689,8 @@ public class CraftLayerChain {
         group++;
         addAllLayerToQueue();
 
+        setStatusMessage(maid, Component.translatable(ChatTexts.CHAT_CRAFT_FAIL_WAITING).withStyle(ChatFormatting.RED));
+
         showCraftingProgress(maid);
     }
 
@@ -676,7 +710,7 @@ public class CraftLayerChain {
             //收集完了再次检查满足开始条件。如果否则开始前再次进行补齐
             if (!checkInputInbackpack(maid)) return;
             showCraftingProgress(maid);
-            ChatTexts.send(maid,
+            setStatusMessage(maid,
                     Component.translatable(
                             ChatTexts.CHAT_CRAFT_WORK,
                             layer.getCraftData().map(t -> t
@@ -693,6 +727,13 @@ public class CraftLayerChain {
                 List<ItemStack> unCollectedItems = layer.getUnCollectedItems();
                 ViewedInventoryMemory viewedInventoryMemory = MemoryUtil.getViewedInventory(maid);
                 unCollectedItems.forEach(itemStack -> viewedInventoryMemory.removeItemFromAllTargets(itemStack, i -> ItemStackUtil.isSameTagInCrafting(i, itemStack)));
+                //子任务，需要将分发者的记忆同步修改
+                if (!isMaster) {
+                    if (maid.level() instanceof ServerLevel level && level.getEntity(getMasterUUID()) instanceof EntityMaid toMaid) {
+                        ViewedInventoryMemory toVi = MemoryUtil.getViewedInventory(toMaid);
+                        unCollectedItems.forEach(itemStack -> toVi.removeItemFromAllTargets(itemStack, i -> ItemStackUtil.isSameTagInCrafting(i, itemStack)));
+                    }
+                }
                 clearAndStopAdding(StoppingAdding.RESCHEDULE);
                 handleStopAddingEvent(maid);
             } else {

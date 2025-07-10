@@ -14,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
+import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
@@ -293,6 +294,8 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.finish();
         }
+        if(target != null)
+            WorkCardItem.syncStorageOn(maid, target);
 
         if (layer != null && output != null) {
             if (layer.getCollectedCounts().stream().anyMatch(i -> i > 0)) {

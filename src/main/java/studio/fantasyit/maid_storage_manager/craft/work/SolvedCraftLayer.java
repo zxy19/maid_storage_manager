@@ -45,7 +45,7 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
         DISPATCHED
     }
 
-    private SolvedCraftLayer(int index, int group, int si, int so, List<Integer> nextIndex, int inDegree, String progress) {
+    public SolvedCraftLayer(int index, int group, int si, int so, List<Integer> nextIndex, int inDegree, String progress) {
         this(index, group, si, so, new ArrayList<>(nextIndex), new MutableInt(inDegree), new MutableObject<>(Progress.valueOf(progress)));
     }
 }

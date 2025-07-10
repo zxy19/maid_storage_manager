@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
+import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -86,7 +87,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                 ItemStack toTake = layer.memorizeItem(itemStack, maxStore);
                 if (toTake.getCount() > 0) {
                     changed = true;
-                    ChatTexts.send(maid,
+                    plan.setStatusMessage(maid,
                             Component.translatable(
                                     ChatTexts.CHAT_CRAFT_GATHER_ITEMS,
                                     itemStack.getHoverName(),
@@ -125,6 +126,8 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                 });
             }
         }
+        if(target != null)
+            WorkCardItem.syncStorageOn(maid, target);
         MemoryUtil.getCrafting(maid).clearCheckItem();
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);

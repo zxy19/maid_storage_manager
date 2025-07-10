@@ -537,6 +537,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 ListTag missingList = tmp.getList(TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND);
                 for (ItemStack ti : missing) {
                     if (ti.isEmpty()) continue;
+                    if (ti.is(ItemRegistry.REQUEST_LIST_ITEM.get())) continue;//FIXME: 此处不应该出现这个内容，但是出现会导致NBT爆炸的恶性bug，暂时屏蔽。等待解决
                     int idx = -1;
                     for (int j = 0; j < missingList.size(); j++) {
                         if (ItemStack.isSameItemSameTags(ItemStack.of(missingList.getCompound(j)), ti)) idx = j;

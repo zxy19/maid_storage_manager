@@ -101,7 +101,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
-        breath.breathTick(maid);
+        if (!breath.breathTick(maid)) return;
         if (thrown == null) {
             ItemStack toSeekItem = list.get(index);
             if (toSeekItem.getCount() > toSeekItem.getMaxStackSize()) {
@@ -111,7 +111,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
             if (!gotItem.isEmpty()) {
                 Vec3 targetDir = MathUtil.getFromToWithFriction(target, maid.getPosition(0));
                 thrown = InvUtil.throwItem(maid, gotItem, targetDir, false);
-                thrown.setNeverPickUp();
+                thrown.setPickUpDelay(400);
                 list.get(index).shrink(gotItem.getCount());
                 if (list.get(index).isEmpty())
                     index++;
@@ -123,7 +123,8 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
             thrown.setNoPickUpDelay();
             if (!maid.pickupItem(thrown, false))
                 DebugData.sendDebug("[DGB]Failed to pickup item %s", maid.getName().getString());
-            thrown = null;
+            if (!thrown.isAlive())
+                thrown = null;
         }
     }
 

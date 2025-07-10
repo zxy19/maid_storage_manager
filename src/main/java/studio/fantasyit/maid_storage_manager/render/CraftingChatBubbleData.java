@@ -1,0 +1,113 @@
+package studio.fantasyit.maid_storage_manager.render;
+
+import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.chatbubble.IChatBubbleRenderer;
+import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.IChatBubbleData;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+
+public class CraftingChatBubbleData implements IChatBubbleData {
+    public static final ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "crafting");
+    private final ResourceLocation bg;
+    private final Component text;
+    private final int barBackgroundColor;
+    private final int barForegroundColor;
+    private final int barForegroundColor1;
+    private final double progress;
+    private final double progress1;
+    private final double oProgress;
+    private final double oProgress1;
+
+    private CraftingChatBubbleData(Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1, double oProgress, double oProgress1) {
+        this.bg = TYPE_2;
+        this.text = text;
+        this.barBackgroundColor = barBackgroundColor;
+        this.barForegroundColor = barForegroundColor;
+        this.barForegroundColor1 = barForegroundColor1;
+        this.progress = progress;
+        this.progress1 = progress1;
+        this.oProgress = oProgress;
+        this.oProgress1 = oProgress1;
+    }
+
+    public static CraftingChatBubbleData create(Component text,
+                                                int barBackgroundColor,
+                                                int barForegroundColor,
+                                                int barForegroundColor1,
+                                                double progress,
+                                                double progress1,
+                                                double oProgress,
+                                                double oProgress1
+    ) {
+        return new CraftingChatBubbleData(text, barBackgroundColor, barForegroundColor, barForegroundColor1, progress, progress1, oProgress, oProgress1);
+    }
+
+    @Override
+    public int existTick() {
+        return 600;
+    }
+
+    @Override
+    public ResourceLocation id() {
+        return ID;
+    }
+
+    @Override
+    public int priority() {
+        return 10;
+    }
+
+
+    @OnlyIn(Dist.CLIENT)
+    private IChatBubbleRenderer renderer;
+
+    @OnlyIn(Dist.CLIENT)
+    @Override
+    public IChatBubbleRenderer getRenderer(IChatBubbleRenderer.Position position) {
+        if (this.renderer == null) {
+            this.renderer = new CraftingChatBubbleRenderer(this.bg,
+                    this.text,
+                    this.barBackgroundColor,
+                    this.barForegroundColor,
+                    this.barForegroundColor1,
+                    this.progress,
+                    this.progress1,
+                    this.oProgress,
+                    this.oProgress1
+            );
+        }
+
+        return this.renderer;
+    }
+
+
+    public static class CraftingChatSerializer implements IChatBubbleData.ChatSerializer {
+        public IChatBubbleData readFromBuff(FriendlyByteBuf buf) {
+            return new CraftingChatBubbleData(
+                    buf.readComponent(),
+                    buf.readInt(),
+                    buf.readInt(),
+                    buf.readInt(),
+                    buf.readDouble(),
+                    buf.readDouble(),
+                    buf.readDouble(),
+                    buf.readDouble()
+            );
+        }
+
+        public void writeToBuff(FriendlyByteBuf buf, IChatBubbleData data) {
+            CraftingChatBubbleData textChat = (CraftingChatBubbleData) data;
+            buf.writeComponent(textChat.text);
+            buf.writeInt(textChat.barBackgroundColor);
+            buf.writeInt(textChat.barForegroundColor);
+            buf.writeInt(textChat.barForegroundColor1);
+            buf.writeDouble(textChat.progress);
+            buf.writeDouble(textChat.progress1);
+            buf.writeDouble(textChat.oProgress);
+            buf.writeDouble(textChat.oProgress1);
+        }
+    }
+}

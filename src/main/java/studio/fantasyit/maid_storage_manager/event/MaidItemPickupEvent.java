@@ -2,11 +2,13 @@ package studio.fantasyit.maid_storage_manager.event;
 
 import com.github.tartaricacid.touhoulittlemaid.api.event.MaidPickupEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -40,6 +42,15 @@ public class MaidItemPickupEvent {
         }
         if (event.isCanceled())
             return;
+        if(!maid.level().isClientSide) {
+            CraftBlockOccupyDataProvider.CraftBlockOccupy occupation = CraftBlockOccupyDataProvider.get(maid.level());
+            if (BlockPos.betweenClosedStream(
+                    entityItem.getBoundingBox().inflate(2.8)
+            ).anyMatch(occupation::isOccupiedByAny)) {
+                event.setCanceled(true);
+                return;
+            }
+        }
         if (entityItem.getItem().is(ItemRegistry.WRITTEN_INVENTORY_LIST.get())) {
             event.setCanceled(true);
             return;

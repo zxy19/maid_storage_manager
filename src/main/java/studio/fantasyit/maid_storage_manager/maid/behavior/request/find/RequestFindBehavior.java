@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -156,6 +157,8 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 });
             }
         }
+        if(target != null)
+            WorkCardItem.syncStorageOn(maid, target);
 
         if (checkItem != null) {
             ChatTexts.send(maid, ChatTexts.CHAT_MISSING);

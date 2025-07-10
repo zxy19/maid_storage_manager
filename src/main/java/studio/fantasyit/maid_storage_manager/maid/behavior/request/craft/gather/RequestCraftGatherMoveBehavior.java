@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +60,7 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
 
     @Override
     protected void findTarget(ServerLevel level, EntityMaid maid, Target target) {
-        ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_GATHER);
+        plan.setStatusMessage(maid, Component.translatable(ChatTexts.CHAT_CRAFT_GATHER));
     }
 
     @Override

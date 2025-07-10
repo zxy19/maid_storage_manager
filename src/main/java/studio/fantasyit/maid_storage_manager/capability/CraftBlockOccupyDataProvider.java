@@ -137,5 +137,12 @@ public class CraftBlockOccupyDataProvider implements ICapabilityProvider, INBTSe
         }
 
 
+        public boolean isOccupiedByAny(BlockPos pos) {
+            return this.occupiedPos
+                    .keySet()
+                    .stream().anyMatch(or ->
+                            or.pos.equals(pos)
+                    );
+        }
     }
 }
