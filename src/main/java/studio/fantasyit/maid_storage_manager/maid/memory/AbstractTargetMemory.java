@@ -84,6 +84,7 @@ public abstract class AbstractTargetMemory {
     }
 
     public void addVisitedPos(Target pos) {
+        if (isVisitedPos(pos)) return;
         targetData.visitedPos.add(pos);
     }
 

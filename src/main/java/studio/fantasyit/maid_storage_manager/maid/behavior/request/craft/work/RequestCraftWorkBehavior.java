@@ -41,6 +41,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
+        if (MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return false;
         if (!MemoryUtil.getCrafting(maid).hasPlan()) return false;
         if (!MemoryUtil.getCrafting(maid).plan().isCurrentWorking()) return false;

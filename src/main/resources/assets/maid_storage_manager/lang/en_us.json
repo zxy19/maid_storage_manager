@@ -50,6 +50,9 @@
   "chat_bubbles.maid_storage_manager.secondary_crafting": "Crafting Progress[%d/%d](%s)",
   "chat_bubbles.maid_storage_manager.secondary_crafting.gather": "Gathering",
   "chat_bubbles.maid_storage_manager.secondary_crafting.work": "Working",
+  "chat_bubbles.maid_storage_manager.secondary_crafting.dispatched": "|%d dispatched",
+  "chat_bubbles.maid_storage_manager.secondary_crafting.sub_task": "| SubTask",
+  "chat_bubbles.maid_storage_manager.crafting.dispatch_received": "Reviewing task——",
   "config.maid_storage_manager.ai": "AI",
   "config.maid_storage_manager.ai.functions": "Enable function calls",
   "config.maid_storage_manager.ai.two_step_ai_response": "Two step AI response",
@@ -301,6 +304,7 @@
   "interaction.select_step_index": "Select target for step %s",
   "interaction.select_step_new": "Select target for new step",
   "interaction.select_store": "Selecting Store Position",
+  "item.maid_storage_manager.work_card": "Work Card",
   "item.maid_storage_manager.allow_access": "Allow Access",
   "item.maid_storage_manager.change_flag": "Change Flag",
   "item.maid_storage_manager.craft_guide": "Craft Guide",
@@ -385,5 +389,6 @@
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
   "gui.maid_storage_manager.craft_guide.common.split": "Split Stacks",
-  "gui.maid_storage_manager.craft_guide.common.no_split": "Merge Stacks"
+  "gui.maid_storage_manager.craft_guide.common.no_split": "Merge Stacks",
+  "gui.maid_storage_manager.config.max_parallel": "Maximum Parallel"
 }

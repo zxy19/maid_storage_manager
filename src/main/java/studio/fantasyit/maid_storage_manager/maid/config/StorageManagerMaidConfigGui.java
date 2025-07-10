@@ -132,5 +132,19 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.MemorizeCraftGuide, this.maid.getId(), 1);
                 }
         ));
+        this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 78,
+                Component.translatable("gui.maid_storage_manager.config.max_parallel"),
+                Component.literal(String.valueOf(this.currentMAData.maxParallel())),
+                button -> {
+                    this.currentMAData.maxParallel(this.currentMAData.maxParallel() + 1);
+                    button.setValue(Component.literal(String.valueOf(this.currentMAData.maxParallel())));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.MaxParallel, this.maid.getId(), this.currentMAData.maxParallel());
+                },
+                button -> {
+                    this.currentMAData.maxParallel(this.currentMAData.maxParallel() - 1);
+                    button.setValue(Component.literal(String.valueOf(this.currentMAData.maxParallel())));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.MaxParallel, this.maid.getId(), this.currentMAData.maxParallel());
+                }
+        ));
     }
 }

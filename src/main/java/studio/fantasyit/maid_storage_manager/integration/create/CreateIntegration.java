@@ -42,9 +42,9 @@ public class CreateIntegration {
                 && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0))
             return FanProcessingTypeRegistry.SORTED_TYPES_VIEW;
         try {
-            Method getSortedTypesView = FanProcessingTypeRegistry.class.getMethod("getSortedTypesView", null);
+            Method getSortedTypesView = FanProcessingTypeRegistry.class.getMethod("getSortedTypesView", (Class<?>[]) null);
             if (getSortedTypesView != null) {
-                return (List<FanProcessingType>) getSortedTypesView.invoke(null, null);
+                return (List<FanProcessingType>) getSortedTypesView.invoke(null, (Object) null);
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             return List.of();

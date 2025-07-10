@@ -39,6 +39,8 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.request.FindListItemB
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.InteractAfterDone;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.CraftExitBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.CraftInitBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.dispatched.DispatchedGatherBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.dispatched.DispatchedGatherMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkBehavior;
@@ -105,6 +107,8 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(10, new StockCheckMoveBehavior()));
         list.add(Pair.of(10, new StockCheckBehavior()));
         //合成
+        list.add(Pair.of(10, new DispatchedGatherMoveBehavior()));
+        list.add(Pair.of(10, new DispatchedGatherBehavior()));
         list.add(Pair.of(9, new RequestCraftGatherBehavior()));
         list.add(Pair.of(9, new RequestCraftGatherMoveBehavior()));
         list.add(Pair.of(8, new RequestCraftWorkBehavior()));

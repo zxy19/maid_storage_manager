@@ -127,18 +127,20 @@ public class RequestProgressMemory extends AbstractTargetMemory {
         super.setTarget(target);
     }
 
-    public Entity getTargetEntity(ServerLevel level){
+    public Entity getTargetEntity(ServerLevel level) {
         return level.getEntity(this.targetEntity);
     }
 
     public Optional<UUID> getTargetEntityUUID() {
         return Optional.ofNullable(this.targetEntity);
     }
+
     public void setTargetEntity(UUID targetEntity) {
         this.targetEntity = targetEntity;
         clearTarget();
     }
-    public void clearTargetEntity(){
+
+    public void clearTargetEntity() {
         this.targetEntity = null;
     }
 

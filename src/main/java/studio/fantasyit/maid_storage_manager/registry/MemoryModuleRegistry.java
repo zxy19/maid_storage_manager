@@ -12,6 +12,7 @@ import studio.fantasyit.maid_storage_manager.maid.memory.*;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class MemoryModuleRegistry {
     public static final DeferredRegister<MemoryModuleType<?>> REGISTER
@@ -43,6 +44,7 @@ public class MemoryModuleRegistry {
     public static final RegistryObject<MemoryModuleType<MealMemory>> MEAL
             = REGISTER.register("meal", () -> new MemoryModuleType<>(Optional.of(MealMemory.CODEC)));
     public static final RegistryObject<MemoryModuleType<Boolean>> IS_WORKING = REGISTER.register("is_working", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final RegistryObject<MemoryModuleType<UUID>> ENABLE_PICKUP_TEMP = REGISTER.register("enable_pickup_temp", () -> new MemoryModuleType<>(Optional.empty()));
 
     public static void register(IEventBus eventBus) {
         REGISTER.register(eventBus);

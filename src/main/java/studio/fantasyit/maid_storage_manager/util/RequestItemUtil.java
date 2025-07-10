@@ -58,6 +58,8 @@ public class RequestItemUtil {
                                             maid.getDisplayName()
                                     )));
 
+            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("DISPATCHED")) {
+                dispatchedTaskDone(maid, reqList);
             }
             //虚拟的，不用额外处理
         }
@@ -164,12 +166,25 @@ public class RequestItemUtil {
         client.chat(llmMessages, config, callback);
     }
 
-    private static void splitTaskDone(EntityMaid maid, ItemStack reqList, Entity targetEntity) {
+    private static void dispatchedTaskDone(EntityMaid maid, ItemStack reqList) {
+        CompoundTag data = RequestListItem.getVirtualData(reqList);
+        if (data == null) return;
+        UUID masterUUID = data.getUUID("master");
+        int index = data.getInt("index");
+        Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
         if (!(targetEntity instanceof EntityMaid toMaid)) return;
-        CraftMemory crafting = MemoryUtil.getCrafting(toMaid);
-        if (!crafting.hasPlan()) return;
-        CraftLayerChain plan = crafting.plan();
-        
+        CraftMemory targetCraftingMemory = MemoryUtil.getCrafting(toMaid);
+        if (!targetCraftingMemory.hasPlan()) return;
+        CraftLayerChain targetPlan = targetCraftingMemory.plan();
+        targetPlan.dispatchedDone(maid,
+                toMaid,
+                index,
+                RequestListItem
+                        .getItemStacksNotDone(reqList)
+                        .stream()
+                        .map(t -> t.getA().copyWithCount(t.getB()))
+                        .toList()
+        );
     }
 
     /**
@@ -187,7 +202,7 @@ public class RequestItemUtil {
         tag.putBoolean(RequestListItem.TAG_VIRTUAL, true);
         tag.putString(RequestListItem.TAG_VIRTUAL_SOURCE, virtual_source);
         ListTag listTag = new ListTag();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < Math.max(list.size(), 10); i++) {
             ItemStack item = i < list.size() ? list.get(i) : ItemStack.EMPTY;
             CompoundTag tmp = new CompoundTag();
             tmp.putInt(RequestListItem.TAG_ITEMS_REQUESTED, item.getCount());

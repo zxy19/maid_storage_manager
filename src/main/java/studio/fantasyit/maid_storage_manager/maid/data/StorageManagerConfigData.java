@@ -13,19 +13,23 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         private boolean noSortPlacement = false;
         private SuppressStrategy suppressStrategy = SuppressStrategy.AFTER_ALL;
         private boolean allowSeekWorkMeal = false;
+        private int maxParallel;
 
         public Data(MemoryAssistant memoryAssistant,
                     boolean noSortPlacement,
                     boolean coWorkMode,
                     SuppressStrategy suppressStrategy,
                     boolean allowSeekWorkMeal,
-                    boolean useMemorizedCraftGuide) {
+                    boolean useMemorizedCraftGuide,
+                    int maxParallel
+        ) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
             this.coWorkMode = coWorkMode;
             this.suppressStrategy = suppressStrategy;
             this.allowSeekWorkMeal = allowSeekWorkMeal;
             this.useMemorizedCraftGuide = useMemorizedCraftGuide;
+            this.maxParallel = maxParallel;
         }
 
         public static Data getDefault() {
@@ -34,8 +38,9 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     false,
                     SuppressStrategy.AFTER_EACH,
                     false,
-                    false
-                    );
+                    false,
+                    5
+            );
         }
 
         public MemoryAssistant memoryAssistant() {
@@ -77,11 +82,21 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         public void allowSeekWorkMeal(boolean allowSeekWorkMeal) {
             this.allowSeekWorkMeal = allowSeekWorkMeal;
         }
+
         public boolean useMemorizedCraftGuide() {
             return useMemorizedCraftGuide;
         }
+
         public void useMemorizedCraftGuide(boolean useMemorizedCraftGuide) {
             this.useMemorizedCraftGuide = useMemorizedCraftGuide;
+        }
+
+        public int maxParallel() {
+            return this.maxParallel;
+        }
+
+        public void maxParallel(int maxParallel) {
+            this.maxParallel = Math.max(1, Math.min(10, maxParallel));
         }
     }
 
@@ -102,6 +117,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         tag.putBoolean("coWorkMode", data.coWorkMode());
         tag.putBoolean("allowSeekWorkMeal", data.allowSeekWorkMeal());
         tag.putBoolean("useMemorizedCraftGuide", data.useMemorizedCraftGuide());
+        tag.putInt("maxParallel", data.maxParallel());
         return tag;
     }
 
@@ -115,7 +131,10 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         boolean coWorkMode = compound.getBoolean("coWorkMode");
         boolean allowSeekWorkMeal = compound.getBoolean("allowSeekWorkMeal");
         boolean useMemorizedCraftGuide = compound.getBoolean("useMemorizedCraftGuide");
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal,useMemorizedCraftGuide);
+        int maxParallel = compound.contains("maxParallel")
+                ? compound.getInt("maxParallel")
+                : 5;
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {

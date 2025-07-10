@@ -84,9 +84,9 @@ public class ChatTexts {
     public static final String CHAT_REQUEST_SUCCESS = "chat_bubbles.maid_storage_manager.request_finish";
     public static final String CHAT_REQUEST_FAIL = "chat_bubbles.maid_storage_manager.request_fail";
     public static final String CHAT_REQUEST_START = "chat_bubbles.maid_storage_manager.request_start";
+    public static final String CHAT_CRAFT_DISPATCHED = "chat_bubbles.maid_storage_manager.crafting.dispatch_received";
     public static final String CHAT_CRAFT_GATHER = "chat_bubbles.maid_storage_manager.crafting_gathering";
     public static final String CHAT_CRAFT_GATHER_ITEMS = "chat_bubbles.maid_storage_manager.crafting_gathering_item";
-    public static final String CHAT_CRAFT_STEP = "chat_bubbles.maid_storage_manager.crafting_step";
     public static final String CHAT_CRAFT_RESCHEDULE = "chat_bubbles.maid_storage_manager.crafting_reschedule";
 
     public static final String CHAT_CHECK_MARK_CHANGED = "chat_bubbles.maid_storage_manager.check_mark_changed";
@@ -100,4 +100,7 @@ public class ChatTexts {
     public static final String CHAT_SECONDARY_CRAFTING_GATHER = "chat_bubbles.maid_storage_manager.secondary_crafting.gather";
 
     public static final String CHAT_SECONDARY_CRAFTING_WORK = "chat_bubbles.maid_storage_manager.secondary_crafting.work";
+
+    public static final String CHAT_SECONDARY_CRAFTING_DISPATCHED = "chat_bubbles.maid_storage_manager.secondary_crafting.dispatched";
+    public static final String CHAT_SECONDARY_CRAFTING_SUB_TASK = "chat_bubbles.maid_storage_manager.secondary_crafting.sub_task";
 }

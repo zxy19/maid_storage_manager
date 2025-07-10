@@ -4,11 +4,14 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -29,6 +32,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     int currentSlot = 0;
     private Target target;
     private Entity targetEntity;
+    private ItemEntity thrown;
 
     public RequestRetBehavior() {
         super(Map.of());
@@ -45,13 +49,14 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         if (currentSlot >= maid.getAvailableInv(false).getSlots())
             return false;
-        return (context != null && !context.isDone()) || targetEntity != null;
+        return (context != null && !context.isDone()) || targetEntity != null || thrown != null;
     }
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         context = null;
         targetEntity = null;
+        thrown = null;
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (requestProgress.isReturning()) {
             if (requestProgress.hasTarget()) {
@@ -65,6 +70,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                     context.start(maid, level, target);
             } else if (requestProgress.getTargetEntityUUID().isPresent()) {
                 targetEntity = level.getEntity(requestProgress.getTargetEntityUUID().get());
+                if (targetEntity instanceof EntityMaid m) {
+                    m.getNavigation().stop();
+                    MemoryUtil.setTarget(m, maid, (float) Config.collectSpeed);
+                }
             }
         }
         currentSlot = 0;
@@ -79,6 +88,16 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     }
 
     private void tickTargetEntity(EntityMaid maid) {
+        if (thrown != null) {
+            if (targetEntity instanceof EntityMaid targetMaid) {
+                MemoryUtil.setPickUpItemTemp(targetMaid, thrown.getUUID());
+                thrown.setNoPickUpDelay();
+                if (!targetMaid.pickupItem(thrown, false))
+                    DebugData.sendDebug("[RET]Failed to pickup item %s", targetMaid.getName().getString());
+            }
+            thrown = null;
+            return;
+        }
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.getPosition(0));
         for (int i = 0; i < 5 && targetEntity != null && inv.getSlots() > currentSlot; i++) {
@@ -87,8 +106,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             ItemStack toThrowStack = item.copy();
             toThrowStack.shrink(restCount);
             if (!toThrowStack.isEmpty()) {
-                InvUtil.throwItem(maid, toThrowStack, targetDir, true);
                 item.setCount(restCount);
+                thrown = InvUtil.throwItem(maid, toThrowStack, targetDir, !(targetEntity instanceof EntityMaid));
+                if (targetEntity instanceof EntityMaid)
+                    thrown.setNeverPickUp();
                 inv.setStackInSlot(currentSlot - 1, item);
                 break;
             }
@@ -118,11 +139,16 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         }
     }
 
+
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
         super.stop(level, maid, p_22550_);
         if (context != null)
             context.finish();
+        if (targetEntity instanceof EntityMaid m) {
+            MemoryUtil.clearTarget(m);
+            MemoryUtil.clearPickUpItemTemp(m);
+        }
         //正在合成过程中，合成树还未结束，直接返回合成
         if (MemoryUtil.getCrafting(maid).hasPlan()) {
             MemoryUtil.getRequestProgress(maid).setReturn(false);

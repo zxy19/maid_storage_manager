@@ -37,11 +37,12 @@ public class ItemRegistry {
     public static final RegistryObject<Item> WRITTEN_INVENTORY_LIST = item("written_inventory_list", WrittenInvListItem::new);
     public static final RegistryObject<Item> FILTER_LIST = item("filter_list", FilterListItem::new);
     public static final RegistryObject<Item> STORAGE_DEFINE_BAUBLE = item("storage_define_bauble", StorageDefineBauble::new);
-    public static final RegistryObject<Item> NO_ACCESS = item("no_access",HangUpItem::new);
-    public static final RegistryObject<Item> ALLOW_ACCESS = item("allow_access",HangUpItem::new);
+    public static final RegistryObject<Item> NO_ACCESS = item("no_access", HangUpItem::new);
+    public static final RegistryObject<Item> ALLOW_ACCESS = item("allow_access", HangUpItem::new);
 
     public static final RegistryObject<Item> CRAFT_GUIDE = item("craft_guide", CraftGuide::new);
     public static final RegistryObject<Item> PORTABLE_CRAFT_CALCULATOR_BAUBLE = item("portable_craft_calculator_bauble", PortableCraftCalculatorBauble::new);
+    public static final RegistryObject<Item> WORK_CARD = item("work_card", WorkCardItem::new);
 
     public static final RegistryObject<Item> LOGISTICS_GUIDE = item("logistics_guide", LogisticsGuide::new);
     public static final RegistryObject<Item> CHANGE_FLAG = item("change_flag", ChangeFlag::new);

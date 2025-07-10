@@ -61,6 +61,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     private static final String TAG_BLACKMODE_DONE = "blackmode_done";
     public static final String TAG_VIRTUAL = "virtual";
     public static final String TAG_VIRTUAL_SOURCE = "virtual_source";
+    public static final String TAG_VIRTUAL_DATA = "virtual_data";
 
     public RequestListItem() {
         super(new Properties().stacksTo(1));
@@ -609,6 +610,19 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (!stack.hasTag()) return false;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
         return tag.getBoolean(TAG_BLACKMODE_DONE);
+    }
+
+    public static void setVirtualData(ItemStack stack, CompoundTag data) {
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.put(TAG_VIRTUAL_DATA, data);
+        stack.setTag(tag);
+    }
+
+    public static CompoundTag getVirtualData(ItemStack stack) {
+        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
+        if (!stack.hasTag()) return null;
+        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        return tag.getCompound(TAG_VIRTUAL_DATA);
     }
 
     @Override

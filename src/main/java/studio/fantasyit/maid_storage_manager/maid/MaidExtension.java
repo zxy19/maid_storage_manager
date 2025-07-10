@@ -44,6 +44,7 @@ public class MaidExtension implements ILittleMaid {
         manager.bind(ItemRegistry.STORAGE_DEFINE_BAUBLE.get(), (IMaidBauble) ItemRegistry.STORAGE_DEFINE_BAUBLE.get());
         manager.bind(ItemRegistry.LOGISTICS_GUIDE.get(), (IMaidBauble) ItemRegistry.LOGISTICS_GUIDE.get());
         manager.bind(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), (IMaidBauble) ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get());
+        manager.bind(ItemRegistry.WORK_CARD.get(), (IMaidBauble) ItemRegistry.WORK_CARD.get());
     }
 
     @Override
@@ -64,7 +65,8 @@ public class MaidExtension implements ILittleMaid {
                         MemoryModuleRegistry.CO_WORK_MODE.get(),
                         MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get(),
                         MemoryModuleRegistry.MEAL.get(),
-                        MemoryModuleRegistry.IS_WORKING.get()
+                        MemoryModuleRegistry.IS_WORKING.get(),
+                        MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get()
                 );
             }
         });

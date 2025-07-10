@@ -29,6 +29,10 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        if (MemoryUtil.getCrafting(maid).plan().getIsStoppingAdding()) {
+            MemoryUtil.getCrafting(maid).plan().handleStopAddingEvent(maid);
+            return;
+        }
         DebugData.sendDebug("[REQUEST_CRAFT]Exit");
         RequestListItem.markAllDone(maid.getMainHandItem());
         MemoryUtil.getCrafting(maid).clearCraftGuides();

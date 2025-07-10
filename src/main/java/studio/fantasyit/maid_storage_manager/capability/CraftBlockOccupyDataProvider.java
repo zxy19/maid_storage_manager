@@ -16,6 +16,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.util.Conditions;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -113,7 +114,7 @@ public class CraftBlockOccupyDataProvider implements ICapabilityProvider, INBTSe
 
         public void tick(ServerLevel level) {
             removeIf(or ->
-                    occupiedPos.get(or).decrementAndGet() < 0 || !(level.getEntity(or.uuid) instanceof EntityMaid maid && maid.isAlive())
+                    occupiedPos.get(or).decrementAndGet() < 0 || !(level.getEntity(or.uuid) instanceof EntityMaid maid && maid.isAlive() && Conditions.takingRequestList(maid))
             );
         }
 

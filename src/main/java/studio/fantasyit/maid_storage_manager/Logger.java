@@ -14,4 +14,7 @@ public class Logger {
     public static void error(String message, Object... a) {
         logger.error(message, a);
     }
+    public static void debug(String message, Object... a) {
+        logger.debug(message, a);
+    }
 }

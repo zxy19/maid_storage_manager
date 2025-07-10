@@ -47,6 +47,10 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         public int getSecond() {
             return count;
         }
+
+        public ItemCount copy() {
+            return new ItemCount(item, count);
+        }
     }
 
     public static final Codec<ViewedInventoryMemory> CODEC = RecordCodecBuilder.create(instance ->
@@ -288,4 +292,15 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         }
     }
 
+    public void receiveFrom(ViewedInventoryMemory memory) {
+        resetVisitedPos();
+        removeUnvisited();
+        for (String pos : memory.viewedInventory.keySet()) {
+            Map<String, List<ItemCount>> data = new HashMap<>();
+            for (String item : memory.viewedInventory.get(pos).keySet()) {
+                data.put(item, new ArrayList<>(memory.viewedInventory.get(pos).get(item).stream().map(ItemCount::copy).toList()));
+            }
+            viewedInventory.put(pos, data);
+        }
+    }
 }

@@ -19,6 +19,7 @@ public class MaidItemPickupEvent {
     public static void onItemPickup(MaidPickupEvent.ItemResultPre event) {
         EntityMaid maid = event.getMaid();
         ItemEntity entityItem = event.getEntityItem();
+        if (MemoryUtil.canPickUpItemTemp(maid, entityItem.getUUID())) return;
         if (MemoryUtil.isWorking(maid)) {
             event.setCanceled(true);
             return;

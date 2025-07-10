@@ -39,6 +39,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
+        if (MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return false;
         if (!MemoryUtil.getCrafting(maid).hasPlan()) return false;
         if (!MemoryUtil.getCrafting(maid).plan().isCurrentGathering()) return false;

@@ -32,6 +32,7 @@ public class RequestCraftGatherMoveBehavior extends AbstractGatherMoveBehavior {
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
         if (!MemoryUtil.getCrafting(owner).hasPlan()) return false;
+        if (MemoryUtil.getCrafting(owner).isGatheringDispatched()) return false;
         if (!MemoryUtil.getCrafting(owner).plan().isCurrentGathering()) return false;
         return true;
     }

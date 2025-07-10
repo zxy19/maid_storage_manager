@@ -247,7 +247,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
         }
         affectFactor += (ingredients.size() + 1) + RecipeIngredientCache.getUncachedRecipeIngredient(id, ingredients, this) * 5;
         RecipeIngredientCache.addRecipeCache(id, ingredients);
-
+        RecipeIngredientCache.addCahcedRecipeToGraph(this, id, ingredients, ingredientCounts, output, craftGuideSupplier, type, isOneTime);
 
         return affectFactor;
     }

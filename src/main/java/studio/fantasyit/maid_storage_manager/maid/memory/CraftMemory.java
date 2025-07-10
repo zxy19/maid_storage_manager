@@ -9,6 +9,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
@@ -32,7 +33,9 @@ public class CraftMemory extends AbstractTargetMemory {
                     Target.CODEC.listOf()
                             .fieldOf("ignoreTargets")
                             .orElse(List.of())
-                            .forGetter(CraftMemory::getIgnoreTargets)
+                            .forGetter(CraftMemory::getIgnoreTargets),
+                    Codec.BOOL.fieldOf("isGatheringDispatched")
+                            .forGetter(CraftMemory::isGatheringDispatched)
             ).apply(instance, CraftMemory::new)
     );
 
@@ -41,18 +44,21 @@ public class CraftMemory extends AbstractTargetMemory {
     public boolean goPlacingBeforeCraft;
     private int pathFindingFailCount = 0;
     private List<Target> ignoreTargets;
+    private boolean isGatheringDispatched;
 
     public CraftMemory(TargetData targetData,
                        List<CraftGuideData> craftGuides,
                        boolean goPlacingBeforeCraft,
                        Optional<CraftLayerChain> plan,
-                       List<Target> ignoreTargets
+                       List<Target> ignoreTargets,
+                       boolean isGatheringDispatched
     ) {
         super(targetData);
         this.craftGuides = new ArrayList<>(craftGuides);
         this.goPlacingBeforeCraft = goPlacingBeforeCraft;
         this.plan = plan.orElse(null);
         this.ignoreTargets = new ArrayList<>(ignoreTargets);
+        this.isGatheringDispatched = isGatheringDispatched;
     }
 
     public CraftMemory() {
@@ -61,6 +67,7 @@ public class CraftMemory extends AbstractTargetMemory {
         this.goPlacingBeforeCraft = false;
         this.plan = null;
         this.ignoreTargets = new ArrayList<>();
+        this.isGatheringDispatched = false;
     }
 
     public void setPlan(CraftLayerChain plan) {
@@ -68,10 +75,13 @@ public class CraftMemory extends AbstractTargetMemory {
         if (!plan.freeze) {
             plan.build();
         }
+        if (!plan.isMaster())
+            this.isGatheringDispatched = true;
     }
 
     public void clearPlan() {
         this.plan = null;
+        this.isGatheringDispatched = false;
     }
 
     public boolean hasPlan() {
@@ -87,12 +97,20 @@ public class CraftMemory extends AbstractTargetMemory {
         ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_RESCHEDULE);
         ChatTexts.removeSecondary(maid);
         clearPlan();
+        MemoryUtil.getRequestProgress(maid).setReturn(false);
     }
 
     public void initPreLayer() {
         this.isSwappingHandWhenCrafting = false;
     }
 
+    public boolean isGatheringDispatched() {
+        return isGatheringDispatched;
+    }
+
+    public void setGatheringDispatched(boolean isGatheringDispatched) {
+        this.isGatheringDispatched = isGatheringDispatched;
+    }
 
     public List<CraftGuideData> getCraftGuides() {
         return craftGuides;
@@ -163,6 +181,10 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void addIgnoreTargets(Target ignoreTargets) {
         this.ignoreTargets.add(ignoreTargets);
+    }
+
+    public void addIgnoreTargets(List<Target> ignoreTargets) {
+        this.ignoreTargets.addAll(ignoreTargets);
     }
 
     public void clearIgnoreTargets() {

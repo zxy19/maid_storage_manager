@@ -44,6 +44,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
+        if (MemoryUtil.getCrafting(owner).isGatheringDispatched()) return false;
         if (!MemoryUtil.getCrafting(owner).hasPlan()) return false;
         if (!MemoryUtil.getCrafting(owner).plan().isCurrentWorking()) return false;
         return true;

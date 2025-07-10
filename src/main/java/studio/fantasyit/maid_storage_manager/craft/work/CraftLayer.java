@@ -251,4 +251,12 @@ public class CraftLayer {
                 craftLayer.getCount().equals(this.count) &&
                 Objects.equals(craftLayer.getCraftData().orElse(null), this.craftData);
     }
+
+    public CraftLayer copyWithNoState() {
+        return new CraftLayer(
+                Optional.ofNullable(this.craftData),
+                this.items,
+                this.count
+        );
+    }
 }

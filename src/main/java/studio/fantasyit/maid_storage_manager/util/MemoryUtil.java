@@ -13,6 +13,8 @@ import studio.fantasyit.maid_storage_manager.maid.memory.*;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
+import java.util.UUID;
+
 public class MemoryUtil {
     public static BlockPos getTargetPos(EntityMaid maid) {
         return maid
@@ -134,5 +136,19 @@ public class MemoryUtil {
             maid.getBrain().eraseMemory(MemoryModuleRegistry.IS_WORKING.get());
 //            DebugData.sendDebug("<-❌Working Stop");
         }
+    }
+
+    public static boolean canPickUpItemTemp(EntityMaid maid, UUID target) {
+        if (maid.getBrain().hasMemoryValue(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get())) {
+            return maid.getBrain().getMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get()).map(uuid -> uuid.equals(target)).orElse(false);
+        }
+        return false;
+    }
+
+    public static void setPickUpItemTemp(EntityMaid maid, UUID target) {
+        maid.getBrain().setMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get(), target);
+    }
+    public static void clearPickUpItemTemp(EntityMaid maid) {
+        maid.getBrain().eraseMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get());
     }
 }

@@ -126,16 +126,16 @@ public class InvUtil {
         return count;
     }
 
-    public static void throwItem(EntityMaid maid, ItemStack itemStack) {
+    public static ItemEntity throwItem(EntityMaid maid, ItemStack itemStack) {
         Vec3 direction = Vec3.directionFromRotation(maid.getXRot(), maid.getYRot()).normalize().scale(0.5);
-        throwItem(maid, itemStack, direction);
+        return throwItem(maid, itemStack, direction);
     }
 
-    public static void throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction) {
-        throwItem(maid, itemStack, direction, false);
+    public static ItemEntity throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction) {
+        return throwItem(maid, itemStack, direction, false);
     }
 
-    public static void throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction, boolean noPickUpDelay) {
+    public static ItemEntity throwItem(EntityMaid maid, ItemStack itemStack, Vec3 direction, boolean noPickUpDelay) {
         Level level = maid.level();
         ItemEntity itementity = new ItemEntity(level, maid.getX(), maid.getY(), maid.getZ(), itemStack);
         maid.getMaxHeadXRot();
@@ -145,6 +145,7 @@ public class InvUtil {
             itementity.setNoPickUpDelay();
         }
         level.addFreshEntity(itementity);
+        return itementity;
     }
 
     public static int getTargetIndex(EntityMaid maid, ItemStack itemStack, boolean matchTag) {
