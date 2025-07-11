@@ -221,7 +221,7 @@ public class Network {
                             );
                             data.useMemorizedCraftGuide(msg.value == 1);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
-                        } else if(msg.type == MaidDataSyncPacket.Type.MaxParallel){
+                        } else if (msg.type == MaidDataSyncPacket.Type.MaxParallel) {
                             StorageManagerConfigData.Data data = maid.getOrCreateData(
                                     StorageManagerConfigData.KEY,
                                     StorageManagerConfigData.Data.getDefault()
@@ -307,6 +307,8 @@ public class Network {
                                         MemoryModuleRegistry.CURRENTLY_WORKING.get(),
                                         ScheduleBehavior.Schedule.values()[msg.value.getInt("id")]
                                 );
+                            } else if (msg.type == MaidDataSyncToClientPacket.Type.BAUBLE) {
+                                maid.getMaidBauble().deserializeNBT(msg.value);
                             }
                         }
                         context.get().setPacketHandled(true);

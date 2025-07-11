@@ -7,7 +7,8 @@ import java.util.Objects;
 
 public class MaidDataSyncToClientPacket {
     public enum Type {
-        WORKING
+        WORKING,
+        BAUBLE
     }
     public final Type type;
     public final int id;

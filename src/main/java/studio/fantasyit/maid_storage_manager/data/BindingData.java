@@ -25,7 +25,7 @@ public class BindingData {
         ItemStack itemStack = player.getMainHandItem();
         if (playerUUIDToItem.containsKey(player.getUUID())) {
             ItemStack oldItemStack = playerUUIDToItem.get(player.getUUID());
-            if (ItemStack.isSameItemSameTags(oldItemStack, itemStack)) {
+            if (!ItemStack.isSameItemSameTags(oldItemStack, itemStack)) {
                 playerUUIDToItem.put(player.getUUID(), itemStack);
                 return true;
             }

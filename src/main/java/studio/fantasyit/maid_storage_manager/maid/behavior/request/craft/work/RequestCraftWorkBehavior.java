@@ -65,7 +65,6 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         craftGuideStepData = layer.getStepData();
         plan.showCraftingProgress(maid);
         plan.setStatusMessage(maid,
-                (double) (layer.getDoneCount()) / layer.getCount(),
                 Component.translatable(
                         ChatTexts.CHAT_CRAFT_WORK_PROGRESS,
                         layer

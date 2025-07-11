@@ -119,6 +119,15 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
 
+    public static boolean matches(ItemStack incoming, ItemStack source) {
+        if (incoming.hasCustomHoverName()) {
+            if (source.hasCustomHoverName() && !source.getHoverName().equals(incoming.getHoverName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected static boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source, boolean requireAvailable) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW && requireAvailable) return false;
         if (!maid.getMainHandItem().isEmpty() && requireAvailable) return false;
@@ -126,10 +135,8 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         for (int i = 0; i < t.getSlots(); i++)
             if (t.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
                 //如果当前物品存在名字，而且目标物品也存在名字，而且不一样，那么跳过
-                if (t.getStackInSlot(i).hasCustomHoverName()) {
-                    if (source.hasCustomHoverName() && !source.getHoverName().equals(t.getStackInSlot(i).getHoverName())) {
-                        continue;
-                    }
+                if (!matches(t.getStackInSlot(i), source)) {
+                    continue;
                 }
                 return true;
             }
@@ -179,7 +186,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return level.getEntities(
                 EntityTypeTest.forClass(EntityMaid.class),
                 getMaidFindingBBox(maid),
-                t -> hasBaubleAndAvailable(t, baubleItem, requireAvailable)
+                t -> hasBaubleAndAvailable(t, baubleItem, requireAvailable) && !t.getUUID().equals(maid.getUUID())
         );
     }
 
@@ -190,7 +197,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
     public static void syncStorageOn(EntityMaid maid, Target target) {
-        List<ViewedInventoryMemory.ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target);
+        Map<String, List<ViewedInventoryMemory.ItemCount>> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAtInternal(target);
         ServerLevel level = (ServerLevel) maid.level();
         getNearbyMaidsSameGroup(maid, false, true)
                 .forEach(toMaid -> {
@@ -200,7 +207,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                         StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
                             toMem.resetViewedInvForPos(target.sameType(pos, null));
                         });
-                        itemsAt.forEach(itemCount -> toMem.addItem(target, itemCount.getItem(), itemCount.getCount()));
+                        toMem.setItemsAtInternal(target, itemsAt);
                         toMem.addVisitedPos(target);
                     }
                 });

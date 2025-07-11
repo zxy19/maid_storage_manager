@@ -107,6 +107,6 @@ public interface IMaidStorage {
     default boolean isCraftGuideProvider(List<ViewedInventoryMemory.ItemCount> blockPos) {
         return blockPos
                 .stream()
-                .anyMatch(i -> i.getItem().is(ItemRegistry.CRAFT_GUIDE.get()));
+                .anyMatch(i -> i.item().is(ItemRegistry.CRAFT_GUIDE.get()));
     }
 }

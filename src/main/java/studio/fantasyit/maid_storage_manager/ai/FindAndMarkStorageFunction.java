@@ -75,7 +75,7 @@ public class FindAndMarkStorageFunction implements IFunctionCall<FindAndMarkStor
             itemKeys.forEach((pos, list) -> {
                 MutableInt count = new MutableInt(0);
                 list.stream()
-                        .filter(ic -> ItemStackUtil.isSame(ic.getItem(), itemStack, false))
+                        .filter(ic -> ItemStackUtil.isSame(ic.item(), itemStack, false))
                         .forEach(ic -> count.add(ic.getSecond()));
                 if (count.intValue() > 0) {
                     toShowItem.addCount(pos, count.intValue());

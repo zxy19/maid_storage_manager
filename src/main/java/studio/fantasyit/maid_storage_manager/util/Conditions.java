@@ -90,7 +90,10 @@ public class Conditions {
         Brain<EntityMaid> brain = maid.getBrain();
         return brain.getMemory(InitEntities.TARGET_POS.get()).map(targetPos -> {
             Vec3 targetV3d = targetPos.currentPosition();
-            if (maid.distanceToSqr(targetV3d) > Math.pow(pathCloseEnoughThreshold, 2)) {
+            boolean strictArrive = maid.distanceToSqr(targetV3d) < Math.pow(pathCloseEnoughThreshold, 2);
+            boolean loosenArrive = maid.distanceToSqr(targetV3d) < Math.pow(pathCloseEnoughThreshold * 2, 2)
+                    && maid.distanceToSqr(targetV3d.x(), maid.getY(), targetV3d.z()) < Math.pow(pathCloseEnoughThreshold, 2);
+            if (!strictArrive && !loosenArrive) {
                 Optional<WalkTarget> walkTarget = brain.getMemory(MemoryModuleType.WALK_TARGET);
                 if (walkTarget.isEmpty() || !walkTarget.get().getTarget().currentPosition().equals(targetV3d)) {
                     brain.eraseMemory(InitEntities.TARGET_POS.get());

@@ -1,6 +1,8 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -9,6 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 
@@ -146,6 +149,26 @@ public class InvUtil {
         }
         level.addFreshEntity(itementity);
         return itementity;
+    }
+
+    public static VirtualItemEntity throwItemVirtual(EntityMaid maid, ItemStack itemStack, Vec3 direction) {
+        Level level = maid.level();
+        VirtualItemEntity itementity = VirtualItemEntity.create(level, maid.position(), itemStack);
+        maid.getMaxHeadXRot();
+        itementity.setDeltaMovement(direction);
+        level.addFreshEntity(itementity);
+        return itementity;
+    }
+
+    public static void pickUpVirtual(EntityMaid maid, VirtualItemEntity itemEntity) {
+        ItemStack itemStack = itemEntity.getItem();
+        CombinedInvWrapper availableInv = maid.getAvailableInv(true);
+        ItemStack rest = InvUtil.tryPlace(availableInv, itemStack);
+        if (rest.isEmpty()) {
+            ((ServerLevel) maid.level()).getChunkSource().broadcast(itemEntity, new ClientboundTakeItemEntityPacket(itemEntity.getId(), maid.getId(), 1));
+            itemEntity.discard();
+        } else
+            itemEntity.setItem(rest);
     }
 
     public static int getTargetIndex(EntityMaid maid, ItemStack itemStack, boolean matchTag) {

@@ -8,7 +8,6 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
-import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -56,7 +55,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
     }
 
 
-    ItemEntity thrown;
+    VirtualItemEntity thrown;
     EntityMaid target;
     int index = 0;
     BehaviorBreath breath = new BehaviorBreath();
@@ -110,8 +109,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
             ItemStack gotItem = InvUtil.tryExtractForCrafting(target.getAvailableInv(false), toSeekItem);
             if (!gotItem.isEmpty()) {
                 Vec3 targetDir = MathUtil.getFromToWithFriction(target, maid.getPosition(0));
-                thrown = InvUtil.throwItem(maid, gotItem, targetDir, false);
-                thrown.setPickUpDelay(400);
+                thrown = InvUtil.throwItemVirtual(maid, gotItem, targetDir);
                 list.get(index).shrink(gotItem.getCount());
                 if (list.get(index).isEmpty())
                     index++;
@@ -119,10 +117,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
                 index++;
             }
         } else {
-            MemoryUtil.setPickUpItemTemp(maid, thrown.getUUID());
-            thrown.setNoPickUpDelay();
-            if (!maid.pickupItem(thrown, false))
-                DebugData.sendDebug("[DGB]Failed to pickup item %s", maid.getName().getString());
+            InvUtil.pickUpVirtual(maid, thrown);
             if (!thrown.isAlive())
                 thrown = null;
         }

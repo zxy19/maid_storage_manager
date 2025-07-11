@@ -18,10 +18,8 @@ public class CraftingChatBubbleData implements IChatBubbleData {
     private final int barForegroundColor1;
     private final double progress;
     private final double progress1;
-    private final double oProgress;
-    private final double oProgress1;
 
-    private CraftingChatBubbleData(Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1, double oProgress, double oProgress1) {
+    private CraftingChatBubbleData(Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1) {
         this.bg = TYPE_2;
         this.text = text;
         this.barBackgroundColor = barBackgroundColor;
@@ -29,8 +27,6 @@ public class CraftingChatBubbleData implements IChatBubbleData {
         this.barForegroundColor1 = barForegroundColor1;
         this.progress = progress;
         this.progress1 = progress1;
-        this.oProgress = oProgress;
-        this.oProgress1 = oProgress1;
     }
 
     public static CraftingChatBubbleData create(Component text,
@@ -38,11 +34,9 @@ public class CraftingChatBubbleData implements IChatBubbleData {
                                                 int barForegroundColor,
                                                 int barForegroundColor1,
                                                 double progress,
-                                                double progress1,
-                                                double oProgress,
-                                                double oProgress1
+                                                double progress1
     ) {
-        return new CraftingChatBubbleData(text, barBackgroundColor, barForegroundColor, barForegroundColor1, progress, progress1, oProgress, oProgress1);
+        return new CraftingChatBubbleData(text, barBackgroundColor, barForegroundColor, barForegroundColor1, progress, progress1);
     }
 
     @Override
@@ -74,9 +68,7 @@ public class CraftingChatBubbleData implements IChatBubbleData {
                     this.barForegroundColor,
                     this.barForegroundColor1,
                     this.progress,
-                    this.progress1,
-                    this.oProgress,
-                    this.oProgress1
+                    this.progress1
             );
         }
 
@@ -92,8 +84,6 @@ public class CraftingChatBubbleData implements IChatBubbleData {
                     buf.readInt(),
                     buf.readInt(),
                     buf.readDouble(),
-                    buf.readDouble(),
-                    buf.readDouble(),
                     buf.readDouble()
             );
         }
@@ -106,8 +96,6 @@ public class CraftingChatBubbleData implements IChatBubbleData {
             buf.writeInt(textChat.barForegroundColor1);
             buf.writeDouble(textChat.progress);
             buf.writeDouble(textChat.progress1);
-            buf.writeDouble(textChat.oProgress);
-            buf.writeDouble(textChat.oProgress1);
         }
     }
 }

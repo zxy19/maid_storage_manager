@@ -46,7 +46,7 @@ public class ChatTexts {
         chatTexts.put(maid.getUUID(), l);
     }
 
-    public static void showSecondaryCrafting(EntityMaid maid, Component component, double progress, double progress1, double oProgress, double oProgress1, boolean isFailure) {
+    public static void showSecondaryCrafting(EntityMaid maid, Component component, double progress, double progress1, boolean isFailure) {
         if (chatTextsSecondary.containsKey(maid.getUUID())) {
             if (maid.getChatBubbleManager().getChatBubble(chatTextsSecondary.get(maid.getUUID())) != null)
                 maid.getChatBubbleManager().removeChatBubble(chatTextsSecondary.get(maid.getUUID()));
@@ -58,8 +58,6 @@ public class ChatTexts {
                 0xffffffff,
                 0xff1e88e5,
                 isFailure ? 0xffe58590 : 0xff1e88e5,
-                progress,
-                progress1,
                 progress,
                 progress1
         );

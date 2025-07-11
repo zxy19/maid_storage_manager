@@ -17,28 +17,13 @@ import java.util.function.Predicate;
 
 public class ViewedInventoryMemory extends AbstractTargetMemory {
 
-    public static class ItemCount {
+    public record ItemCount(ItemStack item, int count) {
         public static final Codec<ItemCount> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
-                        ItemStack.CODEC.fieldOf("item").forGetter(ItemCount::getItem),
-                        Codec.INT.fieldOf("count").forGetter(ItemCount::getCount)
+                        ItemStack.CODEC.fieldOf("item").forGetter(ItemCount::item),
+                        Codec.INT.fieldOf("count").forGetter(ItemCount::count)
                 ).apply(instance, ItemCount::new)
         );
-        public ItemStack item;
-        public int count;
-
-        public ItemCount(ItemStack item, int count) {
-            this.item = item;
-            this.count = count;
-        }
-
-        public ItemStack getItem() {
-            return item;
-        }
-
-        public int getCount() {
-            return count;
-        }
 
         public ItemStack getFirst() {
             return item;
@@ -46,10 +31,6 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
 
         public int getSecond() {
             return count;
-        }
-
-        public ItemCount copy() {
-            return new ItemCount(item, count);
         }
     }
 
@@ -118,7 +99,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                     for (int i = 0; i < itemCounts.size(); i++) {
                         if (ItemStack.isSameItemSameTags(itemCounts.get(i).getFirst(), itemCount.getFirst())) {
                             itemCounts.set(i, new ItemCount(itemCounts.get(i).getFirst(),
-                                    itemCounts.get(i).getCount() + itemCount.getCount()));
+                                    itemCounts.get(i).count() + itemCount.count()));
                             found = true;
                             break;
                         }
@@ -140,6 +121,16 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                 .values().stream().flatMap(List::stream).toList();
     }
 
+    public Map<String, List<ItemCount>> getItemsAtInternal(Target target) {
+        return viewedInventory.getOrDefault(target.toStoreString(), Collections.emptyMap());
+    }
+
+    public void setItemsAtInternal(Target target, Map<String, List<ItemCount>> items) {
+        Map<String, List<ItemCount>> itemsCopy = new HashMap<>();
+        items.forEach((key, value) -> itemsCopy.put(key, new ArrayList<>(value)));
+        viewedInventory.put(target.toStoreString(), itemsCopy);
+    }
+
     public List<InventoryItem> flatten() {
         List<InventoryItem> result = new ArrayList<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> blockEntry : viewedInventory.entrySet()) {
@@ -156,8 +147,8 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                         }
                     }
                     if (!found)
-                        result.add(new InventoryItem(itemCount.getItem(),
-                                        itemCount.getCount(),
+                        result.add(new InventoryItem(itemCount.item(),
+                                        itemCount.count(),
                                         new ArrayList<>(List.of(new InventoryItem.PositionCount(pos, itemCount.getSecond(), false)))
                                 )
                         );
@@ -198,10 +189,11 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         viewedInventory.put(pos.toStoreString(), map);
     }
 
-    public void addItem(Target pos, ItemStack itemStack){
+    public void addItem(Target pos, ItemStack itemStack) {
         addItem(pos, itemStack, itemStack.getCount());
     }
-    public void addItem(Target pos, ItemStack itemStack,int count) {
+
+    public void addItem(Target pos, ItemStack itemStack, int count) {
         if (pos == null || itemStack == null || itemStack.isEmpty()) return;
         if (!viewedInventory.containsKey(pos.toStoreString()))
             viewedInventory.put(pos.toStoreString(), new HashMap<>());
@@ -223,6 +215,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         map.put(itemKey, list);
         viewedInventory.put(pos.toStoreString(), map);
     }
+
     public void removeUnvisited() {
         ArrayList<String> posList = new ArrayList<>(viewedInventory.keySet());
         for (String pos : posList) {
@@ -300,7 +293,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         for (String pos : memory.viewedInventory.keySet()) {
             Map<String, List<ItemCount>> data = new HashMap<>();
             for (String item : memory.viewedInventory.get(pos).keySet()) {
-                data.put(item, new ArrayList<>(memory.viewedInventory.get(pos).get(item).stream().map(ItemCount::copy).toList()));
+                data.put(item, new ArrayList<>(memory.viewedInventory.get(pos).get(item)));
             }
             viewedInventory.put(pos, data);
         }

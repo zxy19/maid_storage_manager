@@ -1,11 +1,14 @@
 package studio.fantasyit.maid_storage_manager.event;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -18,10 +21,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
-import studio.fantasyit.maid_storage_manager.items.ChangeFlag;
-import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.items.*;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftAssets;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -56,6 +56,7 @@ public final class BindingRender {
             renderForInv(event, mc, floating);
             renderForLogistics(event, mc, floating);
             renderForEntity(event, mc);
+            renderForWorkCard(event, mc);
         }
     }
 
@@ -228,6 +229,37 @@ public final class BindingRender {
                                     .getString(),
                             floating
                     );
+            }
+        }
+    }
+
+    private static void renderForWorkCard(RenderLevelStageEvent event, Minecraft mc) {
+        ItemStack mainStack = mc.player.getMainHandItem();
+        if (mainStack.getItem() != ItemRegistry.WORK_CARD.get()) return;
+
+        List<EntityMaid> entities = mc.level.getEntities(
+                EntityTypeTest.forClass(EntityMaid.class),
+                mc.player.getBoundingBox().inflate(32),
+                t -> true
+        );
+
+        for (EntityMaid maid : entities) {
+            BaubleItemHandler baubleItemHandler = maid.getMaidBauble();
+            float oh = (float) (maid.getBoundingBox().maxY - maid.getBoundingBox().minY) + 0.5f;
+            for (int i = 0; i < baubleItemHandler.getSlots(); i++) {
+                if (baubleItemHandler.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
+                    if (WorkCardItem.matches(baubleItemHandler.getStackInSlot(i), mainStack)) {
+                        BoxRenderUtil.drawText(
+                                event,
+                                mc,
+                                maid.getPosition(event.getPartialTick()),
+                                baubleItemHandler.getStackInSlot(i).getHoverName().getString(),
+                                0xFFFFFFFF,
+                                oh
+                        );
+                        oh += 0.3f;
+                    }
+                }
             }
         }
     }

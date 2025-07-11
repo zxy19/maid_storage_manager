@@ -99,7 +99,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                             notDone
                                     .stream()
                                     .anyMatch(i2 ->
-                                            ItemStackUtil.isSame(i2.getA(), itemCount.getItem(), matchTag)
+                                            ItemStackUtil.isSame(i2.getA(), itemCount.item(), matchTag)
                                     )
                     )
                     .findFirst();

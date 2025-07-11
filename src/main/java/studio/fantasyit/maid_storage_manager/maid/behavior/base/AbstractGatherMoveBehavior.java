@@ -88,7 +88,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             Optional<ViewedInventoryMemory.ItemCount> first = blockPos
                     .getValue()
                     .stream()
-                    .filter(itemCount -> isTargetItem(level, maid, targets, itemCount.getItem()))
+                    .filter(itemCount -> isTargetItem(level, maid, targets, itemCount.item()))
                     .findFirst();
             if (first.isEmpty()) {
                 continue;

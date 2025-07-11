@@ -30,10 +30,8 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
     private final double progress1;
     private final int width;
     private final int height;
-    private final double oProgress1;
-    private final double oProgress;
 
-    public CraftingChatBubbleRenderer(ResourceLocation bg, Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1, double oProgress, double oProgress1) {
+    public CraftingChatBubbleRenderer(ResourceLocation bg, Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1) {
         this.font = Minecraft.getInstance().font;
         this.bg = bg;
         this.split = this.font.split(text, 240);
@@ -42,8 +40,6 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
         this.barForegroundColor1 = barForegroundColor1;
         this.progress1 = Mth.clamp(progress, 0.0F, 1.0F);
         this.progress = Mth.clamp(progress1, 0.0F, 1.0F);
-        this.oProgress = Mth.clamp(oProgress, 0.0F, 1.0F);
-        this.oProgress1 = Mth.clamp(oProgress1, 0.0F, 1.0F);
         int tWid = split.stream().map(this.font::width).max(Comparator.comparingInt(t -> t)).orElse(100);
         this.width = Mth.clamp(tWid, 100, 240);
         Objects.requireNonNull(this.font);
@@ -72,14 +68,14 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
         int barHeight = 12;
         graphics.fill(0, y, this.width, y + barHeight, this.barBackgroundColor);
         if (this.progress > (double) 0.0F) {
-            int barWidth = (int) ((double) (this.width - 2 * margin) * (this.oProgress == 0 ? this.progress : Mth.lerp(graphics.getPartialTicks(), this.oProgress, this.progress)));
+            int barWidth = (int) ((double) (this.width - 2 * margin) * this.progress);
             graphics.getPoseStack().translate(0.0F, 0.0F, -0.01);
             graphics.fill(margin, y + margin, barWidth, y + barHeight - margin, this.barForegroundColor);
         }
         y += barHeight;
         graphics.fill(0, y, this.width, y + 6, this.barBackgroundColor);
         if (this.progress1 > (double) 0.0F) {
-            int barWidth = (int) ((double) (this.width - 2 * margin) * (this.oProgress1 == 0 ? this.progress1 : Mth.lerp(graphics.getPartialTicks(), this.oProgress1, this.progress1)));
+            int barWidth = (int) ((double) (this.width - 2 * margin) * this.progress1);
             graphics.getPoseStack().translate(0.0F, 0.0F, -0.01);
             graphics.fill(margin, y + margin, barWidth, y + 6 - margin, this.barForegroundColor1);
         }

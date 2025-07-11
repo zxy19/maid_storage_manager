@@ -1,7 +1,9 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -9,8 +11,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
+import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
 public class MaidInteractItem extends Item {
@@ -26,7 +30,7 @@ public class MaidInteractItem extends Item {
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player p_41399_, LivingEntity entity, InteractionHand p_41401_) {
         if (!p_41399_.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND && entity instanceof EntityMaid maid) {
-            if(p_41399_.getUUID().equals(maid.getOwner().getUUID())) {
+            if (p_41399_.getUUID().equals(maid.getOwner().getUUID())) {
                 IItemHandler inv;
                 if (BaubleManager.getBauble(itemStack) != null) {
                     inv = maid.getMaidBauble();
@@ -36,8 +40,18 @@ public class MaidInteractItem extends Item {
                 if (InvUtil.maxCanPlace(inv, itemStack) > 0) {
                     int count = InvUtil.tryPlace(inv, itemStack).getCount();
                     p_41399_.getMainHandItem().setCount(count);
+
+
+                    if (inv instanceof BaubleItemHandler bh) {
+                        Network.INSTANCE.send(
+                                PacketDistributor.PLAYER.with(() -> (ServerPlayer) p_41399_),
+                                new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), bh.serializeNBT())
+                        );
+                    }
+
                     return InteractionResult.SUCCESS;
                 }
+
             }
         }
         return super.interactLivingEntity(itemStack, p_41399_, entity, p_41401_);

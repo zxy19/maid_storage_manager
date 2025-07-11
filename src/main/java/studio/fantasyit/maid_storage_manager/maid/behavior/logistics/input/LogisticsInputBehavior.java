@@ -125,7 +125,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         ItemStack currentLogisticsGuideItem = MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem();
         CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(currentLogisticsGuideItem);
         List<ViewedInventoryMemory.ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target)
-                .stream().filter(itemCount -> !itemCount.getItem().is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !itemCount.getItem().isEmpty()).toList();
+                .stream().filter(itemCount -> !itemCount.item().is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !itemCount.item().isEmpty()).toList();
         ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem);
         if (!filterItemStack.isEmpty()) {
             List<ItemStack> filteredItems = new ArrayList<>();
@@ -139,7 +139,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             boolean matchNbt = t.getBoolean(FilterListItem.TAG_MATCH_TAG);
             boolean isBlackMode = t.getBoolean(FilterListItem.TAG_BLACK_MODE);
             itemsAt = itemsAt.stream().filter(itemCount -> {
-                boolean match = filteredItems.stream().anyMatch(itemStack -> ItemStackUtil.isSame(itemStack, itemCount.item, matchNbt));
+                boolean match = filteredItems.stream().anyMatch(itemStack -> ItemStackUtil.isSame(itemStack, itemCount.item(), matchNbt));
                 return (match != isBlackMode);
             }).toList();
         }
@@ -155,9 +155,9 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             }
         } else if (!itemsAt.isEmpty()) {
             ViewedInventoryMemory.ItemCount itemCount = itemsAt.get(0);
-            ItemStack itemStack = itemCount.getItem();
+            ItemStack itemStack = itemCount.item();
             if (count == 64)
-                itemStack = itemStack.copyWithCount(Math.min(itemCount.count, itemStack.getMaxStackSize()));
+                itemStack = itemStack.copyWithCount(Math.min(itemCount.count(), itemStack.getMaxStackSize()));
             else
                 itemStack = itemStack.copyWithCount(1);
 
@@ -192,7 +192,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             ItemStack costedInput = costedInputs.get(i);
             int availableCount = 0;
             for (ViewedInventoryMemory.ItemCount itemCount : itemsAt) {
-                if (ItemStackUtil.isSame(input, itemCount.getItem(), false)) {
+                if (ItemStackUtil.isSame(input, itemCount.item(), false)) {
                     availableCount += itemCount.getSecond();
                 }
             }

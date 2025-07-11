@@ -129,7 +129,7 @@ public class BoxRenderUtil {
         }
     }
 
-    protected static void drawText(RenderLevelStageEvent event, Minecraft mc, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
+    public static void drawText(RenderLevelStageEvent event, Minecraft mc, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
         PoseStack pose = event.getPoseStack();
         Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick());
         Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);

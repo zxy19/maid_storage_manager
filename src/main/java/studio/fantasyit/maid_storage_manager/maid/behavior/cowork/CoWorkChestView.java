@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -110,6 +111,8 @@ public class CoWorkChestView extends MaidCheckRateTask {
             context.finish();
             context = null;
         }
+        if (target != null)
+            WorkCardItem.syncStorageOn(maid, target);
         if (maid.getOwner() instanceof ServerPlayer sp) {
             if (sp.hasContainerOpen()) {
                 return;

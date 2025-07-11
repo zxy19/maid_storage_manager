@@ -100,6 +100,9 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                 return true;
             }
         }
+        if (!plan.checkStepInputInbackpack(maid)) {
+            return true;
+        }
         Target storage = step.getStorage();
         DebugData.sendDebug(
                 String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",

@@ -114,9 +114,6 @@ public class CraftLayerChain {
      */
     private int currentParallel;
     private Component statusMessage = Component.empty();
-    private double oprogress = 0;
-    private double oprogress1 = 0;
-    private double progress1 = 0;
 
     protected enum StoppingAdding {
         NONE(false),
@@ -532,30 +529,30 @@ public class CraftLayerChain {
                 .append("\n")
                 .append(statusMessage);
 
+        double progress1 = 0;
+        if (hasCurrent()) {
+            CraftLayer currentLayer = getCurrentLayer();
+            SolvedCraftLayer node = getCurrentNode();
+            if (node.progress().getValue() == SolvedCraftLayer.Progress.WORKING) {
+                progress1 = (double) (currentLayer.getDoneCount() * currentLayer.getTotalStep() + currentLayer.getStep() + 1) / (currentLayer.getCount() * currentLayer.getTotalStep() + 1);
+            } else if (node.progress().getValue() == SolvedCraftLayer.Progress.GATHERING) {
+                progress1 = 1.0 / (currentLayer.getCount() * currentLayer.getTotalStep() + 1);
+            } else if (node.progress().getValue() == SolvedCraftLayer.Progress.FINISHED) {
+                progress1 = 1;
+            }
+        }
 
-        ChatTexts.showSecondaryCrafting(maid, toShow, ((double) done / total), progress1, this.oprogress, this.oprogress1, isStoppingAdding != StoppingAdding.NONE);
-        this.oprogress = (double) done / total;
-    }
-
-    public void setStatusMessage(Component message, double progress1) {
-        statusMessage = message;
-        oprogress1 = this.progress1;
-        this.progress1 = progress1;
+        ChatTexts.showSecondaryCrafting(maid, toShow, ((double) done / total), progress1, isStoppingAdding != StoppingAdding.NONE);
     }
 
     public void setStatusMessage(Component message) {
-        setStatusMessage(message, 0);
-    }
-
-    public void setStatusMessage(EntityMaid maid, double progress1, Component message) {
-        setStatusMessage(message, progress1);
-        showCraftingProgress(maid);
+        statusMessage = message;
     }
 
     public void setStatusMessage(EntityMaid maid, Component message) {
-        setStatusMessage(maid, 0, message);
+        setStatusMessage(message);
+        showCraftingProgress(maid);
     }
-
 
     // region 流程控制
 
@@ -747,6 +744,42 @@ public class CraftLayerChain {
         CraftLayer layer = Objects.requireNonNull(getCurrentLayer());
         if (layer.getStep() != 0) return true;
         CraftGuideData craftData = layer.getCraftData().orElse(null);
+        if (craftData == null) return true;
+        List<ItemStack> inputs = new ArrayList<>();
+        for (ItemStack itemStack : craftData.getInput()) {
+            if (itemStack.isEmpty()) continue;
+            ItemStackUtil.addToList(inputs, itemStack, false);
+        }
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        for (ItemStack itemStack : inputs) {
+            for (int i = 0; i < inv.getSlots(); i++) {
+                ItemStack item = inv.getStackInSlot(i);
+                if (ItemStackUtil.isSameInCrafting(item, itemStack)) {
+                    itemStack.shrink(Math.min(itemStack.getCount(), item.getCount()));
+                    if (itemStack.isEmpty()) break;
+                }
+            }
+        }
+        if (!inputs.stream().allMatch(ItemStack::isEmpty)) {
+            for (ItemStack itemStack : inputs) {
+                if (!itemStack.isEmpty()) {
+                    for (int i = 0; i < layer.getItems().size(); i++) {
+                        if (ItemStackUtil.isSameInCrafting(layer.getItems().get(i), itemStack)) {
+                            layer.getItems().get(i).grow(itemStack.getCount());
+                            break;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public boolean checkStepInputInbackpack(EntityMaid maid) {
+        if (!hasCurrent()) return true;
+        CraftLayer layer = Objects.requireNonNull(getCurrentLayer());
+        CraftGuideStepData craftData = layer.getStepData();
         if (craftData == null) return true;
         List<ItemStack> inputs = new ArrayList<>();
         for (ItemStack itemStack : craftData.getInput()) {

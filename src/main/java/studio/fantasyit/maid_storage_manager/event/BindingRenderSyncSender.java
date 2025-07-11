@@ -1,8 +1,10 @@
 package studio.fantasyit.maid_storage_manager.event;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -12,6 +14,7 @@ import net.minecraftforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.network.RenderEntityPacket;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -35,6 +38,18 @@ public class BindingRenderSyncSender {
                             return;
                         }
                     }
+                }
+                if (event.player.getMainHandItem().is(ItemRegistry.WORK_CARD.get())) {
+                    player.level().getEntities(
+                            EntityTypeTest.forClass(EntityMaid.class),
+                            player.getBoundingBox().inflate(32),
+                            t -> true
+                    ).forEach(maid -> {
+                        Network.INSTANCE.send(
+                                PacketDistributor.PLAYER.with(() -> player),
+                                new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), maid.getMaidBauble().serializeNBT())
+                        );
+                    });
                 }
                 Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RenderEntityPacket(List.of()));
             }

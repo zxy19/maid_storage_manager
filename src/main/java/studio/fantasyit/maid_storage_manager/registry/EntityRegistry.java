@@ -14,6 +14,8 @@ import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntityRender;
+import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
+import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntityRender;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class EntityRegistry {
@@ -25,6 +27,13 @@ public class EntityRegistry {
                     .updateInterval(Integer.MAX_VALUE)
                     .build("virtual_display")
     );
+    public static final RegistryObject<EntityType<VirtualItemEntity>> VIRTUAL_ITEM_ENTITY = ENTITY_TYPES.register("virtual_item",
+            () -> EntityType.Builder.of(VirtualItemEntity::new, MobCategory.MISC)
+                    .sized(0.3F, 0.3F)
+                    .clientTrackingRange(10)
+                    .build("virtual_item")
+    );
+
 
     public static void init(IEventBus modEventBus) {
         ENTITY_TYPES.register(modEventBus);
@@ -33,5 +42,6 @@ public class EntityRegistry {
     @SubscribeEvent
     public static void registerModel(FMLClientSetupEvent event) {
         EntityRenderers.register(VIRTUAL_DISPLAY_ENTITY.get(), VirtualDisplayEntityRender::new);
+        EntityRenderers.register(VIRTUAL_ITEM_ENTITY.get(), VirtualItemEntityRender::new);
     }
 }
