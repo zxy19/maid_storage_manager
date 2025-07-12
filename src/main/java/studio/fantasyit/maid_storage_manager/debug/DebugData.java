@@ -2,7 +2,11 @@ package studio.fantasyit.maid_storage_manager.debug;
 
 import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.network.PacketDistributor;
+import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.network.DebugDataPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
@@ -47,5 +51,27 @@ public class DebugData {
                         500)
                 )
                 .toList();
+    }
+
+    public enum InvChange {
+        IN,
+        OUT,
+        CURRENT
+    }
+
+    public static void invChange(InvChange type, EntityMaid maid, ItemStack stack) {
+        if (!Config.enableDebugInv) return;
+        switch (type) {
+            case IN -> Logger.debug("%s>[IN] %s", maid.getUUID(), stack.toString());
+            case OUT -> Logger.debug("%s>[OUT] %s", maid.getUUID(), stack.toString());
+        }
+        StringBuilder sb = new StringBuilder();
+        CombinedInvWrapper availableInv = maid.getAvailableInv(true);
+        for (int i = 0; i < availableInv.getSlots(); i++) {
+            ItemStack itemStack = availableInv.getStackInSlot(i);
+            if (!itemStack.isEmpty())
+                sb.append(itemStack).append(" ");
+        }
+        Logger.debug("%s>[INV] %s", maid.getUUID(), sb.toString());
     }
 }

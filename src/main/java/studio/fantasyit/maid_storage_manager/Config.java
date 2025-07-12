@@ -194,6 +194,7 @@ public class Config {
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
+    public static boolean enableDebugInv = false;
     public static boolean enableAe2Sup;
     public static boolean enableRsSup;
     public static boolean enableMekSup;

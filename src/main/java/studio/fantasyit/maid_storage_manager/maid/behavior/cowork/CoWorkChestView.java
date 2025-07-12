@@ -63,6 +63,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
         }
         target = MemoryUtil.getViewedInventory(maid).ambitiousPos(level, target);
         MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
+        MemoryUtil.getViewedInventory(maid).lockAmbitiousPos(level, target);
         @Nullable IMaidStorage storageType = MaidStorage.getInstance().getStorage(target.getType());
         if (storageType != null)
             context = storageType.onStartView(level, maid, target);
@@ -111,8 +112,10 @@ public class CoWorkChestView extends MaidCheckRateTask {
             context.finish();
             context = null;
         }
-        if (target != null)
+        if (target != null) {
             WorkCardItem.syncStorageOn(maid, target);
+            MemoryUtil.getViewedInventory(maid).clearLock();
+        }
         if (maid.getOwner() instanceof ServerPlayer sp) {
             if (sp.hasContainerOpen()) {
                 return;

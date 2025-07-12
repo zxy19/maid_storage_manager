@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeWrapper>, RecipeType<ProcessingRecipe<RecipeWrapper>>, RecipeWrapper,BlockPos> {
+public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeWrapper>, RecipeType<ProcessingRecipe<RecipeWrapper>>, RecipeWrapper, BlockPos> {
     ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
             "count",
             8,
@@ -194,7 +194,9 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                                 List<CraftGuideStepData> steps = new ArrayList<>();
                                 each3items(items, t -> steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, test),
-                                        t,
+                                        t.stream().map(
+                                                i -> i.copyWithCount(i.getCount() * COUNT.getValue())
+                                        ).toList(),
                                         List.of(),
                                         CommonPlaceItemAction.TYPE,
                                         false,
@@ -203,7 +205,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                                 steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, test),
                                         List.of(),
-                                        List.of(resultItem),
+                                        List.of(resultItem.copyWithCount(resultItem.getCount() * COUNT.getValue())),
                                         CommonTakeItemAction.TYPE,
                                         false,
                                         new CompoundTag()

@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
-import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -96,8 +96,9 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                     );
                 }
                 copy.shrink(toTake.getCount());
-                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, toTake.getCount());
+                ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, level, target, itemStack, toTake.getCount());
                 InvUtil.tryPlace(maid.getAvailableInv(false), toTake);
+                DebugData.invChange(DebugData.InvChange.IN, maid, toTake);
                 return copy;
             }
             return itemStack;
@@ -126,8 +127,6 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
                 });
             }
         }
-        if(target != null)
-            WorkCardItem.syncStorageOn(maid, target);
         MemoryUtil.getCrafting(maid).clearCheckItem();
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);

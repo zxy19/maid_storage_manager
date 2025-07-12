@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -99,7 +98,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 ItemStack copy = itemStack.copy();
                 ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore);
                 copy.shrink(tmp.getCount());
-                MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, copy.getCount());
+                ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, level, target, itemStack, copy.getCount());
                 InvUtil.tryPlace(maid.getAvailableInv(false), copy);
                 return tmp;
             }
@@ -157,8 +156,6 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 });
             }
         }
-        if(target != null)
-            WorkCardItem.syncStorageOn(maid, target);
 
         if (checkItem != null) {
             ChatTexts.send(maid, ChatTexts.CHAT_MISSING);

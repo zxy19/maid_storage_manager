@@ -6,7 +6,6 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -74,7 +73,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
                     int store = Math.min(itemStack.getCount(), maxStore);
                     ItemStack copy = itemStack.copyWithCount(store);
                     InvUtil.tryPlace(maidInv, copy);
-                    MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(p_22551_, target, itemStack, store);
+                    ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, p_22551_, target, itemStack, store);
                     return itemStack.copyWithCount(itemStack.getCount() - store);
                 }
             }
@@ -106,8 +105,6 @@ public class ResortBehavior extends Behavior<EntityMaid> {
             });
             context.finish();
         }
-        if(target != null)
-            WorkCardItem.syncStorageOn(maid, target);
         MemoryUtil.clearTarget(maid);
     }
 

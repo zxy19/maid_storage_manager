@@ -361,6 +361,8 @@ public class CraftLayerChain {
             if (node.slotOutput() > freeSlots)
                 continue;
             CraftLayer layer = layers.get(i);
+            if (layer.getCraftData().isEmpty())
+                continue;
 
             if (node.progress().getValue() == SolvedCraftLayer.Progress.IDLE) {
                 if (layer.steps.stream().anyMatch(t -> !toMaid.isWithinRestriction(t.storage.pos)))
@@ -743,6 +745,7 @@ public class CraftLayerChain {
         if (!hasCurrent()) return true;
         CraftLayer layer = Objects.requireNonNull(getCurrentLayer());
         if (layer.getStep() != 0) return true;
+        SolvedCraftLayer node = Objects.requireNonNull(getCurrentNode());
         CraftGuideData craftData = layer.getCraftData().orElse(null);
         if (craftData == null) return true;
         List<ItemStack> inputs = new ArrayList<>();
@@ -771,6 +774,7 @@ public class CraftLayerChain {
                     }
                 }
             }
+            node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
             return false;
         }
         return true;
@@ -779,6 +783,7 @@ public class CraftLayerChain {
     public boolean checkStepInputInbackpack(EntityMaid maid) {
         if (!hasCurrent()) return true;
         CraftLayer layer = Objects.requireNonNull(getCurrentLayer());
+        SolvedCraftLayer node = Objects.requireNonNull(this.getCurrentNode());
         CraftGuideStepData craftData = layer.getStepData();
         if (craftData == null) return true;
         List<ItemStack> inputs = new ArrayList<>();
@@ -807,6 +812,7 @@ public class CraftLayerChain {
                     }
                 }
             }
+            node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
             return false;
         }
         return true;
@@ -864,7 +870,9 @@ public class CraftLayerChain {
      * @return
      */
     protected boolean tryStartLayer(SolvedCraftLayer node, CraftLayer layer) {
-        if (node.progress().getValue() == SolvedCraftLayer.Progress.FINISHED || node.progress().getValue() == SolvedCraftLayer.Progress.FAILED || node.progress().getValue() == SolvedCraftLayer.Progress.DISPATCHED)
+        if (node.progress().getValue() == SolvedCraftLayer.Progress.FINISHED ||
+                node.progress().getValue() == SolvedCraftLayer.Progress.FAILED ||
+                node.progress().getValue() == SolvedCraftLayer.Progress.DISPATCHED)
             return false;
         if (node.progress().getValue() == SolvedCraftLayer.Progress.WORKING)
             return true;
@@ -964,6 +972,5 @@ public class CraftLayerChain {
         CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);
         craftBlockOccupy.removeOccupyFor(maid, getCurrentNode().index());
     }
-
     // endregion
 }

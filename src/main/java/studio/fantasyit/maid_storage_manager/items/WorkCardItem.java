@@ -64,58 +64,61 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
 
 
         // 寻找范围内的可分发的女仆
-        getNearbyMaidsSameGroup(maid, baubleItem, true).forEach(toMaid -> {
-            //获取可分发的层
-            @Nullable Pair<CraftLayer, SolvedCraftLayer> dispatchLayerData = plan.getAndDispatchLayer(toMaid);
-            if (dispatchLayerData == null) return;
-            SolvedCraftLayer node = dispatchLayerData.getB();
-            CraftLayer dispatchLayer = dispatchLayerData.getA();
+        getNearbyMaidsSameGroup(maid, baubleItem, true)
+                .stream()
+                .sorted(Comparator.comparingDouble(toMaid -> toMaid.distanceTo(maid)))
+                .forEach(toMaid -> {
+                    //获取可分发的层
+                    @Nullable Pair<CraftLayer, SolvedCraftLayer> dispatchLayerData = plan.getAndDispatchLayer(toMaid);
+                    if (dispatchLayerData == null) return;
+                    SolvedCraftLayer node = dispatchLayerData.getB();
+                    CraftLayer dispatchLayer = dispatchLayerData.getA();
 
-            //获取所有的输出，构建虚拟方案
-            List<ItemStack> targetItems = dispatchLayer
-                    .getCraftData()
-                    .map(CraftGuideData::getAllOutputItems)
-                    .map(t -> t.stream().map(i -> i.copyWithCount(i.getCount() * dispatchLayer.getCount())).toList())
-                    .orElseThrow();
-            CraftLayerChain newPlan = new CraftLayerChain(maid);
-            newPlan.setMaster(maid.getUUID(), MemoryUtil.getRequestProgress(maid).getWorkUUID());
-            newPlan.addLayer(dispatchLayer.copyWithNoState());
-            newPlan.addLayer(new CraftLayer(
-                    Optional.empty(),
-                    targetItems,
-                    1
-            ));
+                    //获取所有的输出，构建虚拟方案
+                    List<ItemStack> targetItems = dispatchLayer
+                            .getCraftData()
+                            .map(CraftGuideData::getAllOutputItems)
+                            .map(t -> t.stream().map(i -> i.copyWithCount(i.getCount() * dispatchLayer.getCount())).toList())
+                            .orElseThrow();
+                    CraftLayerChain newPlan = new CraftLayerChain(maid);
+                    newPlan.setMaster(maid.getUUID(), MemoryUtil.getRequestProgress(maid).getWorkUUID());
+                    newPlan.addLayer(dispatchLayer.copyWithNoState());
+                    newPlan.addLayer(new CraftLayer(
+                            Optional.empty(),
+                            targetItems,
+                            1
+                    ));
 
-            //构建虚拟请求列表任务。
-            ItemStack dispatchedRequest = RequestItemUtil.makeVirtualItemStack(
-                    targetItems,
-                    null,
-                    maid,
-                    "DISPATCHED"
-            );
-            CompoundTag data = new CompoundTag();
-            data.putUUID("master", maid.getUUID());
-            data.putInt("index", node.index());
-            RequestListItem.setVirtualData(dispatchedRequest, data);
+                    //构建虚拟请求列表任务。
+                    ItemStack dispatchedRequest = RequestItemUtil.makeVirtualItemStack(
+                            targetItems,
+                            null,
+                            maid,
+                            "DISPATCHED"
+                    );
+                    CompoundTag data = new CompoundTag();
+                    data.putUUID("master", maid.getUUID());
+                    data.putInt("index", node.index());
+                    RequestListItem.setVirtualData(dispatchedRequest, data);
 
-            //构建记忆，直接开始合成，跳过寻找阶段
-            MemoryUtil.getCrafting(toMaid).setGatheringDispatched(true);
-            MemoryUtil.getCrafting(toMaid).setPlan(newPlan);
-            MemoryUtil.getRequestProgress(toMaid).newWork(RequestListItem.getUUID(dispatchedRequest));
-            MemoryUtil.getRequestProgress(toMaid).setTryCrafting(true);
-            toMaid.setItemInHand(InteractionHand.MAIN_HAND, dispatchedRequest);
+                    //构建记忆，直接开始合成，跳过寻找阶段
+                    MemoryUtil.getCrafting(toMaid).setGatheringDispatched(true);
+                    MemoryUtil.getCrafting(toMaid).setPlan(newPlan);
+                    MemoryUtil.getRequestProgress(toMaid).newWork(RequestListItem.getUUID(dispatchedRequest));
+                    MemoryUtil.getRequestProgress(toMaid).setTryCrafting(true);
+                    toMaid.setItemInHand(InteractionHand.MAIN_HAND, dispatchedRequest);
 
-            //执行分发，标记为已分发的任务。
-            plan.doDispatchLayer(node, toMaid.getUUID(), RequestListItem.getUUID(dispatchedRequest));
+                    //执行分发，标记为已分发的任务。
+                    plan.doDispatchLayer(node, toMaid.getUUID(), RequestListItem.getUUID(dispatchedRequest));
 
-            MemoryUtil.getViewedInventory(toMaid).receiveFrom(MemoryUtil.getViewedInventory(maid));
-            MemoryUtil.clearTarget(toMaid);
-            MemoryUtil.getCrafting(toMaid).clearTarget();
-            MemoryUtil.getCrafting(toMaid).clearIgnoreTargets();
-            MemoryUtil.getCrafting(toMaid).addIgnoreTargets(crafting.getIgnoreTargets());
-            MemoryUtil.getCrafting(toMaid).resetAndMarkVis((ServerLevel) maid.level(), toMaid);
-            newPlan.setStatusMessage(toMaid, Component.translatable(ChatTexts.CHAT_CRAFT_DISPATCHED));
-        });
+                    MemoryUtil.getViewedInventory(toMaid).receiveFrom(MemoryUtil.getViewedInventory(maid));
+                    MemoryUtil.clearTarget(toMaid);
+                    MemoryUtil.getCrafting(toMaid).clearTarget();
+                    MemoryUtil.getCrafting(toMaid).clearIgnoreTargets();
+                    MemoryUtil.getCrafting(toMaid).addIgnoreTargets(crafting.getIgnoreTargets());
+                    MemoryUtil.getCrafting(toMaid).resetAndMarkVis((ServerLevel) maid.level(), toMaid);
+                    newPlan.setStatusMessage(toMaid, Component.translatable(ChatTexts.CHAT_CRAFT_DISPATCHED));
+                });
     }
 
 
@@ -196,20 +199,22 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return new AABB(maid.blockPosition()).inflate(7);
     }
 
-    public static void syncStorageOn(EntityMaid maid, Target target) {
+    public static void syncStorageOn(EntityMaid maid, Target ambitiousTarget) {
+        Target target = MemoryUtil.getViewedInventory(maid).ambitiousPos((ServerLevel) maid.level(), ambitiousTarget);
         Map<String, List<ViewedInventoryMemory.ItemCount>> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAtInternal(target);
         ServerLevel level = (ServerLevel) maid.level();
         getNearbyMaidsSameGroup(maid, false, true)
                 .forEach(toMaid -> {
-                    if (StorageAccessUtil.isValidTarget(level, toMaid, target, false)) {
-                        ViewedInventoryMemory toMem = MemoryUtil.getViewedInventory(toMaid);
-                        toMem.resetViewedInvForPos(target);
-                        StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
-                            toMem.resetViewedInvForPos(target.sameType(pos, null));
-                        });
-                        toMem.setItemsAtInternal(target, itemsAt);
-                        toMem.addVisitedPos(target);
-                    }
+                    if (!StorageAccessUtil.isValidTarget(level, toMaid, target, false)) return;
+                    ViewedInventoryMemory toMem = MemoryUtil.getViewedInventory(toMaid);
+                    if (toMem.isLockedAmbitious(level, target)) return;
+
+                    toMem.resetViewedInvForPos(target);
+                    StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
+                        toMem.resetViewedInvForPosAsRemoved(target.sameType(pos, null));
+                    });
+                    toMem.setItemsAtInternal(target, itemsAt);
+                    toMem.addVisitedPos(target);
                 });
     }
 }

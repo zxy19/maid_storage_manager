@@ -68,7 +68,7 @@ public class Target {
         return null;
     }
 
-    public static Target virtual(BlockPos clickedPos,@Nullable Direction clickedFace) {
+    public static Target virtual(BlockPos clickedPos, @Nullable Direction clickedFace) {
         return new Target(
                 VIRTUAL_TYPE,
                 clickedPos,
@@ -128,6 +128,11 @@ public class Target {
                     storage.side == this.side;
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.type.hashCode() * 19 + this.pos.hashCode() * 13 + (this.side == null ? 0 : this.side.hashCode()) * 7;
     }
 
     public Target withoutSide() {

@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -56,6 +57,8 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public Map<String, Map<String, List<ItemCount>>> viewedInventory;
     private LinkedList<Target> markChanged;
     public int coolingDown;
+    public Set<Target> lockForChange = new HashSet<>();
+    public boolean viewing;
 
     public ViewedInventoryMemory(TargetData targetData,
                                  Map<String, Map<String, List<ItemCount>>> viewedInventory,
@@ -297,5 +300,40 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             }
             viewedInventory.put(pos, data);
         }
+    }
+
+    public void lockAmbitiousPos(ServerLevel level, Target storage) {
+        lockForChange.clear();
+        lockForChange.add(storage);
+        StorageAccessUtil.checkNearByContainers(level, storage.getPos(), pos -> {
+            Target m = storage.sameType(pos, null);
+            lockForChange.add(m);
+        });
+    }
+
+    public void clearLock() {
+        lockForChange.clear();
+    }
+
+    public boolean isLocked(Target target) {
+        return lockForChange.contains(target);
+    }
+
+    public boolean isLockedAmbitious(ServerLevel level, Target target) {
+        if (isLocked(target)) return true;
+        MutableBoolean result = new MutableBoolean(false);
+        StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
+            Target m = target.sameType(pos, null);
+            if (isLocked(m))
+                result.setTrue();
+        });
+        return result.booleanValue();
+    }
+
+    public boolean isViewing(){
+        return viewing;
+    }
+    public void setViewing(boolean viewing){
+        this.viewing = viewing;
     }
 }

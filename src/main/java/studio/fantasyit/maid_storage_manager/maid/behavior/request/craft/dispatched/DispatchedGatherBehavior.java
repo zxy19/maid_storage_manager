@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -91,10 +92,10 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
+        if (thrown != null) return true;
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
         if (!MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
-        if (thrown != null) return true;
         return target != null && list != null && index < list.size();
     }
 
@@ -111,13 +112,17 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
                 Vec3 targetDir = MathUtil.getFromToWithFriction(target, maid.getPosition(0));
                 thrown = InvUtil.throwItemVirtual(maid, gotItem, targetDir);
                 list.get(index).shrink(gotItem.getCount());
-                if (list.get(index).isEmpty())
+                if (list.get(index).isEmpty()) {
                     index++;
+                }
             } else {
                 index++;
             }
+            DebugData.invChange(DebugData.InvChange.OUT, target, gotItem);
         } else {
+            DebugData.invChange(DebugData.InvChange.IN, maid, thrown.getItem());
             InvUtil.pickUpVirtual(maid, thrown);
+            DebugData.invChange(DebugData.InvChange.CURRENT, maid, ItemStack.EMPTY);
             if (!thrown.isAlive())
                 thrown = null;
         }

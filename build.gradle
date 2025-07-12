@@ -87,6 +87,8 @@ minecraft {
             // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
             property 'forge.logging.console.level', 'debug'
 
+            jvmArg "-XX:+AllowEnhancedClassRedefinition"
+
             mods {
                 "${mod_id}" {
                     source sourceSets.main
@@ -242,7 +244,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6266807")
     runtimeOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
     runtimeOnly fg.deobf("curse.maven:create-328085:6323270")
-    runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
+//    runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
     runtimeOnly fg.deobf("curse.maven:botania-225643:5594997")
     runtimeOnly fg.deobf("curse.maven:curios-309927:6058834")
     runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")

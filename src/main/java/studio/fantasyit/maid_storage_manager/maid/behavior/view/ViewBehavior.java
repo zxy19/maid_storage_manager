@@ -49,8 +49,6 @@ public class ViewBehavior extends MaidCheckRateTask {
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         //无论如何，女仆都必须完成View才能响应其他工作。否则会产生不完整记忆。
-//        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW) return false;
-//        if (!Conditions.isNothingToPlace(maid)) return false;
         return context != null && !context.isDone();
     }
 
@@ -63,6 +61,8 @@ public class ViewBehavior extends MaidCheckRateTask {
         StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
             MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
+        MemoryUtil.getViewedInventory(maid).lockAmbitiousPos(level, target);
+        MemoryUtil.getViewedInventory(maid).setViewing(true);
         context = MaidStorage
                 .getInstance()
                 .getStorage(target.type)
@@ -107,8 +107,11 @@ public class ViewBehavior extends MaidCheckRateTask {
             MemoryUtil.getViewedInventory(maid).clearTarget();
             context.finish();
         }
-        if(target != null)
+        MemoryUtil.getViewedInventory(maid).setViewing(false);
+        if (target != null) {
             WorkCardItem.syncStorageOn(maid, target);
+            MemoryUtil.getViewedInventory(maid).clearLock();
+        }
         MemoryUtil.clearTarget(maid);
         LinkedList<Target> markChanged = MemoryUtil.getViewedInventory(maid).getMarkChanged();
         if (!markChanged.isEmpty() && markChanged.peek().equals(target)) {

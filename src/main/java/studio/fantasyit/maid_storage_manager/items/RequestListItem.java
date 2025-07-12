@@ -116,6 +116,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tmp.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
             list.set(i, tmp);
         }
+        tag.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
         tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
         tag.put(RequestListItem.TAG_ITEMS, list);

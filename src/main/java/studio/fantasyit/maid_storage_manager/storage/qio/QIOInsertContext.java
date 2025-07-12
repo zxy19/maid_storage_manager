@@ -6,6 +6,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableCont
 public class QIOInsertContext extends QIOBaseContext implements IStorageInsertableContext {
     @Override
     public ItemStack insert(ItemStack item) {
+        if (frequency == null) return item;
         return frequency.addItem(item);
     }
 }

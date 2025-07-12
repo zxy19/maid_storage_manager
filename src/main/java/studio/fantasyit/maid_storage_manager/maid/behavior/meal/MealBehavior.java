@@ -74,7 +74,7 @@ public class MealBehavior extends MaidWorkMealTask {
                 if (maxStore > 0) {
                     hasTaken.setTrue();
                     ItemStack copy = itemStack.copyWithCount(1);
-                    MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, 1);
+                    ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, level, target, itemStack, 1);
                     WorkCardItem.syncStorageOn(maid, target);
                     InvUtil.tryPlace(maidInv, copy);
                     //放完了直接开吃。

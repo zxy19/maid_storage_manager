@@ -9,7 +9,6 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -17,10 +16,7 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
-import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.List;
 import java.util.Map;
@@ -88,12 +84,12 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                             tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
                             item.setTag(tag);
                             ItemStack insert = isic.insert(item);
-                            MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
+                            ViewedInventoryUtil.ambitiousAddItemAndSync(maid, p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
                             inv.setStackInSlot(count, insert);
                         }
                     } else {
                         ItemStack insert = isic.insert(item);
-                        MemoryUtil.getViewedInventory(maid).ambitiousAddItem(p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
+                        ViewedInventoryUtil.ambitiousAddItemAndSync(maid, p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
                         inv.setStackInSlot(count, insert);
                     }
                 }
@@ -122,8 +118,6 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
         }
-        if(target != null)
-            WorkCardItem.syncStorageOn(maid, target);
         if (!changed) {
             if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
                 MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);

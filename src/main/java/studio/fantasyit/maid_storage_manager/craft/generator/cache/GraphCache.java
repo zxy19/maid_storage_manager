@@ -1,8 +1,10 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.cache;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
@@ -33,9 +35,16 @@ public class GraphCache {
         } else if (!cacheRecord.restrictCenter.equals(maid.getRestrictCenter())) {
             return null;
         }
+        MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), (ServerLevel) level, maid);
         for (IAutoCraftGuideGenerator iAutoCraftGuideGenerator : iAutoCraftGuideGenerators) {
             if (cacheRecord.targets.containsKey(iAutoCraftGuideGenerator.getType()) && iAutoCraftGuideGenerator.canCacheGraph()) {
-                if (!cacheRecord.targets.get(iAutoCraftGuideGenerator.getType()).stream().allMatch(blockPos -> iAutoCraftGuideGenerator.isBlockValid(level, blockPos))) {
+                if (!cacheRecord.targets.get(iAutoCraftGuideGenerator.getType())
+                        .stream()
+                        .allMatch(blockPos ->
+                                iAutoCraftGuideGenerator.isBlockValid(level, blockPos) &&
+                                        iAutoCraftGuideGenerator.positionalAvailable((ServerLevel) level, maid, blockPos, pathFinding)
+                        )
+                ) {
                     return null;
                 }
             }
@@ -58,7 +67,8 @@ public class GraphCache {
     public static void put(UUID maid, CacheRecord record) {
         CACHE.put(maid, record);
     }
-    public static void invalidateAll(){
+
+    public static void invalidateAll() {
         CACHE.clear();
     }
 }

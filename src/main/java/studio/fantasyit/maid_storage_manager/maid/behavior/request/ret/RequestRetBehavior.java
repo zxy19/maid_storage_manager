@@ -10,6 +10,7 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -90,7 +91,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     private void tickTargetEntity(EntityMaid maid) {
         if (thrown != null) {
             if (targetEntity instanceof EntityMaid targetMaid) {
+                DebugData.invChange(DebugData.InvChange.IN, targetMaid, thrown.getItem());
                 InvUtil.pickUpVirtual(targetMaid, thrown);
+                DebugData.invChange(DebugData.InvChange.CURRENT, targetMaid, ItemStack.EMPTY);
                 if (!thrown.isAlive())
                     thrown = null;
             } else
@@ -106,9 +109,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             toThrowStack.shrink(restCount);
             if (!toThrowStack.isEmpty()) {
                 item.setCount(restCount);
-                if (targetEntity instanceof EntityMaid)
+                if (targetEntity instanceof EntityMaid) {
                     thrown = InvUtil.throwItemVirtual(maid, toThrowStack, targetDir);
-                else
+                    DebugData.invChange(DebugData.InvChange.OUT, maid, toThrowStack);
+                } else
                     InvUtil.throwItem(maid, toThrowStack, targetDir, true);
                 inv.setStackInSlot(currentSlot - 1, item);
                 break;
