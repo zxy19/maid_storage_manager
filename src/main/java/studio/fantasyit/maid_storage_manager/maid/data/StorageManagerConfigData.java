@@ -14,6 +14,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         private SuppressStrategy suppressStrategy = SuppressStrategy.AFTER_ALL;
         private boolean allowSeekWorkMeal = false;
         private int maxParallel;
+        private boolean alwaysSingleCrafting;
 
         public Data(MemoryAssistant memoryAssistant,
                     boolean noSortPlacement,
@@ -21,7 +22,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     SuppressStrategy suppressStrategy,
                     boolean allowSeekWorkMeal,
                     boolean useMemorizedCraftGuide,
-                    int maxParallel
+                    int maxParallel,
+                    boolean alwaysSingleCrafting
         ) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
@@ -30,6 +32,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             this.allowSeekWorkMeal = allowSeekWorkMeal;
             this.useMemorizedCraftGuide = useMemorizedCraftGuide;
             this.maxParallel = maxParallel;
+            this.alwaysSingleCrafting = alwaysSingleCrafting;
         }
 
         public static Data getDefault() {
@@ -39,7 +42,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     SuppressStrategy.AFTER_EACH,
                     false,
                     false,
-                    5
+                    5,
+                    false
             );
         }
 
@@ -96,7 +100,15 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         }
 
         public void maxParallel(int maxParallel) {
-            this.maxParallel = Math.max(1, Math.min(10, maxParallel));
+            this.maxParallel = Math.max(0, Math.min(10, maxParallel));
+        }
+
+        public boolean alwaysSingleCrafting() {
+            return alwaysSingleCrafting;
+        }
+
+        public void alwaysSingleCrafting(boolean alwaysSingleCrafting) {
+            this.alwaysSingleCrafting = alwaysSingleCrafting;
         }
     }
 
@@ -118,6 +130,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         tag.putBoolean("allowSeekWorkMeal", data.allowSeekWorkMeal());
         tag.putBoolean("useMemorizedCraftGuide", data.useMemorizedCraftGuide());
         tag.putInt("maxParallel", data.maxParallel());
+        tag.putBoolean("alwaysSingleCrafting", data.alwaysSingleCrafting());
         return tag;
     }
 
@@ -134,7 +147,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         int maxParallel = compound.contains("maxParallel")
                 ? compound.getInt("maxParallel")
                 : 5;
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel);
+        boolean alwaysSingleCrafting = compound.getBoolean("alwaysSingleCrafting");
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, alwaysSingleCrafting);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {

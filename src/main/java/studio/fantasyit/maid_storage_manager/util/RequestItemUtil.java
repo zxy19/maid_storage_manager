@@ -60,6 +60,8 @@ public class RequestItemUtil {
 
             } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("DISPATCHED")) {
                 dispatchedTaskDone(maid, reqList);
+            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("DISPATCH_FIND")) {
+                dispatchFindTaskDone(maid, reqList);
             }
             //虚拟的，不用额外处理
         }
@@ -185,6 +187,34 @@ public class RequestItemUtil {
                         .map(t -> t.getA().copyWithCount(t.getB()))
                         .toList()
         );
+        targetPlan.showCraftingProgress(toMaid);
+    }
+
+    private static void dispatchFindTaskDone(EntityMaid maid, ItemStack reqList) {
+        CompoundTag data = RequestListItem.getVirtualData(reqList);
+        if (data == null) return;
+        UUID masterUUID = data.getUUID("master");
+        Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
+        ItemStack toItem = reqList.copy();
+        RequestListItem.clearItemProcess(toItem);
+
+        CompoundTag tag = toItem.getOrCreateTag();
+        //生成一个非虚拟请求列表
+        tag.remove(RequestListItem.TAG_VIRTUAL);
+        tag.remove(RequestListItem.TAG_VIRTUAL_SOURCE);
+        toItem.setTag(tag);
+
+        if (targetEntity instanceof EntityMaid toMaid) {
+            ItemStack restItem = InvUtil.tryPlace(toMaid.getAvailableInv(true), toItem);
+            if (restItem.isEmpty()) {
+                MemoryUtil.getRequestProgress(toMaid).newWork(RequestListItem.getUUID(toItem));
+                MemoryUtil.getRequestProgress(toMaid).setTryCrafting(true);
+            }
+            toItem = restItem;
+        }
+        if (!toItem.isEmpty()) {
+            InvUtil.throwItem(maid, toItem);
+        }
     }
 
     /**
@@ -221,6 +251,17 @@ public class RequestItemUtil {
             tag.putUUID(RequestListItem.TAG_STORAGE_ENTITY, targetEntity.getUUID());
         }
         tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
+        itemStack.setTag(tag);
+        return itemStack;
+    }
+
+    public static ItemStack makeVirtualItemStack(ItemStack source, String virtual_source) {
+        CompoundTag tag = source.getTag().copy();
+
+        tag.putBoolean(RequestListItem.TAG_VIRTUAL, true);
+        tag.putString(RequestListItem.TAG_VIRTUAL_SOURCE, virtual_source);
+
+        ItemStack itemStack = ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
         itemStack.setTag(tag);
         return itemStack;
     }

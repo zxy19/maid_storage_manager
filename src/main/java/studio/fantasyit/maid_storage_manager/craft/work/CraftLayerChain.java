@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -114,6 +115,7 @@ public class CraftLayerChain {
      */
     private int currentParallel;
     private Component statusMessage = Component.empty();
+
 
     protected enum StoppingAdding {
         NONE(false),
@@ -266,6 +268,7 @@ public class CraftLayerChain {
                     outputConsume.getValue(),
                     new ArrayList<>(),
                     new MutableInt(0),
+                    new MutableInt(0),
                     new MutableObject<>(SolvedCraftLayer.Progress.WAITING)
             ));
         }
@@ -347,9 +350,10 @@ public class CraftLayerChain {
 
     // region 分发层相关的方法
     public @Nullable Pair<CraftLayer, SolvedCraftLayer> getAndDispatchLayer(EntityMaid toMaid) {
-        if (workingQueue.size() == 1) return null;
+        if (workingQueue.size() == 1 && maxParallel != 0) return null;
         int targetFreeSlot = InvUtil.freeSlots(toMaid.getAvailableInv(false));
-        int currentIndex = hasCurrent() ? getCurrentNode().index() : -1;
+        int currentIndex = (hasCurrent() && maxParallel != 0) ? getCurrentNode().index() : -1;
+        int resultIndex = -1;
         for (int i = 0; i < layers.size(); i++) {
             SolvedCraftLayer node = nodes.get(i);
             if (node.group() != group)
@@ -367,10 +371,14 @@ public class CraftLayerChain {
             if (node.progress().getValue() == SolvedCraftLayer.Progress.IDLE) {
                 if (layer.steps.stream().anyMatch(t -> !toMaid.isWithinRestriction(t.storage.pos)))
                     continue;
-                return new Pair<>(layer, node);
+                if (resultIndex == -1 || nodes.get(resultIndex).lastTouch().getValue() < node.lastTouch().getValue())
+                    resultIndex = i;
             }
         }
-        return null;
+
+        if (resultIndex == -1)
+            return null;
+        return new Pair<>(layers.get(resultIndex), nodes.get(resultIndex));
     }
 
     public void doDispatchLayer(SolvedCraftLayer node, UUID maidUUID, UUID uuid) {
@@ -393,6 +401,26 @@ public class CraftLayerChain {
             }
         }
         return toTakes;
+    }
+
+    /**
+     * 检查是否有等待确认分发的女仆到达身边。有，则准备释放当前任务。
+     *
+     * @param maid
+     * @return
+     */
+    public boolean hasDispatchedWaitingCheck(EntityMaid maid) {
+        List<EntityMaid> entities = maid.level()
+                .getEntities(
+                        EntityTypeTest.forClass(EntityMaid.class),
+                        maid.getBoundingBox().inflate(3),
+                        toMaid -> {
+                            if (!dispatchedTaskMapping.containsKey(toMaid.getUUID()))
+                                return false;
+                            return MemoryUtil.getCrafting(toMaid).isGatheringDispatched();
+                        }
+                );
+        return !entities.isEmpty();
     }
 
     /**
@@ -557,6 +585,10 @@ public class CraftLayerChain {
     }
 
     // region 流程控制
+
+    public int getMaxParallel() {
+        return maxParallel;
+    }
 
     /**
      * 清理，并标记为停止添加新的任务。一般表示当前工作失败，仅用于执行清理工作
@@ -848,6 +880,7 @@ public class CraftLayerChain {
         node.nextIndex().forEach(index -> {
             SolvedCraftLayer nextNode = nodes.get(index);
             nextNode.inDegree().decrement();
+            nextNode.lastTouch().setValue(Math.max(node.lastTouch().getValue() + 1, nextNode.lastTouch().getValue()));
 
             if (nextNode.inDegree().getValue() == 0 && !isStoppingAdding.value) {
                 workingQueue.add(nextNode);
@@ -885,7 +918,9 @@ public class CraftLayerChain {
         if (node.slotConsume() > freeSlots)
             return false;
         if (currentParallel >= maxParallel)
-            return false;
+            //最终层，允许启动
+            if (maxParallel != 0 || layer.getCraftData().isPresent())
+                return false;
         currentParallel++;
         freeSlots -= node.slotConsume();
         node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);

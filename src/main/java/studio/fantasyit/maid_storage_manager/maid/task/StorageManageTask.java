@@ -35,6 +35,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.meal.MealBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.meal.MealMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.place.PlaceMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.place.ThrowToPlaceBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.FindListItemBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.InteractAfterDone;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.CraftExitBehavior;
@@ -43,6 +44,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.dispatc
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.dispatched.DispatchedGatherMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.ret.ReturnOnVehicleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.find.RequestFindBehavior;
@@ -147,6 +149,31 @@ public class StorageManageTask implements IMaidTask {
         //吃吃吃
         list.add(Pair.of(5, new MealBehavior()));
         list.add(Pair.of(5, new MealMoveBehavior()));
+        return list;
+    }
+
+    @Override
+    public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createRideBrainTasks(EntityMaid maid) {
+        ArrayList<Pair<Integer, BehaviorControl<? super EntityMaid>>> list = new ArrayList<>();
+        //找到列表的任务
+        list.add(Pair.of(10, new FindListItemBehavior()));
+        //寻找/存放
+        list.add(Pair.of(10, new RequestFindBehavior()));
+        list.add(Pair.of(10, new RequestFindMoveBehavior()));
+        list.add(Pair.of(10, new RequestRetMoveBehavior()));
+        list.add(Pair.of(10, new RequestRetBehavior()));
+        list.add(Pair.of(10, new StockCheckMoveBehavior()));
+        list.add(Pair.of(10, new StockCheckBehavior()));
+        //合成
+        list.add(Pair.of(5, new CraftExitBehavior()));
+        list.add(Pair.of(5, new CraftInitBehavior()));
+        //用于处理最后一层的结果
+        list.add(Pair.of(9, new ReturnOnVehicleBehavior()));
+
+        list.add(Pair.of(5, new ThrowToPlaceBehavior()));
+        list.add(Pair.of(5, new WriteInventoryListBehavior()));
+        //工作冷却
+        list.add(Pair.of(10, new ScheduleBehavior()));
         return list;
     }
 

@@ -44,7 +44,7 @@ public class CreateIntegration {
         try {
             Method getSortedTypesView = FanProcessingTypeRegistry.class.getMethod("getSortedTypesView", (Class<?>[]) null);
             if (getSortedTypesView != null) {
-                return (List<FanProcessingType>) getSortedTypesView.invoke(null, (Object) null);
+                return (List<FanProcessingType>) getSortedTypesView.invoke(null, (Object[]) null);
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             return List.of();

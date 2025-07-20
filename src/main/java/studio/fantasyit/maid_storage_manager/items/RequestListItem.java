@@ -126,6 +126,23 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         target.setTag(tag);
     }
 
+    public static void clearAllNonSuccess(ItemStack target) {
+        if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        CompoundTag tag = target.getOrCreateTag();
+        ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag oDat = list.getCompound(i);
+            oDat.putBoolean(RequestListItem.TAG_ITEMS_DONE,
+                    oDat.getInt(RequestListItem.TAG_ITEMS_COLLECTED) >= oDat.getInt(RequestListItem.TAG_ITEMS_REQUESTED) || oDat.getInt(RequestListItem.TAG_ITEMS_REQUESTED) == -1
+            );
+            list.set(i, oDat);
+        }
+        tag.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
+        tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
+        tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
+        tag.put(RequestListItem.TAG_ITEMS, list);
+        target.setTag(tag);
+    }
     public static boolean matchNbt(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!mainHandItem.hasTag()) return false;
@@ -538,7 +555,8 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 ListTag missingList = tmp.getList(TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND);
                 for (ItemStack ti : missing) {
                     if (ti.isEmpty()) continue;
-                    if (ti.is(ItemRegistry.REQUEST_LIST_ITEM.get())) continue;//FIXME: 此处不应该出现这个内容，但是出现会导致NBT爆炸的恶性bug，暂时屏蔽。等待解决
+                    if (ti.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+                        continue;//FIXME: 此处不应该出现这个内容，但是出现会导致NBT爆炸的恶性bug，暂时屏蔽。等待解决
                     int idx = -1;
                     for (int j = 0; j < missingList.size(); j++) {
                         if (ItemStack.isSameItemSameTags(ItemStack.of(missingList.getCompound(j)), ti)) idx = j;

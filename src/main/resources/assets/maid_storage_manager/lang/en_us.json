@@ -27,6 +27,8 @@
   "advancements.maid_storage_manager.storage_manager.title": "Keeper of the Chest Sea",
   "advancements.maid_storage_manager.view.desc": "Maid viewed a Chest",
   "advancements.maid_storage_manager.view.title": "Here’s a Chest",
+  "advancements.maid_storage_manager.work_card.title": "Work Card & Teamwork",
+  "advancements.maid_storage_manager.work_card.desc": "Crafting a work card",
   "chat_bubbles.maid_storage_manager.check_mark_changed": "Master’s order! Scanning box nyaa~",
   "chat_bubbles.maid_storage_manager.chest_full": "Storage full boom! Clean now~",
   "chat_bubbles.maid_storage_manager.cowork_disable": "Master departure detected…",
@@ -47,6 +49,7 @@
   "chat_bubbles.maid_storage_manager.moving": "Wiggle-waggle! %s is on the move!",
   "chat_bubbles.maid_storage_manager.moving_taken": "Boop! %s * %s gets a lift!",
   "chat_bubbles.maid_storage_manager.request_fail": "Rummaged everywhere… still missing a few.",
+  "chat_bubbles.maid_storage_manager.request_dispatch_find": "Handed off to %s…",
   "chat_bubbles.maid_storage_manager.request_finish": "Mission complete! Praise me!",
   "chat_bubbles.maid_storage_manager.request_start": "Search mode activated! Beep beep——",
   "chat_bubbles.maid_storage_manager.resort": "Wrong spot! Naughty master~",
@@ -230,6 +233,7 @@
   "gui.maid_storage_manager.config.memory_assistant.memory_first": "Memory First",
   "gui.maid_storage_manager.config.memory_assistant.memory_only": "Memory Only",
   "gui.maid_storage_manager.config.no_sort_placement": "No Sorting When Place Item",
+  "gui.maid_storage_manager.config.single_crafting": "Always Single Crafting",
   "gui.maid_storage_manager.craft_guide.anvil_xp_cost": "Cost %d",
   "gui.maid_storage_manager.craft_guide.common.down": "Down",
   "gui.maid_storage_manager.craft_guide.common.idle_second": "Idle time: Seconds",
@@ -393,5 +397,6 @@
   "tooltip.maid_storage_manager.request_list.time.str": "%s (%s:%s)",
   "tooltip.maid_storage_manager.request_list.virtual": "「Maid's duty, no meddling (｡•̀ᴗ-)✧」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
-  "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view."
+  "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
+  "config.jade.plugin_maid_storage_manager.virtual_frame": "Virtual Frame"
 }

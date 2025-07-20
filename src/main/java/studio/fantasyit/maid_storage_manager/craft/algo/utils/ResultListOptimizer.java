@@ -97,4 +97,28 @@ public class ResultListOptimizer {
             result.add(tmp);
         return result;
     }
+
+    public static List<CraftLayer> splitIntoSingleStep(List<CraftLayer> layers) {
+        List<CraftLayer> result = new ArrayList<>();
+
+        for (CraftLayer layer : layers) {
+            if (layer.getCraftData().isEmpty())
+                result.add(layer);
+            else {
+                int oCount = layer.getCount();
+                for (int i = 0; i < oCount; i++) {
+                    CraftLayer newLayer = layer.copyWithNoState();
+                    newLayer.setCount(1);
+                    newLayer.setItems(
+                            newLayer.getItems()
+                                    .stream()
+                                    .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() / oCount))
+                                    .toList()
+                    );
+                    result.add(newLayer);
+                }
+            }
+        }
+        return result;
+    }
 }

@@ -26,7 +26,7 @@ public class VirtualItemEntity extends Entity {
     public VirtualItemEntity(EntityType<VirtualItemEntity> entityEntityType, Level level) {
         super(entityEntityType, level);
         this.bobOffs = this.random.nextFloat() * (float) Math.PI * 2.0F;
-        this.ttl = 200;
+        this.ttl = 400;
     }
 
     public static VirtualItemEntity create(Level level, Vec3 pos, ItemStack itemStack) {
@@ -118,12 +118,13 @@ public class VirtualItemEntity extends Entity {
                 }
             }
 
-            this.ttl--;
-            if (this.ttl <= 0 && !this.level().isClientSide && this.isAlive()) {
-                this.level().addFreshEntity(
-                        new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), this.getItem())
-                );
-                this.discard();
+            if (!this.level().isClientSide) {
+                if (--this.ttl <= 0 && this.isAlive()) {
+                    this.level().addFreshEntity(
+                            new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), this.getItem())
+                    );
+                    this.discard();
+                }
             }
         }
     }

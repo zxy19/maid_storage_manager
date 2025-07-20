@@ -94,7 +94,9 @@ public class CraftLayer {
     public List<ItemStack> getItems() {
         return items;
     }
-
+    public void setItems(List<ItemStack> items) {
+        this.items = items;
+    }
     public List<Integer> getCollectedCounts() {
         return collectedCounts;
     }
@@ -259,4 +261,5 @@ public class CraftLayer {
                 this.count
         );
     }
+
 }

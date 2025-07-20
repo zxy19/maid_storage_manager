@@ -27,6 +27,8 @@
   "advancements.maid_storage_manager.storage_manager.title": "箱子海里的管理员",
   "advancements.maid_storage_manager.view.desc": "女仆查看了一个箱子的内容",
   "advancements.maid_storage_manager.view.title": "这里有个箱子",
+  "advancements.maid_storage_manager.work_card.title": "挂牌协作",
+  "advancements.maid_storage_manager.work_card.desc": "合成工牌",
   "chat_bubbles.maid_storage_manager.check_mark_changed": "遵命！立刻扫描箱子喵～",
   "chat_bubbles.maid_storage_manager.chest_full": "箱子要爆炸啦～快清理！",
   "chat_bubbles.maid_storage_manager.cowork_disable": "主人离开确认——",
@@ -47,6 +49,7 @@
   "chat_bubbles.maid_storage_manager.moving": "哼哧哼哧～%s被搬运中！",
   "chat_bubbles.maid_storage_manager.moving_taken": "噗哟～%s*%s被抓起！",
   "chat_bubbles.maid_storage_manager.request_fail": "仓库翻遍，还差几样…",
+  "chat_bubbles.maid_storage_manager.request_dispatch_find": "转交%s处理中…",
   "chat_bubbles.maid_storage_manager.request_finish": "任务达成！夸我夸我！",
   "chat_bubbles.maid_storage_manager.request_start": "启动搜索模式！滴滴——",
   "chat_bubbles.maid_storage_manager.resort": "错位警告！主人不乖哦～",
@@ -230,6 +233,7 @@
   "gui.maid_storage_manager.config.memory_assistant.memory_first": "先使用记忆",
   "gui.maid_storage_manager.config.memory_assistant.memory_only": "只使用记忆",
   "gui.maid_storage_manager.config.no_sort_placement": "放置物品时不分类",
+  "gui.maid_storage_manager.config.single_crafting": "总是单次合成",
   "gui.maid_storage_manager.craft_guide.anvil_xp_cost": "需要花费 %d",
   "gui.maid_storage_manager.craft_guide.common.down": "向下",
   "gui.maid_storage_manager.craft_guide.common.idle_second": "等待时间：秒",
@@ -393,5 +397,6 @@
   "tooltip.maid_storage_manager.request_list.time.str": "%s日 (%s:%s)",
   "tooltip.maid_storage_manager.request_list.virtual": "「女仆事务，请勿插手 (´• ω •`)ﾉ」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s 个存储位置",
-  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本"
+  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本",
+  "config.jade.plugin_maid_storage_manager.virtual_frame": "虚拟展示框"
 }

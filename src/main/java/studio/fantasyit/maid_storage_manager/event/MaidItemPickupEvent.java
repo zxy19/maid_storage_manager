@@ -42,10 +42,10 @@ public class MaidItemPickupEvent {
         }
         if (event.isCanceled())
             return;
-        if(!maid.level().isClientSide) {
+        if (!maid.level().isClientSide) {
             CraftBlockOccupyDataProvider.CraftBlockOccupy occupation = CraftBlockOccupyDataProvider.get(maid.level());
             if (BlockPos.betweenClosedStream(
-                    entityItem.getBoundingBox().inflate(2.8)
+                    entityItem.getBoundingBox().inflate(3.5)
             ).anyMatch(occupation::isOccupiedByAny)) {
                 event.setCanceled(true);
                 return;

@@ -22,6 +22,7 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -250,9 +251,13 @@ public class MaidCraftPlanner {
             }
             RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
         } else {
-            ResultListOptimizer.optimize(results).forEach(craftLayer -> {
-                plan.addLayer(craftLayer);
-            });
+            List<CraftLayer> optimize;
+            if (StorageManagerConfigData.get(maid).alwaysSingleCrafting()) {
+                optimize = ResultListOptimizer.splitIntoSingleStep(results);
+            } else {
+                optimize = ResultListOptimizer.optimize(results);
+            }
+            optimize.forEach(craftLayer -> plan.addLayer(craftLayer));
 
             DebugData.sendDebug(
                     "[REQUEST_CRAFT] %s tree with %d layers",

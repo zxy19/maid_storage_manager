@@ -236,6 +236,7 @@ dependencies {
     compileOnly fg.deobf("curse.maven:botania-225643:5594997")
     compileOnly fg.deobf("curse.maven:ars-nouveau-401955:6688854")
     compileOnly fg.deobf("curse.maven:geckolib-388172:6658942")
+    compileOnly fg.deobf("curse.maven:jade-324717:6271651")
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
@@ -259,6 +260,7 @@ dependencies {
     runtimeOnly fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
     runtimeOnly fg.deobf("curse.maven:probejs-585406:5227399")
     runtimeOnly fg.deobf("curse.maven:ars-nouveau-401955:6688854")
+    runtimeOnly fg.deobf("curse.maven:jade-324717:6271651")
 //    runtimeOnly fg.deobf("curse.maven:toms-storage-378609:6418133")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:libIPN-forge-1.20:4.0.2")

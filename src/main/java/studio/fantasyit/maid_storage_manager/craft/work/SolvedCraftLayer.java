@@ -10,6 +10,7 @@ import java.util.List;
 
 public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutput, List<Integer> nextIndex,
                                MutableInt inDegree,
+                               MutableInt lastTouch,
                                MutableObject<Progress> progress) {
     public static Codec<SolvedCraftLayer> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -27,7 +28,9 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
                     Codec.INT.fieldOf("inDegree")
                             .forGetter(t -> t.inDegree.getValue()),
                     Codec.STRING.fieldOf("progress")
-                            .forGetter(t -> t.progress.getValue().name())
+                            .forGetter(t -> t.progress.getValue().name()),
+                    Codec.INT.fieldOf("lastTouch").orElse(0)
+                            .forGetter(t -> t.lastTouch.getValue())
             ).apply(instance, SolvedCraftLayer::new)
     );
 
@@ -45,7 +48,7 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
         DISPATCHED
     }
 
-    public SolvedCraftLayer(int index, int group, int si, int so, List<Integer> nextIndex, int inDegree, String progress) {
-        this(index, group, si, so, new ArrayList<>(nextIndex), new MutableInt(inDegree), new MutableObject<>(Progress.valueOf(progress)));
+    public SolvedCraftLayer(int index, int group, int si, int so, List<Integer> nextIndex, int inDegree, String progress, int lastTouch) {
+        this(index, group, si, so, new ArrayList<>(nextIndex), new MutableInt(inDegree), new MutableInt(lastTouch), new MutableObject<>(Progress.valueOf(progress)));
     }
 }

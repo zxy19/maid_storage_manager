@@ -45,6 +45,8 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
         @Nullable Entity entity = level.getEntity(entityUU);
         if (entity == null)
             return false;
+        if (!(entity instanceof EntityMaid targetMaid) || MemoryUtil.isWorking(targetMaid))
+            return false;
 
         if (entity.distanceTo(maid) < 3) return true;
 
@@ -84,6 +86,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
                     list = targetPlan.getDispatchedRemainItem(outLayer);
                     target = maid1;
                     target.getNavigation().stop();
+                    MemoryUtil.setWorking(target, true);
                     MemoryUtil.setTarget(target, maid, (float) Config.collectSpeed);
                 }
             }
@@ -133,6 +136,12 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).setGatheringDispatched(false);
         MemoryUtil.clearTarget(maid);
         MemoryUtil.clearTarget(target);
+        MemoryUtil.setWorking(target, false);
         MemoryUtil.clearPickUpItemTemp(maid);
+    }
+
+    @Override
+    protected boolean timedOut(long p_22537_) {
+        return false;
     }
 }

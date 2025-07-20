@@ -13,12 +13,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -57,7 +59,10 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         maidAvailableItems = new ArrayList<>();
         for (int i = 0; i < inv.getSlots(); i++) {
             if (!inv.getStackInSlot(i).isEmpty())
-                maidAvailableItems.add(inv.getStackInSlot(i).copy());
+                //如果是激活的请求列表，则不进行放置，也不参与后续判断
+                if (!inv.getStackInSlot(i).is(ItemRegistry.REQUEST_LIST_ITEM.get())
+                        || RequestListItem.isIgnored(inv.getStackInSlot(i)))
+                    maidAvailableItems.add(inv.getStackInSlot(i).copy());
         }
         if (!this.priorityTarget(level, maid))
             this.searchForDestination(level, maid);

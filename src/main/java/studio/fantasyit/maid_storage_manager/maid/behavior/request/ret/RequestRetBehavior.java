@@ -32,6 +32,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     int currentSlot = 0;
     private Target target;
     private Entity targetEntity;
+    private boolean targetEntityReady = false;
     private VirtualItemEntity thrown;
 
     public RequestRetBehavior() {
@@ -72,12 +73,22 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             } else if (requestProgress.getTargetEntityUUID().isPresent()) {
                 targetEntity = level.getEntity(requestProgress.getTargetEntityUUID().get());
                 if (targetEntity instanceof EntityMaid m) {
-                    m.getNavigation().stop();
-                    MemoryUtil.setTarget(m, maid, (float) Config.collectSpeed);
+                    targetEntityReady = false;
+                    tryReadyMaid(m, maid);
                 }
             }
         }
         currentSlot = 0;
+    }
+
+    protected boolean tryReadyMaid(EntityMaid m, EntityMaid maid) {
+        if (targetEntityReady) return true;
+        if (MemoryUtil.isWorking(m)) return false;
+        MemoryUtil.setWorking(m, true);
+        m.getNavigation().stop();
+        MemoryUtil.setTarget(m, maid, (float) Config.collectSpeed);
+        targetEntityReady = true;
+        return true;
     }
 
     @Override
@@ -89,6 +100,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     }
 
     private void tickTargetEntity(EntityMaid maid) {
+        if (targetEntity instanceof EntityMaid m)
+            if (!tryReadyMaid(m, maid))
+                return;
         if (thrown != null) {
             if (targetEntity instanceof EntityMaid targetMaid) {
                 DebugData.invChange(DebugData.InvChange.IN, targetMaid, thrown.getItem());
@@ -152,6 +166,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (targetEntity instanceof EntityMaid m) {
             MemoryUtil.clearTarget(m);
             MemoryUtil.clearPickUpItemTemp(m);
+            MemoryUtil.setWorking(m, false);
         }
         //正在合成过程中，合成树还未结束，直接返回合成
         if (MemoryUtil.getCrafting(maid).hasPlan()) {

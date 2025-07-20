@@ -23,6 +23,7 @@ import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
@@ -35,17 +36,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         if (maid.level().isClientSide) return;
         checkTask(maid, baubleItem);
         tryDispatch(maid, baubleItem);
-        checkBubble(maid);
-    }
-
-    private void checkBubble(EntityMaid maid) {
-        if (maid.tickCount % 20 == 0)
-            if (MemoryUtil.getCurrentlyWorking(maid) == ScheduleBehavior.Schedule.REQUEST && MemoryUtil.getRequestProgress(maid).isTryCrafting() && MemoryUtil.getCrafting(maid).hasPlan()) {
-                CraftLayerChain plan = MemoryUtil.getCrafting(maid).plan();
-                if (!plan.isDone() && !plan.hasCurrent()) {
-                    plan.showCraftingProgress(maid);
-                }
-            }
+        tryDispatchFind(maid, baubleItem);
     }
 
     private void checkTask(EntityMaid maid, ItemStack baubleItem) {
@@ -80,7 +71,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                             .map(CraftGuideData::getAllOutputItems)
                             .map(t -> t.stream().map(i -> i.copyWithCount(i.getCount() * dispatchLayer.getCount())).toList())
                             .orElseThrow();
-                    CraftLayerChain newPlan = new CraftLayerChain(maid);
+                    CraftLayerChain newPlan = new CraftLayerChain(toMaid);
                     newPlan.setMaster(maid.getUUID(), MemoryUtil.getRequestProgress(maid).getWorkUUID());
                     newPlan.addLayer(dispatchLayer.copyWithNoState());
                     newPlan.addLayer(new CraftLayer(
@@ -110,6 +101,8 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
 
                     //执行分发，标记为已分发的任务。
                     plan.doDispatchLayer(node, toMaid.getUUID(), RequestListItem.getUUID(dispatchedRequest));
+                    plan.showCraftingProgress(maid);
+                    newPlan.showCraftingProgress(toMaid);
 
                     MemoryUtil.getViewedInventory(toMaid).receiveFrom(MemoryUtil.getViewedInventory(maid));
                     MemoryUtil.clearTarget(toMaid);
@@ -121,6 +114,26 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 });
     }
 
+    protected void tryDispatchFind(EntityMaid maid, ItemStack baubleItem) {
+        if (Conditions.takingRequestList(maid) && maid.getVehicle() != null && maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return;
+            if (MemoryUtil.getRequestProgress(maid).isReturning()) return;
+            List<EntityMaid> nearbyMaidsSameGroup = getNearbyMaidsSameGroup(maid, baubleItem, true);
+            if (!nearbyMaidsSameGroup.isEmpty()) {
+                EntityMaid toMaid = nearbyMaidsSameGroup.get(0);
+
+                ItemStack itemStack = RequestItemUtil.makeVirtualItemStack(maid.getMainHandItem(), "DISPATCH_FIND");
+                CompoundTag data = new CompoundTag();
+                data.putUUID("master", maid.getUUID());
+                RequestListItem.setVirtualData(itemStack, data);
+
+                toMaid.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
+                maid.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+
+                ChatTexts.send(maid, Component.translatable(ChatTexts.CHAT_REQUEST_DISPATCH, toMaid.getName()));
+            }
+        }
+    }
 
     public static boolean matches(ItemStack incoming, ItemStack source) {
         if (incoming.hasCustomHoverName()) {
@@ -132,8 +145,14 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
     protected static boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source, boolean requireAvailable) {
-        if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW && requireAvailable) return false;
-        if (!maid.getMainHandItem().isEmpty() && requireAvailable) return false;
+        if (requireAvailable) {
+            if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW)
+                return false;
+            if (!maid.getMainHandItem().isEmpty()) return false;
+            if (maid.isMaidInSittingPose()) return false;
+            if (maid.getVehicle() != null) return false;
+            if (MemoryUtil.getViewedInventory(maid).isViewing()) return false;
+        }
         BaubleItemHandler t = maid.getMaidBauble();
         for (int i = 0; i < t.getSlots(); i++)
             if (t.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {

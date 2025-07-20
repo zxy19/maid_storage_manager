@@ -40,6 +40,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (MemoryUtil.isWorking(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
         if (MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return false;
@@ -108,6 +109,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             fail = true;
             done = true;
         }
+        MemoryUtil.setWorking(maid, true);
     }
 
     @Override
@@ -165,11 +167,16 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             done = true;
         }
         hasTrySkip = true;
+        if (plan.hasDispatchedWaitingCheck(maid)) {
+            skipped = true;
+            done = true;
+        }
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
         super.stop(level, maid, p_22550_);
+        MemoryUtil.setWorking(maid, false);
         if (context != null) {
             context.stop();
             layer.setEnv(context.saveEnv(layer.getEnv()));

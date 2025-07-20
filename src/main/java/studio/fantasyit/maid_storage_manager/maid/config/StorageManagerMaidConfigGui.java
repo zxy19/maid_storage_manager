@@ -146,5 +146,20 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.MaxParallel, this.maid.getId(), this.currentMAData.maxParallel());
                 }
         ));
+
+        this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 91,
+                Component.translatable("gui.maid_storage_manager.config.single_crafting"),
+                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.alwaysSingleCrafting())),
+                button -> {
+                    this.currentMAData.alwaysSingleCrafting(false);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.SingleCrafting, this.maid.getId(), 0);
+                },
+                button -> {
+                    this.currentMAData.alwaysSingleCrafting(true);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.SingleCrafting, this.maid.getId(), 1);
+                }
+        ));
     }
 }
