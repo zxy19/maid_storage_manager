@@ -87,7 +87,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
                     target = maid1;
                     target.getNavigation().stop();
                     MemoryUtil.setWorking(target, true);
-                    MemoryUtil.setTarget(target, maid, (float) Config.collectSpeed);
+                    MemoryUtil.setTarget(target, target, (float) Config.collectSpeed);
                 }
             }
         }
@@ -105,6 +105,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         if (!breath.breathTick(maid)) return;
+        MemoryUtil.setLookAt(target, maid);
         if (thrown == null) {
             ItemStack toSeekItem = list.get(index);
             if (toSeekItem.getCount() > toSeekItem.getMaxStackSize()) {

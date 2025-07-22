@@ -194,7 +194,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             if (layer.isDone()) {
                 plan.removeOccupied(level, maid);
                 DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
-                plan.finishCurrentLayer();
+                plan.finishCurrentLayer(maid);
                 MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid);
                 plan.showCraftingProgress(maid);
             } else {

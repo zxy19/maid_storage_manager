@@ -86,7 +86,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.isWorking(m)) return false;
         MemoryUtil.setWorking(m, true);
         m.getNavigation().stop();
-        MemoryUtil.setTarget(m, maid, (float) Config.collectSpeed);
+        MemoryUtil.setTarget(m, m, (float) Config.collectSpeed);
         targetEntityReady = true;
         return true;
     }
@@ -100,9 +100,12 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     }
 
     private void tickTargetEntity(EntityMaid maid) {
-        if (targetEntity instanceof EntityMaid m)
+        if (targetEntity instanceof EntityMaid m) {
             if (!tryReadyMaid(m, maid))
                 return;
+            else
+                MemoryUtil.setLookAt(m, maid);
+        }
         if (thrown != null) {
             if (targetEntity instanceof EntityMaid targetMaid) {
                 DebugData.invChange(DebugData.InvChange.IN, targetMaid, thrown.getItem());
@@ -174,6 +177,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
             MemoryUtil.getRequestProgress(maid).clearTarget();
             MemoryUtil.getCrafting(maid).clearTarget();
+            MemoryUtil.getCrafting(maid).plan().checkAndSwitchGroup(maid);
             MemoryUtil.clearTarget(maid);
             return;
         }

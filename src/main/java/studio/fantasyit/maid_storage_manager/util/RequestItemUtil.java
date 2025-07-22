@@ -181,11 +181,7 @@ public class RequestItemUtil {
         targetPlan.dispatchedDone(maid,
                 toMaid,
                 index,
-                RequestListItem
-                        .getItemStacksNotDone(reqList)
-                        .stream()
-                        .map(t -> t.getA().copyWithCount(t.getB()))
-                        .toList()
+                RequestListItem.isAllSuccess(reqList)
         );
         targetPlan.showCraftingProgress(toMaid);
     }

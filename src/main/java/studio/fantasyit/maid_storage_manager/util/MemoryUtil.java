@@ -104,6 +104,10 @@ public class MemoryUtil {
         maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));
     }
 
+    public static void setLookAt(EntityMaid maid, Entity target) {
+        maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
+    }
+
     public static BlockPos getInteractPos(EntityMaid maid) {
         return maid.getBrain().getMemory(MemoryModuleRegistry.INTERACTION_RESULT.get()).orElse(null);
     }
@@ -148,6 +152,7 @@ public class MemoryUtil {
     public static void setPickUpItemTemp(EntityMaid maid, UUID target) {
         maid.getBrain().setMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get(), target);
     }
+
     public static void clearPickUpItemTemp(EntityMaid maid) {
         maid.getBrain().eraseMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get());
     }

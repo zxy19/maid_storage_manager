@@ -31,7 +31,8 @@ public class CraftLayer {
                     Codec.INT.fieldOf("tryTick").forGetter(CraftLayer::getTryTick),
                     Codec.INT.listOf().fieldOf("currentStepPlacedCounts").forGetter(CraftLayer::getCurrentStepCounts),
                     Codec.INT.fieldOf("step").forGetter(CraftLayer::getStep),
-                    CompoundTag.CODEC.orElseGet(CompoundTag::new).fieldOf("env").forGetter(CraftLayer::getEnv)
+                    CompoundTag.CODEC.orElseGet(CompoundTag::new).fieldOf("env").forGetter(CraftLayer::getEnv),
+                    Codec.BOOL.fieldOf("placeBefore").forGetter(CraftLayer::shouldPlaceBefore)
             ).apply(instance, CraftLayer::new)
     );
 
@@ -49,6 +50,7 @@ public class CraftLayer {
     protected int count;
     protected int doneCount;
     protected int step;
+    private boolean placeBefore;
 
     public CraftLayer(Optional<CraftGuideData> craftData,
                       List<CraftGuideData> usableCraftData,
@@ -59,7 +61,8 @@ public class CraftLayer {
                       Integer tryTick,
                       List<Integer> currentStepCounts,
                       int step,
-                      CompoundTag env
+                      CompoundTag env,
+                      boolean placeBefore
     ) {
         this.usableCraftData = usableCraftData;
         this.craftData = craftData.orElse(null);
@@ -72,6 +75,7 @@ public class CraftLayer {
         this.step = step;
         this.tryTick = tryTick;
         this.env = env;
+        this.placeBefore = placeBefore;
     }
 
     public CraftLayer(Optional<CraftGuideData> craftData, List<ItemStack> items, Integer count) {
@@ -306,4 +310,11 @@ public class CraftLayer {
         );
     }
 
+    public void setPlaceBefore() {
+        this.placeBefore = true;
+    }
+
+    public boolean shouldPlaceBefore() {
+        return placeBefore;
+    }
 }

@@ -73,6 +73,7 @@ public class CraftLayerChain {
      */
     public List<ItemStack> remainMaterials;
 
+
     public Queue<SolvedCraftLayer> workingQueue;
 
     /**
@@ -241,7 +242,7 @@ public class CraftLayerChain {
         MutableInt groupId = new MutableInt(0);
         for (int i = 0; i < layers.size(); i++) {
             CraftLayer layer = layers.get(i);
-            //简单估算层的格子消耗量。
+            ///region 简单估算层的格子消耗量。
             MutableInt inputConsume = new MutableInt(0);
             MutableInt outputConsume = new MutableInt(0);
             for (ItemStack item : layer.getItems())
@@ -260,6 +261,12 @@ public class CraftLayerChain {
                 if (inputConsume.getValue() <= 0)
                     inputConsume.setValue(0);
             }
+            ///  endregion
+
+            if (layer.shouldPlaceBefore()) {
+                currentItems.clear();
+                groupId.add(1);
+            }
 
             //构建节点列表
             nodes.add(new SolvedCraftLayer(
@@ -272,9 +279,7 @@ public class CraftLayerChain {
                     new MutableInt(0),
                     new MutableObject<>(SolvedCraftLayer.Progress.WAITING)
             ));
-        }
-        for (int i = 0; i < layers.size(); i++) {
-            CraftLayer layer = layers.get(i);
+
             for (ItemStack item : layer.getItems()) {
                 int count = item.getCount();
 
@@ -298,26 +303,22 @@ public class CraftLayerChain {
             }
 
             int finalI = i;
-            layer.getCraftData()
-                    .ifPresentOrElse(
-                            //把当前层的输出存放到零时栈
-                            craftGuide -> {
-                                List<ItemStack> outputs = craftGuide.getOutput();
-                                for (ItemStack itemStack : outputs) {
-                                    currentItems.add(
-                                            new Pair<>(
-                                                    finalI,
-                                                    itemStack.copyWithCount(itemStack.getCount() * layer.getCount())
-                                            )
-                                    );
-                                }
-                            },
-                            // 已经结束了一次合成，清空临时栈
-                            () -> {
-                                currentItems.clear();
-                                groupId.add(1);
-                            }
+            if (layer.getCraftData().isPresent()) {
+                //把当前层的输出存放到零时栈
+                CraftGuideData craftGuide = layer.getCraftData().get();
+                List<ItemStack> outputs = craftGuide.getOutput();
+                for (ItemStack itemStack : outputs) {
+                    currentItems.add(
+                            new Pair<>(
+                                    finalI,
+                                    itemStack.copyWithCount(itemStack.getCount() * layer.getCount())
+                            )
                     );
+                }
+            } else {
+                currentItems.clear();
+                groupId.add(1);
+            }
         }
         group = 0;
         freeze = true;
@@ -429,18 +430,19 @@ public class CraftLayerChain {
      *
      * @param targetMaid
      * @param index
-     * @param missing
+     * @param allSuccess
      * @return
      */
-    public boolean dispatchedDone(EntityMaid targetMaid, EntityMaid maid, int index, List<ItemStack> missing) {
+    public boolean dispatchedDone(EntityMaid targetMaid, EntityMaid maid, int index, boolean allSuccess) {
         SolvedCraftLayer node = nodes.get(index);
         CraftLayer layer = layers.get(index);
         dispatchedTaskMapping.remove(targetMaid.getUUID());
         dispatchedTaskTickCount.remove(targetMaid.getUUID());
         if (node.progress().getValue() != SolvedCraftLayer.Progress.DISPATCHED) return false;
-        if (missing.isEmpty())
+        if (allSuccess) {
             finishLayer(node, layer);
-        else {
+            checkAndSwitchGroup(maid);
+        } else {
             clearAndStopAdding(StoppingAdding.RESCHEDULE);
             handleStopAddingEvent(maid);
         }
@@ -717,10 +719,7 @@ public class CraftLayerChain {
             MemoryUtil.getRequestProgress(maid).setReturn();
         }
 
-
-        //加入下一组的初始合成目标
-        group++;
-        addAllLayerToQueue();
+        checkAndSwitchGroup(maid);
 
         setStatusMessage(maid, Component.translatable(ChatTexts.CHAT_CRAFT_FAIL_WAITING).withStyle(ChatFormatting.RED));
 
@@ -737,6 +736,7 @@ public class CraftLayerChain {
      * @param maid
      */
     public void finishGathering(EntityMaid maid) {
+        if (!hasCurrent()) return;
         CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
         SolvedCraftLayer node = Objects.requireNonNull(this.getCurrentNode());
         if (layer.hasCollectedAll()) {
@@ -856,11 +856,12 @@ public class CraftLayerChain {
     /**
      * 停止当前层。将工作状态设置为Finished
      */
-    public void finishCurrentLayer() {
+    public void finishCurrentLayer(EntityMaid maid) {
         SolvedCraftLayer node = getCurrentNode();
         CraftLayer layer = getCurrentLayer();
         workingQueue.poll();
         finishLayer(node, layer);
+        checkAndSwitchGroup(maid);
     }
 
     private void finishLayer(SolvedCraftLayer node, CraftLayer layer) {
@@ -968,6 +969,24 @@ public class CraftLayerChain {
                 workingQueue.add(workingQueue.poll());
         }
         return false;
+    }
+
+    public void checkAndSwitchGroup(EntityMaid maid) {
+        for (SolvedCraftLayer node : nodes) {
+            if (node.group() != group) continue;
+
+            if (
+                    node.progress().getValue() == SolvedCraftLayer.Progress.FAILED ||
+                            node.progress().getValue() == SolvedCraftLayer.Progress.FINISHED
+            )
+                continue;
+            return;
+        }
+
+        remainMaterials.clear();
+        group++;
+        addAllLayerToQueue();
+        MemoryUtil.getCrafting(maid).setGoPlacingBeforeCraft(true);
     }
 
     public boolean tryReleaseAndStartNext() {

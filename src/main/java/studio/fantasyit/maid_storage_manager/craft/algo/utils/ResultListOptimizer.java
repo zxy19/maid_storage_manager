@@ -49,6 +49,9 @@ public class ResultListOptimizer {
                 }
             } else equal = false;
 
+            if (layer.shouldPlaceBefore())
+                equal = false;
+
             if (equal) {
                 List<ItemStack> nextInputs = new ArrayList<>(layer.getItems());
                 CraftLayer finalTmp = tmp;
@@ -106,6 +109,7 @@ public class ResultListOptimizer {
                 result.add(layer);
             else {
                 int oCount = layer.getCount();
+                boolean placeBefore = layer.shouldPlaceBefore();
                 for (int i = 0; i < oCount; i++) {
                     CraftLayer newLayer = layer.copyWithNoState();
                     newLayer.setCount(1);
@@ -115,6 +119,10 @@ public class ResultListOptimizer {
                                     .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() / oCount))
                                     .toList()
                     );
+                    if (placeBefore) {
+                        newLayer.setPlaceBefore();
+                        placeBefore = false;
+                    }
                     result.add(newLayer);
                 }
             }

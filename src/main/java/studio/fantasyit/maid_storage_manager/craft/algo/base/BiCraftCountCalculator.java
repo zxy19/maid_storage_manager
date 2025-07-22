@@ -43,7 +43,9 @@ public class BiCraftCountCalculator {
             hasAnySuccessCraftingCalc = true;
             context = new CraftResultContext(currentResults);
             if (context.getSlotConsume() > availableSlots) {
-                currentResults = null;
+                context.splitTaskWith(availableSlots);
+                if (context.getSlotConsume() > availableSlots)
+                    currentResults = null;
             }
         }
         if (currentResults != null && !currentResults.isEmpty()) {

@@ -83,7 +83,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                 );
             }
             MemoryUtil.getCrafting(maid).lastSuccess();
-            plan.finishCurrentLayer();
+            plan.finishCurrentLayer(maid);
             plan.showCraftingProgress(maid);
             MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid);
             //立刻安排返回存储
