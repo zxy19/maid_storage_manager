@@ -126,6 +126,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue PICKUP_IGNORE_DELAY = BUILDER
             .comment("Maid will ignore delay when picking up items.")
             .define("behavior.pickup_ignore_delay", true);
+    private static final ForgeConfigSpec.BooleanValue NO_BUBBLE_FOR_SUB_TASK = BUILDER
+            .comment("No showing bubbles for sub tasks")
+            .define("behavior.no_bubble_for_sub_task", false);
 
     private static final ForgeConfigSpec.EnumValue<ThrowMethod> THROW_ITEM_VECTOR = BUILDER
             .comment("How maid will throw Item.FINALLY_POS will try make the item stop at the position. GO_THROUGH will try to make item go through the target position. FIXED will always use the vector of length 0.6")
@@ -237,6 +240,7 @@ public class Config {
     public static CraftPlanEvaluator craftingShortestPathEvaluator;
     public static boolean generatePartial;
     public static CraftGenerator craftingGenerator;
+    public static boolean noBubbleForSub;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -283,6 +287,7 @@ public class Config {
         craftingLoopSolverPreventNewByProduct = LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.get();
         craftingGenerator = CRAFTING_GENERATOR.get();
         craftingShortestPathEvaluator = CRAFTING_PREFER_SHORTEST_PATH.get();
+        noBubbleForSub = NO_BUBBLE_FOR_SUB_TASK.get();
     }
 
     public static void save() {
@@ -329,6 +334,7 @@ public class Config {
         LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.set(craftingLoopSolverPreventNewByProduct);
         CRAFTING_GENERATOR.set(craftingGenerator);
         CRAFTING_PREFER_SHORTEST_PATH.set(craftingShortestPathEvaluator);
+        NO_BUBBLE_FOR_SUB_TASK.set(noBubbleForSub);
     }
 
     public static void saveAfter(Runnable o) {

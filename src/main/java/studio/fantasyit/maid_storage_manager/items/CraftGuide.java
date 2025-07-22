@@ -34,6 +34,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -52,6 +53,30 @@ public class CraftGuide extends Item implements MenuProvider {
     public static final String TAG_OP_INPUT = "input";
     public static final String TAG_OP_OUTPUT = "output";
     public static final String TAG_OP_EXTRA = "extra";
+    public static final String TAG_SPECIAL_OP = "special";
+
+    public static Component getStatusMessage(ItemStack stack) {
+        int selectId = getSelectId(stack);
+        SpecialOP specialOP = getSpecialOP(stack);
+        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(stack);
+        Component result;
+        if (selectId == data.stepBindings.size())
+            result = Component.translatable("interaction.select_step_new." + specialOP.name().toLowerCase());
+        else
+            result = Component.translatable("interaction.select_step_index." + specialOP.name().toLowerCase(), selectId + 1);
+
+        return switch (specialOP) {
+            case NONE -> result;
+            case COPY -> result.copy().withStyle(ChatFormatting.YELLOW);
+            case REPLACE -> result.copy().withStyle(ChatFormatting.RED);
+        };
+    }
+
+    public enum SpecialOP {
+        NONE,
+        COPY,
+        REPLACE
+    }
 
 
     public CraftGuide() {
@@ -86,7 +111,23 @@ public class CraftGuide extends Item implements MenuProvider {
     public static void setSelectId(ItemStack itemInHand, int value) {
         CompoundTag tag = itemInHand.getOrCreateTag();
         tag.putInt(TAG_SELECTING, value);
+        tag.putInt(TAG_SPECIAL_OP, 0);
         itemInHand.setTag(tag);
+    }
+
+    public static void setSpecialOP(ItemStack itemInHand, SpecialOP value) {
+        CompoundTag tag = itemInHand.getOrCreateTag();
+        tag.putInt(TAG_SPECIAL_OP, value.ordinal());
+        itemInHand.setTag(tag);
+    }
+
+    public static SpecialOP getSpecialOP(ItemStack itemInHand) {
+        if (!itemInHand.hasTag())
+            return SpecialOP.NONE;
+        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
+        if (!tag.contains(TAG_SPECIAL_OP))
+            return SpecialOP.NONE;
+        return SpecialOP.values()[tag.getInt(TAG_SPECIAL_OP)];
     }
 
 
@@ -105,15 +146,17 @@ public class CraftGuide extends Item implements MenuProvider {
         }
     }
 
+    public static void rollSpecial(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
+        SpecialOP specialOP = getSpecialOP(itemInHand);
+        specialOP = SpecialOP.values()[(specialOP.ordinal() + value + SpecialOP.values().length) % SpecialOP.values().length];
+        setSpecialOP(itemInHand, specialOP);
+    }
+
     public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
         CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
         int selectId = getSelectId(itemInHand);
         selectId = (selectId + value + craftGuideData.getSteps().size() + 1) % (craftGuideData.getSteps().size() + 1);
         setSelectId(itemInHand, selectId);
-        if (selectId == craftGuideData.getSteps().size())
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_new"));
-        else
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_step_index", selectId + 1));
         CraftGuideRenderData.recalculateItemStack(itemInHand);
     }
 
@@ -128,72 +171,118 @@ public class CraftGuide extends Item implements MenuProvider {
                 return InteractionResult.PASS;
             ItemStack itemInHand = context.getItemInHand();
             CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
-            int selecting = craftGuideData.selecting;
+            SpecialOP specialOP = getSpecialOP(itemInHand);
+            @NotNull InteractionResult result = switch (specialOP) {
+                case NONE -> operateNormal(context, serverPlayer, craftGuideData, itemInHand);
+                case COPY -> operateCopy(context, serverPlayer, craftGuideData, itemInHand);
+                case REPLACE -> operateReplace(context, serverPlayer, craftGuideData, itemInHand);
+            };
 
-            ResourceLocation specialType = CommonType.TYPE;
-            if (craftGuideData.getSteps().size() == 1 && craftGuideData.selecting == 0) {
-                if (!craftGuideData.getSteps().get(0).storage.getPos().equals(context.getClickedPos())) {
-                    craftGuideData.getSteps().remove(0);
-                    craftGuideData.type = CommonType.TYPE;
-                }
-            }
-
-            if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() == 0) {
-                if (craftGuideData.getType().equals(CommonType.TYPE))
-                    specialType = CraftManager.getInstance().getTargetType((ServerLevel) context.getLevel(),
-                            context.getClickedPos(),
-                            context.getClickedFace());
-            }
-            if (specialType == null) specialType = CommonType.TYPE;
-            Target target = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), context.getPlayer(), context.getClickedPos(), context.getClickedFace());
-            if (target == null) {
-                target = Target.virtual(context.getClickedPos(), context.getClickedFace());
-            }
-            if (specialType == CommonType.TYPE) {
-                if (craftGuideData.getSteps().size() <= selecting) {
-                    if (!craftGuideData.getSteps().isEmpty() && !craftGuideData.getSteps().get(0).actionType.canBeCommon()) {
-                        craftGuideData.getSteps().get(0).actionType = CraftManager.getInstance().getDefaultAction();
-                        craftGuideData.getSteps().get(0).action = craftGuideData.getSteps().get(0).actionType.type();
-                    }
-                    craftGuideData.getSteps().add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), CraftManager.getInstance().getDefaultAction().type()));
-                } else {
-                    CraftGuideStepData craftGuideStepData = craftGuideData.getSteps().get(selecting);
-                    if (!craftGuideStepData.actionType.canBeCommon()) {
-                        craftGuideStepData.actionType = CraftManager.getInstance().getDefaultAction();
-                        craftGuideStepData.action = craftGuideStepData.actionType.type();
-
-                        craftGuideStepData.storage = target.withoutSide();
-                    } else {
-                        Target existingTarget = craftGuideStepData.getStorage();
-                        if (existingTarget.equals(target)) {
-                            craftGuideData.getSteps().remove(selecting);
-                        } else if (existingTarget.withoutSide().equals(target.withoutSide())) {
-                            craftGuideStepData.storage = target;
-                        } else {
-                            craftGuideStepData.storage = target.withoutSide();
-                        }
-                    }
-                }
-                craftGuideData.type = specialType;
-            } else {
-                List<CraftGuideStepData> steps = craftGuideData.getSteps();
-                steps.clear();
-                steps.add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), specialType));
-                craftGuideData.type = specialType;
-            }
-            if (craftGuideData.type != CommonType.TYPE) {
-                CraftManager.getInstance()
-                        .getType(craftGuideData.type)
-                        .onTypeUsing(serverPlayer, itemInHand, craftGuideData);
-            }
             craftGuideData.saveToItemStack(itemInHand);
             CraftGuideRenderData.recalculateItemStack(itemInHand);
-            return InteractionResult.CONSUME;
+            return result;
         } else {
             if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown())
                 return InteractionResult.CONSUME;
             return InteractionResult.PASS;
         }
+    }
+
+    private @NotNull InteractionResult operateReplace(@NotNull UseOnContext context, ServerPlayer serverPlayer, CraftGuideData craftGuideData, ItemStack itemInHand) {
+        if (craftGuideData.getSteps().isEmpty()) return InteractionResult.PASS;
+        if (craftGuideData.getSteps().size() == craftGuideData.selecting) {
+            craftGuideData.getSteps()
+                    .forEach(t -> {
+                        t.storage = new Target(t.storage.getType(), context.getClickedPos(), t.storage.getSide());
+                    });
+        } else {
+            CraftGuideStepData step = craftGuideData.getStepByIdx(craftGuideData.selecting);
+            step.storage = new Target(step.storage.getType(), context.getClickedPos(), step.storage.getSide());
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    private @NotNull InteractionResult operateCopy(@NotNull UseOnContext context, ServerPlayer serverPlayer, CraftGuideData craftGuideData, ItemStack itemInHand) {
+        if (craftGuideData.getSteps().isEmpty()) return InteractionResult.PASS;
+        //复制全部的step
+        if (craftGuideData.getSteps().size() == craftGuideData.selecting) {
+            new ArrayList<>(craftGuideData.getSteps())
+                    .stream()
+                    .map(t -> CraftGuideStepData.fromCompound(t.toCompound()))
+                    .forEach(t -> {
+                        t.storage = new Target(t.storage.getType(), context.getClickedPos(), t.storage.getSide());
+                        craftGuideData.steps.add(t);
+                    });
+        } else {
+            CraftGuideStepData newStep = CraftGuideStepData.fromCompound(craftGuideData.getSteps().get(craftGuideData.selecting).toCompound());
+            newStep.storage = new Target(newStep.storage.getType(), context.getClickedPos(), newStep.storage.getSide());
+            craftGuideData.steps.add(newStep);
+        }
+        craftGuideData.selecting = craftGuideData.steps.size() - 1;
+
+        return InteractionResult.SUCCESS;
+    }
+
+    private @NotNull InteractionResult operateNormal(@NotNull UseOnContext context, ServerPlayer serverPlayer, CraftGuideData craftGuideData, ItemStack itemInHand) {
+        int selecting = craftGuideData.selecting;
+
+        ResourceLocation specialType = CommonType.TYPE;
+        if (craftGuideData.getSteps().size() == 1 && craftGuideData.selecting == 0) {
+            if (!craftGuideData.getSteps().get(0).storage.getPos().equals(context.getClickedPos())) {
+                craftGuideData.getSteps().remove(0);
+                craftGuideData.type = CommonType.TYPE;
+            }
+        }
+
+        if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() == 0) {
+            if (craftGuideData.getType().equals(CommonType.TYPE))
+                specialType = CraftManager.getInstance().getTargetType((ServerLevel) context.getLevel(),
+                        context.getClickedPos(),
+                        context.getClickedFace());
+        }
+        if (specialType == null) specialType = CommonType.TYPE;
+        Target target = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), context.getPlayer(), context.getClickedPos(), context.getClickedFace());
+        if (target == null) {
+            target = Target.virtual(context.getClickedPos(), context.getClickedFace());
+        }
+        if (specialType == CommonType.TYPE) {
+            if (craftGuideData.getSteps().size() <= selecting) {
+                if (!craftGuideData.getSteps().isEmpty() && !craftGuideData.getSteps().get(0).actionType.canBeCommon()) {
+                    craftGuideData.getSteps().get(0).actionType = CraftManager.getInstance().getDefaultAction();
+                    craftGuideData.getSteps().get(0).action = craftGuideData.getSteps().get(0).actionType.type();
+                }
+                craftGuideData.getSteps().add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), CraftManager.getInstance().getDefaultAction().type()));
+            } else {
+                CraftGuideStepData craftGuideStepData = craftGuideData.getSteps().get(selecting);
+                if (!craftGuideStepData.actionType.canBeCommon()) {
+                    craftGuideStepData.actionType = CraftManager.getInstance().getDefaultAction();
+                    craftGuideStepData.action = craftGuideStepData.actionType.type();
+
+                    craftGuideStepData.storage = target.withoutSide();
+                } else {
+                    Target existingTarget = craftGuideStepData.getStorage();
+                    if (existingTarget.equals(target)) {
+                        craftGuideData.getSteps().remove(selecting);
+                    } else if (existingTarget.withoutSide().equals(target.withoutSide())) {
+                        craftGuideStepData.storage = target;
+                    } else {
+                        craftGuideStepData.storage = target.withoutSide();
+                    }
+                }
+            }
+            craftGuideData.type = specialType;
+        } else {
+            List<CraftGuideStepData> steps = craftGuideData.getSteps();
+            steps.clear();
+            steps.add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), specialType));
+            craftGuideData.type = specialType;
+        }
+        if (craftGuideData.type != CommonType.TYPE) {
+            CraftManager.getInstance()
+                    .getType(craftGuideData.type)
+                    .onTypeUsing(serverPlayer, itemInHand, craftGuideData);
+        }
+        return InteractionResult.CONSUME;
     }
 
     @Override

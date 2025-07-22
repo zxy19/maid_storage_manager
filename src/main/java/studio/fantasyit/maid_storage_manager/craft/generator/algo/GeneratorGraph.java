@@ -270,10 +270,18 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
     private @NotNull CraftNode getOrCreateCraftNode(ResourceLocation id, List<Integer> ingredientCounts, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
         if (craftNodeMap.containsKey(id)) {
             CraftNode originalNode = craftNodeMap.get(id);
-            originalNode.removeAllEdges(this);
-            CraftNode craftNode = new CraftNode(id, originalNode.id, craftGuideSupplier, ingredientNodes, ingredientCounts, type, isOneTime);
-            nodes.set(originalNode.id, craftNode);
-            return craftNode;
+            if (originalNode.isRemoved) {
+                originalNode.removeAllEdges(this);
+                CraftNode craftNode = new CraftNode(id, originalNode.id, craftGuideSupplier, ingredientNodes, ingredientCounts, type, isOneTime);
+                nodes.set(originalNode.id, craftNode);
+                craftNodeMap.put(id, craftNode);
+                return craftNode;
+            } else {
+                originalNode.removeAllEdges(this);
+                originalNode.setNonRemoved();
+                originalNode.addCraftGuideSupplier(craftGuideSupplier);
+                return originalNode;
+            }
         }
         CraftNode craftNode = new CraftNode(id, nodes.size(), craftGuideSupplier, ingredientNodes, ingredientCounts, type, isOneTime);
         nodes.add(craftNode);
@@ -410,9 +418,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
                     ItemStack itemStack = ingredientId2ItemStack.get(craftNode.ingredientNodes.get(i).id);
                     items.add(itemStack.copyWithCount(craftNode.ingredientCounts.get(i)));
                 }
-                CraftGuideData apply = craftNode.craftGuideSupplier.apply(items);
-                if (apply != null)
-                    craftGuides.add(apply);
+                for (Function<List<ItemStack>, @Nullable CraftGuideData> f : craftNode.craftGuideSupplier) {
+                    CraftGuideData apply = f.apply(items);
+                    if (apply != null)
+                        craftGuides.add(apply);
+                }
             }
         } else {
             if (craftNode.independentIngredients.get(step).possibleItems.isEmpty()) {

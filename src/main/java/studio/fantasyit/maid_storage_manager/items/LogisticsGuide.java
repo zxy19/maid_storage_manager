@@ -41,6 +41,14 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
         super(new Properties().stacksTo(1));
     }
 
+    public static Component getTip(ItemStack itemInHand) {
+        int selectId = getSelectId(itemInHand);
+        if (selectId == 0)
+            return Component.translatable("interaction.select_extract");
+        else
+            return Component.translatable("interaction.select_store");
+    }
+
     public static int getSelectId(ItemStack itemInHand) {
         if (!itemInHand.hasTag())
             return 0;
@@ -61,10 +69,6 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
         int selectId = getSelectId(itemInHand);
         selectId = selectId == 0 ? 1 : 0;
         setSelectId(itemInHand, selectId);
-        if (selectId == 0)
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_extract"));
-        else
-            serverPlayer.sendSystemMessage(Component.translatable("interaction.select_store"));
     }
 
     public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer) {

@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public class CraftNode extends Node {
     public final ResourceLocation recipeId;
-    public final Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier;
+    public final List<Function<List<ItemStack>, @Nullable CraftGuideData>> craftGuideSupplier;
     public HashSet<List<Integer>> used;
     public final List<IngredientNode> independentIngredients;
     public final List<IngredientNode> ingredientNodes;
@@ -27,7 +27,7 @@ public class CraftNode extends Node {
                      List<Integer> ingredientCounts, ResourceLocation type, boolean isOneTime) {
         super(id);
         this.recipeId = resourceLocation;
-        this.craftGuideSupplier = craftGuideSupplier;
+        this.craftGuideSupplier = new ArrayList<>(List.of(craftGuideSupplier));
         this.used = new HashSet<>();
         this.ingredientNodes = ingredients;
         this.ingredientCounts = ingredientCounts;
@@ -41,5 +41,8 @@ public class CraftNode extends Node {
                 independentIngredients.add(ingredientNode);
             }
         }
+    }
+    public void addCraftGuideSupplier(Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        this.craftGuideSupplier.add(craftGuideSupplier);
     }
 }

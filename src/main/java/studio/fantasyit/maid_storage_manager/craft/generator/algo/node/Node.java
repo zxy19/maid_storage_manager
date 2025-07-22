@@ -15,6 +15,7 @@ public class Node {
     public boolean related;
     public final List<Pair<Integer, Integer>> edges;
     public final List<Pair<Integer, Integer>> edgesRev;
+    public boolean isRemoved;
 
 
     public Node(int id) {
@@ -52,5 +53,10 @@ public class Node {
         );
         this.edges.clear();
         this.edgesRev.clear();
+        isRemoved = true;
+    }
+
+    public void setNonRemoved() {
+        isRemoved = false;
     }
 }

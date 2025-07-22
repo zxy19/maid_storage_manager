@@ -83,18 +83,20 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                         boolean available = true;
                         boolean hasPriority = false;
                         boolean skipFirst;
-                        if (recipe.getTopOptional().isEmpty()) {
+                        if (!topItem.isEmpty()) {
+                            if (recipe.getTopOptional().isEmpty()) {
+                                available = false;
+                            } else if (!recipe.getTopOptional().test(topItem)) {
+                                available = false;
+                            }
+                            skipFirst = true;
+                        } else if (recipe.getTopOptional().isEmpty()) {
                             skipFirst = true;
                         } else if (recipe.getProcessType() == InscriberProcessType.INSCRIBE) {
                             //压印类型，如果不分离侧面，则要求必须顶部存在物品，否则放入的物品无法取出
                             if (inscriber.getConfigManager().getSetting(Settings.INSCRIBER_SEPARATE_SIDES) == YesNo.NO) {
-                                if (!topItem.isEmpty() && recipe.getTopOptional().test(topItem)) {
-                                    skipFirst = true;
-                                    hasPriority = true;
-                                } else {
-                                    skipFirst = false;
-                                    available = false;
-                                }
+                                skipFirst = false;
+                                available = false;
                             } else {
                                 skipFirst = false;
                             }

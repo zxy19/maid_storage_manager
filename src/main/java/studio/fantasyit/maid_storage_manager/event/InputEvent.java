@@ -37,6 +37,13 @@ public class InputEvent {
             GLFW.GLFW_KEY_LEFT_ALT,
             "key.maid_storage_manager.category"
     ));
+    public static final Lazy<KeyMapping> KEY_ROLL_SPECIAL_MODE = Lazy.of(() -> new net.minecraft.client.KeyMapping(
+            "key.maid_storage_manager.roll_special_mode",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_ALT,
+            "key.maid_storage_manager.category"
+    ));
+    protected static boolean pressingSpecialKey = false;
 
     @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModBus {
@@ -44,6 +51,7 @@ public class InputEvent {
         public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
             event.register(KEY_REQUEST_INGREDIENT.get());
             event.register(KEY_SEE_THROUGH_MARK_BOX.get());
+            event.register(KEY_ROLL_SPECIAL_MODE.get());
         }
     }
 
@@ -58,7 +66,13 @@ public class InputEvent {
                 Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
                         new ClientInputPacket(ClientInputPacket.Type.SCROLL, (int) (event.getScrollDelta() * 100))
                 );
-                return;
+            }
+        } else if (pressingSpecialKey) {
+            event.setCanceled(true);
+            if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
+                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                        new ClientInputPacket(ClientInputPacket.Type.ALT_SCROLL, (int) (event.getScrollDelta() * 100))
+                );
             }
         }
     }
@@ -78,6 +92,14 @@ public class InputEvent {
                 BoxRenderUtil.useSeeThroughBox = true;
             } else if (event.getAction() == GLFW.GLFW_RELEASE) {
                 BoxRenderUtil.useSeeThroughBox = false;
+            }
+        }
+
+        if (KEY_ROLL_SPECIAL_MODE.get().getKey().equals(key)) {
+            if (event.getAction() == GLFW.GLFW_PRESS) {
+                pressingSpecialKey = true;
+            } else if (event.getAction() == GLFW.GLFW_RELEASE) {
+                pressingSpecialKey = false;
             }
         }
     }

@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class ClientInputPacket {
     public enum Type {
-        ALT_PRESS, SCROLL
+        ALT_SCROLL, SCROLL
     }
     public final Type type;
     public final int value;

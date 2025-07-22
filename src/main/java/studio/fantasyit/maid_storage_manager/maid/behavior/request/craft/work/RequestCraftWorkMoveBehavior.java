@@ -94,12 +94,15 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         }
         //如果当前layer被占用，那就不用开始走过去了
         if (plan.checkIsCurrentOccupied(level, maid)) {
-            if (plan.tryReleaseAndStartNext()) {
-                MemoryUtil.getCrafting(maid).clearTarget();
-                MemoryUtil.clearTarget(maid);
-                return true;
+            if (!plan.tryUseAnotherCraftGuide(level, maid)) {
+                if (plan.tryReleaseAndStartNext()) {
+                    MemoryUtil.getCrafting(maid).clearTarget();
+                    MemoryUtil.clearTarget(maid);
+                }
             }
+            return true;
         }
+        plan.setOccupied(level, maid);
         if (!plan.checkStepInputInbackpack(maid)) {
             return true;
         }

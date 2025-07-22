@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.data;
 
 import net.minecraft.world.item.ItemStack;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.*;
@@ -9,10 +10,22 @@ import java.util.function.BiConsumer;
 public class CraftResultContext {
     List<CraftLayer> layers;
     Map<ItemStack, Integer> itemConsumeCount;
+    List<Pair<ItemStack, Integer>> itemRemain;
     int slotConsume;
 
     public CraftResultContext(List<CraftLayer> layers) {
         this.layers = layers;
+        calculate(Integer.MAX_VALUE);
+        this.itemRemain = new ArrayList<>(
+                itemConsumeCount
+                        .entrySet()
+                        .stream()
+                        .map(e -> new Pair<>(e.getKey(), e.getValue()))
+                        .toList()
+        );
+    }
+
+    protected void calculate(int maxSlotConsume) {
         this.itemConsumeCount = new HashMap<>();
         this.slotConsume = 0;
 
@@ -81,8 +94,10 @@ public class CraftResultContext {
     }
 
     public void forEachRemaining(BiConsumer<ItemStack, Integer> consumer) {
-        for (ItemStack itemStack : itemConsumeCount.keySet()) {
-            consumer.accept(itemStack, itemConsumeCount.get(itemStack));
-        }
+        itemRemain.forEach(pair -> consumer.accept(pair.getA(), pair.getB()));
+    }
+
+    public void splitTaskWith(int maxSlotConsume) {
+
     }
 }

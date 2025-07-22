@@ -1,0 +1,17 @@
+{
+  "type": "maid_storage_manager:copy",
+  "ingredients": [
+    {
+      "item": "maid_storage_manager:craft_guide",
+      "count": 1
+    },
+    {
+      "item": "maid_storage_manager:craft_guide",
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "maid_storage_manager:craft_guide",
+    "count": 1
+  }
+}

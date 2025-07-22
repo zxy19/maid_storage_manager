@@ -106,7 +106,6 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         if (context instanceof IStorageInteractContext isic) {
             isic.tick(taker);
         } else if (context instanceof IStorageExtractableContext isec) {
-            //TODO:MATCH NBT
             if (isec.hasTask())
                 isec.tick(taker);
             else

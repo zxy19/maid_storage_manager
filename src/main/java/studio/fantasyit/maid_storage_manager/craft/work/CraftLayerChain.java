@@ -14,6 +14,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -526,6 +527,7 @@ public class CraftLayerChain {
      * @param maid
      */
     public void showCraftingProgress(EntityMaid maid) {
+        if (Config.noBubbleForSub && !isMaster) return;
         int done = 0;
         int total = 0;
         for (SolvedCraftLayer node : nodes) {
@@ -977,6 +979,17 @@ public class CraftLayerChain {
     // endregion
 
     //region 方块占用控制
+    public boolean tryUseAnotherCraftGuide(ServerLevel level, EntityMaid maid) {
+        CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);
+        CraftLayer layer = getCurrentLayer();
+        SolvedCraftLayer node = getCurrentNode();
+        if (layer == null) return false;
+        Optional<CraftGuideData> craftDataO = layer.getCraftData();
+        if (craftDataO.isPresent()) {
+            return layer.switchToNonOccupied(level, maid, node.index(), craftBlockOccupy);
+        }
+        return false;
+    }
 
     public boolean checkIsCurrentOccupied(ServerLevel level, EntityMaid maid) {
         CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);

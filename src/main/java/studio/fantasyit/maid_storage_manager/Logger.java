@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Arrays;
 
 public class Logger {
-    static org.slf4j.Logger logger = LogUtils.getLogger();
+    public static org.slf4j.Logger logger = LogUtils.getLogger();
 
     public static void info(String message, Object... a) {
         logger.info(message, a);

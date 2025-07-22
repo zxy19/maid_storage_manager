@@ -129,6 +129,8 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
                     itemStacks,
                     resultNode.count
             );
+            craftLayer.setUsableCraftData(node.sameData);
+
             results.add(craftLayer);
         }
         CraftNode lastNode = (CraftNode) getNode(lastOne.index);

@@ -9,10 +9,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
@@ -83,18 +80,66 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     public static class CraftNode extends Node {
         public final CraftGuideData craftGuideData;
+        public final List<CraftGuideData> sameData;
         public int scheduled;
         public boolean hasLoopIngredient;
 
         public CraftNode(int id, boolean related, CraftGuideData craftGuideData) {
             super(id, related);
             this.craftGuideData = craftGuideData;
+            this.sameData = new ArrayList<>(List.of(craftGuideData));
             this.scheduled = 0;
             this.hasLoopIngredient = false;
         }
 
         public void addScheduled(int count) {
             this.scheduled += count;
+        }
+
+        public void addSame(CraftGuideData data) {
+            this.sameData.add(data);
+        }
+    }
+
+
+    public record HashableItemNodeCount(int id, int count) {
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, count);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            HashableItemNodeCount that = (HashableItemNodeCount) o;
+            return id == that.id && count == that.count;
+        }
+    }
+
+    public record ItemSetPair(HashSet<HashableItemNodeCount> inputs, HashSet<HashableItemNodeCount> outputs) {
+        @Override
+        public int hashCode() {
+            return Objects.hash(inputs, outputs);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof ItemSetPair itemSetPair &&
+                    itemSetPair.inputs.size() == this.inputs.size() &&
+                    itemSetPair.outputs.size() == this.outputs.size()
+            ) {
+                for (HashableItemNodeCount input : itemSetPair.inputs) {
+                    if (!this.inputs.contains(input))
+                        return false;
+                }
+                for (HashableItemNodeCount output : itemSetPair.outputs) {
+                    if (!this.outputs.contains(output))
+                        return false;
+                }
+                return true;
+            }
+            return false;
         }
     }
 
@@ -163,6 +208,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     LoopSolver loopSolver;
     int buildGraphIndex;
+    HashMap<ItemSetPair, Integer> existCrafting = new HashMap<>();
 
     public void rebuildGraph() {
         buildGraphIndex = 0;
@@ -172,15 +218,44 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         int stepCount = 0;
         for (; buildGraphIndex < nodes.size() && stepCount < 32; buildGraphIndex++) {
             Node node = nodes.get(buildGraphIndex);
+
             if (node instanceof CraftNode craftNode) {
                 stepCount++;
+                List<ItemNode> inputNodes = new ArrayList<>();
+                List<Integer> inputCounts = new ArrayList<>();
+                HashSet<HashableItemNodeCount> inputsHash = new HashSet<>();
+
+                List<ItemNode> outputNodes = new ArrayList<>();
+                List<Integer> outputCounts = new ArrayList<>();
+                HashSet<HashableItemNodeCount> outputsHash = new HashSet<>();
+
                 for (ItemStack input : craftNode.craftGuideData.getAllInputItemsWithOptional()) {
-                    ItemNode itemNode = getItemNodeOrCreate(input);
-                    craftNode.addEdge(itemNode, input.getCount());
+                    ItemNode in = getItemNodeOrCreate(input);
+                    inputNodes.add(in);
+                    inputCounts.add(input.getCount());
+                    inputsHash.add(new HashableItemNodeCount(in.id, input.getCount()));
                 }
                 for (ItemStack output : craftNode.craftGuideData.getAllOutputItems()) {
-                    ItemNode itemNode = getItemNodeOrCreate(output);
-                    itemNode.addEdge(craftNode, output.getCount());
+                    ItemNode in = getItemNodeOrCreate(output);
+                    outputNodes.add(in);
+                    outputCounts.add(output.getCount());
+                    outputsHash.add(new HashableItemNodeCount(in.id, output.getCount()));
+                }
+
+                ItemSetPair hash = new ItemSetPair(inputsHash, outputsHash);
+                if (!existCrafting.containsKey(hash)) {
+                    existCrafting.put(hash, craftNode.id);
+                } else {
+                    CraftNode sameNode = (CraftNode) getNode(existCrafting.get(hash));
+                    sameNode.addSame(craftNode.craftGuideData);
+                    continue;
+                }
+
+                for (int i = 0; i < inputNodes.size(); i++) {
+                    craftNode.addEdge(inputNodes.get(i), inputCounts.get(i));
+                }
+                for (int i = 0; i < outputNodes.size(); i++) {
+                    outputNodes.get(i).addEdge(craftNode, outputCounts.get(i));
                 }
             }
         }
@@ -203,6 +278,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     @Override
     public void restoreCurrent() {
+        existCrafting = new HashMap<>();
         for (Node node : nodes) {
             node.related = false;
             node.maxSuccess = Integer.MAX_VALUE;
@@ -215,6 +291,8 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             } else if (node instanceof CraftNode craftNode) {
                 craftNode.scheduled = 0;
                 craftNode.hasLoopIngredient = false;
+                craftNode.sameData.clear();
+                craftNode.sameData.add(craftNode.craftGuideData);
             }
         }
     }

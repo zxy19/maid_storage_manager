@@ -10,6 +10,7 @@ import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.fml.ModLoadingContext;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
 
@@ -166,6 +167,11 @@ public class ClothEntry {
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.throwItemVector = t))
                         .build()
         );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.behavior.no_bubble_for_sub"), Config.noBubbleForSub)
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.noBubbleForSub = t))
+                        .build()
+        );
     }
 
     private static void addEntrySpeed(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
@@ -258,6 +264,12 @@ public class ClothEntry {
                                 : Optional.of(Component.translatable("config.maid_storage_manager.crafting.solver.error"))
                         )
                         .setSaveConsumer(s -> Config.saveAfter(() -> Config.craftingSolver = s.stream().map(Config.CraftSolver::valueOf).toList()))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startEnumSelector(Component.translatable("config.maid_storage_manager.crafting.shortest_path_evaluator"), CraftPlanEvaluator.class, Config.craftingShortestPathEvaluator)
+                        .setEnumNameProvider(t -> Component.translatable("config.maid_storage_manager.crafting.shortest_path_evaluator." + t.name().toLowerCase()))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingShortestPathEvaluator = t))
                         .build()
         );
         builder.add(

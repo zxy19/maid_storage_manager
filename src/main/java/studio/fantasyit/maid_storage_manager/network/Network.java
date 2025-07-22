@@ -160,6 +160,8 @@ public class Network {
                             ItemStack item = sender.getItemInHand(InteractionHand.MAIN_HAND);
                             if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
                                 CraftGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
+                            } else if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.ALT_SCROLL) {
+                                CraftGuide.rollSpecial(item, sender, msg.value > 0 ? -1 : 1);
                             } else if (item.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
                                 StorageDefineBauble.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                             } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {

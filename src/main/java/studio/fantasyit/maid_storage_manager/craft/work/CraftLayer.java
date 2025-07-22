@@ -4,7 +4,9 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -21,6 +23,7 @@ public class CraftLayer {
     public static Codec<CraftLayer> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     CraftGuideData.CODEC.optionalFieldOf("craft").forGetter(CraftLayer::getCraftData),
+                    CraftGuideData.CODEC.listOf().fieldOf("usableCraft").forGetter(CraftLayer::getUsableCraftData),
                     ItemStack.CODEC.listOf().fieldOf("item").forGetter(CraftLayer::getItems),
                     Codec.INT.listOf().fieldOf("collectedCounts").forGetter(CraftLayer::getCollectedCounts),
                     Codec.INT.fieldOf("count").forGetter(CraftLayer::getCount),
@@ -32,10 +35,12 @@ public class CraftLayer {
             ).apply(instance, CraftLayer::new)
     );
 
+
     protected int tryTick;
     protected CompoundTag env;
     protected CraftGuideData craftData;
     protected List<CraftGuideStepData> steps;
+    protected List<CraftGuideData> usableCraftData;
 
     protected List<ItemStack> items;
     protected List<Integer> collectedCounts;
@@ -46,6 +51,7 @@ public class CraftLayer {
     protected int step;
 
     public CraftLayer(Optional<CraftGuideData> craftData,
+                      List<CraftGuideData> usableCraftData,
                       List<ItemStack> items,
                       List<Integer> collectedCounts,
                       Integer count,
@@ -55,6 +61,7 @@ public class CraftLayer {
                       int step,
                       CompoundTag env
     ) {
+        this.usableCraftData = usableCraftData;
         this.craftData = craftData.orElse(null);
         this.steps = new ArrayList<>(craftData.map(CraftGuideData::getTransformedSteps).orElse(new ArrayList<>()));
         this.items = new ArrayList<>(items);
@@ -70,6 +77,7 @@ public class CraftLayer {
     public CraftLayer(Optional<CraftGuideData> craftData, List<ItemStack> items, Integer count) {
         this.craftData = craftData.orElse(null);
         this.steps = new ArrayList<>(craftData.map(CraftGuideData::getTransformedSteps).orElse(new ArrayList<>()));
+        this.usableCraftData = List.of();
         this.items = new ArrayList<>(items);
         this.tryTick = 0;
         this.collectedCounts = new ArrayList<>();
@@ -83,6 +91,39 @@ public class CraftLayer {
         this.env = new CompoundTag();
     }
 
+    public CraftLayer(Optional<CraftGuideData> craftData, List<CraftGuideData> usableCraftData, List<ItemStack> items, int count) {
+        this(craftData, items, count);
+        setUsableCraftData(usableCraftData);
+    }
+
+
+    public List<CraftGuideData> getUsableCraftData() {
+        return usableCraftData;
+    }
+
+    public void setUsableCraftData(List<CraftGuideData> usableCraftData) {
+        this.usableCraftData = usableCraftData;
+    }
+
+    public boolean switchToNonOccupied(ServerLevel level, EntityMaid maid, int layerIndex, CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy) {
+        //第一轮开始前允许更改目标
+        if (step != 0) return false;
+        for (CraftGuideData usable : getUsableCraftData()) {
+            List<CraftGuideStepData> newSteps = usable.getTransformedSteps();
+            if (newSteps
+                    .stream().noneMatch(stepData -> craftBlockOccupy.isOccupiedByNonCurrent(
+                            maid,
+                            stepData.getStorage().pos,
+                            layerIndex
+                    ))) {
+                craftData = usable;
+                steps = new ArrayList<>(newSteps);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Integer getCount() {
         return count;
     }
@@ -94,9 +135,11 @@ public class CraftLayer {
     public List<ItemStack> getItems() {
         return items;
     }
+
     public void setItems(List<ItemStack> items) {
         this.items = items;
     }
+
     public List<Integer> getCollectedCounts() {
         return collectedCounts;
     }
@@ -257,6 +300,7 @@ public class CraftLayer {
     public CraftLayer copyWithNoState() {
         return new CraftLayer(
                 Optional.ofNullable(this.craftData),
+                this.usableCraftData,
                 this.items,
                 this.count
         );
