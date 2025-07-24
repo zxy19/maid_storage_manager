@@ -83,11 +83,12 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     protected boolean tryReadyMaid(EntityMaid m, EntityMaid maid) {
         if (targetEntityReady) return true;
-        if (MemoryUtil.isWorking(m)) return false;
-        MemoryUtil.setWorking(m, true);
+        if (MemoryUtil.isWorking(m) && !MemoryUtil.isParallelWorking(m)) return false;
+        MemoryUtil.joinAndStartParallelWorking(m);
         m.getNavigation().stop();
         MemoryUtil.setTarget(m, m, (float) Config.collectSpeed);
         targetEntityReady = true;
+        InvUtil.mergeSameStack(m.getAvailableInv(true));
         return true;
     }
 
@@ -111,10 +112,12 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                 DebugData.invChange(DebugData.InvChange.IN, targetMaid, thrown.getItem());
                 InvUtil.pickUpVirtual(targetMaid, thrown);
                 DebugData.invChange(DebugData.InvChange.CURRENT, targetMaid, ItemStack.EMPTY);
-                if (!thrown.isAlive())
+                if (!thrown.isAlive()) {
                     thrown = null;
+                }
             } else
                 thrown = null;
+            breath.reset();
             return;
         }
         CombinedInvWrapper inv = maid.getAvailableInv(false);
@@ -169,7 +172,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (targetEntity instanceof EntityMaid m) {
             MemoryUtil.clearTarget(m);
             MemoryUtil.clearPickUpItemTemp(m);
-            MemoryUtil.setWorking(m, false);
+            MemoryUtil.leaveParallelWorking(m);
         }
         //正在合成过程中，合成树还未结束，直接返回合成
         if (MemoryUtil.getCrafting(maid).hasPlan()) {

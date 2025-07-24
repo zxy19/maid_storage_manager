@@ -94,5 +94,6 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         if (RequestListItem.getRepeatInterval(maid.getMainHandItem()) > 0) {
             AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_REPEAT_GOT);
         }
+        MemoryUtil.resetParallelWorking(maid);
     }
 }

@@ -68,6 +68,7 @@ public class MaidExtension implements ILittleMaid {
                         MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get(),
                         MemoryModuleRegistry.MEAL.get(),
                         MemoryModuleRegistry.IS_WORKING.get(),
+                        MemoryModuleRegistry.PARALLEL_WORKING.get(),
                         MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get()
                 );
             }

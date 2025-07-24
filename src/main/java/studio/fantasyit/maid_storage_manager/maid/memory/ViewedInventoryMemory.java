@@ -51,7 +51,9 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                     Codec.INT.fieldOf("coolingDown")
                             .forGetter(ViewedInventoryMemory::getCoolingDown),
                     Target.CODEC.listOf().fieldOf("mark_changed")
-                            .forGetter(ViewedInventoryMemory::getMarkChanged)
+                            .forGetter(ViewedInventoryMemory::getMarkChanged),
+                    ItemStack.CODEC.listOf().fieldOf("waitingAdd")
+                            .forGetter(ViewedInventoryMemory::getWaitingAdd)
             ).apply(instance, ViewedInventoryMemory::new)
     );
     public Map<String, Map<String, List<ItemCount>>> viewedInventory;
@@ -59,11 +61,14 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public int coolingDown;
     public Set<Target> lockForChange = new HashSet<>();
     public boolean viewing;
+    private final ArrayList<ItemStack> waitingAdd;
 
     public ViewedInventoryMemory(TargetData targetData,
                                  Map<String, Map<String, List<ItemCount>>> viewedInventory,
                                  int coolingDown,
-                                 List<Target> markChanged) {
+                                 List<Target> markChanged,
+                                 List<ItemStack> waitingAdd
+    ) {
         super(targetData);
         this.viewedInventory = new HashMap<>();
         for (Map.Entry<String, Map<String, List<ItemCount>>> entry : viewedInventory.entrySet()) {
@@ -75,6 +80,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         }
         this.coolingDown = coolingDown;
         this.markChanged = new LinkedList<>(markChanged);
+        this.waitingAdd = new ArrayList<>(waitingAdd);
     }
 
     public ViewedInventoryMemory() {
@@ -82,6 +88,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         viewedInventory = new HashMap<>();
         coolingDown = 0;
         markChanged = new LinkedList<>();
+        waitingAdd = new ArrayList<>();
     }
 
     public int getCoolingDown() {
@@ -217,6 +224,8 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             list.add(new ItemCount(itemStack.copyWithCount(1), Math.min(count, Integer.MAX_VALUE / 2)));
         map.put(itemKey, list);
         viewedInventory.put(pos.toStoreString(), map);
+        if (!waitingAdd.isEmpty())
+            ItemStackUtil.removeIsMatchInList(waitingAdd, itemStack.copyWithCount(count), true);
     }
 
     public void removeUnvisited() {
@@ -330,10 +339,21 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
         return result.booleanValue();
     }
 
-    public boolean isViewing(){
+    public boolean isViewing() {
         return viewing;
     }
-    public void setViewing(boolean viewing){
+
+    public void setViewing(boolean viewing) {
         this.viewing = viewing;
+    }
+
+    public List<ItemStack> getWaitingAdd() {
+        return waitingAdd;
+    }
+    public void clearWaitingAdd() {
+        waitingAdd.clear();
+    }
+    public void addWaitingAdd(ItemStack itemStack) {
+        waitingAdd.add(itemStack);
     }
 }

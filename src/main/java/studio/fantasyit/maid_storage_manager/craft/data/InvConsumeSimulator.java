@@ -3,10 +3,13 @@ package studio.fantasyit.maid_storage_manager.craft.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
+import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 public class InvConsumeSimulator {
@@ -16,10 +19,13 @@ public class InvConsumeSimulator {
             ).apply(instance, InvConsumeSimulator::new)
     );
 
+    public boolean enableLog = false;
     Map<ItemStack, Integer> itemConsumeCount;
+    Map<ItemStack, Integer> snapshot;
 
     public InvConsumeSimulator(Map<ItemStack, Integer> itemConsumeCount) {
         this.itemConsumeCount = new HashMap<>(itemConsumeCount);
+        snapshot = null;
     }
 
     public InvConsumeSimulator() {
@@ -27,10 +33,13 @@ public class InvConsumeSimulator {
     }
 
     public void addConsumeCount(ItemStack itemStack, int count) {
+        if (enableLog && snapshot == null) {
+            Logger.debug("[II]addConsumeCount %s %d", itemStack.getItem(), count);
+        }
         HashSet<ItemStack> ks = new HashSet<>(itemConsumeCount.keySet());
         for (ItemStack itemStack1 : ks) {
             if (ItemStack.isSameItemSameTags(itemStack1, itemStack)) {
-                int currentCount = Math.min(itemStack1.getMaxStackSize(), count);
+                int currentCount = Math.min(itemStack1.getMaxStackSize() - itemConsumeCount.get(itemStack1), count);
                 count -= currentCount;
                 itemConsumeCount.put(itemStack1, itemConsumeCount.get(itemStack1) + currentCount);
                 if (count <= 0)
@@ -45,6 +54,9 @@ public class InvConsumeSimulator {
     }
 
     public void removeConsumeCount(ItemStack itemStack, int count) {
+        if (enableLog && snapshot == null) {
+            Logger.debug("[II]removeConsumeCount %s %d", itemStack.getItem(), count);
+        }
         HashSet<ItemStack> ks = new HashSet<>(itemConsumeCount.keySet());
         for (ItemStack itemStack1 : ks) {
             if (ItemStack.isSameItemSameTags(itemStack1, itemStack)) {
@@ -80,6 +92,30 @@ public class InvConsumeSimulator {
                 );
     }
 
+    public void addLayerOutput(CraftLayer layer) {
+        layer.getCraftData()
+                .ifPresent(craftData ->
+                        craftData
+                                .getOutput()
+                                .forEach(
+                                        itemStack ->
+                                                addConsumeCount(itemStack, itemStack.getCount() * layer.getCount())
+                                )
+                );
+    }
+
+    public void removeLayerOutput(CraftLayer layer) {
+        layer.getCraftData()
+                .ifPresent(craftData ->
+                        craftData
+                                .getAllOutputItemsWithOptional()
+                                .forEach(
+                                        itemStack ->
+                                                removeConsumeCount(itemStack, itemStack.getCount() * layer.getCount())
+                                )
+                );
+    }
+
     public void removeLayer(CraftLayer layer) {
         layer.getItems().forEach(itemStack -> removeConsumeCount(itemStack, itemStack.getCount()));
         layer.getCraftData()
@@ -93,34 +129,26 @@ public class InvConsumeSimulator {
                 );
     }
 
-    public void removeLayerAfterFinish(CraftLayer layer) {
-        layer.getCraftData()
-                .ifPresent(craftData -> {
-                            craftData
-                                    .getAllOutputItems()
-                                    .forEach(
-                                            itemStack ->
-                                                    removeConsumeCount(itemStack, itemStack.getCount() * layer.getDoneCount())
-                                    );
-                            craftData
-                                    .getAllInputItems()
-                                    .forEach(
-                                            itemStack ->
-                                                    addConsumeCount(itemStack, itemStack.getCount() * layer.getDoneCount())
-                                    );
-                        }
-                );
+    public void removeLayerInput(CraftLayer layer) {
+        layer.getItems().forEach(itemStack -> removeConsumeCount(itemStack, itemStack.getCount()));
     }
 
-    public void removeLayerInputAll(CraftLayer layer) {
-        layer.getCraftData()
-                .ifPresent(craftData ->
-                        craftData
-                                .getAllOutputItemsWithOptional()
-                                .forEach(
-                                        itemStack ->
-                                                removeConsumeCount(itemStack, itemStack.getCount() * layer.getDoneCount())
-                                )
-                );
+    public List<Pair<ItemStack, Integer>> getRemain() {
+        return itemConsumeCount
+                .entrySet()
+                .stream()
+                .map(e -> new Pair<>(e.getKey(), e.getValue()))
+                .toList();
+    }
+
+    public void snapshot() {
+        snapshot = new HashMap<>(itemConsumeCount);
+    }
+
+    public void restoreSnapshot() {
+        if (snapshot == null)
+            throw new IllegalStateException("snapshot is null");
+        itemConsumeCount = snapshot;
+        snapshot = null;
     }
 }

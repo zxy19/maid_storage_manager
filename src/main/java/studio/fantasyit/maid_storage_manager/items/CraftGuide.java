@@ -111,7 +111,6 @@ public class CraftGuide extends Item implements MenuProvider {
     public static void setSelectId(ItemStack itemInHand, int value) {
         CompoundTag tag = itemInHand.getOrCreateTag();
         tag.putInt(TAG_SELECTING, value);
-        tag.putInt(TAG_SPECIAL_OP, 0);
         itemInHand.setTag(tag);
     }
 

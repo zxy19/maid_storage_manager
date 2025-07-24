@@ -10,6 +10,7 @@
     "minecraft:enchanted_book",
     "#forge:tools",
     "#forge:armors",
+    "maid_storage_manager:work_card",
     {
       "id": "tacz:ammo",
       "required": "false"

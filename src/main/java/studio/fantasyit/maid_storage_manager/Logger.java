@@ -20,6 +20,10 @@ public class Logger {
     }
 
     public static void debug(String message, Object... a) {
+        logger.debug(String.format(message, a));
+    }
+
+    public static void debugTrace(String message, Object... a) {
         String source = Arrays.stream(Thread.currentThread().getStackTrace())
                 .skip(3)
                 .findFirst()

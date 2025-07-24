@@ -63,6 +63,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
         if (context != null)
             context.start(maid, level, target);
         plan.showCraftingProgress(maid);
+        InvUtil.mergeSameStack(maid.getAvailableInv(true));
     }
 
     @Override

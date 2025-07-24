@@ -142,6 +142,29 @@ public class MemoryUtil {
         }
     }
 
+    public static void resetParallelWorking(EntityMaid maid) {
+        maid.getBrain().eraseMemory(MemoryModuleRegistry.PARALLEL_WORKING.get());
+    }
+
+    public static boolean isParallelWorking(EntityMaid maid) {
+        return maid.getBrain().getMemory(MemoryModuleRegistry.PARALLEL_WORKING.get()).orElse(0) > 0;
+    }
+
+    public static void joinAndStartParallelWorking(EntityMaid maid) {
+        int parallelWorking = maid.getBrain().getMemory(MemoryModuleRegistry.PARALLEL_WORKING.get()).orElse(0) + 1;
+        maid.getBrain().setMemory(MemoryModuleRegistry.PARALLEL_WORKING.get(), parallelWorking);
+        setWorking(maid, true);
+    }
+
+    public static void leaveParallelWorking(EntityMaid maid) {
+        int parallelWorking = maid.getBrain().getMemory(MemoryModuleRegistry.PARALLEL_WORKING.get()).orElse(0) - 1;
+        if (parallelWorking <= 0) {
+            parallelWorking = 0;
+            setWorking(maid, false);
+        }
+        maid.getBrain().setMemory(MemoryModuleRegistry.PARALLEL_WORKING.get(), parallelWorking);
+    }
+
     public static boolean canPickUpItemTemp(EntityMaid maid, UUID target) {
         if (maid.getBrain().hasMemoryValue(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get())) {
             return maid.getBrain().getMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get()).map(uuid -> uuid.equals(target)).orElse(false);

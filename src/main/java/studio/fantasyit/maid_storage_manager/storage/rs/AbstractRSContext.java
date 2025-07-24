@@ -47,7 +47,7 @@ abstract public class AbstractRSContext extends AbstractFilterableBlockStorage i
         if (network != null) {
             IStorageCache<ItemStack> itemStorageCache = network.getItemStorageCache();
             stackList = itemStorageCache.getList();
-            stackListStacks = stackList.getStacks();
+            stackListStacks = new ArrayList<>(stackList.getStacks());
             craftable = itemStorageCache.getCraftablesList();
         }
     }

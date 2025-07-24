@@ -28,6 +28,7 @@ import java.util.UUID;
 
 public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
     private List<ItemStack> list;
+    private List<ItemStack> originalList;
 
     public DispatchedGatherBehavior() {
         super(ImmutableMap.of());
@@ -45,7 +46,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
         @Nullable Entity entity = level.getEntity(entityUU);
         if (entity == null)
             return false;
-        if (!(entity instanceof EntityMaid targetMaid) || MemoryUtil.isWorking(targetMaid))
+        if (!(entity instanceof EntityMaid targetMaid) || (MemoryUtil.isWorking(targetMaid)) && !MemoryUtil.isParallelWorking(targetMaid))
             return false;
 
         if (entity.distanceTo(maid) < 3) return true;
@@ -84,9 +85,10 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
                 if (plan.hasCurrent()) {
                     CraftLayer outLayer = plan.getCurrentLayer();
                     list = targetPlan.getDispatchedRemainItem(outLayer);
+                    originalList = list.stream().map(ItemStack::copy).toList();
                     target = maid1;
                     target.getNavigation().stop();
-                    MemoryUtil.setWorking(target, true);
+                    MemoryUtil.joinAndStartParallelWorking(target);
                     MemoryUtil.setTarget(target, target, (float) Config.collectSpeed);
                 }
             }
@@ -129,6 +131,7 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
             DebugData.invChange(DebugData.InvChange.CURRENT, maid, ItemStack.EMPTY);
             if (!thrown.isAlive())
                 thrown = null;
+            breath.reset();
         }
     }
 
@@ -137,7 +140,9 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).setGatheringDispatched(false);
         MemoryUtil.clearTarget(maid);
         MemoryUtil.clearTarget(target);
-        MemoryUtil.setWorking(target, false);
+        if (MemoryUtil.getCrafting(target).hasPlan())
+            MemoryUtil.getCrafting(target).plan().removeDispatchedItems(originalList);
+        MemoryUtil.leaveParallelWorking(target);
         MemoryUtil.clearPickUpItemTemp(maid);
     }
 

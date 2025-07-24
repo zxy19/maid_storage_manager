@@ -6,7 +6,10 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -19,7 +22,7 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
     int count = 0;
 
     public ThrowToPlaceBehavior() {
-        super(Map.of());
+        super(Map.of(), 1200);
     }
 
     @Override
@@ -33,8 +36,9 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         if (Conditions.isWaitingForReturn(maid)) return false;
-        if (Conditions.isNothingToPlace(maid)) return false;
-        if (count >= maid.getAvailableInv(false).getSlots()) return false;
+        if (count >= maid.getAvailableInv(false).getSlots()) {
+            return !MemoryUtil.getViewedInventory(maid).getWaitingAdd().isEmpty();
+        }
         return true;
     }
 
@@ -52,19 +56,32 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
         if (count >= inv.getSlots()) {
             return;
         }
-        @NotNull ItemStack item = inv.extractItem(count, inv.getStackInSlot(count).getCount(), false);
+        @NotNull ItemStack item = inv.extractItem(count, inv.getStackInSlot(count).getCount(), true);
+        if (item.isEmpty()) {
+            count++;
+            return;
+        }
+        if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            if (!RequestListItem.isIgnored(item)) {
+                count++;
+                return;
+            }
+        }
+        item = inv.extractItem(count, inv.getStackInSlot(count).getCount(), false);
         InvUtil.throwItem(maid, item);
+        MemoryUtil.getViewedInventory(maid).addWaitingAdd(item);
+
         count++;
+        if (count >= inv.getSlots())
+            DebugData.sendDebug("[THROW]Start waiting");
     }
 
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        DebugData.sendDebug("[THROW]done");
+        MemoryUtil.getViewedInventory(maid).clearWaitingAdd();
         MemoryUtil.setWorking(maid, false);
-    }
-
-    @Override
-    protected boolean timedOut(long p_22537_) {
-        return false;
+        MemoryUtil.getCrafting(maid).tryStartIfHasPlan();
     }
 }

@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
@@ -18,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.data.InvConsumeSimulator;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -55,7 +57,8 @@ public class CraftLayerChain {
                             t.dispatchedTaskMapping.entrySet().stream().map(p -> new Pair<>(p.getKey(), new Pair<>(p.getValue().getA(), p.getValue().getB()))).toList()
                     ),
                     Codec.INT.fieldOf("maxParallel").forGetter(t -> t.maxParallel),
-                    Codec.INT.fieldOf("currentParallel").forGetter(t -> t.currentParallel)
+                    Codec.INT.fieldOf("currentParallel").forGetter(t -> t.currentParallel),
+                    InvConsumeSimulator.CODEC.fieldOf("invConsumeSimulator").forGetter(t -> t.invConsumeSimulator)
             ).apply(instance, CraftLayerChain::new)
     );
 
@@ -73,6 +76,10 @@ public class CraftLayerChain {
      */
     public List<ItemStack> remainMaterials;
 
+    /**
+     * 模拟背包用量
+     */
+    private final InvConsumeSimulator invConsumeSimulator;
 
     public Queue<SolvedCraftLayer> workingQueue;
 
@@ -147,7 +154,8 @@ public class CraftLayerChain {
             boolean isMaster,
             List<Pair<UUID, Pair<Integer, UUID>>> dispatchedTasks,
             int maxParallel,
-            int currentParallel
+            int currentParallel,
+            InvConsumeSimulator invConsumeSimulator
     ) {
         this.layers = new ArrayList<>(layers);
         this.nodes = new ArrayList<>(nodes);
@@ -165,9 +173,12 @@ public class CraftLayerChain {
         dispatchedTaskTickCount = new HashMap<>();
         this.maxParallel = maxParallel;
         this.currentParallel = currentParallel;
+        this.invConsumeSimulator = invConsumeSimulator;
         if (freeze) {
             addAllLayerToQueue();
         }
+        if (isMaster && Config.enableDebug)
+            invConsumeSimulator.enableLog = true;
     }
 
     public CraftLayerChain(EntityMaid maid) {
@@ -181,8 +192,9 @@ public class CraftLayerChain {
                 StoppingAdding.NONE.name(),
                 true,
                 List.of(),
-                StorageManagerConfigData.get(maid).maxParallel(),
-                0
+                maid.getVehicle() != null ? 0 : StorageManagerConfigData.get(maid).maxParallel(),
+                0,
+                new InvConsumeSimulator()
         );
     }
 
@@ -197,6 +209,7 @@ public class CraftLayerChain {
     public void setMaster(UUID uuid, UUID workUUID) {
         this.isMaster = false;
         this.dispatchedTaskMapping.put(uuid, new Pair<>(0, workUUID));
+        invConsumeSimulator.enableLog = false;
     }
 
     public void setChanged() {
@@ -364,9 +377,15 @@ public class CraftLayerChain {
                 continue;
             if (node.slotConsume() > targetFreeSlot)
                 continue;
-            if (node.slotOutput() > freeSlots)
-                continue;
+
             CraftLayer layer = layers.get(i);
+            invConsumeSimulator.snapshot();
+            invConsumeSimulator.addLayerOutput(layer);
+            int totalConsume = invConsumeSimulator.getCurrentSlotConsume();
+            invConsumeSimulator.restoreSnapshot();
+            if (totalConsume > freeSlots) {
+                continue;
+            }
             if (layer.getCraftData().isEmpty())
                 continue;
 
@@ -384,7 +403,7 @@ public class CraftLayerChain {
     }
 
     public void doDispatchLayer(SolvedCraftLayer node, UUID maidUUID, UUID uuid) {
-        freeSlots -= node.slotOutput();
+        invConsumeSimulator.addLayerOutput(layers.get(node.index()));
         node.progress().setValue(SolvedCraftLayer.Progress.DISPATCHED);
         dispatchedTaskMapping.put(maidUUID, new Pair<>(node.index(), uuid));
     }
@@ -403,6 +422,10 @@ public class CraftLayerChain {
             }
         }
         return toTakes;
+    }
+
+    public void removeDispatchedItems(List<ItemStack> list) {
+        list.forEach(itemStack -> invConsumeSimulator.removeConsumeCount(itemStack, itemStack.getCount()));
     }
 
     /**
@@ -442,6 +465,7 @@ public class CraftLayerChain {
         if (allSuccess) {
             finishLayer(node, layer);
             checkAndSwitchGroup(maid);
+            checkIsFullInv(maid);
         } else {
             clearAndStopAdding(StoppingAdding.RESCHEDULE);
             handleStopAddingEvent(maid);
@@ -500,6 +524,7 @@ public class CraftLayerChain {
             node.progress().setValue(SolvedCraftLayer.Progress.IDLE);
             //当前任务重新加入队列
             workingQueue.add(node);
+            invConsumeSimulator.removeLayerOutput(craftLayer);
         }
         //当前是子合成任务。则当前任务直接判定失败，全部结束即可
         else {
@@ -862,15 +887,18 @@ public class CraftLayerChain {
         workingQueue.poll();
         finishLayer(node, layer);
         checkAndSwitchGroup(maid);
+        checkIsFullInv(maid);
     }
 
+
     private void finishLayer(SolvedCraftLayer node, CraftLayer layer) {
-        if (node.progress().getValue() == SolvedCraftLayer.Progress.DISPATCHED)
-            freeSlots += node.slotOutput();
-        else {
-            freeSlots += node.slotConsume();
+        if (node.progress().getValue() != SolvedCraftLayer.Progress.DISPATCHED) {
+            //如果非分发层完成，那么我们的必要输入此时应该已经全部完成了，移除这些层。
+            invConsumeSimulator.removeLayerInput(layer);
             currentParallel--;
         }
+        //如果是分发层，那么这个步骤会在另一处进行
+
         node.progress().setValue(SolvedCraftLayer.Progress.FINISHED);
 
         layer.getCraftData().ifPresent(data -> {
@@ -918,14 +946,24 @@ public class CraftLayerChain {
             return false;
         if (node.inDegree().getValue() > 0)
             return false;
-        if (node.slotConsume() > freeSlots)
-            return false;
         if (currentParallel >= maxParallel)
             //最终层，允许启动
             if (maxParallel != 0 || layer.getCraftData().isPresent())
                 return false;
+
+        //测试最大使用格子数
+        invConsumeSimulator.snapshot();
+        invConsumeSimulator.removeLayerInput(layer);
+        invConsumeSimulator.addLayer(layer);
+        int totalSlots = invConsumeSimulator.getCurrentSlotConsume();
+        invConsumeSimulator.restoreSnapshot();
+
+        if (totalSlots > freeSlots) {
+            return false;
+        }
+        invConsumeSimulator.removeLayerInput(layer);
+        invConsumeSimulator.addLayer(layer);
         currentParallel++;
-        freeSlots -= node.slotConsume();
         node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
         for (int i = 0; i < this.remainMaterials.size(); i++) {
             ItemStack toTake = layer.memorizeItem(remainMaterials.get(i), remainMaterials.get(i).getCount());
@@ -938,6 +976,7 @@ public class CraftLayerChain {
         //来到树根了，清除剩余的材料（因为女仆会尝试放置到附近）
         if (layer.getCraftData().isEmpty()) {
             remainMaterials.clear();
+            invConsumeSimulator.clear();
         }
         DebugData.sendDebug(
                 "[CRAFT_CHAIN]Starting Layer,%s", layer.getCraftData().map(e -> "Normal").orElse("TreeRoot")
@@ -946,7 +985,7 @@ public class CraftLayerChain {
         return true;
     }
 
-    protected boolean startAny() {
+    public boolean startAny() {
         return startAny(false);
     }
 
@@ -984,9 +1023,44 @@ public class CraftLayerChain {
         }
 
         remainMaterials.clear();
+        invConsumeSimulator.clear();
         group++;
         addAllLayerToQueue();
         MemoryUtil.getCrafting(maid).setGoPlacingBeforeCraft(true);
+    }
+
+    private void checkIsFullInv(EntityMaid maid) {
+        if (!isCurrentWorking() && !isCurrentGathering() && dispatchedTaskMapping.isEmpty() && !workingQueue.isEmpty()) {
+            MutableBoolean isFull = new MutableBoolean(true);
+            //检查如果队列中所有的任务都不满足背包要求，那么进行一次存放
+            workingQueue.forEach(node -> {
+                CraftLayer layer = layers.get(node.index());
+                invConsumeSimulator.snapshot();
+                if (maxParallel != 0) {
+                    invConsumeSimulator.removeLayerInput(layer);
+                    invConsumeSimulator.addLayer(layer);
+                } else {
+                    invConsumeSimulator.addLayerOutput(layer);
+                }
+                int totalSlots = invConsumeSimulator.getCurrentSlotConsume();
+                invConsumeSimulator.restoreSnapshot();
+                if (totalSlots <= freeSlots) {
+                    isFull.setFalse();
+                }
+            });
+
+            if (hasCurrent()) {
+                if (getCurrentLayer().getCraftData().isEmpty()) {
+                    isFull.setFalse();
+                }
+            }
+
+            if (isFull.getValue() && !Conditions.isNothingToPlace(maid) && !isStoppingAdding.value) {
+                remainMaterials.clear();
+                invConsumeSimulator.clear();
+                MemoryUtil.getCrafting(maid).setGoPlacingBeforeCraft(true);
+            }
+        }
     }
 
     public boolean tryReleaseAndStartNext() {
@@ -1031,6 +1105,7 @@ public class CraftLayerChain {
         CraftGuideData craftData = craftDataO.get();
         int currentIndex = getCurrentNode().index();
         for (CraftGuideStepData stepData : craftData.getSteps()) {
+            if (stepData.actionType.noOccupation()) continue;
             craftBlockOccupy.addOccupy(maid, currentIndex, stepData.getStorage().getPos());
         }
     }

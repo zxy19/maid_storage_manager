@@ -125,6 +125,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             }
         }
         MemoryUtil.clearTarget(maid);
+        MemoryUtil.getCrafting(maid).tryStartIfHasPlan();
     }
 
     @Override

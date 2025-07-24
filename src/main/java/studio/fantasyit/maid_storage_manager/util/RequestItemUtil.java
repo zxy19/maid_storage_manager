@@ -192,7 +192,7 @@ public class RequestItemUtil {
         UUID masterUUID = data.getUUID("master");
         Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
         ItemStack toItem = reqList.copy();
-        RequestListItem.clearItemProcess(toItem);
+        RequestListItem.clearAllNonSuccess(toItem);
 
         CompoundTag tag = toItem.getOrCreateTag();
         //生成一个非虚拟请求列表

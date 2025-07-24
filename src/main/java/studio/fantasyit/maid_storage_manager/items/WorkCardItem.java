@@ -50,9 +50,9 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return;
         CraftMemory crafting = MemoryUtil.getCrafting(maid);
         if (!crafting.hasPlan() || !crafting.plan().isMaster()) return;
+        if (crafting.isGoPlacingBeforeCraft()) return;
         CraftLayerChain plan = crafting.plan();
         if (plan.getIsStoppingAdding()) return;
-
 
         // 寻找范围内的可分发的女仆
         getNearbyMaidsSameGroup(maid, baubleItem, true)
@@ -118,6 +118,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         if (Conditions.takingRequestList(maid) && maid.getVehicle() != null && maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
             if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return;
             if (MemoryUtil.getRequestProgress(maid).isReturning()) return;
+            if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return;
             List<EntityMaid> nearbyMaidsSameGroup = getNearbyMaidsSameGroup(maid, baubleItem, true);
             if (!nearbyMaidsSameGroup.isEmpty()) {
                 EntityMaid toMaid = nearbyMaidsSameGroup.get(0);
@@ -152,6 +153,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
             if (maid.isMaidInSittingPose()) return false;
             if (maid.getVehicle() != null) return false;
             if (MemoryUtil.getViewedInventory(maid).isViewing()) return false;
+            if (!Conditions.isNothingToPlace(maid)) return false;
         }
         BaubleItemHandler t = maid.getMaidBauble();
         for (int i = 0; i < t.getSlots(); i++)

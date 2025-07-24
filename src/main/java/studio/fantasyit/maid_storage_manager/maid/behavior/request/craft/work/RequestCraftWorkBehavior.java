@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
@@ -110,6 +111,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
             done = true;
         }
         MemoryUtil.setWorking(maid, true);
+        InvUtil.mergeSameStack(maid.getAvailableInv(false));
     }
 
     @Override

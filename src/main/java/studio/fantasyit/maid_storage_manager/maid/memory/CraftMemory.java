@@ -200,4 +200,10 @@ public class CraftMemory extends AbstractTargetMemory {
             });
         }
     }
+
+    public void tryStartIfHasPlan() {
+        if (hasPlan()) {
+            plan.startAny();
+        }
+    }
 }

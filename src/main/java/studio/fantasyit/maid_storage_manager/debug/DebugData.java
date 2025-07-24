@@ -62,8 +62,8 @@ public class DebugData {
     public static void invChange(InvChange type, EntityMaid maid, ItemStack stack) {
         if (!Config.enableDebugInv) return;
         switch (type) {
-            case IN -> Logger.debug("%s>[IN] %s", maid.getUUID(), stack.toString());
-            case OUT -> Logger.debug("%s>[OUT] %s", maid.getUUID(), stack.toString());
+            case IN -> Logger.debugTrace("%s>[IN] %s", maid.getUUID(), stack.toString());
+            case OUT -> Logger.debugTrace("%s>[OUT] %s", maid.getUUID(), stack.toString());
         }
         StringBuilder sb = new StringBuilder();
         CombinedInvWrapper availableInv = maid.getAvailableInv(true);
@@ -72,6 +72,6 @@ public class DebugData {
             if (!itemStack.isEmpty())
                 sb.append(itemStack).append(" ");
         }
-        Logger.debug("%s>[INV] %s", maid.getUUID(), sb.toString());
+        Logger.debugTrace("%s>[INV] %s", maid.getUUID(), sb.toString());
     }
 }
