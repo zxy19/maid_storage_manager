@@ -20,7 +20,7 @@
         {
             "type": "text",
             "title": "Smarter Logistics",
-            "text": "Putting a Filter or Craft Guide in the top left of the GUI grid will enable these extra features: $(br)$(l:maid_storage_manager/filter)Filter $(/l): the maid will follow the Filter instructions when moving items.$(br)$(l:maid_storage_manager/craft_guide)Craft Guide$(/l): The maid will take ingredients from the container in the ‘extract’ position, and then craft the corresponding product into the container in the ‘store’ position. $(br2)Tips: If the maid has more than one logistics guide, she will take turns performing each task."
+            "text": "Putting a Filter or Craft Guide in the top left of the GUI grid will enable these extra features: $(br)$(l:maid_storage_manager/2_filter)Filter $(/l): the maid will follow the Filter instructions when moving items.$(br)$(l:maid_storage_manager/8_craft_guide)Craft Guide$(/l): The maid will take ingredients from the container in the ‘extract’ position, and then craft the corresponding product into the container in the ‘store’ position. $(br2)Tips: If the maid has more than one logistics guide, she will take turns performing each task."
         },
         {
             "type": "altar_recipe",

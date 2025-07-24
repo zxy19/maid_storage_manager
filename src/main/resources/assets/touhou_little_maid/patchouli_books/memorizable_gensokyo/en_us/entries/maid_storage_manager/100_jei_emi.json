@@ -7,7 +7,7 @@
   "pages": [
     {
       "type": "text",
-      "text": "If you have installed JEI or EMI, your maid can automatically collect crafting ingredients based on recipes. Requirements for using this feature: $(li) Your maid is nearby $(li) Your maid has enabled $(l:maid_storage_manager/work_setting#co_work) cowork mode$() $(li) Your maid is currently following you and not performing other tasks"
+      "text": "If you have installed JEI or EMI, your maid can automatically collect crafting ingredients based on recipes. Requirements for using this feature: $(li) Your maid is nearby $(li) Your maid has enabled $(l:maid_storage_manager/14_work_setting#co_work) cowork mode$() $(li) Your maid is currently following you and not performing other tasks"
     },
     {
       "type": "text",

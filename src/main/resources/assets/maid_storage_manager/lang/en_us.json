@@ -410,5 +410,7 @@
   "tooltip.maid_storage_manager.request_list.virtual": "「Maid's duty, no meddling (｡•̀ᴗ-)✧」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
-  "key.maid_storage_manager.roll_special_mode": "Switch Special Mode"
+  "key.maid_storage_manager.roll_special_mode": "Switch Special Mode",
+  "config.maid_storage_manager.crafting.generate_nearest_only": "Generate Nearest only",
+  "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "Only generate recipe with nearest block to maid."
 }

@@ -1,6 +1,6 @@
 {
   "sortnum": 9,
-  "name": "高级合成方案",
+  "name": "Advanced Crafting",
   "icon": "maid_storage_manager:craft_guide",
   "category": "touhou_little_maid:maid_storage_manager",
   "pages": [
@@ -20,7 +20,7 @@
     {
       "type": "text",
       "title": "Configure custom",
-      "text": "Each line of information in the GUI represents a step in a custom recipe: $(br)The buttons on the left move the step up and down and delete it. $(br)The item grid in the middle represents the items used/acquired by that step.$(br)The right side of the item grid represents the $(l:maid_storage_manager/craft_guide#craft_mode) working mode $(/l) of the current step.$(br)Binded blocks are rendered to the right of the working mode.$(br)The button to the far right controls whether the step can be ignored and skipped."
+      "text": "Each line of information in the GUI represents a step in a custom recipe: $(br)The buttons on the left move the step up and down and delete it. $(br)The item grid in the middle represents the items used/acquired by that step.$(br)The right side of the item grid represents the $(l:maid_storage_manager/8_craft_guide#craft_mode) working mode $(/l) of the current step.$(br)Binded blocks are rendered to the right of the working mode.$(br)The button to the far right controls whether the step can be ignored and skipped."
     },
     {
       "type": "image",

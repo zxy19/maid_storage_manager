@@ -15,12 +15,12 @@
         "maid_storage_manager:textures/book/craft_guide.png"
       ],
       "title": "Binding to Crafting Table.",
-      "text": ""
+      "text": "For more custom configuration details, see $(l:maid_storage_manager/9_craft_guide_settings) Advanced Crafting $(/l)"
     },
     {
       "type": "text",
       "title": "Fill in the recipe",
-      "text": "After binding the work block, you can then open the GUI and fill the recipe manually or select a recipe from the jei. Once the recipe is filled, the Craft Guide will render the appropriate products and work blocks. (Anvil recipes are not available at the moment due to the fact that recognising NBT tags in crafting is not yet possible) $(br2)Tips: the experience required for anvil recipes and the P-points required for altar recipes will be deducted from the experience on the maid accordingly, and if the maid does not have enough experience, the crafting will fail."
+      "text": "After binding the work block, you can then open the GUI and fill the recipe manually or select a recipe from the jei. Once the recipe is filled, the Craft Guide will render the appropriate products and work blocks. $(br2)Tips: the experience required for anvil recipes and the P-points required for altar recipes will be deducted from the experience on the maid accordingly, and if the maid does not have enough experience, the crafting will fail."
     },
     {
       "type": "image",

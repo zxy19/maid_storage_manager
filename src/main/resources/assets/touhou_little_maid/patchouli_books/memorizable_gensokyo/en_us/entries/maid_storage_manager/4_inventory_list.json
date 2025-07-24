@@ -7,7 +7,7 @@
     {
       "type": "spotlight",
       "item": "maid_storage_manager:written_inventory_list",
-      "text": "Inventory lists show you exactly what's inside the warehouse and those are craftable(see $(l:maid_storage_manager/craft)Auto Craft(/l)). $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
+      "text": "Inventory lists show you exactly what's inside the warehouse and those are craftable(see $(l:maid_storage_manager/7_craft)Auto Craft(/l)). $(br2) Crafting an empty inventory list, or resetting a written inventory list on the workbench, and giving it to the maid (throw it to her, right-click on her, or even open your backpack and put it in!) $(br) After writing it, the maid will throw the inventory list out."
     },
     {
       "type": "image",

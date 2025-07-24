@@ -20,7 +20,7 @@
         {
             "type": "text",
             "title": "更智能的物流",
-            "text": "在GUI左上方的格子放入过滤器或合成指南，会添加以下功能：$(br)$(l:maid_storage_manager/filter)过滤器$(/l)：女仆搬运物品时会遵从过滤器指示。$(br)$(l:maid_storage_manager/craft_guide)合成指南$(/l)：女仆会从“取出”位置的容器取出原料，合成出对应产物后放到“存入”位置的容器。$(br2)Tips：如果女仆有多个物流指南，她会轮流执行每一个任务。"
+            "text": "在GUI左上方的格子放入过滤器或合成指南，会添加以下功能：$(br)$(l:maid_storage_manager/2_filter)过滤器$(/l)：女仆搬运物品时会遵从过滤器指示。$(br)$(l:maid_storage_manager/8_craft_guide)合成指南$(/l)：女仆会从“取出”位置的容器取出原料，合成出对应产物后放到“存入”位置的容器。$(br2)Tips：如果女仆有多个物流指南，她会轮流执行每一个任务。"
         },
         {
             "type": "altar_recipe",

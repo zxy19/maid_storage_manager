@@ -20,7 +20,7 @@
     {
       "type": "text",
       "title": "Advanced Configuration Ⅱ",
-      "text": "The four buttons on the bottom right have the following functions: $(br)1. Toggle whether to match NBT tags (e.g. durability, enchantment, etc.) when requesting. $(br2)2. Toggle request with blacklist/whitelist. $(br)Whitelist: only collect items in the list. $(br)blacklist: collect all items except those in the list. $(br2)3. Used to clear the work status, see $(l:maid_storage_manager/request_list#finish_task) ‘After After finishing the task’ $(/l) for details"
+      "text": "The four buttons on the bottom right have the following functions: $(br)1. Toggle whether to match NBT tags (e.g. durability, enchantment, etc.) when requesting. $(br2)2. Toggle request with blacklist/whitelist. $(br)Whitelist: only collect items in the list. $(br)blacklist: collect all items except those in the list. $(br2)3. Used to clear the work status, see $(l:maid_storage_manager/5_request_list#finish_task) ‘After After finishing the task’ $(/l) for details"
     },
     {
       "type": "image",
@@ -46,7 +46,7 @@
     {
       "type": "text",
       "title": "Advanced Configuration Ⅳ",
-      "text": "If an $(l:maid_storage_manager/inventory_list)Inventory List$(/l) is in your inventory, click the left-side button [in GUI] to select items from it for the request list. The bottom-left slot of the list accepts a $(l:maid_storage_manager/storage_define)Storage Define(/l). If placed, the maid will follow the Storage Define’s rules when executing tasks from the request list."
+      "text": "If an $(l:maid_storage_manager/4_inventory_list)Inventory List$(/l) is in your inventory, click the left-side button [in GUI] to select items from it for the request list. The bottom-left slot of the list accepts a $(l:maid_storage_manager/storage_define)Storage Define(/l). If placed, the maid will follow the Storage Define’s rules when executing tasks from the request list."
     },
     {
       "type": "image",
