@@ -1,47 +1,31 @@
 {
-    "sortnum": 8,
-    "name": "合成指南",
+    "sortnum": 9,
+    "name": "高级合成方案",
     "icon": "maid_storage_manager:craft_guide",
     "category": "touhou_little_maid:maid_storage_manager",
     "pages": [
         {
-            "type": "spotlight",
-            "item": "maid_storage_manager:craft_guide",
-            "text": "合成指南需要绑定工作方块来配置。手持该物品，潜行右键支持的工作方块来绑定配方类型。$(br2)目前已支持的配方类型：$(br)工作台，熔炉，切石机，锻造台，铁砧，酿造台以及车万女仆的多方块祭坛（潜行右键祭坛的任何位置都可以进行绑定）和TACZ的工作台。"
-        },
-        {
-            "type": "image",
-            "images": [
-                "maid_storage_manager:textures/book/craft_guide.png"
-            ],
-            "title": "将合成指南绑定到工作台",
-            "text": ""
-        },
-        {
-            "type": "text",
-            "title": "填充配方",
-            "text": "绑定工作方块后打开GUI，你可以手动填充配方或从jei添加配方。配方填充后，合成指南上将会渲染相应的产物和工作方块。$(br2)Tips：铁砧配方所需的经验以及祭坛配方所需的P点都会相应地扣除女仆身上的经验，如果女仆的经验不足则会合成失败。"
-        },
-        {
-            "type": "image",
-            "images": [
-                "maid_storage_manager:textures/book/craft_guide2.png"
-            ],
-            "title": "填充了御币的工作台配方",
-            "text": ""
-        },
-        {
             "type": "text",
             "title": "高级合成方案",
-            "text": "如果绑定的方块并不是工作方块，或者在绑定的工作方块上再次点击，合成指南将会切换成更高级的自定义配置模式。$(br2)在该模式下，你可以通过潜行右键切换“绑定方块”“绑定面”“解除绑定”，潜行滚轮来绑定新的步骤或切换配置已绑定步骤。"
+            "text": "如果合成指南绑定的方块并不是工作方块，或者在绑定的工作方块上再次点击，合成指南将会切换成更高级的自定义配置模式。"
         },
         {
             "type": "image",
             "images": [
                 "maid_storage_manager:textures/book/craft_guide3.png"
             ],
-            "title": "正在配置第三步的自定义配置",
+            "title": "高级合成方案",
             "text": ""
+        },
+        {
+            "type": "text",
+            "title": "高级合成方案的步骤",
+            "text": "潜行右键以切换：$(li)绑定方块$(li)绑定面$(li)解除绑定$(br2)潜行滚轮以切换：$(li)绑定新的步骤$(li)改绑某一步骤$(br2)打开GUI便可以配置这些步骤在这个方块/这个面做什么工作（详见后文）。"
+        },
+        {
+            "type": "text",
+            "title": "步骤的复制黏贴",
+            "text": "($(k:key.maid_storage_manager.roll_special_mode)键)+滚轮以切换：$(li)绑定步骤$(li)复制步骤$(li)剪切步骤$(br2)潜行滚轮以切换：$(li)复制/剪切所有步骤$(li)复制/剪切某一步骤$(br2)复制过去的步骤并不会改变诸如绑定面或工作模式之类的配置。"
         },
         {
             "type": "text",
@@ -98,10 +82,6 @@
             "type": "text",
             "title": "可选/必要步骤",
             "text": "有时，配方中一部分产物难以预料（概率产出、副产物），而女仆在没有得到指定输出的情况下会一直等待直到配方超时。诸如此类的不确定情况，可以将该步骤设置为“可选步骤”，女仆会进行相应操作，不论是否成功，都会进入下一步合成"
-        },
-        {
-            "type": "altar_recipe",
-            "recipe_id": "maid_storage_manager:craft_guide"
         }
     ]
 }

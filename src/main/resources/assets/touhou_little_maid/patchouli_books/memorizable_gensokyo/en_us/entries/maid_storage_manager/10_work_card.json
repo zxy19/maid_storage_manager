@@ -1,0 +1,27 @@
+{
+  "sortnum": 10,
+  "name": "Work Card",
+  "icon": "maid_storage_manager:work_card",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:work_card",
+      "text": "Work Cards are also a type of maid bauble. Maids equipped with Work Cards belong to the same work group. When a maid receives a complex task, she will try to distribute part of the work to other maids in the work group (tasks that have been distributed will not be redistributed). After completing the task, other maids will return the product to the original maid."
+    },
+    {
+      "type": "text",
+      "title": "Setup with Different Group",
+      "text": "Work Cards with different names correspond to different work groups. You can mark multiple work groups by renaming Work Cards. $(br2) In addition, Work Cards that have not been renamed represent that the maid belongs to a “minimum work group” and can receive tasks from all work groups, but can only assign tasks to maids who also belong to the “minimum work group.”"
+    },
+    {
+      "type": "text",
+      "title": "Convenience",
+      "text": "Maids within the same work group share memories. When one maid updates her memory, all maids in the same group receive the change. $(br) The change is also passed between maids. When a maid belongs to two workgroups and the memory of one of the workgroups is updated, the maid will convey the updated message to the other workgroup."
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:work_card"
+    }
+  ]
+}
