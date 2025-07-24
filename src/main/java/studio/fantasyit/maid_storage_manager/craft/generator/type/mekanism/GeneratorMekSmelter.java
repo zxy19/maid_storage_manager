@@ -20,14 +20,19 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
+import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +51,29 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
 
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
-        super.generate(inventory, level, pos, graph, recognizedTypePositions);
+        StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
+        if (level.getBlockEntity(pos) instanceof TileEntityConfigurableMachine machine) {
+            level.getRecipeManager()
+                    .getAllRecipesFor(getRecipeType())
+                    .forEach(recipe -> generate(recipe, machine, level, pos, graph, recognizedTypePositions, posFilter));
+            //原版的SMELTING配方
+            level.getRecipeManager()
+                    .getAllRecipesFor(RecipeType.SMELTING)
+                    .forEach(recipe -> {
+                        ItemStack output = recipe.getResultItem(level.registryAccess());
+                        graph.addRecipe(recipe.getId(),
+                                recipe.getIngredients(),
+                                recipe.getIngredients().stream().map(t -> 1).toList(),
+                                output,
+                                (items) -> {
+                                    List<CraftGuideStepData> step = new ArrayList<>();
+                                    if (addSteps(pos, machine, items, List.of(output), step)) {
+                                        return new CraftGuideData(step, CommonType.TYPE);
+                                    }
+                                    return null;
+                                });
+                    });
+        }
         if (REPLACE_FURNACE.getValue())
             graph.blockType(FurnaceType.TYPE);
     }
@@ -58,6 +85,10 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
 
     @Override
     protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
+        return addSteps(pos, machine, inputs, outputs, steps);
+    }
+
+    private boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         if (inputSide == null || outputSide == null)

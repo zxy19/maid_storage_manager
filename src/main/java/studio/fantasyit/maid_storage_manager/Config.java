@@ -183,6 +183,9 @@ public class Config {
     private static final ModConfigSpec.BooleanValue CRAFTING_GENERATING_PARTIAL = BUILDER
             .comment("Generate recipes that has not all ingredients available.")
             .define("crafting.generating.keep_partial", false);
+    private static final ModConfigSpec.BooleanValue CRAFTING_GENERATING_NEAREST_ONLY = BUILDER
+            .comment("Only generate recipe with nearest block to maid.")
+            .define("crafting.generating.nearest_only", false);
     private static final ModConfigSpec.EnumValue<CraftGenerator> CRAFTING_GENERATOR = BUILDER
             .comment("Crafting generator algorithm to use.")
             .defineEnum("crafting.generating.algorithm", CraftGenerator.RELEVANCE_THREADED, CraftGenerator.values());
@@ -239,6 +242,7 @@ public class Config {
     public static boolean craftingNoCalculator;
     public static CraftPlanEvaluator craftingShortestPathEvaluator;
     public static boolean generatePartial;
+    public static boolean generateNearestOnly;
     public static CraftGenerator craftingGenerator;
     public static boolean noBubbleForSub;
 
@@ -288,6 +292,7 @@ public class Config {
         craftingGenerator = CRAFTING_GENERATOR.get();
         craftingShortestPathEvaluator = CRAFTING_PREFER_SHORTEST_PATH.get();
         noBubbleForSub = NO_BUBBLE_FOR_SUB_TASK.get();
+        generateNearestOnly = CRAFTING_GENERATING_NEAREST_ONLY.get();
     }
 
     public static void save() {
@@ -335,6 +340,7 @@ public class Config {
         CRAFTING_GENERATOR.set(craftingGenerator);
         CRAFTING_PREFER_SHORTEST_PATH.set(craftingShortestPathEvaluator);
         NO_BUBBLE_FOR_SUB_TASK.set(noBubbleForSub);
+        CRAFTING_GENERATING_NEAREST_ONLY.set(generateNearestOnly);
     }
 
     public static void saveAfter(Runnable o) {

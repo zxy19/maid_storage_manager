@@ -412,5 +412,7 @@
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
   "tooltip.maid_storage_manager.to_spawn_items.desc": "All result items:",
   "tooltip.maid_storage_manager.to_spawn_items.line": "%s * %s",
-  "key.maid_storage_manager.roll_special_mode": "Switch Special Mode"
+  "key.maid_storage_manager.roll_special_mode": "Switch Special Mode",
+  "config.maid_storage_manager.crafting.generate_nearest_only": "Generate Nearest only",
+  "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "Only generate recipe with nearest block to maid."
 }

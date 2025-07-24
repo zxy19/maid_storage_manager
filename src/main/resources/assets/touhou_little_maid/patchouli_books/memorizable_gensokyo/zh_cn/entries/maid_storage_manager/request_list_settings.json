@@ -19,7 +19,7 @@
     {
       "type": "text",
       "title": "请求列表高级配置 其二",
-      "text": "右下方的四个按钮的功能如下：$(br)1.切换请求时是否匹配NBT标签（如耐久度，附魔等）。$(br2)2.切换请求时采用黑名单/白名单。$(br)白名单：只收集列表中的物品。$(br)黑名单：除了列表中的物品都收集。$(br2)3.用于清除工作状态，详见$(l:maid_storage_manager/request_list#finish_task)“工作完成后”$(/l)"
+      "text": "右下方的四个按钮的功能如下：$(br)1.切换请求时是否匹配NBT标签（如耐久度，附魔等）。$(br2)2.切换请求时采用黑名单/白名单。$(br)白名单：只收集列表中的物品。$(br)黑名单：除了列表中的物品都收集。$(br2)3.用于清除工作状态，详见$(l:maid_storage_manager/5_request_list#finish_task)“工作完成后”$(/l)"
     },
     {
       "type": "image",
@@ -45,7 +45,7 @@
     {
       "type": "text",
       "title": "请求列表配置 其四",
-      "text": "如果背包里有$(l:maid_storage_manager/inventory_list)库存清单$(/l)，点击左侧按钮可以在库存清单中选择物品填入请求列表。$(br2)而列表左下角的位置则可以放入$(l:maid_storage_manager/storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
+      "text": "如果背包里有$(l:maid_storage_manager/4_inventory_list)库存清单$(/l)，点击左侧按钮可以在库存清单中选择物品填入请求列表。$(br2)而列表左下角的位置则可以放入$(l:maid_storage_manager/13_storage_define)存储定义$(/l)。如果放入了存储定义，女仆在执行请求列表上的任务时，会遵从存储定义的规则。"
     },
     {
       "type": "image",

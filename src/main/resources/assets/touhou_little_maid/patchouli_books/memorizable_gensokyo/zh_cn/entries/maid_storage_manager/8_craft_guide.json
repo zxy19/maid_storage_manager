@@ -1,0 +1,43 @@
+{
+    "sortnum": 8,
+    "name": "合成指南",
+    "icon": "maid_storage_manager:craft_guide",
+    "category": "touhou_little_maid:maid_storage_manager",
+    "pages": [
+        {
+            "type": "spotlight",
+            "item": "maid_storage_manager:craft_guide",
+            "text": "合成指南需要绑定工作方块来配置。手持该物品，潜行右键支持的工作方块来绑定配方类型。$(br2)目前已支持的配方类型：$(br)工作台，熔炉，切石机，锻造台，铁砧，酿造台以及车万女仆的多方块祭坛（潜行右键祭坛的任何位置都可以进行绑定）和TACZ的工作台。"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/craft_guide.png"
+            ],
+            "title": "将合成指南绑定到工作台",
+            "text": "更多自定义配置详见$(l:maid_storage_manager/9_craft_guide_settings)高级合成方案$(/l)"
+        },
+        {
+            "type": "text",
+            "title": "填充配方",
+            "text": "绑定工作方块后打开GUI，你可以手动填充配方或从jei添加配方。配方填充后，合成指南上将会渲染相应的产物和工作方块。$(br2)Tips：铁砧配方所需的经验以及祭坛配方所需的P点都会相应地扣除女仆身上的经验，如果女仆的经验不足则会合成失败。"
+        },
+        {
+            "type": "image",
+            "images": [
+                "maid_storage_manager:textures/book/craft_guide2.png"
+            ],
+            "title": "填充了御币的工作台配方",
+            "text": ""
+        },
+        {
+            "type": "text",
+            "title": "合成的并行",
+            "text": "如果同一个物品的合成指南写了多份，但绑定了不同的工作方块（如绑定不同熔炉的烧炼矿石），女仆在发现其中一个工作方块被其他女仆占用时，会自动选择另一个合成指南，使用另一个工作方块。"
+        },
+        {
+            "type": "altar_recipe",
+            "recipe_id": "maid_storage_manager:craft_guide"
+        }
+    ]
+}

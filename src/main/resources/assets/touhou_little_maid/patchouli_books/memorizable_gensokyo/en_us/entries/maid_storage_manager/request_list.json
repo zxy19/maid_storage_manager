@@ -20,7 +20,7 @@
     {
       "type": "text",
       "title": "Configure Request List",
-      "text": "Columns one and three in the list are the requested items, and columns two and four are the completion status of the requested items.Items can be dragged in from the jei or backpack to mark them, and the wheel to adjust the number of requests.$(br2) If you want to craft an item, clicking on the plus sign for a jei recipe will automatically fill the request list with the ingredients needed for the recipe.$(br2)See $(l:maid_storage_manager/request_list_settings) ‘Request List Advanced Configuration’ $(/l) for the rest of the configuration items."
+      "text": "Columns one and three in the list are the requested items, and columns two and four are the completion status of the requested items.Items can be dragged in from the jei or backpack to mark them, and the wheel to adjust the number of requests.$(br2) If you want to craft an item, clicking on the plus sign for a jei recipe will automatically fill the request list with the ingredients needed for the recipe.$(br2)See $(l:maid_storage_manager/6_request_list_settings) ‘Request List Advanced Configuration’ $(/l) for the rest of the configuration items."
     },
     {
       "type": "image",

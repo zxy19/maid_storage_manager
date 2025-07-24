@@ -53,6 +53,16 @@
       "type": "text",
       "title": "Memorize Craft Guide",
       "text": "The maid can read the craft guide from memory, so that there is no need to go to the warehouse to find them."
+    },
+    {
+      "type": "text",
+      "title": "Max Parallel",
+      "text": "The number of tasks a maid can handle in parallel while working, such as going to craft other items while the furnace is smelting ore. $(br2) When this setting is set to 0, the maid will not work on her own, but will try to distribute crafting tasks to other maids (if they have $(l:maid_storage_manager/10_work_card)work card$(/l))."
+    },
+    {
+      "type": "text",
+      "title": "Always Single Crafting",
+      "text": "Once enabled, maids will separately craft multiple identical items one by one starting from obtaining the raw materials (previously, they would obtain the raw materials and craft all items at once). $(br2) When multiple maids are working together, maids with this option enabled will distribute the crafting of multiple identical items one by one to different maids, increasing the number of parallel tasks."
     }
   ]
 }

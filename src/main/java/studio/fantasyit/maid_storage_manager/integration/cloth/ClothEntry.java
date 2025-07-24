@@ -362,6 +362,13 @@ public class ClothEntry {
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.generatePartial = t))
                         .build()
         );
+
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.generate_nearest_only"), Config.generateNearestOnly)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.generate_nearest_only.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.generateNearestOnly = t))
+                        .build()
+        );
         Map<String, SubCategoryBuilder> categories = new HashMap<>();
         CraftManager.getInstance()
                 .getAutoCraftGuideGenerators()

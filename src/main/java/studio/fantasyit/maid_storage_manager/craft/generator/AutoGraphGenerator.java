@@ -106,7 +106,7 @@ public class AutoGraphGenerator {
             if (generator.isBlockValid(maid.level(), next)) {
                 if (!generator.positionalAvailable((ServerLevel) maid.level(), maid, next, pathfindingBFS))
                     continue;
-                if (generator.allowMultiPosition()) {
+                if (generator.allowMultiPosition() || !Config.generateNearestOnly) {
                     count++;
                     graph.setCurrentGeneratorType(generator);
                     generator.generate(inventory, maid.level(), next, graph, recognizedTypePositions);

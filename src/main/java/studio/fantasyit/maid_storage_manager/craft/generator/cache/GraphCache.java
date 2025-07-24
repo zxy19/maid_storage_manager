@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 
@@ -27,6 +28,8 @@ public class GraphCache {
     }
 
     public static @Nullable CacheRecord getAndValidate(Level level, EntityMaid maid, List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators) {
+        if (!Config.generateNearestOnly)
+            return null;
         CacheRecord cacheRecord = get(maid.getUUID());
         if (cacheRecord == null) return null;
         if (cacheRecord.restrictCenter == null) {
