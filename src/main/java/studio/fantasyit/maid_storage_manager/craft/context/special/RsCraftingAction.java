@@ -18,7 +18,7 @@ public class RsCraftingAction extends CommonTakeItemAction {
     }
 
 
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "rs_craft");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "rs_craft");
     int nextCrafting = 0;
 
     int toTick = 0;

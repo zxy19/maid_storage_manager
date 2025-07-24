@@ -27,7 +27,7 @@ import java.util.List;
 
 public class BrewingType implements ICraftType {
 
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "brewing");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "brewing");
 
     @Override
     public @NotNull ResourceLocation getType() {

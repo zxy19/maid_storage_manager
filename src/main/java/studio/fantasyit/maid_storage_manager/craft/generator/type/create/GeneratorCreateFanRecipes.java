@@ -89,7 +89,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
 
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation("create", "fan");
+        return ResourceLocation.fromNamespaceAndPath("create", "fan");
     }
 
     @Override

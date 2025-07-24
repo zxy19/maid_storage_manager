@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class CraftGuideStepData {
-    public static final ResourceLocation SPECIAL_ACTION = new ResourceLocation(MaidStorageManager.MODID, "special");
+    public static final ResourceLocation SPECIAL_ACTION = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "special");
     public static Codec<CraftGuideStepData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Target.CODEC.fieldOf(CraftGuide.TAG_OP_STORAGE)

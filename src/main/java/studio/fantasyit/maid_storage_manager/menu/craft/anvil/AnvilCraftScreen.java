@@ -15,7 +15,7 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/anvil.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/anvil.png");
     String name = "";
     EditBox nameBox;
 

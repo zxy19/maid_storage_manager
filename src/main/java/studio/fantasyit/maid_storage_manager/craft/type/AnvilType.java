@@ -18,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
 
 public class AnvilType implements ICraftType {
 
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "anvil");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "anvil");
 
     @Override
     public @NotNull ResourceLocation getType() {

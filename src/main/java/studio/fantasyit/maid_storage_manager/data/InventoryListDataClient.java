@@ -72,7 +72,7 @@ public class InventoryListDataClient {
         requestSet.add(uuid);
     }
 
-    public List<InventoryItem> get(UUID uuid) {
+    public List<InventoryItem> get(Object uuid) {
         return dataMap.getOrDefault(uuid, new ArrayList<>());
     }
 

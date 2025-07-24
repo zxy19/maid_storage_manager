@@ -113,7 +113,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     }
 
     public static TaskDataKey<Data> KEY = null;
-    public static final ResourceLocation LOCATION = new ResourceLocation("maid_storage_manager", "storage_manager_config");
+    public static final ResourceLocation LOCATION = ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "storage_manager_config");
 
     @Override
     public ResourceLocation getKey() {

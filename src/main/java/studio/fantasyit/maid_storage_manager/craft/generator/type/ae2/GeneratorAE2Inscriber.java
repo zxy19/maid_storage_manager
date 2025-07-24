@@ -38,7 +38,7 @@ import java.util.Map;
 public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation("ae2", "inscriber");
+        return ResourceLocation.fromNamespaceAndPath("ae2", "inscriber");
     }
 
     @Override
@@ -52,7 +52,7 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
 
     public ResourceLocation transformRecipeId(ResourceLocation recipeId, boolean skipFirst) {
         if (skipFirst)
-            return new ResourceLocation(recipeId.getNamespace(), recipeId.getPath() + "_skipped_first");
+            return ResourceLocation.fromNamespaceAndPath(recipeId.getNamespace(), recipeId.getPath() + "_skipped_first");
         return recipeId;
     }
 

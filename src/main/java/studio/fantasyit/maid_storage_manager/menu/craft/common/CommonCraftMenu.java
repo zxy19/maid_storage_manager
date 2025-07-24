@@ -272,7 +272,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             }
             case SET_MODE -> {
                 if (data != null) {
-                    ResourceLocation action = new ResourceLocation(data.getString("ns"), data.getString("id"));
+                    ResourceLocation action = ResourceLocation.fromNamespaceAndPath(data.getString("ns"), data.getString("id"));
                     steps.get(key).setAction(action);
                     save();
                 }

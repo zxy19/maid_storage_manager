@@ -18,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutter
 
 public class StoneCuttingType implements ICraftType {
 
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "stone_cutting");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "stone_cutting");
 
     @Override
     public @NotNull ResourceLocation getType() {

@@ -35,7 +35,7 @@ import java.util.List;
 import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 public class CommonUseAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "use");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use");
     protected WrappedMaidFakePlayer fakePlayer;
     private int storedSlot;
     int failCount = 0;

@@ -97,10 +97,10 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
         if (!(graphics instanceof IEntityGraphicsBufferSourceGetter iegbsg)) return;
 
         VertexConsumer vertexconsumer = iegbsg.getBufferSource().getBuffer(RenderType.textBackground());
-        vertexconsumer.vertex(matrix4f, minX, minY, 0.0f).color(color).uv2(graphics.getPackedLight()).endVertex();
-        vertexconsumer.vertex(matrix4f, minX, maxY, 0.0f).color(color).uv2(graphics.getPackedLight()).endVertex();
-        vertexconsumer.vertex(matrix4f, maxX, maxY, 0.0f).color(color).uv2(graphics.getPackedLight()).endVertex();
-        vertexconsumer.vertex(matrix4f, maxX, minY, 0.0f).color(color).uv2(graphics.getPackedLight()).endVertex();
+        vertexconsumer.addVertex(matrix4f, minX, minY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
+        vertexconsumer.addVertex(matrix4f, minX, maxY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
+        vertexconsumer.addVertex(matrix4f, maxX, maxY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
+        vertexconsumer.addVertex(matrix4f, maxX, minY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
     }
 
     public ResourceLocation getBackgroundTexture() {

@@ -7,11 +7,12 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.Ch
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
@@ -36,10 +37,10 @@ public class StorageFetchFunction implements IFunctionCall<StorageFetchFunction.
         return "storage_fetch";
     }
 
-    protected Set<Pair<String, String>> getItemKeys(List<InventoryItem> list) {
+    protected Set<Pair<String, String>> getItemKeys(List<InventoryItem> list, RegistryAccess lookup) {
         Set<Pair<String, String>> keys = new HashSet<>();
         Consumer<ItemStack> add = (ItemStack item) -> {
-            @Nullable ResourceLocation key = ForgeRegistries.ITEMS.getKey(item.getItem());
+            @Nullable ResourceLocation key = lookup.registryOrThrow(Registries.ITEM).getKey(item.getItem());
             if (key != null) {
                 if (keys.stream().noneMatch(k -> k.getA().equals(key.toString())))
                     keys.add(new Pair<>(key.toString(), item.getHoverName().getString()));
@@ -85,14 +86,15 @@ public class StorageFetchFunction implements IFunctionCall<StorageFetchFunction.
 
     @Override
     public ToolResponse onToolCall(StorageFetchFunctionDataList storageFetchFunctionDataList, EntityMaid entityMaid) {
-        Set<Pair<String, String>> itemKeys = getItemKeys(MemoryUtil.getViewedInventory(entityMaid).flatten());
+        RegistryAccess lookup = entityMaid.registryAccess();
+        Set<Pair<String, String>> itemKeys = getItemKeys(MemoryUtil.getViewedInventory(entityMaid).flatten(), lookup);
         StringBuilder message = new StringBuilder();
         MutableBoolean partial = new MutableBoolean(false);
         List<StorageFetchFunctionData> storageFetchFunctionData = storageFetchFunctionDataList.list;
         List<ItemStack> list = storageFetchFunctionData.stream()
                 .map(i -> {
-                    ResourceLocation resourceLocation = new ResourceLocation(i.itemId);
-                    Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
+                    ResourceLocation resourceLocation = ResourceLocation.tryParse(i.itemId);
+                    Item item = lookup.registryOrThrow(Registries.ITEM).get(resourceLocation);
                     if (item == null) {
                         partial.setTrue();
                         message.append("Task NOT added: [").append(i.itemId).append("]:").append("unknown There's no corresponding item.\n");

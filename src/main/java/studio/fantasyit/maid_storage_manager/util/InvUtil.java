@@ -8,8 +8,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
@@ -33,7 +33,7 @@ public class InvUtil {
         if (itemStack.isEmpty()) return itemStack;
         ItemStack restItem = itemStack.copy();
         for (int i = 0; i < container.getSlots(); i++) {
-            if (ItemStack.isSameItemSameTags(container.getStackInSlot(i), restItem)) {
+            if (ItemStack.isSameItemSameComponents(container.getStackInSlot(i), restItem)) {
                 restItem = container.insertItem(i, restItem, false);
                 if (restItem.isEmpty()) break;
             }

@@ -25,7 +25,7 @@ import java.util.List;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraftMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/stone_cutter.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/stone_cutter.png");
 
     private final ImageAsset SLOT = new ImageAsset(background, 176, 16, 18, 18);
     private final ImageAsset SLOT_SELECTED = new ImageAsset(background, 176, 34, 18, 18);

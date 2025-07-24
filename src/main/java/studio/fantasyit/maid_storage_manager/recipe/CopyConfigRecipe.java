@@ -1,16 +1,16 @@
 package studio.fantasyit.maid_storage_manager.recipe;
 
 import com.google.gson.JsonObject;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -18,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 public class CopyConfigRecipe extends ShapelessRecipe {
     public CopyConfigRecipe(ShapelessRecipe recipe) {
-        super(recipe.getId(),
+        super(
                 recipe.getGroup(),
                 recipe.category(),
                 recipe.getResultItem(RegistryAccess.EMPTY),
@@ -26,10 +26,10 @@ public class CopyConfigRecipe extends ShapelessRecipe {
         );
     }
 
-    protected @Nullable Pair<ItemStack, ItemStack> getToCopyItem(CraftingContainer inv) {
+    protected @Nullable Pair<ItemStack, ItemStack> getToCopyItem(CraftingInput inv) {
         ItemStack first = null;
         ItemStack second = null;
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inv.size(); i++) {
             ItemStack stack = inv.getItem(i);
             if (!stack.isEmpty()) {
                 if (first == null) {
@@ -44,7 +44,7 @@ public class CopyConfigRecipe extends ShapelessRecipe {
     }
 
     @Override
-    public @NotNull ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess p_267165_) {
+    public ItemStack assemble(CraftingInput inv, HolderLookup.Provider p_335725_) {
         Pair<ItemStack, ItemStack> toCopyItem = getToCopyItem(inv);
         if (toCopyItem != null) {
             return applyCopy(toCopyItem.getB().copy(), toCopyItem.getA());
@@ -53,14 +53,14 @@ public class CopyConfigRecipe extends ShapelessRecipe {
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingContainer p_44004_) {
-        NonNullList<ItemStack> nonnulllist = NonNullList.withSize(p_44004_.getContainerSize(), ItemStack.EMPTY);
-        Pair<ItemStack, ItemStack> toCopyItem = getToCopyItem(p_44004_);
+    public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
+        NonNullList<ItemStack> nonnulllist = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+        Pair<ItemStack, ItemStack> toCopyItem = getToCopyItem(input);
         if (toCopyItem == null)
             return nonnulllist;
-        for (int i = 0; i < p_44004_.getContainerSize(); i++) {
-            if (!p_44004_.getItem(i).isEmpty()) {
-                ItemStack itemStack = p_44004_.getItem(i).copy();
+        for (int i = 0; i < input.size(); i++) {
+            if (!input.getItem(i).isEmpty()) {
+                ItemStack itemStack = input.getItem(i).copy();
                 nonnulllist.set(i, itemStack);
                 break;
             }

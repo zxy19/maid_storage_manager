@@ -1,16 +1,14 @@
 package studio.fantasyit.maid_storage_manager.storage.rs;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.refinedmods.refinedstorage.api.network.INetwork;
-import com.refinedmods.refinedstorage.api.network.node.INetworkNode;
-import com.refinedmods.refinedstorage.api.network.node.INetworkNodeManager;
-import com.refinedmods.refinedstorage.api.storage.cache.IStorageCache;
-import com.refinedmods.refinedstorage.api.util.IStackList;
-import com.refinedmods.refinedstorage.api.util.StackListEntry;
-import com.refinedmods.refinedstorage.apiimpl.API;
+import com.refinedmods.refinedstorage.api.storage.Storage;
+import com.refinedmods.refinedstorage.common.api.RefinedStorageApi;
+import com.refinedmods.refinedstorage.common.api.storage.StorageRepository;
+import com.refinedmods.refinedstorage.common.api.support.resource.PlatformResourceKey;
+import com.refinedmods.refinedstorage.common.grid.AbstractGridBlockEntity;
+import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.context.special.RsCraftingAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -21,34 +19,23 @@ import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBloc
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageCraftDataProvider;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 abstract public class AbstractRSContext extends AbstractFilterableBlockStorage implements IStorageCraftDataProvider {
 
-    protected IStackList<ItemStack> stackList;
-    protected Collection<StackListEntry<ItemStack>> stackListStacks;
-
-    protected IStackList<ItemStack> craftable;
-    public INetwork network;
 
     ServerLevel level;
-    Target target;
-    protected INetworkNode node;
+     Target target;
     boolean done = false;
+    protected Set<PlatformResourceKey> craftable;
+    protected Storage itemStorage;
 
     private void reinit() {
-        INetworkNodeManager networkNodeManager = API.instance().getNetworkNodeManager(level);
-        node = networkNodeManager.getNode(target.pos);
-        if (node == null) {
-            return;
-        }
-        network = node.getNetwork();
-        if (network != null) {
-            IStorageCache<ItemStack> itemStorageCache = network.getItemStorageCache();
-            stackList = itemStorageCache.getList();
-            stackListStacks = new ArrayList<>(stackList.getStacks());
-            craftable = itemStorageCache.getCraftablesList();
+        StorageRepository networkNodeManager = RefinedStorageApi.INSTANCE.getStorageRepository(level);
+        if (level.getBlockEntity(target.pos) instanceof AbstractGridBlockEntity gbe) {
+            itemStorage = gbe.getItemStorage();
+            craftable = gbe.getAutocraftableResources();
         }
     }
 
@@ -80,17 +67,24 @@ abstract public class AbstractRSContext extends AbstractFilterableBlockStorage i
 
     @Override
     public List<CraftGuideData> getCraftGuideData() {
-        List<CraftGuideData> list = new ArrayList<>(craftable.getStacks().stream()
-                .filter(entry -> entry.getStack().is(ItemRegistry.CRAFT_GUIDE.get()))
-                .map(entry -> CraftGuideData.fromItemStack(entry.getStack()))
-                .toList());
-        Collection<StackListEntry<ItemStack>> craftableStacks = craftable.getStacks();
-        craftableStacks.stream()
+        List<CraftGuideData> list = new ArrayList<>(
+                itemStorage
+                        .getAll()
+                        .stream()
+                        .filter(key -> key.resource() instanceof ItemResource)
+                        .map(k -> (ItemResource) k.resource())
+                        .filter(k -> k.toItemStack().is(ItemRegistry.CRAFT_GUIDE.get()))
+                        .map(k -> CraftGuideData.fromItemStack(k.toItemStack()))
+                        .toList()
+        );
+        craftable.stream()
+                .filter(key -> key instanceof ItemResource)
+                .map(k -> (ItemResource) k)
                 .map(key -> {
                     List<CraftGuideStepData> steps = List.of(new CraftGuideStepData(
                             target,
                             List.of(),
-                            List.of(key.getStack()),
+                            List.of(key.toItemStack()),
                             RsCraftingAction.TYPE,
                             false,
                             new CompoundTag()

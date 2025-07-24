@@ -16,9 +16,9 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class RSStorage implements IMaidStorage {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "rs");
-    public static final TagKey<Block> GRID = BlockTags.create(new ResourceLocation("refinedstorage", "grid"));
-    public static final TagKey<Block> CRAFTING_GRID = BlockTags.create(new ResourceLocation("refinedstorage", "crafting_grid"));
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "rs");
+    public static final TagKey<Block> GRID = BlockTags.create(ResourceLocation.fromNamespaceAndPath("refinedstorage", "grid"));
+    public static final TagKey<Block> CRAFTING_GRID = BlockTags.create(ResourceLocation.fromNamespaceAndPath("refinedstorage", "crafting_grid"));
 
     @Override
     public ResourceLocation getType() {

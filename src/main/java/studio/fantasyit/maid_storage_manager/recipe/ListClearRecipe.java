@@ -19,7 +19,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 public class ListClearRecipe extends ShapelessRecipe {
     public ListClearRecipe(ShapelessRecipe recipe) {
-        super(recipe.getId(),
+        super(
                 recipe.getGroup(),
                 recipe.category(),
                 recipe.getResultItem(RegistryAccess.EMPTY),

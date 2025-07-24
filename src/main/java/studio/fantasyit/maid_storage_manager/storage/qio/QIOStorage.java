@@ -14,7 +14,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class QIOStorage implements IMaidStorage {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "qio");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "qio");
 
     @Override
     public ResourceLocation getType() {

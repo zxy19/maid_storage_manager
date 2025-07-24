@@ -23,7 +23,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.List;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "insert");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "insert");
     protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;

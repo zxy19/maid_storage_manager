@@ -12,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import java.util.Objects;
 
 public class CommonIdleAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "idle");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "idle");
 
     public CommonIdleAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);

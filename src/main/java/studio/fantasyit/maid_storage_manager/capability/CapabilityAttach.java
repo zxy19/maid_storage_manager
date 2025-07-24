@@ -21,10 +21,10 @@ public class CapabilityAttach {
         @SubscribeEvent
         public static void attachCapabilitiesLevel(AttachCapabilitiesEvent<Level> event) {
             if (event.getObject() instanceof ServerLevel level) {
-                if (level.dimension().location().equals(new ResourceLocation("minecraft", "overworld")))
-                    event.addCapability(new ResourceLocation(MaidStorageManager.MODID, "inventory_list"),
+                if (level.dimension().location().equals(ResourceLocation.fromNamespaceAndPath("minecraft", "overworld")))
+                    event.addCapability(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list"),
                             new InventoryListDataProvider());
-                event.addCapability(new ResourceLocation(MaidStorageManager.MODID, "block_occupy"),new CraftBlockOccupyDataProvider());
+                event.addCapability(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "block_occupy"),new CraftBlockOccupyDataProvider());
             }
         }
     }

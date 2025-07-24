@@ -4,13 +4,12 @@ import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.chatbubbl
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.IChatBubbleData;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 public class CraftingChatBubbleData implements IChatBubbleData {
-    public static final ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "crafting");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "crafting");
     private final ResourceLocation bg;
     private final Component text;
     private final int barBackgroundColor;
@@ -55,10 +54,8 @@ public class CraftingChatBubbleData implements IChatBubbleData {
     }
 
 
-    @OnlyIn(Dist.CLIENT)
     private IChatBubbleRenderer renderer;
 
-    @OnlyIn(Dist.CLIENT)
     @Override
     public IChatBubbleRenderer getRenderer(IChatBubbleRenderer.Position position) {
         if (this.renderer == null) {
@@ -79,7 +76,7 @@ public class CraftingChatBubbleData implements IChatBubbleData {
     public static class CraftingChatSerializer implements IChatBubbleData.ChatSerializer {
         public IChatBubbleData readFromBuff(FriendlyByteBuf buf) {
             return new CraftingChatBubbleData(
-                    buf.readComponent(),
+                    buf.readJsonWithCodec(ComponentSerialization.CODEC),
                     buf.readInt(),
                     buf.readInt(),
                     buf.readInt(),
@@ -90,7 +87,7 @@ public class CraftingChatBubbleData implements IChatBubbleData {
 
         public void writeToBuff(FriendlyByteBuf buf, IChatBubbleData data) {
             CraftingChatBubbleData textChat = (CraftingChatBubbleData) data;
-            buf.writeComponent(textChat.text);
+            buf.writeJsonWithCodec(ComponentSerialization.CODEC, textChat.text);
             buf.writeInt(textChat.barBackgroundColor);
             buf.writeInt(textChat.barForegroundColor);
             buf.writeInt(textChat.barForegroundColor1);

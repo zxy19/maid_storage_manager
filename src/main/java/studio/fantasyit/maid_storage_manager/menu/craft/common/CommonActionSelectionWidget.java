@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class CommonActionSelectionWidget extends AbstractWidget {
-    private final static ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
+    private final static ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
     private final static ImageAsset BUTTON_NORMAL = new ImageAsset(background, 176, 214, 56, 15);
     private final static ImageAsset BUTTON_HOVER = new ImageAsset(background, 176, 229, 56, 15);
     private final static ImageAsset ARROW = new ImageAsset(background, 219, 120, 11, 9);

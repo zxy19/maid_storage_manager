@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class CommonTakeItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "extract");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "extract");
     protected IStorageContext storageContext;
 
     public CommonTakeItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {

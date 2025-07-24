@@ -17,7 +17,7 @@ import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
 import studio.fantasyit.maid_storage_manager.storage.rs.RSStorage;
 
 public class KJSMSMBinding {
-    public final ResourceLocation UNAVAILABLE = new ResourceLocation(MaidStorageManager.MODID, "unavailable");
+    public final ResourceLocation UNAVAILABLE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "unavailable");
 
     public final ResourceLocation CRAFT_TYPE_COMMON = CommonType.TYPE;
     public final ResourceLocation CRAFT_TYPE_AE2;

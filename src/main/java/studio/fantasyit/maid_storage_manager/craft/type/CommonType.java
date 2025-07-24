@@ -15,7 +15,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftMenu;
 
 public class CommonType implements ICraftType {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "common");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "common");
 
     @Override
     public @NotNull ResourceLocation getType() {

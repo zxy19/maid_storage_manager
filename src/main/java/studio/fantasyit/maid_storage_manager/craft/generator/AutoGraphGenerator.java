@@ -26,7 +26,7 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import java.util.*;
 
 public class AutoGraphGenerator {
-    private static final ResourceLocation INTERNAL_TYPE = new ResourceLocation(MaidStorageManager.MODID, "_maid_storage_internal_existed");
+    private static final ResourceLocation INTERNAL_TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "_maid_storage_internal_existed");
     private final EntityMaid maid;
     protected final ICachableGeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
@@ -82,7 +82,7 @@ public class AutoGraphGenerator {
         graph.setCurrentGeneratorType(INTERNAL_TYPE, true);
         hasExisted.forEach(craftGuideData -> {
             graph.addRecipe(
-                    new ResourceLocation("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
+                    ResourceLocation.fromNamespaceAndPath("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
                     craftGuideData.getAllInputItemsWithOptional().stream().map(Ingredient::of).toList(),
                     craftGuideData.getAllInputItemsWithOptional().stream().map(ItemStack::getCount).toList(),
                     craftGuideData.getAllOutputItems(),

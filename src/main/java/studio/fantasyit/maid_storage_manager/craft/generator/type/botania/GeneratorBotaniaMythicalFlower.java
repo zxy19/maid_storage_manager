@@ -39,7 +39,7 @@ import java.util.Objects;
 public class GeneratorBotaniaMythicalFlower implements IAutoCraftGuideGenerator {
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation(BotaniaAPI.MODID, "mythical_flower");
+        return ResourceLocation.fromNamespaceAndPath(BotaniaAPI.MODID, "mythical_flower");
     }
 
     @Override
@@ -62,12 +62,12 @@ public class GeneratorBotaniaMythicalFlower implements IAutoCraftGuideGenerator 
         for (ItemStack flower : Ingredient.of(BotaniaTags.Items.MYSTICAL_FLOWERS).getItems()) {
             String color = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(flower.getItem())).getPath().split("_")[0];
             List<Ingredient> ingredients = List.of(Ingredient.of(flower.getItem(),
-                            ForgeRegistries.ITEMS.getValue(new ResourceLocation(BotaniaAPI.MODID, color + "_petal"))),
+                            ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(BotaniaAPI.MODID, color + "_petal"))),
                     Ingredient.of(Items.BONE_MEAL)
             );
-            ItemStack output = ForgeRegistries.ITEMS.getValue(new ResourceLocation(BotaniaAPI.MODID, color + "_double_flower")).getDefaultInstance().copy();
+            ItemStack output = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(BotaniaAPI.MODID, color + "_double_flower")).getDefaultInstance().copy();
             graph.addRecipe(
-                    new ResourceLocation(BotaniaAPI.MODID, "mythical_flower_plant_" + color),
+                    ResourceLocation.fromNamespaceAndPath(BotaniaAPI.MODID, "mythical_flower_plant_" + color),
                     ingredients,
                     List.of(1, 1),
                     List.of(output),
@@ -108,9 +108,9 @@ public class GeneratorBotaniaMythicalFlower implements IAutoCraftGuideGenerator 
         for (ItemStack flower : Ingredient.of(BotaniaTags.Items.MYSTICAL_FLOWERS).getItems()) {
             String color = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(flower.getItem())).getPath().split("_")[0];
             RecipeIngredientCache.addRecipeCache(
-                    new ResourceLocation(BotaniaAPI.MODID, "mythical_flower_plant_" + color),
+                    ResourceLocation.fromNamespaceAndPath(BotaniaAPI.MODID, "mythical_flower_plant_" + color),
                     List.of(Ingredient.of(flower.getItem(),
-                                    ForgeRegistries.ITEMS.getValue(new ResourceLocation(BotaniaAPI.MODID, color + "_petal"))),
+                                    ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(BotaniaAPI.MODID, color + "_petal"))),
                             Ingredient.of(Items.BONE_MEAL)
                     )
             );

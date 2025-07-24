@@ -18,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftMenu;
 
 public class SmithingType implements ICraftType {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "smithing");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "smithing");
 
     @Override
     public @NotNull ResourceLocation getType() {

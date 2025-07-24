@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class StoneCuttingRecipeAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "stone_cutting");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "stone_cutting");
 
     public StoneCuttingRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);

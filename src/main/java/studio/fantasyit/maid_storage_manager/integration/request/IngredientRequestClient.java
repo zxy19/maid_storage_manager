@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 @OnlyIn(Dist.CLIENT)
 public class IngredientRequestClient {
-    private final static ResourceLocation R = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/jei_request.png");
+    private final static ResourceLocation R = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/jei_request.png");
     public static boolean keyPressed = false;
     public static int preferMaidId = -1;
     public static int multiple = 1;
@@ -79,7 +79,7 @@ public class IngredientRequestClient {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         NonNullList<ItemStack> inventoryItems = player.getInventory().items;
-        UUID inventoryListUUID = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.getInventory().items);
+        Object inventoryListUUID = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.getInventory().items);
         List<ItemStack> costed = new ArrayList<>();
         List<ItemStack> toRequest = new ArrayList<>();
         for (List<ItemStack> toSelect : data) {

@@ -2,15 +2,15 @@ package studio.fantasyit.maid_storage_manager.event;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = MaidStorageManager.MODID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID)
 public class TooltipEvent {
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {

@@ -10,6 +10,8 @@ import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -22,11 +24,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -75,7 +76,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
         }
     }
 
-    public static TagKey<Block> CreatePackageContainer = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "create_package_container"));
+    public static TagKey<Block> CreatePackageContainer = TagKey.create(ResourceKey.createRegistryKey(Registries.BLOCK.location()), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "create_package_container"));
 
     private void rescanItemHandler() {
         itemHandlers.clear();
@@ -85,8 +86,12 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
                     BlockState state = level.getBlockState(pos);
                     if (state.is(CreatePackageContainer)) {
                         BlockEntity be = level.getBlockEntity(pos);
-                        if (be != null)
-                            be.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandlers::add);
+                        if (be != null) {
+                            IItemHandler capability = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, state, be, null);
+                            if (capability != null) {
+                                itemHandlers.add(capability);
+                            }
+                        }
                     }
                 });
     }

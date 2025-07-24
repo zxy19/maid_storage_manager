@@ -53,7 +53,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     protected enum BUTTON_TYPE_SPECIAL {BLOCK}
 
-    private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
+    private final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
 
     public final List<HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>>> buttonsByRow = new ArrayList<>();
     public final List<EditBox> editBoxes = new ArrayList<>();

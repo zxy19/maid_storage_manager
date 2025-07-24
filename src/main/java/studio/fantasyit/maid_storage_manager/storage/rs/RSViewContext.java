@@ -1,29 +1,36 @@
 package studio.fantasyit.maid_storage_manager.storage.rs;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.refinedmods.refinedstorage.api.util.StackListEntry;
+import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
+import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 
 public class RSViewContext extends AbstractRSContext implements IStorageInteractContext {
-    Iterator<StackListEntry<ItemStack>> iter = null;
+    Iterator<ItemStack> iter = null;
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
         super.start(maid, level, target);
-        if (stackListStacks != null)
-            iter = stackListStacks.iterator();
+        reset();
     }
 
     @Override
     public void reset() {
-        if (stackListStacks != null)
-            iter = stackListStacks.iterator();
+        if (itemStorage != null) {
+            List<ItemStack> tmp = itemStorage.getAll()
+                    .stream()
+                    .filter(stack -> stack.resource() instanceof ItemResource)
+                    .map(stack -> ((ItemResource) stack.resource()).toItemStack().copyWithCount(MathUtil.toIntOrMax(stack.amount())))
+                    .toList();
+            iter = tmp.iterator();
+        }
     }
 
     @Override
@@ -31,8 +38,8 @@ public class RSViewContext extends AbstractRSContext implements IStorageInteract
         for (int i = 0; i < 20; i++) {
             if (!iter.hasNext())
                 return;
-            StackListEntry<ItemStack> entry = iter.next();
-            process.apply(entry.getStack());
+            ItemStack entry = iter.next();
+            process.apply(entry);
         }
     }
 

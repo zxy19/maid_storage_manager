@@ -18,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 
 public class AltarType implements ICraftType {
 
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "altar");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "altar");
 
     @Override
     public @NotNull ResourceLocation getType() {

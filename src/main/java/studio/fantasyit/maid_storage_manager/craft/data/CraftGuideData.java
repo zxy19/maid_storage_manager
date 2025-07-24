@@ -178,7 +178,7 @@ public class CraftGuideData {
         if (tag.contains("input1")) {
             if (tag.getCompound("input1").contains("side")) {
                 Target target = Target.fromNbt(tag.getCompound("input1").getCompound("side"));
-                if (target.getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
+                if (target.getType().equals(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "crafting"))) {
                     compatibleToV1TypeAddCraftStep(craftGuideData, tag.getCompound("input1"), tag.getCompound("output"));
                     return craftGuideData;
                 }

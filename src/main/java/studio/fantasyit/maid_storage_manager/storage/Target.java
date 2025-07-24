@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,13 +16,22 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import java.util.Optional;
 
 public class Target {
-    public static final ResourceLocation VIRTUAL_TYPE = new ResourceLocation(MaidStorageManager.MODID, "virtual");
+    public static final ResourceLocation VIRTUAL_TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "virtual");
     public static Codec<Target> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     ResourceLocation.CODEC.fieldOf("type").forGetter(Target::getType),
                     BlockPos.CODEC.fieldOf("pos").forGetter(Target::getPos),
                     Direction.CODEC.optionalFieldOf("side").forGetter(Target::getSide)
             ).apply(instance, Target::new)
+    );
+    public static StreamCodec<RegistryFriendlyByteBuf, Target> STREAM_CODEC = StreamCodec.composite(
+            ResourceLocation.STREAM_CODEC,
+            Target::getType,
+            BlockPos.STREAM_CODEC,
+            Target::getPos,
+            Direction.STREAM_CODEC,
+            Target::getSideV,
+            Target::new
     );
     public ResourceLocation type;
     public BlockPos pos;
@@ -44,12 +55,12 @@ public class Target {
     public static Target fromNbt(CompoundTag nbt) {
         if (!nbt.contains("side"))
             return new Target(
-                    new ResourceLocation(nbt.getString("type")),
+                    ResourceLocation.tryParse(nbt.getString("type")),
                     BlockPos.of(nbt.getLong("pos")),
                     Optional.empty()
             );
         return new Target(
-                new ResourceLocation(nbt.getString("type")),
+                ResourceLocation.tryParse(nbt.getString("type")),
                 BlockPos.of(nbt.getLong("pos")),
                 Direction.byName(nbt.getString("side"))
         );
@@ -59,7 +70,7 @@ public class Target {
         String[] split = str.split(",");
         if (split.length == 4 || split.length == 5)
             return new Target(
-                    new ResourceLocation(split[0]),
+                    ResourceLocation.tryParse(split[0]),
                     new BlockPos(Integer.parseInt(split[1]),
                             Integer.parseInt(split[2]),
                             Integer.parseInt(split[3])),
@@ -99,6 +110,10 @@ public class Target {
 
     public Optional<Direction> getSide() {
         return Optional.ofNullable(side);
+    }
+
+    public Direction getSideV() {
+        return side;
     }
 
     @Override

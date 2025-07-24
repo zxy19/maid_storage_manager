@@ -13,7 +13,7 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class SmithingCraftScreen extends AbstractCraftScreen<SmithingCraftMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/smithing.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/smithing.png");
     private final ImageAsset arrowNeg = new ImageAsset(background, 179, 3, 22, 15);
 
     public SmithingCraftScreen(SmithingCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {

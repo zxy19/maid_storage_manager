@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
@@ -50,7 +50,7 @@ public class MaidStorage {
         list.add(new ItemHandlerStorage());
 
         CollectStorageEvent event = new CollectStorageEvent(list);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         this.storages = event.getStorages();
     }
 

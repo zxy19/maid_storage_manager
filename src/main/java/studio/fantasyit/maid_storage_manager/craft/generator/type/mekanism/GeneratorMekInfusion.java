@@ -127,7 +127,7 @@ public class GeneratorMekInfusion extends GeneratorMek<MetallurgicInfuserRecipe,
             @Nullable ResourceLocation itemKey = ForgeRegistries.ITEMS.getKey(pair.getA().getItem());
             if (itemKey == null)
                 continue;
-            ResourceLocation id = new ResourceLocation(oid.getNamespace(), oid.getPath() + "_" + itemKey.getNamespace() + "_" + itemKey.getPath());
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(oid.getNamespace(), oid.getPath() + "_" + itemKey.getNamespace() + "_" + itemKey.getPath());
 
             graph.addRecipe(id, inputs, counts, outputs, (items) -> {
                 List<CraftGuideStepData> step = new ArrayList<>();

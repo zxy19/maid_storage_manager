@@ -65,7 +65,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StorageManageTask implements IMaidTask {
-    public static ResourceLocation TASK_ID = new ResourceLocation(MaidStorageManager.MODID, "storage_manage");
+    public static ResourceLocation TASK_ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "storage_manage");
 
     @Override
     public boolean enableEating(@NotNull EntityMaid maid) {

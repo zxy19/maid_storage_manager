@@ -48,6 +48,6 @@ public class VirtualFrameDataProvider implements IEntityComponentProvider {
 
     @Override
     public ResourceLocation getUid() {
-        return new ResourceLocation(MaidStorageManager.MODID, "virtual_frame");
+        return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "virtual_frame");
     }
 }

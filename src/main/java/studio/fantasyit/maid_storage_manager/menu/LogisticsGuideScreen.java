@@ -20,7 +20,7 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuideMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/logistics_guide.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/logistics_guide.png");
 
     public LogisticsGuideScreen(LogisticsGuideMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);

@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,14 +19,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -35,6 +34,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RequestListItem extends MaidInteractItem implements MenuProvider {
@@ -64,108 +64,93 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_VIRTUAL_DATA = "virtual_data";
 
     public RequestListItem() {
-        super(new Properties().stacksTo(1));
+        super(new Properties()
+                .stacksTo(1)
+                .component(DataComponentRegistry.REQUEST_ITEMS.get(), new RequestItemStackList())
+        );
     }
 
     public static boolean isIgnored(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!mainHandItem.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        return tag.getBoolean(TAG_IGNORE_TASK);
+        return Boolean.TRUE.equals(mainHandItem.get(DataComponentRegistry.REQUEST_IGNORE.get()));
     }
 
     public static int getRepeatInterval(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return 0;
-        if (!mainHandItem.hasTag()) return 0;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        return tag.getInt(TAG_REPEAT_INTERVAL);
+        return Optional.ofNullable(
+                mainHandItem.get(DataComponentRegistry.REQUEST_CD.get())
+        ).orElse(0);
     }
 
     public static void addItemStackCollected(ItemStack mainHandItem, ItemStack a, int count) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!mainHandItem.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        ListTag items = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = mainHandItem.get(DataComponentRegistry.REQUEST_ITEMS);
+        List<RequestItemStackList.ListItem> items = request.getList();
         for (int i = 0; i < items.size(); i++) {
-            CompoundTag tmp = items.getCompound(i);
-            ItemStack item = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (!ItemStackUtil.isSame(item, a, tag.getBoolean(TAG_MATCH_TAG))) continue;
+            RequestItemStackList.ListItem listItem = items.get(i);
+            ItemStack item = listItem.getItem();
+            if (!ItemStackUtil.isSame(item, a, request.matchTag)) continue;
 
-            int newCount = tag.getInt(TAG_ITEMS_COLLECTED) + count;
-            tmp.putInt(TAG_ITEMS_COLLECTED, newCount);
-            if (newCount > tmp.getInt(TAG_ITEMS_REQUESTED) && tmp.getInt(TAG_ITEMS_REQUESTED) != -1) {
-                tmp.putBoolean(TAG_ITEMS_DONE, true);
+            listItem.collected += count;
+            if (listItem.collected > listItem.requested && listItem.requested != -1) {
+                listItem.done = true;
             }
-            items.set(i, tmp);
-            break;
         }
-        tag.put(TAG_ITEMS, items);
-        mainHandItem.setTag(tag);
+        mainHandItem.set(DataComponentRegistry.REQUEST_ITEMS, request);
     }
 
     public static void clearItemProcess(ItemStack target) {
         if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        CompoundTag tag = target.getOrCreateTag();
-        ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            tmp.putInt(RequestListItem.TAG_ITEMS_COLLECTED, 0);
-            tmp.putInt(RequestListItem.TAG_ITEMS_DONE, 0);
-            tmp.putInt(RequestListItem.TAG_ITEMS_STORED, 0);
-            tmp.remove(RequestListItem.TAG_ITEMS_MISSING);
-            tmp.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
-            list.set(i, tmp);
+        RequestItemStackList request = target.get(DataComponentRegistry.REQUEST_ITEMS.get());
+        List<RequestItemStackList.ListItem> list = request.getList();
+        for (RequestItemStackList.ListItem tmp : list) {
+            tmp.collected = 0;
+            tmp.stored = 0;
+            tmp.done = false;
+            tmp.failAddition = "";
+            tmp.missing.clear();
         }
-        tag.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
-        tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
-        tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
-        tag.put(RequestListItem.TAG_ITEMS, list);
-        tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
-        tag.putBoolean(RequestListItem.TAG_HAS_CHECK_STOCK, false);
-        tag.putBoolean(RequestListItem.TAG_BLACKMODE_DONE, false);
-        target.setTag(tag);
+        request.blacklistDone = false;
+        request.stockModeChecked = false;
+
+        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request);
+        target.set(DataComponentRegistry.REQUEST_IGNORE.get(), false);
+        target.set(DataComponentRegistry.REQUEST_FAIL_ADDITION.get(), "");
+        target.set(DataComponentRegistry.REQUEST_WORK_UUID.get(), UUID.randomUUID());
+        target.set(DataComponentRegistry.REQUEST_CD.get(), 0);
     }
 
     public static void clearAllNonSuccess(ItemStack target) {
         if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        CompoundTag tag = target.getOrCreateTag();
-        ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag oDat = list.getCompound(i);
-            oDat.putBoolean(RequestListItem.TAG_ITEMS_DONE,
-                    oDat.getInt(RequestListItem.TAG_ITEMS_COLLECTED) >= oDat.getInt(RequestListItem.TAG_ITEMS_REQUESTED) || oDat.getInt(RequestListItem.TAG_ITEMS_REQUESTED) == -1
-            );
-            list.set(i, oDat);
+        RequestItemStackList request = target.get(DataComponentRegistry.REQUEST_ITEMS.get());
+        List<RequestItemStackList.ListItem> list = request.getList();
+        for (RequestItemStackList.ListItem tmp : list) {
+            tmp.done = tmp.collected >= tmp.requested || tmp.requested == 0;
         }
-        tag.remove(RequestListItem.TAG_ITEMS_FAIL_ADDITION);
-        tag.putInt(RequestListItem.TAG_COOLING_DOWN, 0);
-        tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
-        tag.put(RequestListItem.TAG_ITEMS, list);
-        target.setTag(tag);
+        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request);
+        target.set(DataComponentRegistry.REQUEST_FAIL_ADDITION.get(), "");
+        target.set(DataComponentRegistry.REQUEST_CD.get(), 0);
+        target.set(DataComponentRegistry.REQUEST_IGNORE.get(), false);
     }
+
     public static boolean matchNbt(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!mainHandItem.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        return tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
+        return Objects.requireNonNull(mainHandItem.get(DataComponentRegistry.REQUEST_ITEMS.get())).matchTag;
     }
 
     public static boolean isCoolingDown(ItemStack item) {
         if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!item.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(item.getTag());
-        return tag.getInt(TAG_COOLING_DOWN) > 0;
+        Integer cd = item.get(DataComponentRegistry.REQUEST_CD.get());
+        return cd != null && cd > 0;
     }
 
     public static void tickCoolingDown(ItemStack item) {
         if (!item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!item.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(item.getTag());
-        if (tag.getInt(TAG_COOLING_DOWN) > 0) {
-            tag.putInt(TAG_COOLING_DOWN, tag.getInt(TAG_COOLING_DOWN) - 1);
-            item.setTag(tag);
-            if (tag.getInt(TAG_COOLING_DOWN) == 0) {
-                DebugData.sendDebug("Cooling Done(clear_repeat)");
+        Integer cd = item.get(DataComponentRegistry.REQUEST_CD.get());
+        if (cd != null && cd > 0) {
+            cd--;
+            item.set(DataComponentRegistry.REQUEST_CD.get(), cd);
+            if (cd == 0) {
                 clearItemProcess(item);
             }
         }
@@ -173,17 +158,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void markDone(ItemStack mainHandItem, ItemStack target) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!mainHandItem.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        ListTag items = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
-        for (int i = 0; i < items.size(); i++) {
-            CompoundTag tmp = items.getCompound(i);
-            if (!ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), target)) continue;
-            tmp.putInt(TAG_ITEMS_DONE, 1);
-            items.set(i, tmp);
+        RequestItemStackList request = target.get(DataComponentRegistry.REQUEST_ITEMS.get());
+        List<RequestItemStackList.ListItem> items = request.getList();
+        for (RequestItemStackList.ListItem item : items) {
+            if (!ItemStack.isSameItemSameComponents(item.item, target)) continue;
+            item.done = true;
         }
-        tag.put(TAG_ITEMS, items);
-        mainHandItem.setTag(tag);
+        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request);
     }
 
 
@@ -192,7 +173,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         if (player.isShiftKeyDown()) return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             if (!isVirtual(serverPlayer.getMainHandItem()))
-                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+                serverPlayer.openMenu(this, (buffer) -> {
                 });
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         }
@@ -203,22 +184,18 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player player, LivingEntity entity, InteractionHand p_41401_) {
         if (!player.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND) {
             if (player.isShiftKeyDown()) {
-                CompoundTag tag = itemStack.getOrCreateTag();
-                if (tag.contains(TAG_STORAGE_ENTITY)) {
-                    tag.remove(TAG_STORAGE_ENTITY);
+                if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_ENTITY)) {
+                    itemStack.remove(DataComponentRegistry.REQUEST_STORAGE_ENTITY);
                 } else {
-                    if (tag.contains(TAG_STORAGE))
-                        tag.remove(TAG_STORAGE);
-                    tag.putUUID(TAG_STORAGE_ENTITY, entity.getUUID());
+                    if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_BLOCK))
+                        itemStack.remove(DataComponentRegistry.REQUEST_STORAGE_BLOCK);
+                    itemStack.set(DataComponentRegistry.REQUEST_STORAGE_ENTITY, entity.getUUID());
                 }
-                player.getMainHandItem().setTag(tag);
                 return InteractionResult.SUCCESS;
             } else if (entity instanceof EntityMaid) {
                 if (!hasAnyStorage(itemStack)) {
-                    CompoundTag tag = itemStack.getOrCreateTag();
-                    if (tag.contains(TAG_STORAGE))
-                        tag.remove(TAG_STORAGE);
-                    tag.putUUID(TAG_STORAGE_ENTITY, player.getUUID());
+                    itemStack.remove(DataComponentRegistry.REQUEST_STORAGE_BLOCK);
+                    itemStack.set(DataComponentRegistry.REQUEST_STORAGE_ENTITY, player.getUUID());
                 }
             }
         }
@@ -233,14 +210,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
-                CompoundTag tag = item.getOrCreateTag();
-                if (tag.contains(TAG_STORAGE_ENTITY)) {
-                    tag.remove(TAG_STORAGE_ENTITY);
+                if (item.has(DataComponentRegistry.REQUEST_STORAGE_ENTITY)) {
+                    item.remove(DataComponentRegistry.REQUEST_STORAGE_ENTITY);
                 }
-                if (tag.contains(TAG_STORAGE)) {
-                    Target storage = Target.fromNbt(tag.getCompound(TAG_STORAGE));
+                if (item.has(DataComponentRegistry.REQUEST_STORAGE_BLOCK)) {
+                    Target storage = Objects.requireNonNull(item.get(DataComponentRegistry.REQUEST_STORAGE_BLOCK));
                     if (storage.getPos().equals(clickedPos) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
-                        tag.remove(TAG_STORAGE);
+                        item.remove(DataComponentRegistry.REQUEST_STORAGE_BLOCK);
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.clear_storage"));
                     } else {
                         if (storage.pos.equals(clickedPos)) {
@@ -250,13 +226,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                             storage.side = null;
                         }
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
-                        tag.put(TAG_STORAGE, storage.toNbt());
+                        item.set(DataComponentRegistry.REQUEST_STORAGE_BLOCK, storage);
                     }
                 } else {
-                    tag.put(TAG_STORAGE, validTarget.toNbt());
+                    item.set(DataComponentRegistry.REQUEST_STORAGE_BLOCK, validTarget);
                     serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                 }
-                item.setTag(tag);
             }
             return InteractionResult.CONSUME;
         } else {
@@ -266,46 +241,38 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack itemStack, @Nullable Level p_41422_, @NotNull List<Component> toolTip, @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
+
         toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.desc").withStyle(ChatFormatting.GRAY));
-        if (!itemStack.hasTag()) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_tag"));
-            return;
-        }
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (tag.contains(RequestListItem.TAG_VIRTUAL) && tag.getBoolean(RequestListItem.TAG_VIRTUAL)) {
+
+        if (Boolean.TRUE.equals(itemStack.get(DataComponentRegistry.REQUEST_VIRTUAL))) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.virtual").withStyle(ChatFormatting.RED));
         }
-        if (tag.contains(RequestListItem.TAG_STORAGE_ENTITY)) {
-            String tuuid = tag.getUUID(RequestListItem.TAG_STORAGE_ENTITY).toString().substring(0, 8);
+        if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_ENTITY)) {
+            String tuuid = itemStack.get(DataComponentRegistry.REQUEST_STORAGE_ENTITY).toString().substring(0, 8);
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.entity", tuuid));
-        } else if (tag.contains(RequestListItem.TAG_STORAGE)) {
-            Target storage = Target.fromNbt(tag.getCompound(RequestListItem.TAG_STORAGE));
+        } else if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_BLOCK)) {
+            Target storage = itemStack.get(DataComponentRegistry.REQUEST_STORAGE_BLOCK);
             BlockPos storagePos = storage.getPos();
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.storage", storagePos.getX(), storagePos.getY(), storagePos.getZ()));
         } else {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
         }
 
-        if (!tag.contains(RequestListItem.TAG_ITEMS)) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.open_gui_to_config"));
-        } else {
-            ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = itemStack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request != null) {
+            List<RequestItemStackList.ListItem> list = request.getList();
             for (int i = 0; i < list.size(); i++) {
-                CompoundTag itemTag = list.getCompound(i);
-                if (!itemTag.contains(RequestListItem.TAG_ITEMS_ITEM)) continue;
-
-                ItemStack itemstack = ItemStack.of(itemTag.getCompound(RequestListItem.TAG_ITEMS_ITEM));
+                RequestItemStackList.ListItem tmp = list.get(i);
+                ItemStack itemstack = tmp.item;
                 if (itemstack.isEmpty()) continue;
 
-                int collected = itemTag.getInt(RequestListItem.TAG_ITEMS_COLLECTED);
-                int requested = itemTag.getInt(RequestListItem.TAG_ITEMS_REQUESTED);
 
-                Component component = Component.translatable("gui.maid_storage_manager.written_inventory_list.request_item_info", itemstack.getHoverName().getString(), collected, String.valueOf(requested == -1 ? "*" : requested));
+                Component component = Component.translatable("gui.maid_storage_manager.written_inventory_list.request_item_info", itemstack.getHoverName().getString(), tmp.collected, String.valueOf(tmp.requested == -1 ? "*" : tmp.requested));
 
-                if (itemTag.getBoolean(RequestListItem.TAG_ITEMS_DONE)) {
-                    if (collected >= requested || requested == -1) {
+                if (tmp.done) {
+                    if (tmp.collected >= tmp.requested || tmp.requested == -1) {
                         component = component.copy().withStyle(ChatFormatting.GREEN);
                     } else {
                         component = component.copy().withStyle(ChatFormatting.RED);
@@ -317,14 +284,14 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             }
         }
 
-        if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0) {
-            if (tag.getBoolean(RequestListItem.TAG_UNIT_SECOND))
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_second", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) / 20));
+        if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0) > 0) {
+            if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD_UNIT, false))
+                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_second", itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0) / 20));
             else
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_tick", tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL)));
-            if (tag.getInt(RequestListItem.TAG_COOLING_DOWN) > 0) {
-                int cd = tag.getInt(RequestListItem.TAG_COOLING_DOWN);
-                if (tag.getBoolean(RequestListItem.TAG_UNIT_SECOND))
+                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_tick", itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0)));
+            if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD, 0) > 0) {
+                int cd = itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD, 0);
+                if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD_UNIT, false))
                     cd /= 20;
                 toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", cd).withStyle(ChatFormatting.GREEN));
             }
@@ -333,13 +300,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static boolean isAllStored(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!stack.hasTag()) return false;
-        CompoundTag tag = stack.getTag();
-        ListTag list = Objects.requireNonNull(tag).getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
-        return list.stream().map(t -> (CompoundTag) t).noneMatch(t -> {
-            if (ItemStack.of(t.getCompound(TAG_ITEMS_ITEM)).isEmpty()) return false;
-            if (!t.getBoolean(TAG_ITEMS_DONE)) return false;
-            return t.getInt(TAG_ITEMS_COLLECTED) > t.getInt(TAG_ITEMS_STORED);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return true;
+        return request.getList().stream().noneMatch(t -> {
+            if (t.item.isEmpty()) return false;
+            if (!t.done) return false;
+            return t.collected > t.stored;
         });
     }
 
@@ -349,35 +315,27 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static List<Pair<ItemStack, Integer>> getItemStacksNotDone(ItemStack stack, boolean includingNoRequest) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return List.of();
-        if (!stack.hasTag()) return List.of();
-
-        CompoundTag tag = stack.getTag();
-        if (tag.getBoolean(TAG_BLACKMODE)) return List.of();
-        ListTag list = Objects.requireNonNull(tag).getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return List.of();
+        if (request.blackList) return List.of();
+        List<RequestItemStackList.ListItem> list = request.getList();
         return list.stream()
-                .filter(t -> !((CompoundTag) t).getBoolean(TAG_ITEMS_DONE))
-                .filter(t -> ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED) != -1 || includingNoRequest).map(t -> {
-                    ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(TAG_ITEMS_ITEM));
-                    int cnt = ((CompoundTag) t).getInt(TAG_ITEMS_REQUESTED);
-                    if (cnt != -1) cnt -= ((CompoundTag) t).getInt(TAG_ITEMS_COLLECTED);
-                    return new Pair<>(item, cnt);
+                .filter(t -> !t.done)
+                .filter(t -> t.requested != -1 || includingNoRequest).map(t -> {
+                    int cnt = t.requested;
+                    if (cnt != -1) cnt -= t.collected;
+                    return new Pair<>(t.item, cnt);
                 }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
     public static @Nullable UUID getStorageEntity(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
-        if (!stack.hasTag()) return null;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        if (!tag.contains(TAG_STORAGE_ENTITY)) return null;
-        return tag.getUUID(TAG_STORAGE_ENTITY);
+        return stack.get(DataComponentRegistry.REQUEST_STORAGE_ENTITY);
     }
 
     public static @Nullable Target getStorageBlock(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
-        if (!stack.hasTag()) return null;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        if (!tag.contains(TAG_STORAGE)) return null;
-        return Target.fromNbt(tag.getCompound(TAG_STORAGE));
+        return stack.get(DataComponentRegistry.REQUEST_STORAGE_BLOCK);
     }
 
     public static boolean hasAnyStorage(ItemStack stack) {
@@ -397,52 +355,51 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
      */
     public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStack.EMPTY;
-        if (!stack.hasTag()) return ItemStack.EMPTY;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return ItemStack.EMPTY;
         //如果最大收集量要比物品栈数量小，那么有一部分不算入计算
         int nonCalc = Math.max(0, collected.getCount() - maxCollect);
         //从剩余的数量中进行计算
         int rest = collected.getCount() - nonCalc;
         int available = collected.getCount();
 
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            if (tmp.getBoolean(TAG_ITEMS_DONE)) continue;
+            RequestItemStackList.ListItem tmp = list.get(i);
+            if (tmp.done) continue;
             //获取每一组被需求的物品
-            ItemStack requested = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (ItemStackUtil.isSame(collected, requested, tag.getBoolean(TAG_MATCH_TAG))) {
+            ItemStack requested = tmp.getItem();
+            if (ItemStackUtil.isSame(collected, requested, request.matchTag)) {
                 //如果黑名单，那么匹配的物品是不用收集的
-                if (tag.getBoolean(TAG_BLACKMODE)) return collected;
-                int requestedCount = tmp.getInt(TAG_ITEMS_REQUESTED);
+                if (request.blackList) return collected;
+                int requestedCount = tmp.requested;
                 //如果指定了需要多少某种物品，那么最大值请求的数值
                 int maxToStore = requestedCount;
                 //如果没有指定的话，那么最大值就是无限拿
                 if (maxToStore == -1) maxToStore = Integer.MAX_VALUE;
                 //因为这里的最大值是请求的数量，需要减去已经拿走了的部分
-                maxToStore -= tmp.getInt(TAG_ITEMS_COLLECTED);
+                maxToStore -= tmp.collected;
                 //最大值不能超过剩余的
                 maxToStore = Math.min(maxToStore, rest);
                 //确认本次是需要进行拿取的
                 if (maxToStore > 0) {
                     rest -= maxToStore;
                     //更新需求表的已收集的值
-                    int currentCollected = tmp.getInt(TAG_ITEMS_COLLECTED) + maxToStore;
-                    tmp.putInt(TAG_ITEMS_COLLECTED, currentCollected);
+                    int currentCollected = tmp.collected + maxToStore;
+                    tmp.collected = currentCollected;
                     list.set(i, tmp);
                     //如果已经收集了全部，那么标记为完成
                     if (currentCollected >= requestedCount && requestedCount != -1) {
-                        tmp.putBoolean(TAG_ITEMS_DONE, true);
+                        tmp.done = true;
                         list.set(i, tmp);
                     }
                 }
                 if (rest <= 0) break;
             }
         }
-        tag.put(TAG_ITEMS, list);
-        stack.setTag(tag);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
         //黑名单情况，如果
-        if (tag.getBoolean(TAG_BLACKMODE)) {
+        if (request.isBlackList()) {
             rest = 0;
         }
         return collected.copyWithCount(nonCalc + rest);
@@ -450,35 +407,35 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return toStore.getCount();
-        if (!stack.hasTag()) return toStore.getCount();
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return toStore.getCount();
 
         //从剩余的数量中进行计算
         int rest = toStore.getCount();
 
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            ItemStack target = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
-            int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
-            int stored = tmp.getInt(TAG_ITEMS_STORED);
+            RequestItemStackList.ListItem tmp = list.get(i);
+
+            ItemStack target = tmp.item;
+            int collected = tmp.collected;
+            int stored = tmp.stored;
             if (stored >= collected) continue;
-            if (ItemStackUtil.isSame(toStore, target, tag.getBoolean(TAG_MATCH_TAG))) {
+            if (ItemStackUtil.isSame(toStore, target, request.matchTag)) {
                 //黑名单物品不进行存储
-                if (tag.getBoolean(TAG_BLACKMODE)) return rest;
+                if (request.blackList) return rest;
                 int maxToStore = collected - stored;
                 maxToStore = Math.min(maxToStore, rest);
                 if (maxToStore > 0) {
                     rest -= maxToStore;
-                    if (!simulate) tmp.putInt(TAG_ITEMS_STORED, stored + maxToStore);
+                    if (!simulate) tmp.stored = stored + maxToStore;
                     list.set(i, tmp);
                 }
             }
             if (rest <= 0) break;
         }
-        tag.put(TAG_ITEMS, list);
-        stack.setTag(tag);
-        if (tag.getBoolean(TAG_BLACKMODE)) {
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        if (request.blackList) {
             rest = 0;
         }
         return rest;
@@ -486,163 +443,152 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void updateCollectedNotStored(ItemStack stack, IItemHandler tmpStorage) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!stack.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            ItemStack target = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
-            int requested = tmp.getInt(TAG_ITEMS_REQUESTED);
-            int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
-            int stored = tmp.getInt(TAG_ITEMS_STORED);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return;
+        List<RequestItemStackList.ListItem> list = request.getList();
+        for (RequestItemStackList.ListItem tmp : list) {
+            ItemStack target = tmp.item;
+            int requested = tmp.requested;
+            int collected = tmp.collected;
+            int stored = tmp.stored;
             if (stored >= collected) continue;
             int count = 0;
             for (int j = 0; j < tmpStorage.getSlots(); j++) {
                 ItemStack itemStack = tmpStorage.getStackInSlot(j);
-                if (ItemStackUtil.isSame(itemStack, target, tag.getBoolean(TAG_MATCH_TAG))) {
+                if (ItemStackUtil.isSame(itemStack, target, request.matchTag)) {
                     count += itemStack.getCount();
                 }
             }
-            tmp.putInt(TAG_ITEMS_COLLECTED, stored + Math.min(requested - stored, count));
+            tmp.collected = (stored + Math.min(requested - stored, count));
         }
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
     }
 
     public static void setFailAddition(ItemStack stack, ItemStack item, String failAddition) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!stack.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return;
+        List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            if (ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), item)) {
-                tag.putString(TAG_ITEMS_FAIL_ADDITION, failAddition);
+            RequestItemStackList.ListItem tmp = list.get(i);
+            if (ItemStack.isSameItemSameComponents(tmp.item, item)) {
+                tmp.failAddition = failAddition;
                 list.set(i, tmp);
             }
         }
-        tag.put(TAG_ITEMS, list);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
     }
 
     public static void markAllDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!stack.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return;
+        List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            tmp.putBoolean(TAG_ITEMS_DONE, true);
-            list.set(i, tmp);
+            list.get(i).done = true;
         }
-        tag.putBoolean(TAG_BLACKMODE_DONE, true);
-        tag.put(TAG_ITEMS, list);
+        request.blacklistDone = true;
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
     }
 
     public static @NotNull UUID getUUID(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return UUID.randomUUID();
-        if (!stack.hasTag()) return UUID.randomUUID();
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        if (!tag.contains(TAG_UUID)) tag.putUUID(TAG_UUID, UUID.randomUUID());
-        return tag.getUUID(TAG_UUID);
+        if (!stack.has(DataComponentRegistry.REQUEST_WORK_UUID))
+            stack.set(DataComponentRegistry.REQUEST_WORK_UUID, UUID.randomUUID());
+        return Objects.requireNonNull(stack.get(DataComponentRegistry.REQUEST_WORK_UUID));
     }
 
     public static void setMissingItem(ItemStack itemStack, ItemStack item, List<ItemStack> missing) {
         if (!itemStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!itemStack.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = itemStack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return;
+        List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            if (ItemStack.isSameItemSameTags(ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)), item)) {
-                ListTag missingList = tmp.getList(TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND);
+            RequestItemStackList.ListItem tmp = list.get(i);
+            if (ItemStack.isSameItemSameComponents(tmp.item, item)) {
                 for (ItemStack ti : missing) {
                     if (ti.isEmpty()) continue;
                     if (ti.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
                         continue;//FIXME: 此处不应该出现这个内容，但是出现会导致NBT爆炸的恶性bug，暂时屏蔽。等待解决
                     int idx = -1;
-                    for (int j = 0; j < missingList.size(); j++) {
-                        if (ItemStack.isSameItemSameTags(ItemStack.of(missingList.getCompound(j)), ti)) idx = j;
+                    for (int j = 0; j < tmp.missing.size(); j++) {
+                        if (ItemStack.isSameItemSameComponents(tmp.missing.get(j), ti)) idx = j;
                     }
                     if (idx != -1) {
-                        ItemStack itemstack = ItemStack.of(missingList.getCompound(idx));
-                        itemstack.grow(ti.getCount());
-                        missingList.set(idx, itemStack.save(new CompoundTag()));
-                    } else if (missingList.size() < 15)
-                        missingList.add(ti.save(new CompoundTag()));
+                        tmp.missing.get(idx).grow(ti.getCount());
+                    } else if (tmp.missing.size() < 15)
+                        tmp.missing.add(ti.copy());
                 }
-
-                tmp.put(TAG_ITEMS_MISSING, missingList);
-                list.set(i, tmp);
                 break;
             }
         }
-        tag.put(TAG_ITEMS, list);
-        itemStack.setTag(tag);
+        itemStack.set(DataComponentRegistry.REQUEST_ITEMS, request);
     }
 
     public static boolean isAllSuccess(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!stack.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        if (tag.getBoolean(TAG_BLACKMODE)) return tag.getBoolean(TAG_BLACKMODE_DONE);
-        ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return false;
+        if (request.blackList) return request.blacklistDone;
+        List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            if (ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM)).isEmpty()) continue;
-            if (tmp.getInt(TAG_ITEMS_REQUESTED) == -1) continue;
-            if (tmp.getInt(TAG_ITEMS_COLLECTED) < tmp.getInt(TAG_ITEMS_REQUESTED)) return false;
+            RequestItemStackList.ListItem tmp = list.get(i);
+            if (tmp.item.isEmpty()) continue;
+            if (tmp.requested == -1) continue;
+            if (tmp.collected < tmp.requested) return false;
         }
         return true;
     }
 
     public static boolean isStockMode(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!stack.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        return tag.getBoolean(TAG_STOCK_MODE);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return false;
+        return request.isStockMode();
     }
 
     public static boolean hasCheckedStock(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!stack.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        return tag.getBoolean(TAG_HAS_CHECK_STOCK);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return false;
+        return request.isStockModeChecked();
     }
 
     public static void setHasCheckedStock(ItemStack stack, boolean has) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putBoolean(TAG_HAS_CHECK_STOCK, has);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return;
+        request.stockModeChecked = has;
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
     }
 
     public static boolean isVirtual(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        return stack.getOrCreateTag().getBoolean(TAG_VIRTUAL);
+        return stack.getOrDefault(DataComponentRegistry.REQUEST_VIRTUAL, false);
     }
 
     public static boolean isBlackMode(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!stack.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        return tag.getBoolean(TAG_BLACKMODE);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return false;
+        return request.blackList;
     }
 
     public static boolean isBlackModeDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!stack.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        return tag.getBoolean(TAG_BLACKMODE_DONE);
+        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        if (request == null) return false;
+        return request.blacklistDone;
     }
 
     public static void setVirtualData(ItemStack stack, CompoundTag data) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.put(TAG_VIRTUAL_DATA, data);
-        stack.setTag(tag);
+        stack.set(DataComponentRegistry.REQUEST_VIRTUAL_DATA, data);
     }
 
     public static CompoundTag getVirtualData(ItemStack stack) {
-        if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
-        if (!stack.hasTag()) return null;
-        CompoundTag tag = Objects.requireNonNull(stack.getTag());
-        return tag.getCompound(TAG_VIRTUAL_DATA);
+        if (stack.has(DataComponentRegistry.REQUEST_VIRTUAL_DATA))
+            return stack.get(DataComponentRegistry.REQUEST_VIRTUAL_DATA);
+        return new CompoundTag();
     }
 
     @Override

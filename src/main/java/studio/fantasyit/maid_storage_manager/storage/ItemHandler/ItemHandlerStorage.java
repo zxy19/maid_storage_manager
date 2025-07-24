@@ -6,11 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -19,7 +16,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class ItemHandlerStorage implements IMaidStorage {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "item_handler");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "item_handler");
 
     @Override
     public ResourceLocation getType() {
@@ -28,15 +25,13 @@ public class ItemHandlerStorage implements IMaidStorage {
 
     @Override
     public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side) {
-        BlockEntity blockEntity = level.getBlockEntity(block);
-        if (blockEntity == null) return false;
-        @NotNull LazyOptional<IItemHandler> cap;
+        IItemHandler cap;
         if (side == null) {
-            cap = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER);
+            cap = level.getCapability(Capabilities.ItemHandler.BLOCK, block, null);
         } else {
-            cap = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side);
+            cap = level.getCapability(Capabilities.ItemHandler.BLOCK, block, side);
         }
-        return cap.isPresent();
+        return cap != null;
     }
 
     @Override

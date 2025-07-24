@@ -13,11 +13,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -103,22 +102,17 @@ public class SimulateTargetInteractHelper {
         this.maid = maid;
         this.target = targetPos;
         this.level = level;
-        this.blockEntity = level.getBlockEntity(target);
         this.opener = ChestOpener.getOrCreate(level, maid);
-        if (blockEntity != null) {
-            LazyOptional<IItemHandler> capability;
-            if (side == null)
-                capability = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER);
-            else
-                capability = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side);
+        blockEntity = level.getBlockEntity(target);
+        if (blockEntity == null) return;
+        IItemHandler capability = level.getCapability(Capabilities.ItemHandler.BLOCK, targetPos, side);
+        if (capability != null) {
+            itemHandler = capability;
 
-            if (capability.isPresent()) {
-                itemHandler = capability.orElseThrow(RuntimeException::new);
-
-                if (itemHandler.getSlots() > 60)
-                    countPreTick = itemHandler.getSlots() / 6;
-            }
+            if (itemHandler.getSlots() > 60)
+                countPreTick = itemHandler.getSlots() / 6;
         }
+
     }
 
 

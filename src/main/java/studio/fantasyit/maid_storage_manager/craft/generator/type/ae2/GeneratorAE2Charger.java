@@ -31,7 +31,7 @@ import java.util.Map;
 public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation("ae2", "charger");
+        return ResourceLocation.fromNamespaceAndPath("ae2", "charger");
     }
 
     @Override

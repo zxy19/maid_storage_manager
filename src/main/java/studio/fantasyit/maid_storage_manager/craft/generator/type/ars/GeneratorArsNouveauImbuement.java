@@ -54,7 +54,7 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
     }
 
     public ResourceLocation subIdGenerator(ResourceLocation id) {
-        return new ResourceLocation(id.getNamespace(), id.getPath() + "_sub");
+        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_sub");
     }
 
     @Override

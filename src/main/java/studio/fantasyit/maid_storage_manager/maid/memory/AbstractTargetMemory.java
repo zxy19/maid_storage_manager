@@ -29,7 +29,7 @@ public abstract class AbstractTargetMemory {
                         ItemStack.CODEC.optionalFieldOf("check")
                                 .forGetter(TargetData::getCheckItem)
                 ).apply(instance, TargetData::new));
-        public static ResourceLocation NO_TARGET = new ResourceLocation(MaidStorageManager.MODID, "no_target");
+        public static ResourceLocation NO_TARGET = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_target");
         public List<Target> visitedPos;
         public Target target;
         @Nullable

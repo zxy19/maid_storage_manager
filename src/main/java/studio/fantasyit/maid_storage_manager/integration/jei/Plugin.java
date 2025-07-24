@@ -28,7 +28,7 @@ public class Plugin implements IModPlugin {
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return new ResourceLocation(MaidStorageManager.MODID, "jei");
+        return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "jei");
     }
 
     @Override

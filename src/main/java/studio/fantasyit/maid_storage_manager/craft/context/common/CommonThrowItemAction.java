@@ -17,7 +17,7 @@ import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 import java.util.List;
 
 public class CommonThrowItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "throw");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "throw");
     int ingredientIndex = 0;
     List<ItemStack> ingredients;
 

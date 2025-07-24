@@ -43,7 +43,7 @@ import java.util.Map;
 public class GeneratorStripping implements IAutoCraftGuideGenerator {
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "stripping");
+        return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "stripping");
     }
 
     @Override
@@ -72,7 +72,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                         ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
                         @Nullable ResourceLocation _key = ForgeRegistries.ITEMS.getKey(strippedItem.getItem());
                         if (_key == null) return;
-                        ResourceLocation key = new ResourceLocation(_key.getNamespace(), _key.getPath() + "_stripping");
+                        ResourceLocation key = ResourceLocation.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
                         graph.addRecipe(
                                 key,
                                 List.of(Ingredient.of(itemStack), Ingredient.of(ItemTags.AXES)),
@@ -135,7 +135,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                         ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
                         @Nullable ResourceLocation _key = ForgeRegistries.ITEMS.getKey(strippedItem.getItem());
                         if (_key == null) return;
-                        ResourceLocation key = new ResourceLocation(_key.getNamespace(), _key.getPath() + "_stripping");
+                        ResourceLocation key = ResourceLocation.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
                         RecipeIngredientCache.addRecipeCache(
                                 key,
                                 List.of(Ingredient.of(itemStack), Ingredient.of(ItemTags.AXES))

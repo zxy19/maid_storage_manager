@@ -15,7 +15,6 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @OnlyIn(Dist.CLIENT)
 public class InventoryListUtil {
@@ -24,7 +23,7 @@ public class InventoryListUtil {
      * @param inv 玩家背包
      * @return
      */
-    public static @Nullable UUID getInventoryListUUIDFromPlayerInv(List<ItemStack> inv) {
+    public static Object getInventoryListUUIDFromPlayerInv(List<ItemStack> inv) {
         return inv
                 .stream()
                 .filter(i -> i.is(ItemRegistry.WRITTEN_INVENTORY_LIST.get()) && i.hasTag() && i.getOrCreateTag().contains(WrittenInvListItem.TAG_UUID))
@@ -40,7 +39,7 @@ public class InventoryListUtil {
      * @param itemStack 物品列表
      * @return 物品
      */
-    public static @Nullable ItemStack getMatchingFromInventory(UUID uuid, List<ItemStack> itemStack) {
+    public static @Nullable ItemStack getMatchingFromInventory(Object uuid, List<ItemStack> itemStack) {
         for (ItemStack itemStack1 : itemStack) {
             Optional<CraftGuideData> craftable = InventoryListDataClient.getInstance().get(uuid)
                     .stream()
@@ -85,7 +84,7 @@ public class InventoryListUtil {
     public static ItemStack getMatchingForPlayerOrFirst(LocalPlayer player, List<ItemStack> itemStack) {
         if( itemStack.isEmpty())
             return ItemStack.EMPTY;
-        UUID uuid = getInventoryListUUIDFromPlayerInv(player.getInventory().items);
+        Object uuid = getInventoryListUUIDFromPlayerInv(player.getInventory().items);
         if (uuid == null)
             return itemStack.get(0);
         ItemStack matchingFromInventory = getMatchingFromInventory(uuid, itemStack);

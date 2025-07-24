@@ -15,7 +15,10 @@ import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class InventoryListScreen extends Screen {
@@ -62,7 +65,7 @@ public class InventoryListScreen extends Screen {
     private final Button filterButton;
 
     private final InventoryListDataClient data;
-    private final UUID uuid;
+    private final Object uuid;
     protected int left = 0;
     protected int top = 0;
     protected int width = 0;
@@ -78,12 +81,12 @@ public class InventoryListScreen extends Screen {
     private EditBox searchBox;
     private Screen toSelectTarget = null;
 
-    public InventoryListScreen(UUID uuid, Screen toSelectTarget) {
+    public InventoryListScreen(Object uuid, Screen toSelectTarget) {
         this(uuid);
         this.toSelectTarget = toSelectTarget;
     }
 
-    public InventoryListScreen(UUID uuid) {
+    public InventoryListScreen(Object uuid) {
         super(Component.empty());
         this.uuid = uuid;
         this.prevButton = Button.builder(Component.translatable("gui.maid_storage_manager.written_inventory_list.previous"), (button) -> this.doPrev())

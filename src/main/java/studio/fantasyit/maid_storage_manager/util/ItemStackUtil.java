@@ -22,8 +22,8 @@ public class ItemStackUtil {
         return ItemStack.isSameItem(stack1, stack2);
     }
 
-    public static TagKey<Item> MatchItem = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "no_nbt"));
-    public static TagKey<Item> NoMatchItem = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "use_nbt"));
+    public static TagKey<Item> MatchItem = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_nbt"));
+    public static TagKey<Item> NoMatchItem = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_nbt"));
 
 
     public static boolean isSameInCrafting(ItemStack stack1, ItemStack stack2) {

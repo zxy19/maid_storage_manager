@@ -13,7 +13,7 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class AltarCraftScreen extends AbstractCraftScreen<AltarCraftMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/altar.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/altar.png");
 
     public AltarCraftScreen(AltarCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_, background);

@@ -19,7 +19,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.List;
 
 public class CommonPickupItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "pickup");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "pickup");
     int ingredientIndex = 0;
     List<ItemStack> ingredients;
     List<Entity> entities;

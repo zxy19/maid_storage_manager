@@ -10,11 +10,9 @@ import net.minecraft.network.chat.Component;
 import studio.fantasyit.maid_storage_manager.menu.InventoryListScreen;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
-import java.util.UUID;
-
 public class InventorySelectButton extends AbstractButton {
     private final Screen screen;
-    private UUID uuid = null;
+    private Object uuid = null;
 
     public InventorySelectButton(int p_93365_, int p_93366_, Screen screen) {
         super(p_93365_, p_93366_, 16, 16, Component.translatable("gui.maid_storage_manager.written_inventory_list.select_from"));
@@ -27,7 +25,7 @@ public class InventorySelectButton extends AbstractButton {
             Minecraft.getInstance().setScreen(new InventoryListScreen(uuid, screen));
     }
 
-    public void setUUID(UUID uuid) {
+    public void setUUID(Object uuid) {
         this.uuid = uuid;
     }
 

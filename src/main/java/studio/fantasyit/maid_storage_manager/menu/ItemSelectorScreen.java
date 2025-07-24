@@ -39,14 +39,13 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> implements IItemTarget {
-    private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/item_selector.png");
+    private final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/item_selector.png");
     AbstractWidget repeatControl;
     InventorySelectButton inventorySelectButton;
 
@@ -308,7 +307,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
     protected void refreshUUID(boolean force) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null && (player.tickCount % 20 == 0 || force)) {
-            UUID inventoryListUUIDFromPlayerInv = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.inventory.items);
+            Object inventoryListUUIDFromPlayerInv = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.inventory.items);
             if (inventoryListUUIDFromPlayerInv != null) {
                 inventorySelectButton.setUUID(inventoryListUUIDFromPlayerInv);
             }

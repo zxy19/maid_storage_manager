@@ -11,7 +11,7 @@ import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class BrewingCraftScreen extends AbstractCraftScreen<BrewingCraftMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/brewing.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/brewing.png");
 
     public BrewingCraftScreen(BrewingCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_, background, true);

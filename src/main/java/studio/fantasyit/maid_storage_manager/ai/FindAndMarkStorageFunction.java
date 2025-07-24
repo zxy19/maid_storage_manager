@@ -63,7 +63,7 @@ public class FindAndMarkStorageFunction implements IFunctionCall<FindAndMarkStor
         Map<Target, List<ViewedInventoryMemory.ItemCount>> itemKeys = MemoryUtil.getViewedInventory(entityMaid).positionFlatten();
         StringBuilder message = new StringBuilder();
         for (String itemId : itemIdData.itemId()) {
-            ResourceLocation resourceLocation = new ResourceLocation(itemId);
+            ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(itemId);
             Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
             if (item == null) {
                 message.append("Fail. Item ID: ").append(itemId).append(" is not a valid item.\n");

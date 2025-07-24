@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Ae2Storage implements IMaidStorage {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "ae2");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "ae2");
 
     @Override
     public ResourceLocation getType() {

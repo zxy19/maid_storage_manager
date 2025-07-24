@@ -64,7 +64,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
         brewingData.forEach(data -> {
             if (!posFilter.isAvailable(data.output))
                 return;
-            graph.addRecipe(new ResourceLocation("brewing", String.format("recipe_%d", data.index)),
+            graph.addRecipe(ResourceLocation.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
                     List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient),
                     List.of(1, COUNT.getValue(), 1),
                     data.output,
@@ -90,7 +90,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
         brewingData.clear();
         forEachRecipeIO((data) -> {
             RecipeIngredientCache.addRecipeCache(
-                    new ResourceLocation("brewing", String.format("recipe_%d", data.index)),
+                    ResourceLocation.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
                     List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient)
             );
             brewingData.add(data);

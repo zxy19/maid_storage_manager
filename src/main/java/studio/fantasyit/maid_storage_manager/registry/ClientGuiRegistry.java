@@ -1,10 +1,9 @@
 package studio.fantasyit.maid_storage_manager.registry;
 
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
 import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
@@ -20,24 +19,22 @@ import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftSc
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutterCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftScreen;
 
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientGuiRegistry {
     @SubscribeEvent
-    public static void init(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            MenuScreens.register(GuiRegistry.ITEM_SELECTOR_MENU.get(), ItemSelectorScreen::new);
-            MenuScreens.register(GuiRegistry.FILTER_MENU.get(), FilterScreen::new);
-            MenuScreens.register(GuiRegistry.STORAGE_MANAGER_MAID_CONFIG_GUI.get(), StorageManagerMaidConfigGui::new);
-            MenuScreens.register(GuiRegistry.LOGISTICS_GUIDE_MENU.get(), LogisticsGuideScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_COMMON.get(), CommonCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), CraftingTableCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_ALTAR.get(), AltarCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_FURNACE.get(), FurnaceCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), SmithingCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), AnvilCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get(), BrewingCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), StoneCutterCraftScreen::new);
-            MenuScreens.register(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), TaczCraftScreen::new);
-        });
+    public static void init(RegisterMenuScreensEvent event) {
+        event.register(GuiRegistry.ITEM_SELECTOR_MENU.get(), ItemSelectorScreen::new);
+        event.register(GuiRegistry.FILTER_MENU.get(), FilterScreen::new);
+        event.register(GuiRegistry.STORAGE_MANAGER_MAID_CONFIG_GUI.get(), StorageManagerMaidConfigGui::new);
+        event.register(GuiRegistry.LOGISTICS_GUIDE_MENU.get(), LogisticsGuideScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_COMMON.get(), CommonCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), CraftingTableCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_ALTAR.get(), AltarCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_FURNACE.get(), FurnaceCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get(), SmithingCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), AnvilCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get(), BrewingCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), StoneCutterCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), TaczCraftScreen::new);
     }
 }

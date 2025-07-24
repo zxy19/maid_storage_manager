@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import static appeng.api.networking.crafting.CraftingSubmitErrorCode.CPU_BUSY;
 
 public class AeCraftingAction extends CommonTakeItemAction {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "ae2_craft");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "ae2_craft");
     int nextCrafting = 0;
     Future<ICraftingPlan> currentCalculating = null;
     Queue<ICraftingLink> craftingLinks = new LinkedList<>();

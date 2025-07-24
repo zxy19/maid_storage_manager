@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CraftingRecipeAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "craft");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "craft");
 
     public CraftingRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);

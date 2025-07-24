@@ -24,7 +24,7 @@ import java.util.List;
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class TaczCraftScreen extends AbstractCraftScreen<TaczCraftMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/tacz.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/tacz.png");
     private static final ImageAsset BTN_SELECTED = new ImageAsset(background, 176 + 1, 24 + 1, 68 - 2, 18 - 2);
     private static final ImageAsset BTN_NORMAL = new ImageAsset(background, 176 + 1, 42 + 1, 68 - 2, 18 - 2);
     private static final ImageAsset BTN_BACK_NORMAL = new ImageAsset(background, 176, 60, 68, 18);

@@ -27,7 +27,7 @@ import java.util.List;
 
 public class FurnaceType implements ICraftType {
 
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "furnace");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "furnace");
 
     @Override
     public @NotNull ResourceLocation getType() {

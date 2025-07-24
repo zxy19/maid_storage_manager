@@ -14,8 +14,8 @@ import studio.fantasyit.maid_storage_manager.network.Network;
 import java.util.List;
 
 public class CreateStockButton extends MaidSideTabButton {
-    private static final ResourceLocation SIDE = new ResourceLocation(TouhouLittleMaid.MOD_ID, "textures/gui/maid_gui_side.png");
-    private static final ResourceLocation ICON = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/create_stock_keeper.png");
+    private static final ResourceLocation SIDE = ResourceLocation.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "textures/gui/maid_gui_side.png");
+    private static final ResourceLocation ICON = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/create_stock_keeper.png");
     BlockPos ticker;
     int maidId;
 

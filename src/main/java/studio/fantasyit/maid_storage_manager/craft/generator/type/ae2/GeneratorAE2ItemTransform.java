@@ -30,7 +30,7 @@ import java.util.Map;
 public class GeneratorAE2ItemTransform implements IAutoCraftGuideGenerator {
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation("ae2", "item_transform");
+        return ResourceLocation.fromNamespaceAndPath("ae2", "item_transform");
     }
 
     @Override

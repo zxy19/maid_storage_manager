@@ -1,13 +1,16 @@
 package studio.fantasyit.maid_storage_manager.storage.rs;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.refinedmods.refinedstorage.api.util.Action;
-import com.refinedmods.refinedstorage.api.util.StackListEntry;
+import com.refinedmods.refinedstorage.api.core.Action;
+import com.refinedmods.refinedstorage.api.resource.ResourceAmount;
+import com.refinedmods.refinedstorage.api.storage.Actor;
+import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
 import java.util.List;
 import java.util.function.Function;
@@ -25,7 +28,7 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
 
     @Override
     public boolean isDone() {
-        return super.isDone() || network == null || (task != null && current >= task.size());
+        return super.isDone() || itemStorage == null || (task != null && current >= task.size());
     }
 
     @Override
@@ -41,25 +44,25 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
 
     @Override
     public void tick(Function<ItemStack, ItemStack> callback) {
-        if (network == null || task == null || current >= task.size()) return;
-        List<ItemStack> itemStack = List.of(task.get(current));
+        if (itemStorage == null || task == null || current >= task.size()) return;
         int toCollect = task.get(current).getCount();
-        if (!matchNbt) {
-            itemStack = stackListStacks
-                    .stream()
-                    .filter(stack -> ItemStackUtil.isSame(stack.getStack(), task.get(current), matchNbt))
-                    .map(StackListEntry::getStack)
-                    .toList();
-        }
+        List<ResourceAmount> itemStack = itemStorage
+                .getAll()
+                .stream()
+                .filter(key -> key.resource() instanceof ItemResource)
+                .filter(stack -> ItemStackUtil.isSame(((ItemResource) (stack.resource())).toItemStack(), task.get(current), matchNbt))
+                .toList();
 
-        for (ItemStack stack : itemStack) {
-            int currentToCollect = Math.min(toCollect, stack.getCount());
-            ItemStack extractedSim = network.extractItem(stack, currentToCollect, Action.SIMULATE);
-            if (extractedSim.isEmpty()) continue;
-            ItemStack rested = callback.apply(extractedSim);
+
+        for (ResourceAmount stack : itemStack) {
+            int currentToCollect = Math.min(toCollect, MathUtil.toIntOrMax(stack.amount()));
+            int extractedSim = Math.toIntExact(itemStorage.extract(stack.resource(), currentToCollect, Action.SIMULATE, Actor.EMPTY));
+            if (extractedSim == 0) continue;
+            ItemStack extracted = ((ItemResource) (stack.resource())).toItemStack().copyWithCount(extractedSim);
+            ItemStack rested = callback.apply(extracted);
             currentToCollect -= rested.getCount();
             if (currentToCollect > 0) {
-                network.extractItem(stack, currentToCollect, Action.PERFORM);
+                itemStorage.extract(stack.resource(), currentToCollect, Action.EXECUTE, Actor.EMPTY);
                 toCollect -= currentToCollect;
                 if (toCollect <= 0)
                     break;
@@ -77,10 +80,13 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
 
     @Override
     public void setExtractByExisting(Predicate<ItemStack> predicate) {
-        if (stackListStacks != null)
+        if (itemStorage != null)
             setExtract(
-                    stackListStacks.stream()
-                            .map(StackListEntry::getStack)
+                    itemStorage
+                            .getAll()
+                            .stream()
+                            .filter(stack -> stack.resource() instanceof ItemResource)
+                            .map(stack -> ((ItemResource) stack.resource()).toItemStack())
                             .filter(predicate)
                             .toList(), true);
         else

@@ -14,7 +14,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class CreateStockTickerStorage implements IMaidStorage {
-    public static final ResourceLocation TYPE = new ResourceLocation(MaidStorageManager.MODID, "create");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "create");
 
     @Override
     public ResourceLocation getType() {

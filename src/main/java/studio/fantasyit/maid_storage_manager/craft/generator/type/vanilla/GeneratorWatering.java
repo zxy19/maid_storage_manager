@@ -46,7 +46,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
 
     @Override
     public @NotNull ResourceLocation getType() {
-        return new ResourceLocation(MaidStorageManager.MODID, "watering");
+        return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering");
     }
 
     @Override
@@ -65,7 +65,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         if (BOTTLE.getValue())
             graph.addRecipe(
-                    new ResourceLocation(MaidStorageManager.MODID, "watering_bottle"),
+                    ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
                     List.of(Ingredient.of(Items.GLASS_BOTTLE)),
                     List.of(1),
                     List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
@@ -86,7 +86,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
             );
         if (BUCKET.getValue())
             graph.addRecipe(
-                    new ResourceLocation(MaidStorageManager.MODID, "watering_bucket"),
+                    ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bucket"),
                     List.of(Ingredient.of(Items.BUCKET)),
                     List.of(1),
                     List.of(new ItemStack(Items.WATER_BUCKET)),
@@ -110,11 +110,11 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     @Override
     public void onCache(RecipeManager manager) {
         RecipeIngredientCache.addRecipeCache(
-                new ResourceLocation(MaidStorageManager.MODID, "watering_bottle"),
+                ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
                 List.of(Ingredient.of(Items.GLASS_BOTTLE))
         );
         RecipeIngredientCache.addRecipeCache(
-                new ResourceLocation(MaidStorageManager.MODID, "watering_bucket"),
+                ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bucket"),
                 List.of(Ingredient.of(Items.BUCKET))
         );
     }
