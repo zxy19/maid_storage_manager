@@ -45,7 +45,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
         return MekanismRecipeType.COMPRESSING.get();
     }
 
-    protected List<Pair<ItemStack, Integer>> infusionInputs(RecipeManager manager, ChemicalStackIngredient.GasStackIngredient input) {
+    protected List<Pair<ItemStack, Integer>> infusionInputs(RecipeManager manager, ChemicalStackIngredient.GasStackIngredient input, long maxCapacity) {
         List<Pair<ItemStack, Integer>> ret = new ArrayList<>();
         List<ItemStackToGasRecipe> gasConverters = manager
                 .getAllRecipesFor(MekanismRecipeType.GAS_CONVERSION.get());
@@ -62,6 +62,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
                                 if (getAmountL > 1e9) continue;
                                 int getAmount = (int) getAmountL;
                                 int totalAmount = MathUtil.lcm(getAmount, amount);
+                                if (totalAmount > maxCapacity) continue;
                                 ret.add(new Pair<>(possibleInput.copyWithCount(totalAmount / getAmount), totalAmount / amount));
                             }
                         }
@@ -77,8 +78,9 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
 
     @Override
     protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackGasToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
-        if (machine instanceof TileEntityOsmiumCompressor oc)
+        if (machine instanceof TileEntityOsmiumCompressor oc) {
             oc.getGasManager();
+        }
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         Direction extra = getTypeDirection(machine, List.of(DataType.EXTRA));
@@ -113,7 +115,13 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
 
     @Override
     public void generate(ItemStackGasToItemStackRecipe recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
-        List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput());
+        long capacity = 2000;
+        if (machine instanceof TileEntityOsmiumCompressor oc)
+            capacity = oc.gasTank.getCapacity();
+        else if (machine instanceof TileEntityItemStackGasToItemStackFactory fc)
+            capacity = fc.getGasTank().getCapacity();
+
+        List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput(), capacity);
         Ingredient ingredient = Ingredient.of(recipe.getItemInput().getRepresentations().stream());
         for (Pair<ItemStack, Integer> pair : possibleInfusion) {
             List<Ingredient> inputs = List.of(ingredient, Ingredient.of(pair.getA()));
