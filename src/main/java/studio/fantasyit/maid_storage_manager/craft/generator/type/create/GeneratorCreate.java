@@ -2,20 +2,18 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.create;
 
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
@@ -39,7 +37,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends RecipeType<T>, C extends Container, S> implements IAutoCraftGuideGenerator {
+public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extends ProcessingRecipeParams, R extends RecipeType<T>, C extends RecipeInput, S> implements IAutoCraftGuideGenerator {
     protected enum StepGenerateStep {
         INIT,
         INPUT_ITEM,
@@ -122,13 +120,14 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
         addRecipeForPos(level, pos, getRecipeType(), graph, t -> true);
     }
 
-    protected void addRecipeForPos(Level level, BlockPos pos, R type, ICachableGeneratorGraph graph, Predicate<T> predicate) {
+    protected void addRecipeForPos(Level level, BlockPos pos, R type, ICachableGeneratorGraph graph, Predicate<RecipeHolder<T>> predicate) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(type)
                 .stream()
                 .filter(predicate)
-                .forEach((recipe) -> {
+                .forEach((holder) -> {
+                    T recipe = holder.value();
                     int multiplier = getMinFullBucketCount(recipe);
                     //所有输入原材料（流体装桶）
                     List<Ingredient> itemIngredients = optionalIngredientList(recipe.getIngredients()).orElse(List.of());
@@ -158,7 +157,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
 
                     S state = getState(level, pos, recipe, graph);
 
-                    graph.addRecipe(recipe.getId(),
+                    graph.addRecipe(holder.id(),
                             all,
                             counts,
                             results,
@@ -280,17 +279,18 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
     public void onCache(RecipeManager manager) {
         manager.getAllRecipesFor(getRecipeType())
                 .stream()
-                .forEach(processingRecipe -> {
-                    List<Ingredient> itemIngredients = optionalIngredientList(processingRecipe.getIngredients()).orElse(List.of());
-                    List<Ingredient> fluidBuckets = transformFluidIngredient(processingRecipe.getFluidIngredients()).orElse(List.of());
+                .forEach(holder -> {
+                    T recipe = holder.value();
+                    List<Ingredient> itemIngredients = optionalIngredientList(recipe.getIngredients()).orElse(List.of());
+                    List<Ingredient> fluidBuckets = transformFluidIngredient(recipe.getFluidIngredients()).orElse(List.of());
                     List<Ingredient> all = new ArrayList<>();
                     all.addAll(itemIngredients);
                     all.addAll(fluidBuckets);
                     List<Integer> counts = new ArrayList<>();
                     all.forEach(t -> counts.add(0));
-                    transformAllIngredients(processingRecipe, all, counts);
+                    transformAllIngredients(recipe, all, counts);
                     RecipeIngredientCache.addRecipeCache(
-                            processingRecipe.getId(),
+                            holder.id(),
                             all
                     );
                 });

@@ -9,6 +9,7 @@ import com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity;
 import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
@@ -16,15 +17,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
@@ -49,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeWrapper>, RecipeType<ProcessingRecipe<RecipeWrapper>>, RecipeWrapper, BlockPos> {
+public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>, ProcessingRecipeParams, RecipeType<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>>, RecipeInput, BlockPos> {
     ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
             "count",
             8,
@@ -113,7 +109,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
     }
 
     @Override
-    protected int getMinFullBucketCount(ProcessingRecipe<RecipeWrapper> recipe) {
+    protected int getMinFullBucketCount(ProcessingRecipe<RecipeInput, ProcessingRecipeParams> recipe) {
         if (recipe.getResultItem(RegistryAccess.EMPTY).getMaxStackSize() == 1)
             return super.getMinFullBucketCount(recipe);
         return MathUtil.lcm(super.getMinFullBucketCount(recipe), COUNT.getValue());
@@ -121,7 +117,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
 
     @Deprecated
     @Override
-    RecipeType<ProcessingRecipe<RecipeWrapper>> getRecipeType() {
+    RecipeType<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>> getRecipeType() {
         return null;
     }
 
@@ -181,16 +177,17 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
             if (typeAt instanceof AllFanProcessingTypes.SmokingType)
                 furnaceReplace.getB().setTrue();
             if (isProcessingRecipe(type))
-                addRecipeForPos(level, test, (RecipeType<ProcessingRecipe<RecipeWrapper>>) type, graph, recipe -> true);
+                addRecipeForPos(level, test, (RecipeType<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>>) type, graph, recipe -> true);
             else {
                 StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, test);
                 level.getRecipeManager()
-                        .getAllRecipesFor((RecipeType<Recipe<Container>>) type)
-                        .forEach((recipe) -> {
+                        .getAllRecipesFor((RecipeType<Recipe<RecipeInput>>) type)
+                        .forEach((holder) -> {
+                            Recipe<?> recipe = holder.value();
                             ItemStack resultItem = recipe.getResultItem(level.registryAccess());
                             if (!posFilter.isAvailable(resultItem))
                                 return;
-                            graph.addRecipe(recipe, items -> {
+                            graph.addRecipe(holder, items -> {
                                 List<CraftGuideStepData> steps = new ArrayList<>();
                                 each3items(items, t -> steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, test),
@@ -226,9 +223,10 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
             RecipeType<?> type = getRecipeType(typeAt);
             if (type == null) return;
             if (isProcessingRecipe(type)) {
-                manager.getAllRecipesFor((RecipeType<ProcessingRecipe<RecipeWrapper>>) type)
+                manager.getAllRecipesFor((RecipeType<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>>) type)
                         .stream()
-                        .forEach(processingRecipe -> {
+                        .forEach(holder -> {
+                            ProcessingRecipe<RecipeInput, ProcessingRecipeParams> processingRecipe = holder.value();
                             List<Ingredient> itemIngredients = optionalIngredientList(processingRecipe.getIngredients()).orElse(List.of());
                             List<Ingredient> fluidBuckets = transformFluidIngredient(processingRecipe.getFluidIngredients()).orElse(List.of());
                             List<Ingredient> all = new ArrayList<>();
@@ -238,12 +236,12 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                             all.forEach(t -> counts.add(0));
                             transformAllIngredients(processingRecipe, all, counts);
                             RecipeIngredientCache.addRecipeCache(
-                                    processingRecipe.getId(),
+                                    holder.id(),
                                     all
                             );
                         });
             } else {
-                manager.getAllRecipesFor((RecipeType<Recipe<Container>>) type).forEach(RecipeIngredientCache::addRecipeCache);
+                manager.getAllRecipesFor((RecipeType<Recipe<RecipeInput>>) type).forEach(RecipeIngredientCache::addRecipeCache);
             }
         });
     }

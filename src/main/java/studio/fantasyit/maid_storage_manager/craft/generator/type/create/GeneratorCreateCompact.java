@@ -5,14 +5,15 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.mixer.CompactingRecipe;
 import com.simibubi.create.content.processing.recipe.HeatCondition;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorCreateCompact extends GeneratorCreate<CompactingRecipe, RecipeType<CompactingRecipe>, Container, BlockPos> {
+public class GeneratorCreateCompact extends GeneratorCreate<CompactingRecipe, ProcessingRecipeParams, RecipeType<CompactingRecipe>, RecipeInput, BlockPos> {
     @Override
     public @NotNull ResourceLocation getType() {
         return AllRecipeTypes.COMPACTING.getId();
@@ -87,7 +88,7 @@ public class GeneratorCreateCompact extends GeneratorCreate<CompactingRecipe, Re
                 pos,
                 getRecipeType(),
                 graph,
-                t -> t.getRequiredHeat() == HeatCondition.NONE || hasBurner
+                t -> t.value().getRequiredHeat() == HeatCondition.NONE || hasBurner
         );
     }
 

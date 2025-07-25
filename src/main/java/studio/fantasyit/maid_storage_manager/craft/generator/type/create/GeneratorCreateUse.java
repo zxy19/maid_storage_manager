@@ -65,7 +65,8 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.ITEM_APPLICATION.getType())
-                .forEach((recipe) -> {
+                .forEach((holder) -> {
+                    Recipe<?> recipe = holder.value();
                     if ((Recipe<?>) recipe instanceof ManualApplicationRecipe manualApplicationRecipe) {
                         if (manualApplicationRecipe.getRequiredHeldItem().isEmpty()) {
                             return;
@@ -80,7 +81,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                         );
                         toolOptional.ifPresent(ingredients::add);
                         graph.addRecipe(
-                                manualApplicationRecipe.getId(),
+                                holder.id(),
                                 ingredients,
                                 ingredients.stream().map(t -> 1).toList(),
                                 resultItem
@@ -133,7 +134,8 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
     @Override
     public void onCache(RecipeManager manager) {
         manager.getAllRecipesFor(AllRecipeTypes.ITEM_APPLICATION.getType())
-                .forEach(recipe -> {
+                .forEach(holder -> {
+                    Recipe<?> recipe = holder.value();
                     if ((Recipe<?>) recipe instanceof ManualApplicationRecipe manualApplicationRecipe) {
                         if (manualApplicationRecipe.getRequiredHeldItem().isEmpty()) {
                             return;
@@ -144,7 +146,7 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                         );
                         toolOptional.ifPresent(ingredients::add);
                         RecipeIngredientCache.addRecipeCache(
-                                manualApplicationRecipe.getId(),
+                                holder.id(),
                                 ingredients
                         );
                     }

@@ -1,27 +1,27 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.mekanism;
 
 import mekanism.api.recipes.ItemStackChemicalToItemStackRecipe;
-import mekanism.api.recipes.ItemStackGasToItemStackRecipe;
-import mekanism.api.recipes.ItemStackToGasRecipe;
+import mekanism.api.recipes.ItemStackToChemicalRecipe;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
 import mekanism.api.recipes.vanilla_input.SingleItemChemicalRecipeInput;
 import mekanism.common.content.blocktype.FactoryType;
 import mekanism.common.recipe.MekanismRecipeType;
 import mekanism.common.recipe.lookup.cache.InputRecipeCache;
 import mekanism.common.tile.component.config.DataType;
-import mekanism.common.tile.factory.TileEntityItemStackGasToItemStackFactory;
+import mekanism.common.tile.factory.TileEntityItemStackChemicalToItemStackFactory;
 import mekanism.common.tile.machine.TileEntityOsmiumCompressor;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
@@ -45,18 +45,19 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
         return MekanismRecipeType.COMPRESSING.get();
     }
 
-    protected List<Pair<ItemStack, Integer>> infusionInputs(RecipeManager manager, ChemicalStackIngredient.GasStackIngredient input) {
+    protected List<Pair<ItemStack, Integer>> infusionInputs(RecipeManager manager, ChemicalStackIngredient input) {
         List<Pair<ItemStack, Integer>> ret = new ArrayList<>();
-        List<ItemStackToGasRecipe> gasConverters = manager
-                .getAllRecipesFor(MekanismRecipeType.GAS_CONVERSION.get());
+        List<RecipeHolder<ItemStackToChemicalRecipe>> gasConverters = manager
+                .getAllRecipesFor(MekanismRecipeType.CHEMICAL_CONVERSION.get());
         input.getRepresentations()
                 .forEach(gasStack -> {
                     if (gasStack.getAmount() > 1e9) return;
 //                    int amount = (int) gasStack.getAmount();
                     //? TODO: WHERE the 200 FROM?
                     int amount = 200;
-                    for (ItemStackToGasRecipe recipe : gasConverters) {
-                        if (recipe.getOutputDefinition().stream().anyMatch(output -> output.isTypeEqual(gasStack))) {
+                    for (RecipeHolder<ItemStackToChemicalRecipe> holder : gasConverters) {
+                        ItemStackToChemicalRecipe recipe = holder.value();
+                        if (recipe.getOutputDefinition().stream().anyMatch(output -> output.is(gasStack.getChemical()))) {
                             for (ItemStack possibleInput : recipe.getInput().getRepresentations()) {
                                 long getAmountL = recipe.getOutput(possibleInput).getAmount();
                                 if (getAmountL > 1e9) continue;
@@ -76,9 +77,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
     }
 
     @Override
-    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackGasToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
-        if (machine instanceof TileEntityOsmiumCompressor oc)
-            oc.getGasManager();
+    protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackChemicalToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         Direction extra = getTypeDirection(machine, List.of(DataType.EXTRA));
@@ -112,7 +111,8 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
     }
 
     @Override
-    public void generate(ItemStackGasToItemStackRecipe recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+    public void generate(RecipeHolder<ItemStackChemicalToItemStackRecipe> holder, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+        ItemStackChemicalToItemStackRecipe recipe = holder.value();
         List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput());
         Ingredient ingredient = Ingredient.of(recipe.getItemInput().getRepresentations().stream());
         for (Pair<ItemStack, Integer> pair : possibleInfusion) {
@@ -121,8 +121,8 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
             List<ItemStack> outputs = recipe.getOutputDefinition();
             if (outputs.isEmpty() || !posFilter.isAvailable(outputs.get(0)))
                 continue;
-            ResourceLocation oid = recipe.getId();
-            @Nullable ResourceLocation itemKey = ForgeRegistries.ITEMS.getKey(pair.getA().getItem());
+            ResourceLocation oid = holder.id();
+            @Nullable ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(pair.getA().getItem());
             if (itemKey == null)
                 continue;
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath(oid.getNamespace(), oid.getPath() + "_" + itemKey.getNamespace() + "_" + itemKey.getPath());
@@ -138,7 +138,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
 
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof TileEntityItemStackGasToItemStackFactory factory && factory.getFactoryType() == FactoryType.COMPRESSING)
+        if (level.getBlockEntity(pos) instanceof TileEntityItemStackChemicalToItemStackFactory factory && factory.getFactoryType() == FactoryType.COMPRESSING)
             return true;
         return level.getBlockEntity(pos) instanceof TileEntityOsmiumCompressor;
     }

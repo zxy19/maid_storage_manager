@@ -3,16 +3,17 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.create;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.crusher.AbstractCrushingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.wrapper.RecipeWrapper;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPickupItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRecipe, RecipeType<AbstractCrushingRecipe>, RecipeWrapper, GeneratorCreateCrushing.CrushingPositionState> {
+public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRecipe, ProcessingRecipeParams, RecipeType<AbstractCrushingRecipe>, RecipeInput, GeneratorCreateCrushing.CrushingPositionState> {
     ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
             "count",
             16,
@@ -64,6 +65,7 @@ public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRec
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         super.generate(inventory, level, pos, graph, recognizedTypePositions);
         addRecipeForPos(level, pos, AllRecipeTypes.MILLING.getType(), graph, t -> t
+                .value()
                 .getIngredients()
                 .stream()
                 .map(Ingredient::getItems)
@@ -97,7 +99,7 @@ public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRec
             action = CommonPickupItemAction.TYPE;
         } else {
             testPos = pos;
-            while (level.getBlockEntity(testPos.below()).getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()) {
+            while (level.getCapability(Capabilities.ItemHandler.BLOCK, testPos.below(), null) != null) {
                 testPos = testPos.below();
             }
             action = CommonTakeItemAction.TYPE;

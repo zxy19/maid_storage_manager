@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -54,26 +55,29 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.DEPLOYING.getType())
-                .forEach((recipe) -> {
-                    if(!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
+                .forEach((holder) -> {
+                    Recipe<RecipeInput> recipe = holder.value();
+                    if (!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
                         return;
-                    graph.addRecipe(recipe, this.getCraftGuideSupplier(graph, recipe, level, pos));
+                    graph.addRecipe(holder, this.getCraftGuideSupplier(graph, recipe, level, pos));
                 });
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.ITEM_APPLICATION.getType())
-                .forEach((recipe) -> {
-                    if(!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
+                .forEach((holder) -> {
+                    Recipe<RecipeInput> recipe = holder.value();
+                    if (!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
                         return;
-                    graph.addRecipe(recipe, this.getCraftGuideSupplier(graph, recipe, level, pos));
+                    graph.addRecipe(holder, this.getCraftGuideSupplier(graph, recipe, level, pos));
                 });
         level.getRecipeManager()
                 .getAllRecipesFor(AllRecipeTypes.SANDPAPER_POLISHING.getType())
-                .forEach((recipe) -> {
-                    if(!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
+                .forEach((holder) -> {
+                    Recipe<RecipeInput> recipe = holder.value();
+                    if (!posFilter.isAvailable(recipe.getResultItem(level.registryAccess())))
                         return;
                     List<Ingredient> ingredients = new ArrayList<>(recipe.getIngredients());
                     ingredients.add(Ingredient.of(AllTags.AllItemTags.SANDPAPER.tag));
-                    graph.addRecipe(recipe.getId(),
+                    graph.addRecipe(holder.id(),
                             ingredients,
                             List.of(8, 1),
                             recipe.getResultItem(level.registryAccess()),
@@ -142,6 +146,7 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
         manager.getAllRecipesFor(AllRecipeTypes.DEPLOYING.getType())
                 .forEach(RecipeIngredientCache::addRecipeCache);
     }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.create.deploying");
