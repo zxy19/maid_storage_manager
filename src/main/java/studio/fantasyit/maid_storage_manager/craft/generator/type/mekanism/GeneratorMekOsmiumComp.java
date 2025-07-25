@@ -45,7 +45,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
         return MekanismRecipeType.COMPRESSING.get();
     }
 
-    protected List<Pair<ItemStack, Integer>> infusionInputs(RecipeManager manager, ChemicalStackIngredient input) {
+    protected List<Pair<ItemStack, Integer>> infusionInputs(RecipeManager manager, ChemicalStackIngredient input, long maxCapacity) {
         List<Pair<ItemStack, Integer>> ret = new ArrayList<>();
         List<RecipeHolder<ItemStackToChemicalRecipe>> gasConverters = manager
                 .getAllRecipesFor(MekanismRecipeType.CHEMICAL_CONVERSION.get());
@@ -63,6 +63,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
                                 if (getAmountL > 1e9) continue;
                                 int getAmount = (int) getAmountL;
                                 int totalAmount = MathUtil.lcm(getAmount, amount);
+                                if (totalAmount > maxCapacity) continue;
                                 ret.add(new Pair<>(possibleInput.copyWithCount(totalAmount / getAmount), totalAmount / amount));
                             }
                         }
@@ -113,7 +114,13 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
     @Override
     public void generate(RecipeHolder<ItemStackChemicalToItemStackRecipe> holder, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
         ItemStackChemicalToItemStackRecipe recipe = holder.value();
-        List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput());
+        long capacity = 2000;
+        if (machine instanceof TileEntityOsmiumCompressor oc)
+            capacity = oc.gasTank.getCapacity();
+        else if (machine instanceof TileEntityItemStackChemicalToItemStackFactory fc)
+            capacity = fc.getGasTank().getCapacity();
+
+        List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput(),capacity);
         Ingredient ingredient = Ingredient.of(recipe.getItemInput().getRepresentations().stream());
         for (Pair<ItemStack, Integer> pair : possibleInfusion) {
             List<Ingredient> inputs = List.of(ingredient, Ingredient.of(pair.getA()));
