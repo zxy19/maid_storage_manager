@@ -38,7 +38,7 @@ public class InvConsumeSimulator {
         }
         HashSet<ItemStack> ks = new HashSet<>(itemConsumeCount.keySet());
         for (ItemStack itemStack1 : ks) {
-            if (ItemStack.isSameItemSameTags(itemStack1, itemStack)) {
+            if (ItemStack.isSameItemSameComponents(itemStack1, itemStack)) {
                 int currentCount = Math.min(itemStack1.getMaxStackSize() - itemConsumeCount.get(itemStack1), count);
                 count -= currentCount;
                 itemConsumeCount.put(itemStack1, itemConsumeCount.get(itemStack1) + currentCount);
@@ -59,7 +59,7 @@ public class InvConsumeSimulator {
         }
         HashSet<ItemStack> ks = new HashSet<>(itemConsumeCount.keySet());
         for (ItemStack itemStack1 : ks) {
-            if (ItemStack.isSameItemSameTags(itemStack1, itemStack)) {
+            if (ItemStack.isSameItemSameComponents(itemStack1, itemStack)) {
                 int currentCount = Math.min(itemConsumeCount.get(itemStack1), count);
                 count -= currentCount;
                 itemConsumeCount.put(itemStack1, itemConsumeCount.get(itemStack1) - currentCount);

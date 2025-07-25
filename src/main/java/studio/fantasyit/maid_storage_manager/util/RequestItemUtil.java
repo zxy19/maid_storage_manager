@@ -12,8 +12,8 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.T
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.util.CappedQueue;
 import com.google.common.collect.Lists;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,18 +22,18 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.AiUtils;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.network.JEIRequestResultPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -46,43 +46,40 @@ public class RequestItemUtil {
     public static void stopJobAndStoreOrThrowItem(EntityMaid maid, @Nullable IStorageContext storeTo, @Nullable Entity targetEntity) {
         Level level = maid.level();
         ItemStack reqList = maid.getMainHandItem();
-        CompoundTag tag = reqList.getOrCreateTag();
-        if (tag.getBoolean(RequestListItem.TAG_VIRTUAL)) {
-            if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("AI")) {
+        if (reqList.getOrDefault(DataComponentRegistry.REQUEST_VIRTUAL, false)) {
+            String source = reqList.getOrDefault(DataComponentRegistry.REQUEST_VIRTUAL_SOURCE, "");
+            if (source.equals("AI")) {
                 sendToolResponseB(maid, reqList);
-            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("JEI")) {
+            } else if (source.equals("JEI")) {
                 if (maid.getOwner() instanceof ServerPlayer player)
-                    Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
+                    PacketDistributor.sendToPlayer(player,
                             new JEIRequestResultPacket(
                                     Component.translatable("gui.maid_storage_manager.jei_request.finish",
                                             maid.getDisplayName()
                                     )));
-
-            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("DISPATCHED")) {
+            } else if (source.equals("DISPATCHED")) {
                 dispatchedTaskDone(maid, reqList);
-            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("DISPATCH_FIND")) {
+            } else if (source.equals("DISPATCH_FIND")) {
                 dispatchFindTaskDone(maid, reqList);
             }
             //虚拟的，不用额外处理
         }
         //1.1 尝试扔给目标实体
-        else if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) <= 0 && targetEntity != null) {
+        else if (RequestListItem.getRepeatInterval(reqList) <= 0 && targetEntity != null) {
             Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.position());
-            tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
-            reqList.setTag(tag);
+            RequestListItem.setIgnore(reqList);
             InvUtil.throwItem(maid, reqList, targetDir, true);
             //因为扔出去会被女仆秒捡起，添加一个CD
             MemoryUtil.setReturnToScheduleAt(maid, level.getServer().getTickCount() + 80);
         }
         //1.2 尝试放入指定位置。例外：如果有循环请求任务，那么不会存入目标容器.
-        else if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
+        else if (RequestListItem.getRepeatInterval(reqList) > 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
             //没能成功，尝试背包
-            if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) > 0) {
-                tag.putInt(RequestListItem.TAG_COOLING_DOWN, tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL));
+            if (RequestListItem.getRepeatInterval(reqList) > 0) {
+                reqList.set(DataComponentRegistry.REQUEST_CD, RequestListItem.getRepeatInterval(reqList));
             } else {
-                tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
+                RequestListItem.setIgnore(reqList);
             }
-            reqList.setTag(tag);
             if (!InvUtil.tryPlace(maid.getAvailableInv(false), reqList).isEmpty()) {
                 //背包也没空。。扔地上站未来
                 InvUtil.throwItem(maid, reqList);
@@ -107,27 +104,24 @@ public class RequestItemUtil {
         if (llmSite == null || owner == null) return;
         LLMClient client = llmSite.client();
         StringBuilder sb = new StringBuilder();
-        CompoundTag tag = reqList.getOrCreateTag();
-        ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList.Immutable requests = RequestListItem.getImmutableRequestData(reqList);
+        List<RequestItemStackList.ImmutableItem> list = requests.list();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag itemTag = list.getCompound(i);
-            if (!itemTag.contains(RequestListItem.TAG_ITEMS_ITEM)) continue;
-
-            ItemStack itemstack = ItemStack.of(itemTag.getCompound(RequestListItem.TAG_ITEMS_ITEM));
+            ItemStack itemstack = list.get(i).item();
             if (itemstack.isEmpty()) continue;
 
-            int collected = itemTag.getInt(RequestListItem.TAG_ITEMS_COLLECTED);
-            int requested = itemTag.getInt(RequestListItem.TAG_ITEMS_REQUESTED);
+            int collected = list.get(i).collected();
+            int requested = list.get(i).requested();
 
 
-            if (itemTag.getBoolean(RequestListItem.TAG_ITEMS_DONE)) {
+            if (list.get(i).done()) {
                 sb.append("[Finished]");
             } else {
                 sb.append("[Processing]");
             }
 
             sb.append(itemstack.getHoverName().getString());
-            sb.append(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemstack.getItem())));
+            sb.append(Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(itemstack.getItem())));
             sb.append(" has collected ");
             sb.append(collected);
             sb.append(" and plans to get ");
@@ -193,13 +187,9 @@ public class RequestItemUtil {
         Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
         ItemStack toItem = reqList.copy();
         RequestListItem.clearAllNonSuccess(toItem);
-
-        CompoundTag tag = toItem.getOrCreateTag();
         //生成一个非虚拟请求列表
-        tag.remove(RequestListItem.TAG_VIRTUAL);
-        tag.remove(RequestListItem.TAG_VIRTUAL_SOURCE);
-        toItem.setTag(tag);
-
+        toItem.remove(DataComponentRegistry.REQUEST_VIRTUAL);
+        toItem.remove(DataComponentRegistry.REQUEST_VIRTUAL_SOURCE);
         if (targetEntity instanceof EntityMaid toMaid) {
             ItemStack restItem = InvUtil.tryPlace(toMaid.getAvailableInv(true), toItem);
             if (restItem.isEmpty()) {
@@ -224,42 +214,35 @@ public class RequestItemUtil {
      */
     public static ItemStack makeVirtualItemStack(List<ItemStack> list, @Nullable Target target, @Nullable Entity targetEntity, String virtual_source) {
         ItemStack itemStack = ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
-        CompoundTag tag = itemStack.getOrCreateTag();
-        tag.putBoolean(RequestListItem.TAG_VIRTUAL, true);
-        tag.putString(RequestListItem.TAG_VIRTUAL_SOURCE, virtual_source);
-        ListTag listTag = new ListTag();
+        RequestItemStackList data = new RequestItemStackList();
         for (int i = 0; i < Math.max(list.size(), 10); i++) {
             ItemStack item = i < list.size() ? list.get(i) : ItemStack.EMPTY;
-            CompoundTag tmp = new CompoundTag();
-            tmp.putInt(RequestListItem.TAG_ITEMS_REQUESTED, item.getCount());
-            tmp.put(RequestListItem.TAG_ITEMS_ITEM, item.copyWithCount(1).save(new CompoundTag()));
-            listTag.add(tmp);
+            data.getList().get(i).requested = item.getCount();
+            data.getList().get(i).item = item;
         }
-        tag.put(RequestListItem.TAG_ITEMS, listTag);
-        tag.putBoolean(RequestListItem.TAG_BLACKMODE, false);
-        tag.putBoolean(RequestListItem.TAG_STOCK_MODE, false);
-        tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
-        tag.putBoolean(RequestListItem.TAG_MATCH_TAG, false);
-        tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, 0);
+        data.blackList = false;
+        data.stockMode = false;
+        itemStack.set(DataComponentRegistry.REQUEST_ITEMS, data.toImmutable());
+        itemStack.set(DataComponentRegistry.REQUEST_FAIL_ADDITION, "");
+        itemStack.set(DataComponentRegistry.REQUEST_INTERVAL, 0);
+        itemStack.set(DataComponentRegistry.REQUEST_IGNORE, false);
+        itemStack.set(DataComponentRegistry.REQUEST_WORK_UUID, UUID.randomUUID());
+        itemStack.set(DataComponentRegistry.REQUEST_VIRTUAL, true);
+        itemStack.set(DataComponentRegistry.REQUEST_VIRTUAL_SOURCE, virtual_source);
+
         if (target != null) {
-            tag.put(RequestListItem.TAG_STORAGE, target.toNbt());
+            itemStack.set(DataComponentRegistry.REQUEST_STORAGE_BLOCK, target);
         } else if (targetEntity != null) {
-            tag.putUUID(RequestListItem.TAG_STORAGE_ENTITY, targetEntity.getUUID());
+            itemStack.set(DataComponentRegistry.REQUEST_STORAGE_ENTITY, targetEntity.getUUID());
         }
-        tag.putUUID(RequestListItem.TAG_UUID, UUID.randomUUID());
-        itemStack.setTag(tag);
         return itemStack;
     }
 
     public static ItemStack makeVirtualItemStack(ItemStack source, String virtual_source) {
-        CompoundTag tag = source.getTag().copy();
-
-        tag.putBoolean(RequestListItem.TAG_VIRTUAL, true);
-        tag.putString(RequestListItem.TAG_VIRTUAL_SOURCE, virtual_source);
-
-        ItemStack itemStack = ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
-        itemStack.setTag(tag);
-        return itemStack;
+        ItemStack newItem = source.copy();
+        newItem.set(DataComponentRegistry.REQUEST_VIRTUAL_SOURCE, virtual_source);
+        newItem.set(DataComponentRegistry.REQUEST_VIRTUAL, true);
+        return newItem;
     }
 
     /**

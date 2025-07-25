@@ -7,13 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.brewing.BrewingRecipe;
-import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
+import net.neoforged.neoforge.common.brewing.BrewingRecipe;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
@@ -46,7 +46,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
             Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.brewing.count"),
             ConfigTypes.ConfigTypeEnum.Integer
     );
-    List<BrewingData> brewingData = new ArrayList<>();
+    List<BrewingData> brewingData = null;
 
     @Override
     public @NotNull ResourceLocation getType() {
@@ -61,6 +61,17 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
+
+        if (brewingData == null) {
+            brewingData = new ArrayList<>();
+            forEachRecipeIO(level, (data) -> {
+                RecipeIngredientCache.addRecipeCache(
+                        ResourceLocation.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
+                        List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient)
+                );
+                brewingData.add(data);
+            });
+        }
         brewingData.forEach(data -> {
             if (!posFilter.isAvailable(data.output))
                 return;
@@ -87,65 +98,59 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        brewingData.clear();
-        forEachRecipeIO((data) -> {
-            RecipeIngredientCache.addRecipeCache(
-                    ResourceLocation.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
-                    List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient)
-            );
-            brewingData.add(data);
-        });
+        brewingData = null;
     }
 
 
-    protected void forEachRecipeIO(Consumer<BrewingData> io) {
+    protected void forEachRecipeIO(Level level, Consumer<BrewingData> io) {
         MutableInt index = new MutableInt();
-        PotionBrewing.POTION_MIXES.forEach(potionMix -> {
+        PotionBrewing potionBrewing = level.potionBrewing();
+        List<PotionBrewing.Mix<Potion>> potionMixes = level.potionBrewing().potionMixes;
+        potionMixes.forEach(potionMix -> {
             HashMap<Item, ItemStack> container2ItemStack = new HashMap<>();
-            for (PotionBrewing.Mix<Item> containerMix : PotionBrewing.CONTAINER_MIXES) {
-                Item container1 = containerMix.from.get();
-                ItemStack from1 = PotionUtils.setPotion(new ItemStack(container1), potionMix.from.get());
-                ItemStack to1 = PotionUtils.setPotion(new ItemStack(container1), potionMix.to.get());
+            for (PotionBrewing.Mix<Item> containerMix : potionBrewing.containerMixes) {
+                Item container1 = containerMix.from().value();
+                ItemStack from1 = PotionContents.createItemStack(container1, potionMix.from());
+                ItemStack to1 = PotionContents.createItemStack(container1, potionMix.to());
                 if (!container2ItemStack.containsKey(container1)) {
                     io.accept(new BrewingData(
                             index.getAndIncrement(),
                             Ingredient.of(from1),
-                            potionMix.ingredient,
+                            potionMix.ingredient(),
                             to1.copyWithCount(COUNT.getValue())
                     ));
                     container2ItemStack.put(container1, to1);
                 }
 
-                Item container2 = containerMix.to.get();
-                ItemStack from2 = PotionUtils.setPotion(new ItemStack(container2), potionMix.from.get());
-                ItemStack to2 = PotionUtils.setPotion(new ItemStack(container2), potionMix.to.get());
+                Item container2 = containerMix.to().value();
+                ItemStack from2 = PotionContents.createItemStack(container2, potionMix.from());
+                ItemStack to2 = PotionContents.createItemStack(container2, potionMix.to());
                 if (!container2ItemStack.containsKey(container2)) {
                     io.accept(new BrewingData(
                             index.getAndIncrement(),
                             Ingredient.of(from2),
-                            potionMix.ingredient,
+                            potionMix.ingredient(),
                             to2.copyWithCount(COUNT.getValue())
                     ));
                     container2ItemStack.put(container2, to2);
                 }
             }
-            for (PotionBrewing.Mix<Item> containerMix : PotionBrewing.CONTAINER_MIXES) {
-                ItemStack[] ingredients = containerMix.ingredient.getItems();
+            for (PotionBrewing.Mix<Item> containerMix : potionBrewing.containerMixes) {
+                ItemStack[] ingredients = containerMix.ingredient().getItems();
                 if (ingredients.length == 0) continue;
-                if (container2ItemStack.containsKey(containerMix.from.get()) && !container2ItemStack.containsKey(containerMix.to.get())) {
-                    ItemStack t1 = container2ItemStack.get(containerMix.from.get()).copy();
-                    ItemStack t2 = PotionBrewing.mix(ingredients[0], t1);
+                if (container2ItemStack.containsKey(containerMix.from().value()) && !container2ItemStack.containsKey(containerMix.to().value())) {
+                    ItemStack t1 = container2ItemStack.get(containerMix.from().value()).copy();
+                    ItemStack t2 = potionBrewing.mix(ingredients[0], t1);
                     if (t2 != t1) {
-                        container2ItemStack.put(containerMix.to.get(), t2);
-                        io.accept(new BrewingData(index.getAndIncrement(), Ingredient.of(t1), containerMix.ingredient, t2.copyWithCount(COUNT.getValue())));
+                        container2ItemStack.put(containerMix.to().value(), t2);
+                        io.accept(new BrewingData(index.getAndIncrement(), Ingredient.of(t1), containerMix.ingredient(), t2.copyWithCount(COUNT.getValue())));
                     }
                 }
             }
         });
 
 
-        BrewingRecipeRegistry
-                .getRecipes()
+        potionBrewing.getRecipes()
                 .forEach(recipe -> {
                     if (recipe instanceof BrewingRecipe br) {
                         io.accept(new BrewingData(index.getAndIncrement(), br.getInput(), br.getIngredient(), br.getOutput().copyWithCount(COUNT.getValue())));

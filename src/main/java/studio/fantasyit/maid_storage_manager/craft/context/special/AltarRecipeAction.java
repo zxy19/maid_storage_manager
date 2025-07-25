@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractDynamicAddedAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPickupItemAction;
@@ -31,10 +32,10 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
 
     @Override
     public Result getList() {
-        Optional<AltarRecipe> recipe = RecipeUtil.getAltarRecipe(maid.level(), RecipeUtil.wrapAltarRecipeInventory(craftGuideStepData.getInput()));
+        Optional<RecipeHolder<AltarRecipe>> recipe = RecipeUtil.getAltarRecipe(maid.level(), RecipeUtil.wrapAltarRecipeInventory(craftGuideStepData.getInput()));
         if (recipe.isEmpty())
             return Result.FAIL;
-        float cost = recipe.get().getPowerCost();
+        float cost = recipe.get().value().getPower();
         BlockPos target = craftGuideStepData.getStorage().pos;
         if (maid.level().getBlockEntity(target) instanceof TileEntityAltar tea) {
             PosListData canPlaceItemPosList = tea.getCanPlaceItemPosList();

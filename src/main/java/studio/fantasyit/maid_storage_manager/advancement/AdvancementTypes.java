@@ -19,7 +19,7 @@ public class AdvancementTypes {
     public static void triggerForMaid(EntityMaid maid, String key) {
         LivingEntity player = maid.getOwner();
         if (player instanceof ServerPlayer sp) {
-            InitTrigger.MAID_EVENT.trigger(sp, key);
+            InitTrigger.MAID_EVENT.get().trigger(sp, key);
         }
     }
 }

@@ -1,25 +1,24 @@
 package studio.fantasyit.maid_storage_manager.event;
 
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
+import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
 
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class TickServer {
     @SubscribeEvent
-    public static void onTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            SimulateTargetInteractHelper.removeInvalid();
-        }
+    public static void onTick(ServerTickEvent.Post event) {
+        SimulateTargetInteractHelper.removeInvalid();
     }
 
     @SubscribeEvent
-    public static void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.level.isClientSide) return;
-        CraftBlockOccupyDataProvider.get(event.level).tick((ServerLevel) event.level);
+    public static void onWorldTick(LevelTickEvent event) {
+        if (event.getLevel().isClientSide) return;
+        CraftBlockOccupy.get(event.getLevel()).tick((ServerLevel) event.getLevel());
     }
 }

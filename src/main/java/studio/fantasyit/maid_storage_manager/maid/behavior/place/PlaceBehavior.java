@@ -1,16 +1,16 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -80,9 +80,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
                     if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
                         if (RequestListItem.isIgnored(item)) {
-                            CompoundTag tag = item.getOrCreateTag();
-                            tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, true);
-                            item.setTag(tag);
+                            item.remove(DataComponentRegistry.REQUEST_IGNORE);
                             ItemStack insert = isic.insert(item);
                             ViewedInventoryUtil.ambitiousAddItemAndSync(maid, p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
                             inv.setStackInSlot(count, insert);

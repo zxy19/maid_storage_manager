@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -107,13 +108,13 @@ public class PosUtil {
                 && !isEmptyBlockPos(level, pos.below());
     }
 
-    static public boolean hasSightLineOnAnySurface(Level level, Vec3 pos1, BlockPos pos2) {
+    static public boolean hasSightLineOnAnySurface(Entity entity, Level level, Vec3 pos1, BlockPos pos2) {
         for (Direction direction : Direction.values()) {
             BlockHitResult result = level.clip(new ClipContext(pos1,
                     pos2.getCenter().relative(direction, 0.4),
                     ClipContext.Block.COLLIDER,
                     ClipContext.Fluid.NONE,
-                    null));
+                    entity));
             if (result.getType() == HitResult.Type.BLOCK) {
                 if (result.getBlockPos().equals(pos2)) {
                     return true;

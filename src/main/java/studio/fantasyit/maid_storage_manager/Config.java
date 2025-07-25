@@ -1,9 +1,9 @@
 package studio.fantasyit.maid_storage_manager;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import java.util.List;
 
 // An example config class. This is not required, but it's a good idea to have one to keep your config organized.
 // Demonstrates how to use Forge's config APIs
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class Config {
 
     public enum VirtualItemFrameRender {
@@ -40,161 +40,161 @@ public class Config {
     }
 
 
-    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    private static final ForgeConfigSpec.BooleanValue ENABLE_DEBUG = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_DEBUG = BUILDER
             .comment("Print debug messages")
             .define("debug_msg", false);
 
     //兼容性选项
-    private static final ForgeConfigSpec.BooleanValue ENABLE_AE2SUP = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_AE2SUP = BUILDER
             .comment("Enable ae2 support(Maid may pickup things from terminal)")
             .define("compat.ae2_support", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_RS_SUP = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_RS_SUP = BUILDER
             .comment("Enable rs support(Maid may pickup things from rs)")
             .define("compat.rs_support", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_MEK_SUP = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_MEK_SUP = BUILDER
             .comment("Enable Mekanism QIO support(Maid may pickup things from rs)")
             .define("compat.mek_support", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_JEI_INGREDIENT_REQUEST = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_JEI_INGREDIENT_REQUEST = BUILDER
             .comment("Ingredient request for JEI")
             .define("compat.jei_ingredient_request", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_EMI_INGREDIENT_REQUEST = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_EMI_INGREDIENT_REQUEST = BUILDER
             .comment("Ingredient request for EMI")
             .define("compat.emi_ingredient_request", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_CREATE_STORAGE = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_CREATE_STORAGE = BUILDER
             .comment("Enable create's stock ticker support for maid")
             .define("compat.create_storage", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_TACZ = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_TACZ = BUILDER
             .comment("Enable tacz recipe support")
             .define("compat.create_stock_manager", true);
-    private static final ForgeConfigSpec.BooleanValue ENABLE_CREATE_STORAGE_MANAGER = BUILDER
+    private static final ModConfigSpec.BooleanValue ENABLE_CREATE_STORAGE_MANAGER = BUILDER
             .comment("Allow maid to act as create stock keeper around a stock ticker.")
             .define("compat.create_stock_keeper", true);
-    private static final ForgeConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_V = BUILDER
+    private static final ModConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_V = BUILDER
             .comment("How far maid can control the stock ticker. Vertically")
             .defineInRange("compat.create_stock_keeper_range_v", 16, 1, 256);
-    private static final ForgeConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_H = BUILDER
+    private static final ModConfigSpec.IntValue ENABLE_CREATE_STOCK_RANGE_H = BUILDER
             .comment("How far maid can control the stock ticker. Horizontally")
             .defineInRange("compat.create_stock_keeper_range_h", 7, 1, 64);
-    private static final ForgeConfigSpec.ConfigValue<String> CREATE_ADDRESS_PATTERN = BUILDER
+    private static final ModConfigSpec.ConfigValue<String> CREATE_ADDRESS_PATTERN = BUILDER
             .comment("The format of create package address.<UUID>,<UUID4>,<UUID8>,<TYPE>,<TYPE1>")
             .define("compat.create_address_pattern", "maid<TYPE1>:<UUID4>");
 
 
     //速度控制选项
-    private static final ForgeConfigSpec.DoubleValue CRAFT_WORK_SPEED = BUILDER
+    private static final ModConfigSpec.DoubleValue CRAFT_WORK_SPEED = BUILDER
             .comment("Speed when working crafting")
             .defineInRange("speed.crafting_speed", 0.5, 0.0, 3.0);
-    private static final ForgeConfigSpec.DoubleValue COLLECT_SPEED = BUILDER
+    private static final ModConfigSpec.DoubleValue COLLECT_SPEED = BUILDER
             .comment("Speed when collecting requested list")
             .defineInRange("speed.collect_speed", 0.5, 0.0, 3.0);
 
-    private static final ForgeConfigSpec.DoubleValue VIEW_SPEED = BUILDER
+    private static final ModConfigSpec.DoubleValue VIEW_SPEED = BUILDER
             .comment("Speed when viewing chests in spare time")
             .defineInRange("speed.view_speed", 0.3, 0.0, 3.0);
-    private static final ForgeConfigSpec.DoubleValue VIEW_CHANGE_SPEED = BUILDER
+    private static final ModConfigSpec.DoubleValue VIEW_CHANGE_SPEED = BUILDER
             .comment("Speed when viewing chests in spare time")
             .defineInRange("speed.view_change_speed", 0.5, 0.0, 3.0);
-    private static final ForgeConfigSpec.DoubleValue PLACE_SPEED = BUILDER
+    private static final ModConfigSpec.DoubleValue PLACE_SPEED = BUILDER
             .comment("Speed when placing items to chests")
             .defineInRange("speed.place_speed", 0.5, 0.0, 3.0);
-    private static final ForgeConfigSpec.DoubleValue FOLLOW_SPEED = BUILDER
+    private static final ModConfigSpec.DoubleValue FOLLOW_SPEED = BUILDER
             .comment("Speed when following")
             .defineInRange("speed.follow_speed", 0.5, 0.0, 3.0);
 
     //行为控制选项
-    private static final ForgeConfigSpec.IntValue MAX_STORE_TRIES = BUILDER
+    private static final ModConfigSpec.IntValue MAX_STORE_TRIES = BUILDER
             .comment("Maximum times Maid will try to store items")
             .defineInRange("behavior.max_store_tries", 3, 0, 999999);
-    private static final ForgeConfigSpec.IntValue MAX_CRAFT_TRIES = BUILDER
+    private static final ModConfigSpec.IntValue MAX_CRAFT_TRIES = BUILDER
             .comment("Maximum tick Maid will try to perform craft action")
             .defineInRange("behavior.max_craft_tries", 600, 0, 9999999);
-    private static final ForgeConfigSpec.IntValue MAX_LOGISTICS_TRIES = BUILDER
+    private static final ModConfigSpec.IntValue MAX_LOGISTICS_TRIES = BUILDER
             .comment("Maximum logistics extract try will maid take")
             .defineInRange("behavior.max_logistics_tries", 50, 0, 9999999);
 
-    private static final ForgeConfigSpec.BooleanValue USE_ALL_STORAGE_BY_DEFAULT = BUILDER
+    private static final ModConfigSpec.BooleanValue USE_ALL_STORAGE_BY_DEFAULT = BUILDER
             .comment("Enable maid from visiting all storages.")
             .define("behavior.use_all_storage", false);
-    private static final ForgeConfigSpec.DoubleValue PICKUP_REQUIRE_WHEN_PLACE = BUILDER
+    private static final ModConfigSpec.DoubleValue PICKUP_REQUIRE_WHEN_PLACE = BUILDER
             .comment("How many free slots required to pickup items when placing(Value indicates the percentage of empty slots in the total slots")
             .defineInRange("behavior.pickup_require_when_place", 0.5, 0.0, 1.0);
-    private static final ForgeConfigSpec.BooleanValue REAL_WORK_SIM = BUILDER
+    private static final ModConfigSpec.BooleanValue REAL_WORK_SIM = BUILDER
             .comment("Maid will need to stop and stand by the block to work")
             .define("behavior.real_work_sim", false);
-    private static final ForgeConfigSpec.BooleanValue PICKUP_IGNORE_DELAY = BUILDER
+    private static final ModConfigSpec.BooleanValue PICKUP_IGNORE_DELAY = BUILDER
             .comment("Maid will ignore delay when picking up items.")
             .define("behavior.pickup_ignore_delay", true);
-    private static final ForgeConfigSpec.BooleanValue NO_BUBBLE_FOR_SUB_TASK = BUILDER
+    private static final ModConfigSpec.BooleanValue NO_BUBBLE_FOR_SUB_TASK = BUILDER
             .comment("No showing bubbles for sub tasks")
             .define("behavior.no_bubble_for_sub_task", false);
 
-    private static final ForgeConfigSpec.EnumValue<ThrowMethod> THROW_ITEM_VECTOR = BUILDER
+    private static final ModConfigSpec.EnumValue<ThrowMethod> THROW_ITEM_VECTOR = BUILDER
             .comment("How maid will throw Item.FINALLY_POS will try make the item stop at the position. GO_THROUGH will try to make item go through the target position. FIXED will always use the vector of length 0.6")
             .defineEnum("behavior.throw_item_vector", ThrowMethod.FINALLY_POS, ThrowMethod.values());
     //渲染控制选项
-    private static final ForgeConfigSpec.ConfigValue<VirtualItemFrameRender> VIRTUAL_ITEM_FRAME_RENDER = BUILDER
+    private static final ModConfigSpec.ConfigValue<VirtualItemFrameRender> VIRTUAL_ITEM_FRAME_RENDER = BUILDER
             .comment("Virtual Item Frame's render method allow access/no access/filter.")
             .defineEnum("render.virtual_item_frame_render", VirtualItemFrameRender.LARGE);
-    private static final ForgeConfigSpec.BooleanValue RENDER_MAID_WHEN_INGREDIENT_REQUEST = BUILDER
+    private static final ModConfigSpec.BooleanValue RENDER_MAID_WHEN_INGREDIENT_REQUEST = BUILDER
             .comment("Render the maid at the bottom of the screen when pressing ingredient request key.")
             .define("render.maid_render_ingredient_request", true);
 
     //性能
-    private static final ForgeConfigSpec.BooleanValue FAST_PATH_SCHEDULE = BUILDER
+    private static final ModConfigSpec.BooleanValue FAST_PATH_SCHEDULE = BUILDER
             .comment("Disable the 'shortest path limitation' to gain faster path finding.")
             .define("performance.fast_path_schedule", false);
     //AI
-    private static final ForgeConfigSpec.BooleanValue TWO_STEP_AI_RESPONSE = BUILDER
+    private static final ModConfigSpec.BooleanValue TWO_STEP_AI_RESPONSE = BUILDER
             .comment("Allow Maid call AI two times when doing some request.")
             .define("ai.two_step_ai_response", true);
 
-    private static final ForgeConfigSpec.BooleanValue AI_FUNCTIONS = BUILDER
+    private static final ModConfigSpec.BooleanValue AI_FUNCTIONS = BUILDER
             .comment("Enable function calls from this mod")
             .define("ai.functions", true);
-    private static final ForgeConfigSpec.BooleanValue GENERATE_VIRTUAL_ITEM_FRAME = BUILDER
+    private static final ModConfigSpec.BooleanValue GENERATE_VIRTUAL_ITEM_FRAME = BUILDER
             .comment("Generate virtual item frame entity when shift right-click with certain items.")
             .define("utility.generate_virtual_item_frame", true);
-    private static final ForgeConfigSpec.ConfigValue<List<String>> CRAFTING_SOLVER = BUILDER
+    private static final ModConfigSpec.ConfigValue<List<String>> CRAFTING_SOLVER = BUILDER
             .comment("Crafting solver to use. [DFS/DFS_QUEUED/DFS_THREADED/TOPOLOGY]. Topology algorithm costs least but dose not support circular recipes.")
             .define("crafting.solver",
                     List.of(CraftSolver.DFS_THREADED.name()),
                     o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
             );
-    private static final ForgeConfigSpec.IntValue LOOP_SOLVER_MAX_KEEP_LENGTH = BUILDER
+    private static final ModConfigSpec.IntValue LOOP_SOLVER_MAX_KEEP_LENGTH = BUILDER
             .comment("Max length to calculate in loop solver.")
             .defineInRange("crafting.loop_solver.max_length", 10, 0, 100);
-    private static final ForgeConfigSpec.BooleanValue LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY = BUILDER
+    private static final ModConfigSpec.BooleanValue LOOP_SOLVER_PREVENT_INDIRECT_ITEM_SUPPLY = BUILDER
             .comment("Prevent item in loop that are fully input outside the loop.")
             .define("crafting.loop_solver.prevent_indirect", true);
-    private static final ForgeConfigSpec.BooleanValue LOOP_SOLVER_PREVENT_NEW_BYPRODUCT = BUILDER
+    private static final ModConfigSpec.BooleanValue LOOP_SOLVER_PREVENT_NEW_BYPRODUCT = BUILDER
             .comment("Prevent new byproduct from loop that's not available in graph.")
             .define("crafting.loop_solver.prevent_new_byproduct", false);
-    private static final ForgeConfigSpec.BooleanValue USE_NBT = BUILDER
-            .comment("Match nbt for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
-            .define("crafting.nbt.default", false);
-    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
-            .comment("Specific those nbt that are ignored from comparing. Use syntax like 'a.b[c].d'.")
-            .defineListAllowEmpty("crafting.nbt.no_matching_path", () -> List.of("Damage"), o -> o instanceof String);
-    private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
+    private static final ModConfigSpec.BooleanValue USE_NBT = BUILDER
+            .comment("Match components for all items by default. Use #maid_storage_manager:no_components and #maid_storage_manager:use_components to modify.")
+            .define("crafting.components.default", false);
+    private static final ModConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
+            .comment("Specific those components that are ignored from comparing.")
+            .defineListAllowEmpty("crafting.components.no_matching_path", () -> List.of("damage"), o -> o instanceof String);
+    private static final ModConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
             .comment("Generate craft guides for vanilla recipes.")
             .define("crafting.generate", false);
-    private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATING_PARTIAL = BUILDER
+    private static final ModConfigSpec.BooleanValue CRAFTING_GENERATING_PARTIAL = BUILDER
             .comment("Generate recipes that has not all ingredients available.")
             .define("crafting.generating.keep_partial", false);
-    private static final ForgeConfigSpec.EnumValue<CraftGenerator> CRAFTING_GENERATOR = BUILDER
+    private static final ModConfigSpec.EnumValue<CraftGenerator> CRAFTING_GENERATOR = BUILDER
             .comment("Crafting generator algorithm to use.")
             .defineEnum("crafting.generating.algorithm", CraftGenerator.RELEVANCE_THREADED, CraftGenerator.values());
-    private static final ForgeConfigSpec.BooleanValue CRAFTING_NO_CALCULATOR = BUILDER
+    private static final ModConfigSpec.BooleanValue CRAFTING_NO_CALCULATOR = BUILDER
             .comment("No need portable calculator for crafting")
             .define("crafting.no_calculator", false);
-    private static final ForgeConfigSpec.EnumValue<CraftPlanEvaluator> CRAFTING_PREFER_SHORTEST_PATH = BUILDER
+    private static final ModConfigSpec.EnumValue<CraftPlanEvaluator> CRAFTING_PREFER_SHORTEST_PATH = BUILDER
             .comment("The way to select the correct crafting path.")
             .defineEnum("crafting.shortest_path_evaluator", CraftPlanEvaluator.CRAFT_GUIDES, CraftPlanEvaluator.values());
 
 
-    static final ForgeConfigSpec SPEC = BUILDER.build();
+    static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
     public static boolean enableDebugInv = false;

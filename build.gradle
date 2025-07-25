@@ -29,7 +29,6 @@ neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
 
-    accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
     runs {
         client {
             client()

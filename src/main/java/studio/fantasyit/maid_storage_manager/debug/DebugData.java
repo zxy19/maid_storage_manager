@@ -3,13 +3,12 @@ package studio.fantasyit.maid_storage_manager.debug;
 import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.network.DebugDataPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ import java.util.List;
 
 public class DebugData {
     public static void sendDebug(String msg, Object... a) {
-        Network.INSTANCE.send(PacketDistributor.ALL.noArg(), new DebugDataPacket(String.format(msg, a)));
+        PacketDistributor.sendToAllPlayers(new DebugDataPacket(String.format(msg, a)));
     }
 
     public static List<DebugTarget> commonTargets(EntityMaid maid) {

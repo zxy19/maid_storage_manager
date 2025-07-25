@@ -9,7 +9,6 @@ import com.electronwill.nightconfig.toml.TomlWriter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -22,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class GeneratingConfig {
     static CommentedConfig config;
     public static final Path CONFIG_BASE_PATH = FMLPaths.CONFIGDIR.get();

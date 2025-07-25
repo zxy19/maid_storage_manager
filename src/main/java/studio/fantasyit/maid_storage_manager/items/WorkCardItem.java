@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -137,8 +138,8 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
     public static boolean matches(ItemStack incoming, ItemStack source) {
-        if (incoming.hasCustomHoverName()) {
-            if (source.hasCustomHoverName() && !source.getHoverName().equals(incoming.getHoverName())) {
+        if (incoming.has(DataComponents.CUSTOM_NAME)) {
+            if (source.has(DataComponents.CUSTOM_NAME) && !source.getHoverName().equals(incoming.getHoverName())) {
                 return false;
             }
         }
@@ -176,7 +177,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
             if (inv.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
                 queue.add(inv.getStackInSlot(i));
                 // 空名字天然匹配一切，可以直接跳过
-                if (!inv.getStackInSlot(i).hasCustomHoverName())
+                if (!inv.getStackInSlot(i).has(DataComponents.CUSTOM_NAME))
                     return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable);
                 hasChecked.add(inv.getStackInSlot(i).getHoverName());
             }
@@ -193,7 +194,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 BaubleItemHandler tt = nearbyMaid.getMaidBauble();
                 for (int i = 0; i < tt.getSlots(); i++) {
                     if (!tt.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) continue;
-                    if (!tt.getStackInSlot(i).hasCustomHoverName())
+                    if (!tt.getStackInSlot(i).has(DataComponents.CUSTOM_NAME))
                         return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable);
                     if (!hasChecked.contains(tt.getStackInSlot(i).getHoverName())) {
                         queue.add(tt.getStackInSlot(i));

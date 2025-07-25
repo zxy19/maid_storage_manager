@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.ae2;
 
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.transform.TransformRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -41,12 +42,13 @@ public class GeneratorAE2ItemTransform implements IAutoCraftGuideGenerator {
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         level.getRecipeManager()
-                .getAllRecipesFor(TransformRecipe.TYPE)
+                .getAllRecipesFor(AERecipeTypes.TRANSFORM)
                 .stream()
-                .filter(t -> t.circumstance.isFluid() && t.circumstance.isFluid(Fluids.WATER))
-                .forEach(recipe -> {
+                .filter(t -> t.value().circumstance.isFluid() && t.value().circumstance.isFluid(Fluids.WATER))
+                .forEach(holder -> {
+                    TransformRecipe recipe = holder.value();
                     graph.addRecipe(
-                            recipe,
+                            holder,
                             (List<ItemStack> items) -> {
                                 List<CraftGuideStepData> steps = new ArrayList<>();
                                 steps.add(new CraftGuideStepData(
@@ -76,9 +78,9 @@ public class GeneratorAE2ItemTransform implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(TransformRecipe.TYPE)
+        manager.getAllRecipesFor(AERecipeTypes.TRANSFORM)
                 .stream()
-                .filter(t -> t.circumstance.isFluid() && t.circumstance.isFluid(Fluids.WATER))
+                .filter(t -> t.value().circumstance.isFluid() && t.value().circumstance.isFluid(Fluids.WATER))
                 .forEach(RecipeIngredientCache::addRecipeCache);
     }
 

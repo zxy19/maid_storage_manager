@@ -1,11 +1,12 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.algo;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
@@ -16,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.ItemNode;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -64,8 +66,9 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
             ItemNode itemNode = getItemNodeOrCreate(item, false);
             queue.add(itemNode);
             if (item.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                CraftGuideData craftGuideData = CraftGuideData.fromItemStack(item);
-                craftGuideData.getOutput().forEach(itemStack -> queue.add(getItemNodeOrCreate(itemStack, false)));
+                CraftGuideData craftGuideData = item.get(DataComponentRegistry.CRAFT_GUIDE_DATA);
+                if (craftGuideData != null)
+                    craftGuideData.getOutput().forEach(itemStack -> queue.add(getItemNodeOrCreate(itemStack, false)));
             }
         }
         for (ItemStack item : required) {
@@ -83,7 +86,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
     }
 
     public ItemNode getItemNode(ItemStack itemStack) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (itemNodeMap.containsKey(id)) {
             for (Node node : itemNodeMap.get(id)) {
                 if (node instanceof ItemNode in) {
@@ -99,7 +102,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
     public ItemNode addItemNode(ItemStack itemStack, boolean available) {
         ItemNode itemNode = new ItemNode(nodes.size(), available, itemStack);
         nodes.add(itemNode);
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (!itemNodeMap.containsKey(id))
             itemNodeMap.put(id, new ArrayList<>());
         itemNodeMap.get(id).add(itemNode);
@@ -163,13 +166,14 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
     }
 
 
-    public void addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(RecipeHolder<? extends Recipe<?>> holder, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        Recipe<?> recipe = holder.value();
         List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
                 .toList();
         addRecipe(
-                recipe.getId(),
+                holder.id(),
                 recipe.getIngredients(),
                 ingredientCounts,
                 recipe.getResultItem(registryAccess),

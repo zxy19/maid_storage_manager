@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -17,11 +18,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -35,7 +37,6 @@ import studio.fantasyit.maid_storage_manager.util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 public class CommonAttackAction extends AbstractCraftActionContext {
     public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "destroy");
@@ -138,9 +139,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
                 }
             });
             targetBs.spawnAfterBreak(level, target, maid.getMainHandItem(), true);
-            maid.getMainHandItem().hurtAndBreak(1, fakePlayer, (p_186374_) -> {
-                p_186374_.broadcastBreakEvent(InteractionHand.MAIN_HAND);
-            });
+            maid.getMainHandItem().hurtAndBreak(1, fakePlayer, EquipmentSlot.MAINHAND);
             boolean setResult = level.setBlock(target, fluidState.createLegacyBlock(), 3);
             if (setResult) {
                 level.gameEvent(GameEvent.BLOCK_DESTROY, target, GameEvent.Context.of(maid, targetBs));
@@ -160,13 +159,13 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         ServerLevel level = (ServerLevel) maid.level();
         BlockHitResult result = getBlockHitResult(level, craftGuideStepData.getStorage());
         if (result == null || !result.getBlockPos().equals(target)) return null;
-        PlayerInteractEvent.LeftClickBlock event = ForgeHooks.onLeftClickBlock(fakePlayer,
+        PlayerInteractEvent.LeftClickBlock event = CommonHooks.onLeftClickBlock(fakePlayer,
                 target,
                 craftGuideStepData.getStorage().side,
                 ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
         );
 
-        if (event.getUseBlock() != DENY) {
+        if (event.getUseBlock() != TriState.FALSE) {
             onStartDestroyBlock(level, target);
         }
         Inventory inventory = fakePlayer.getInventory();

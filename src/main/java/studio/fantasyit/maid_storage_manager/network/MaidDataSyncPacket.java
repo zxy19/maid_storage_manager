@@ -1,38 +1,56 @@
 package studio.fantasyit.maid_storage_manager.network;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
-import java.util.Objects;
+public class MaidDataSyncPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<MaidDataSyncPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(
+                    MaidStorageManager.MODID, "MaidDataSyncPacket"
+            )
+    );
 
-public class MaidDataSyncPacket {
+    @Override
+    public CustomPacketPayload.Type<MaidDataSyncPacket> type() {
+        return TYPE;
+    }
+
+    public static StreamCodec<ByteBuf, MaidDataSyncPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8,
+            t -> t.type.name(),
+            ByteBufCodecs.INT,
+            t -> t.id,
+            ByteBufCodecs.INT,
+            t -> t.value,
+            MaidDataSyncPacket::new
+    );
+
     public enum Type {
         MemoryAssistant,
         CoWork,
         FastSort,
         AllowSeekWorkMeal, MemorizeCraftGuide, MaxParallel, SingleCrafting, NoPlaceSort
     }
+
     public final Type type;
     public final int id;
     public final int value;
-    public MaidDataSyncPacket(Type type, int id,int value) {
+
+    public MaidDataSyncPacket(Type type, int id, int value) {
         this.type = type;
         this.id = id;
         this.value = value;
     }
 
-    public MaidDataSyncPacket(FriendlyByteBuf buffer) {
-        CompoundTag tmp = Objects.requireNonNull(buffer.readNbt());
-        type = Type.values()[tmp.getInt("type")];
-        id = tmp.getInt("id");
-        value = tmp.getInt("value");
+
+    public MaidDataSyncPacket(String type, int id, int value) {
+        this.type = Type.valueOf(type);
+        this.id = id;
+        this.value = value;
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
-        CompoundTag tmp = new CompoundTag();
-        tmp.putInt("type", type.ordinal());
-        tmp.putInt("id", id);
-        tmp.putInt("value", value);
-        buffer.writeNbt(tmp);
-    }
 }

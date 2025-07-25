@@ -1,8 +1,6 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -19,8 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -29,17 +25,16 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
-import studio.fantasyit.maid_storage_manager.items.render.CustomItemRenderer;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class CraftGuide extends Item implements MenuProvider {
+    public static CraftGuideData EMPTY = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
     public static final String TAG_RESULT = "result";
     public static final String TAG_SELECTING = "selecting";
     public static final String TAG_STEPS = "steps";
@@ -58,7 +53,7 @@ public class CraftGuide extends Item implements MenuProvider {
     public static Component getStatusMessage(ItemStack stack) {
         int selectId = getSelectId(stack);
         SpecialOP specialOP = getSpecialOP(stack);
-        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(stack);
+        CraftGuideRenderData data = stack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
         Component result;
         if (selectId == data.stepBindings.size())
             result = Component.translatable("interaction.select_step_new." + specialOP.name().toLowerCase());
@@ -86,55 +81,36 @@ public class CraftGuide extends Item implements MenuProvider {
         );
     }
 
-    public static boolean matchNbt(ItemStack mainHandItem, String targ) {
-        if (!mainHandItem.is(ItemRegistry.CRAFT_GUIDE.get()))
-            return false;
-        if (!mainHandItem.hasTag())
-            return true;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        if (!tag.contains(targ))
-            return true;
-        if (!tag.getCompound(targ).contains(TAG_OP_MATCH_TAG))
-            return true;
-        return tag.getCompound(targ).getBoolean(TAG_OP_MATCH_TAG);
-    }
-
     public static int getSelectId(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return 0;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        if (!tag.contains(TAG_SELECTING))
-            return 0;
-        return tag.getInt(TAG_SELECTING);
+        return itemInHand.getOrDefault(DataComponentRegistry.SELECTING, 0);
     }
 
     public static void setSelectId(ItemStack itemInHand, int value) {
-        CompoundTag tag = itemInHand.getOrCreateTag();
-        tag.putInt(TAG_SELECTING, value);
-        itemInHand.setTag(tag);
+        itemInHand.set(DataComponentRegistry.SELECTING, value);
     }
 
     public static void setSpecialOP(ItemStack itemInHand, SpecialOP value) {
-        CompoundTag tag = itemInHand.getOrCreateTag();
-        tag.putInt(TAG_SPECIAL_OP, value.ordinal());
-        itemInHand.setTag(tag);
+        itemInHand.set(DataComponentRegistry.CRAFT_GUIDE_SPECIAL, value.name());
     }
 
     public static SpecialOP getSpecialOP(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return SpecialOP.NONE;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        if (!tag.contains(TAG_SPECIAL_OP))
-            return SpecialOP.NONE;
-        return SpecialOP.values()[tag.getInt(TAG_SPECIAL_OP)];
+        return SpecialOP.valueOf(itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_SPECIAL, SpecialOP.NONE.name()));
     }
 
+    public static CraftGuideData getCraftGuide(ItemStack itemInHand) {
+        return itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.EMPTY).copy();
+    }
+
+    public static CraftGuideData getCraftGuideReadOnly(ItemStack itemInHand) {
+        return itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.EMPTY);
+    }
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            if (!CraftGuideData.fromItemStack(player.getItemInHand(p_41434_)).getSteps().isEmpty()) {
-                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+            CraftGuideData cgd = getCraftGuideReadOnly(player.getItemInHand(p_41434_));
+            if (!cgd.getSteps().isEmpty()) {
+                serverPlayer.openMenu(this, (buffer) -> {
                 });
             } else {
                 player.sendSystemMessage(Component.translatable("interaction.no_step"));
@@ -152,7 +128,7 @@ public class CraftGuide extends Item implements MenuProvider {
     }
 
     public static void rollMode(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
-        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
+        CraftGuideData craftGuideData = getCraftGuide(itemInHand);
         int selectId = getSelectId(itemInHand);
         selectId = (selectId + value + craftGuideData.getSteps().size() + 1) % (craftGuideData.getSteps().size() + 1);
         setSelectId(itemInHand, selectId);
@@ -169,7 +145,7 @@ public class CraftGuide extends Item implements MenuProvider {
             if (!serverPlayer.isShiftKeyDown())
                 return InteractionResult.PASS;
             ItemStack itemInHand = context.getItemInHand();
-            CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemInHand);
+            CraftGuideData craftGuideData = getCraftGuide(itemInHand);
             SpecialOP specialOP = getSpecialOP(itemInHand);
             @NotNull InteractionResult result = switch (specialOP) {
                 case NONE -> operateNormal(context, serverPlayer, craftGuideData, itemInHand);
@@ -177,7 +153,7 @@ public class CraftGuide extends Item implements MenuProvider {
                 case REPLACE -> operateReplace(context, serverPlayer, craftGuideData, itemInHand);
             };
 
-            craftGuideData.saveToItemStack(itemInHand);
+            itemInHand.set(DataComponentRegistry.CRAFT_GUIDE_DATA, craftGuideData);
             CraftGuideRenderData.recalculateItemStack(itemInHand);
             return result;
         } else {
@@ -207,13 +183,13 @@ public class CraftGuide extends Item implements MenuProvider {
         if (craftGuideData.getSteps().size() == craftGuideData.selecting) {
             new ArrayList<>(craftGuideData.getSteps())
                     .stream()
-                    .map(t -> CraftGuideStepData.fromCompound(t.toCompound()))
+                    .map(t -> CraftGuideStepData.fromCompound(serverPlayer.registryAccess(), t.toCompound(serverPlayer.registryAccess())))
                     .forEach(t -> {
                         t.storage = new Target(t.storage.getType(), context.getClickedPos(), t.storage.getSide());
                         craftGuideData.steps.add(t);
                     });
         } else {
-            CraftGuideStepData newStep = CraftGuideStepData.fromCompound(craftGuideData.getSteps().get(craftGuideData.selecting).toCompound());
+            CraftGuideStepData newStep = CraftGuideStepData.fromCompound(serverPlayer.registryAccess(), craftGuideData.getSteps().get(craftGuideData.selecting).toCompound(serverPlayer.registryAccess()));
             newStep.storage = new Target(newStep.storage.getType(), context.getClickedPos(), newStep.storage.getSide());
             craftGuideData.steps.add(newStep);
         }
@@ -285,13 +261,9 @@ public class CraftGuide extends Item implements MenuProvider {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack itemStack,
-                                @Nullable Level p_41422_,
-                                @NotNull List<Component> toolTip,
-                                @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
-
-        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(itemStack);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
+        CraftGuideRenderData data = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
         toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.title", data.inputs.size()).withStyle(ChatFormatting.GRAY));
         for (ItemStack input : data.inputs) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.item", input.getHoverName(), input.getCount()).withStyle(ChatFormatting.GRAY));
@@ -310,20 +282,10 @@ public class CraftGuide extends Item implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int p_39954_, Inventory p_39955_, Player p_39956_) {
-        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(p_39956_.getItemInHand(InteractionHand.MAIN_HAND));
+        CraftGuideData craftGuideData = getCraftGuideReadOnly(p_39956_.getMainHandItem());
         if (craftGuideData.getType() == null) return null;
         ICraftType type = CraftManager.getInstance().getType(craftGuideData.getType());
         if (type == null) return null;
         return type.createGui(p_39954_, p_39956_.level(), p_39956_, craftGuideData);
-    }
-
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return CustomItemRenderer.getInstance();
-            }
-        });
     }
 }

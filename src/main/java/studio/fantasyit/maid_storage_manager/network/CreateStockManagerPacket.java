@@ -1,9 +1,34 @@
 package studio.fantasyit.maid_storage_manager.network;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
-public class CreateStockManagerPacket {
+public class CreateStockManagerPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<CreateStockManagerPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(
+                    MaidStorageManager.MODID, "CreateStockManagerPacket"
+            )
+    );
+
+    @Override
+    public CustomPacketPayload.Type<CreateStockManagerPacket> type() {
+        return TYPE;
+    }
+
+    public static StreamCodec<ByteBuf, CreateStockManagerPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8,
+            t -> t.data.name(),
+            BlockPos.STREAM_CODEC,
+            t -> t.ticker,
+            ByteBufCodecs.INT,
+            t -> t.id,
+            CreateStockManagerPacket::new
+    );
 
     public enum Type {
         SHOP_LIST,
@@ -14,21 +39,15 @@ public class CreateStockManagerPacket {
     public final BlockPos ticker;
     int id;
 
-    public CreateStockManagerPacket(Type data, BlockPos ticker,int maidId) {
+    public CreateStockManagerPacket(Type data, BlockPos ticker, int maidId) {
         this.data = data;
         this.ticker = ticker;
         this.id = maidId;
     }
 
-    public CreateStockManagerPacket(FriendlyByteBuf buffer) {
-        data = Type.valueOf(buffer.readUtf());
-        ticker = buffer.readBlockPos();
-        id = buffer.readInt();
-    }
-
-    public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeUtf(data.name());
-        buffer.writeBlockPos(ticker);
-        buffer.writeInt(id);
+    public CreateStockManagerPacket(String data, BlockPos ticker, int maidId) {
+        this.data = Type.valueOf(data);
+        this.ticker = ticker;
+        this.id = maidId;
     }
 }

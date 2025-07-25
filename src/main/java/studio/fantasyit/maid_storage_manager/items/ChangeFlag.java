@@ -4,8 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,27 +15,25 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.items.data.TargetList;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ChangeFlag extends Item {
     public ChangeFlag() {
-        super(new Properties().stacksTo(1));
+        super(
+                new Properties().stacksTo(1)
+                        .component(DataComponentRegistry.TARGETS, new TargetList().toImmutable())
+        );
     }
-
-    public static final String TAG_STORAGES = "storages";
 
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
@@ -52,27 +48,25 @@ public class ChangeFlag extends Item {
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
-                CompoundTag tag = item.getOrCreateTag();
-                if (!tag.contains(TAG_STORAGES)) {
-                    tag.put(TAG_STORAGES, new ListTag());
-                }
-                ListTag list = tag.getList(TAG_STORAGES, 10);
+                TargetList targets = item.getOrDefault(DataComponentRegistry.TARGETS, new TargetList().toImmutable()).toMutable();
+                List<Target> list = targets.targets();
                 boolean found = false;
                 for (int i = 0; i < list.size(); i++) {
-                    Target storage = Target.fromNbt(list.getCompound(i));
+                    Target storage = list.get(i);
                     if (storage.equals(validTarget)) {
                         list.remove(i);
                         found = true;
                         break;
                     } else if (storage.pos.equals(validTarget.pos)) {
-                        list.set(i, validTarget.toNbt());
+                        list.set(i, validTarget);
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    list.add(validTarget.withoutSide().toNbt());
+                    list.add(validTarget.withoutSide());
                 }
+                item.set(DataComponentRegistry.TARGETS, targets.toImmutable());
             }
             return InteractionResult.CONSUME;
         } else {
@@ -117,20 +111,11 @@ public class ChangeFlag extends Item {
     }
 
     public static List<Target> getStorages(ItemStack stack) {
-        if (!stack.is(ItemRegistry.CHANGE_FLAG.get()) && !stack.hasTag())
-            return List.of();
-        List<Target> storages = new ArrayList<>();
-        ListTag tags = stack.getOrCreateTag().getList(TAG_STORAGES, 10);
-        for (int i = 0; i < tags.size(); i++) {
-            storages.add(Target.fromNbt(tags.getCompound(i)));
-        }
-        return storages;
+        return stack.getOrDefault(DataComponentRegistry.TARGETS, new TargetList().toImmutable()).targets();
     }
 
     public static void clearStorages(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.put(TAG_STORAGES, new ListTag());
-        stack.setTag(tag);
+        stack.set(DataComponentRegistry.TARGETS, new TargetList().toImmutable());
     }
 
     public static void clearVisForMemories(ServerLevel level, EntityMaid maid, Target storage) {
@@ -149,9 +134,8 @@ public class ChangeFlag extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack itemStack, @Nullable Level p_41422_, List<Component> tooltip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_41422_, tooltip, p_41424_);
-        CompoundTag tag = itemStack.getOrCreateTag();
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> tooltip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltip, p_41424_);
         tooltip.add(Component.translatable("tooltip.maid_storage_manager.change_flag.desc").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.maid_storage_manager.change_flag.storages", getStorages(itemStack).size()));
     }

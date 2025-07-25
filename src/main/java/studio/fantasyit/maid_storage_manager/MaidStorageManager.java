@@ -19,6 +19,8 @@ public class MaidStorageManager {
         RecipesRegistry.register(modEventBus);
         EntityRegistry.init(modEventBus);
         SoundEventRegistry.register(modEventBus);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        DataComponentRegistry.register(modEventBus);
+        DataAttachmentRegistry.register(modEventBus);
+        ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 }

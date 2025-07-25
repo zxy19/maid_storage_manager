@@ -9,7 +9,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderItemInFrameEvent;
+import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 
@@ -35,7 +36,7 @@ public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplay
                 p_115079_.translate(0.25, 0.25, 0);
             p_115079_.mulPose(Axis.ZP.rotationDegrees((float) entity.getRotation() * 360.0F / 8.0F));
 
-            if (!net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new RenderItemInFrameEvent(entity, this, p_115079_, p_115080_, p_115081_))) {
+            if (!NeoForge.EVENT_BUS.post(new RenderItemInFrameEvent(entity, this, p_115079_, p_115080_, p_115081_)).isCanceled()) {
                 if (Config.virtualItemFrameRender == Config.VirtualItemFrameRender.LARGE)
                     p_115079_.scale(0.7F, 0.7F, 0.7F);
                 else if (Config.virtualItemFrameRender == Config.VirtualItemFrameRender.CORNER)

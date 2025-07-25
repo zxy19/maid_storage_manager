@@ -13,6 +13,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.registry.EntityRegistry;
 
 public class VirtualItemEntity extends Entity {
@@ -37,19 +38,14 @@ public class VirtualItemEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        this.getEntityData().define(DATA_ITEM, ItemStack.EMPTY);
-    }
-
-    @Override
     protected void readAdditionalSaveData(CompoundTag p_20052_) {
-        this.setItem(ItemStack.of(p_20052_.getCompound("item")));
+        this.setItem(ItemStack.parseOptional(registryAccess(), p_20052_.getCompound("item")));
         this.ttl = p_20052_.getInt("ttl");
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag p_20139_) {
-        p_20139_.put("Item", this.getItem().save(new CompoundTag()));
+        p_20139_.put("Item", this.getItem().save(registryAccess(), new CompoundTag()));
         p_20139_.putInt("TTL", ttl);
     }
 
@@ -63,6 +59,11 @@ public class VirtualItemEntity extends Entity {
 
     public int getAge() {
         return age;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(DATA_ITEM, ItemStack.EMPTY);
     }
 
     public void tick() {
@@ -129,7 +130,7 @@ public class VirtualItemEntity extends Entity {
         }
     }
 
-    protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
+    public @NotNull BlockPos getBlockPosBelowThatAffectsMyMovement() {
         return this.getOnPos(0.999999F);
     }
 

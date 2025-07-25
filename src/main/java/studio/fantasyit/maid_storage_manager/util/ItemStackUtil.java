@@ -1,16 +1,17 @@
 package studio.fantasyit.maid_storage_manager.util;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.TypedDataComponent;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 public class ItemStackUtil {
@@ -18,12 +19,12 @@ public class ItemStackUtil {
         if (stack1.isEmpty() && stack2.isEmpty()) return true;
         if (stack1.isEmpty() || stack2.isEmpty()) return false;
         if (matchTag)
-            return ItemStack.isSameItemSameTags(stack1, stack2);
+            return ItemStack.isSameItemSameComponents(stack1, stack2);
         return ItemStack.isSameItem(stack1, stack2);
     }
 
-    public static TagKey<Item> MatchItem = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_nbt"));
-    public static TagKey<Item> NoMatchItem = TagKey.create(ForgeRegistries.ITEMS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_nbt"));
+    public static TagKey<Item> MatchItem = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_components"));
+    public static TagKey<Item> NoMatchItem = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_components"));
 
 
     public static boolean isSameInCrafting(ItemStack stack1, ItemStack stack2) {
@@ -37,14 +38,14 @@ public class ItemStackUtil {
     }
 
     public static boolean isSameTagInCrafting(ItemStack stack1, ItemStack stack2) {
-        CompoundTag tag1 = Optional.ofNullable(stack1.getTag()).map(CompoundTag::copy).orElseGet(CompoundTag::new);
-        CompoundTag tag2 = Optional.ofNullable(stack2.getTag()).map(CompoundTag::copy).orElseGet(CompoundTag::new);
-        for (String tagPath : Config.noMatchPaths) {
-            String[] path = tagPath.split("[\\.\\[]");
-            tag1 = CompoundTagUtil.removeKeyFrom(tag1, path, 0);
-            tag2 = CompoundTagUtil.removeKeyFrom(tag2, path, 0);
+        DataComponentMap components1 = stack1.getComponents();
+        DataComponentMap components2 = stack2.getComponents();
+        for (TypedDataComponent<?> c : components1) {
+            if (Config.noMatchPaths.contains(c.type().toString())) continue;
+            if (!components2.has(c.type())) return false;
+            if (!Objects.equals(components2.get(c.type()), c.value())) return false;
         }
-        return tag1.equals(tag2);
+        return true;
     }
 
     public static ItemStack removeIsMatchInList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {

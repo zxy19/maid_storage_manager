@@ -1,16 +1,15 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.view;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
-import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
-import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
+import studio.fantasyit.maid_storage_manager.attachment.InventoryListData;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
@@ -41,10 +40,8 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         for (int i = 0; i < availableInv.getSlots(); i++) {
             if (availableInv.getStackInSlot(i).is(ItemRegistry.INVENTORY_LIST.get())) {
                 ItemStack itemStack = availableInv.extractItem(i, 1, false);
-                if (itemStack.hasTag() && itemStack.getTag().contains(WrittenInvListItem.TAG_UUID)) {
-                    level.getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY).ifPresent(inventoryListData -> {
-                        inventoryListData.remove(itemStack.getTag().getUUID(WrittenInvListItem.TAG_UUID));
-                    });
+                if (itemStack.has(DataComponentRegistry.INVENTORY_UUID)) {
+                    InventoryListData.get(level.getServer().overworld()).remove(itemStack.get(DataComponentRegistry.INVENTORY_UUID));
                 }
                 break;
             }
@@ -52,15 +49,11 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         ItemStack item = ItemRegistry.WRITTEN_INVENTORY_LIST.get().getDefaultInstance().copyWithCount(1);
         UUID uuid = UUID.randomUUID();
 
-        level.getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY).ifPresent(inventoryListData -> {
-            inventoryListData.addWithCraftable(uuid, MemoryUtil.getViewedInventory(maid).flatten());
-        });
+        InventoryListData.get(level.getServer().overworld()).addWithCraftable(level.registryAccess(), uuid, MemoryUtil.getViewedInventory(maid).flatten());
 
-        CompoundTag tag = item.getOrCreateTag();
-        tag.putUUID(WrittenInvListItem.TAG_UUID, uuid);
-        tag.putString(WrittenInvListItem.TAG_AUTHOR, maid.getName().getString());
-        tag.putLong(WrittenInvListItem.TAG_TIME, level.getDayTime());
-        item.setTag(tag);
+        item.set(DataComponentRegistry.INVENTORY_UUID, uuid);
+        item.set(DataComponentRegistry.INVENTORY_AUTHOR, maid.getName());
+        item.set(DataComponentRegistry.INVENTORY_TIME, level.getDayTime());
         if (maid.getOwner() instanceof ServerPlayer player)
             InvUtil.throwItem(maid, item, MathUtil.getFromToWithFriction(maid, player.position()));
         else

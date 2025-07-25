@@ -8,27 +8,21 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.FakePlayerFactory;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
-import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
 import java.util.UUID;
-
-import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 public class InteractAfterDone extends Behavior<EntityMaid> {
     public InteractAfterDone() {
@@ -83,15 +77,15 @@ public class InteractAfterDone extends Behavior<EntityMaid> {
                         fakePlayer);
         BlockHitResult result = level.clip(rayTraceContext);
         if (!result.getBlockPos().equals(target)) return;
-        PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(fakePlayer,
+        PlayerInteractEvent.RightClickBlock event = CommonHooks.onRightClickBlock(fakePlayer,
                 InteractionHand.MAIN_HAND,
                 target,
                 result
         );
 
-        if (event.getUseBlock() != DENY) {
+        if (event.getUseBlock() != TriState.FALSE) {
             level.getBlockState(target)
-                    .use(level, fakePlayer, InteractionHand.MAIN_HAND, result);
+                    .useWithoutItem(level, fakePlayer, result);
         }
         Containers.dropContents(level, target, fakePlayer.getInventory());
         fakePlayer.getInventory().clearContent();

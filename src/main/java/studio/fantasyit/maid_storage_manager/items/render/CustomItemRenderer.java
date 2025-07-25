@@ -8,15 +8,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
-import studio.fantasyit.maid_storage_manager.items.FilterListItem;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackList;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
@@ -71,7 +71,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                  int light,
                                  int overlay) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(MaidStorageManager.MODID, "logistics_guide", "inventory")
+                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "logistics_guide"), "inventory")
         );
         for (var rendertype : model.getRenderTypes(itemStack, false)) {
             VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
@@ -86,19 +86,17 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                               int light,
                               int overlay) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(MaidStorageManager.MODID, "filter_list_base", "inventory")
+                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "filter_list_base"), "inventory")
         );
         for (var rendertype : model.getRenderTypes(itemStack, false)) {
             VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
             Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
         }
 
-        ListTag list = itemStack.getOrCreateTag().getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-        List<ItemStack> items = list
+        List<ItemStack> items = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new ItemStackList().toImmutable())
+                .list()
                 .stream()
-                .map(e -> ((CompoundTag) e).getCompound(FilterListItem.TAG_ITEMS_ITEM))
-                .map(ItemStack::of)
-                .filter(e -> !e.isEmpty())
+                .filter(i -> !i.isEmpty())
                 .toList();
         if (!items.isEmpty()) {
             int i = (Minecraft.getInstance().player.tickCount / 20) % items.size();
@@ -142,10 +140,10 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                              @NotNull MultiBufferSource multiBufferSource,
                              int light,
                              int overlay) {
-        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(itemStack);
+        CraftGuideRenderData data = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
         List<ItemStack> items = data.outputs;
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(MaidStorageManager.MODID, items.isEmpty() ? "craft_guide_base" : "craft_guide_base_blank", "inventory")
+                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, items.isEmpty() ? "craft_guide_base" : "craft_guide_base_blank"), "inventory")
         );
         for (var rendertype : model.getRenderTypes(itemStack, false)) {
             VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());

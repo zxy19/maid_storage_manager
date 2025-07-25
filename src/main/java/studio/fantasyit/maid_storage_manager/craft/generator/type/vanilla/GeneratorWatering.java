@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -63,17 +63,18 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
 
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+
         if (BOTTLE.getValue())
             graph.addRecipe(
                     ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
                     List.of(Ingredient.of(Items.GLASS_BOTTLE)),
                     List.of(1),
-                    List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
+                    List.of(PotionContents.createItemStack(Items.POTION, Potions.WATER)),
                     items -> {
                         CraftGuideStepData step = new CraftGuideStepData(
                                 Target.virtual(pos, null),
                                 items,
-                                List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
+                                List.of(PotionContents.createItemStack(Items.POTION, Potions.WATER)),
                                 CommonUseAction.TYPE,
                                 false,
                                 new CompoundTag()

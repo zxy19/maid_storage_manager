@@ -3,10 +3,9 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
@@ -15,7 +14,7 @@ import studio.fantasyit.maid_storage_manager.craft.type.StoneCuttingType;
 
 import java.util.List;
 
-public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Container> {
+public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, SingleRecipeInput> {
     @Override
     protected RecipeType<StonecutterRecipe> getRecipeType() {
         return RecipeType.STONECUTTING;
@@ -26,8 +25,8 @@ public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Con
     }
 
     @Override
-    protected Container getWrappedContainer(StonecutterRecipe recipe, List<ItemStack> inputs) {
-        return new SimpleContainer(inputs.get(0));
+    protected SingleRecipeInput getWrappedContainer(StonecutterRecipe recipe, List<ItemStack> inputs) {
+        return new SingleRecipeInput(inputs.get(0));
     }
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {

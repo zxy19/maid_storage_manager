@@ -1,16 +1,17 @@
 package studio.fantasyit.maid_storage_manager.recipe;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -75,22 +76,17 @@ public class CopyConfigRecipe extends ShapelessRecipe {
                         newStack.is(ItemRegistry.CHANGE_FLAG.get())
         ) {
             if (!newStack.is(toCopy.getItem())) return ItemStack.EMPTY;
-            CompoundTag tag = toCopy.getOrCreateTag();
-            newStack.setTag(tag.copy());
-            return newStack;
+            return toCopy.copy();
         } else if (newStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
             if (!toCopy.is(ItemRegistry.REQUEST_LIST_ITEM.get()) || RequestListItem.isVirtual(toCopy) || RequestListItem.isVirtual(newStack)) {
                 return ItemStack.EMPTY;
             }
-            CompoundTag tag = toCopy.getOrCreateTag();
-            newStack.setTag(tag.copy());
+            newStack = toCopy.copy();
             RequestListItem.clearItemProcess(newStack);
             return newStack;
         } else if (newStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
             if (toCopy.is(newStack.getItem())) {
-                CompoundTag tag = toCopy.getOrCreateTag();
-                newStack.setTag(tag.copy());
-                return newStack;
+                return toCopy.copy();
             }
         }
         return ItemStack.EMPTY;
@@ -98,19 +94,20 @@ public class CopyConfigRecipe extends ShapelessRecipe {
 
     public static class Serializer implements RecipeSerializer<CopyConfigRecipe> {
         @Override
-        public CopyConfigRecipe fromJson(ResourceLocation p_44103_, JsonObject p_44104_) {
-            return new CopyConfigRecipe(RecipeSerializer.SHAPELESS_RECIPE.fromJson(p_44103_, p_44104_));
+        public @NotNull MapCodec<CopyConfigRecipe> codec() {
+            return RecordCodecBuilder.mapCodec(builder -> builder.group(
+                            RecipeSerializer.SHAPELESS_RECIPE.codec().fieldOf("recipe").forGetter(t -> t)
+                    ).apply(builder, CopyConfigRecipe::new)
+            );
         }
 
         @Override
-        public @Nullable CopyConfigRecipe fromNetwork(ResourceLocation p_44105_, FriendlyByteBuf p_44106_) {
-            @Nullable ShapelessRecipe compose = RecipeSerializer.SHAPELESS_RECIPE.fromNetwork(p_44105_, p_44106_);
-            return compose == null ? null : new CopyConfigRecipe(compose);
-        }
-
-        @Override
-        public void toNetwork(FriendlyByteBuf p_44101_, CopyConfigRecipe p_44102_) {
-            RecipeSerializer.SHAPELESS_RECIPE.toNetwork(p_44101_, p_44102_);
+        public @NotNull StreamCodec<RegistryFriendlyByteBuf, CopyConfigRecipe> streamCodec() {
+            return StreamCodec.composite(
+                    RecipeSerializer.SHAPELESS_RECIPE.streamCodec(),
+                    t -> t,
+                    CopyConfigRecipe::new
+            );
         }
     }
 }

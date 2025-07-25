@@ -9,10 +9,13 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.Ch
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
@@ -34,10 +37,11 @@ public class GetStorageFunction implements IFunctionCall<GetStorageFunction.Filt
         return "get_storage";
     }
 
-    protected Set<ItemInfo> getItemKeys(List<InventoryItem> list) {
+    protected Set<ItemInfo> getItemKeys(List<InventoryItem> list, RegistryAccess registryAccess) {
         Set<ItemInfo> keys = new HashSet<>();
+        Registry<Item> reg = registryAccess.registry(Registries.ITEM).get();
         ObjIntConsumer<ItemStack> add = (ItemStack item, int count) -> {
-            @Nullable ResourceLocation key = ForgeRegistries.ITEMS.getKey(item.getItem());
+            @Nullable ResourceLocation key = reg.getKey(item.getItem());
             if (key != null) {
                 keys.stream().filter(k -> k.id().equals(key.toString())).findFirst()
                         .ifPresentOrElse(
@@ -89,7 +93,7 @@ public class GetStorageFunction implements IFunctionCall<GetStorageFunction.Filt
 
     @Override
     public ToolResponse onToolCall(FilterData filter, EntityMaid entityMaid) {
-        Set<ItemInfo> itemKeys = getItemKeys(MemoryUtil.getViewedInventory(entityMaid).flatten());
+        Set<ItemInfo> itemKeys = getItemKeys(MemoryUtil.getViewedInventory(entityMaid).flatten(), entityMaid.registryAccess());
         StringBuilder message = new StringBuilder();
         MutableBoolean anyMatch = new MutableBoolean(false);
         itemKeys.forEach(ik -> {

@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
+import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -52,8 +53,8 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             CraftMemory crafting = MemoryUtil.getCrafting(maid);
             MemoryUtil.getViewedInventory(maid).flatten().forEach(item -> {
                 if (item.itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                    CraftGuideData craftGuideData = CraftGuideData.fromItemStack(item.itemStack);
-                    if (craftGuideData.available()) {
+                    CraftGuideData craftGuideData = item.itemStack.get(DataComponentRegistry.CRAFT_GUIDE_DATA);
+                    if (craftGuideData != null && craftGuideData.available()) {
                         crafting.addCraftGuide(craftGuideData);
                     }
                 }
@@ -80,7 +81,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getCrafting(maid).setPlan(planner.getPlan());
             MemoryUtil.getCrafting(maid).addIgnoreTargetFromRequest(maid, p_22548_);
         }
-        CraftBlockOccupyDataProvider.get(p_22548_).removeAllOccupiesFor(maid);
+        CraftBlockOccupy.get(p_22548_).removeAllOccupiesFor(maid);
         MemoryUtil.getCrafting(maid).resetAndMarkVis(p_22548_, maid);
         MemoryUtil.clearTarget(maid);
     }

@@ -1,25 +1,44 @@
 package studio.fantasyit.maid_storage_manager.network;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class JEIRequestPacket {
+public class JEIRequestPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<JEIRequestPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(
+                    MaidStorageManager.MODID, "JEIRequestPacket"
+            )
+    );
+
+    @Override
+    public CustomPacketPayload.Type<JEIRequestPacket> type() {
+        return TYPE;
+    }
+
+    public static StreamCodec<RegistryFriendlyByteBuf, JEIRequestPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.collection(
+                    ArrayList::new,
+                    ItemStack.STREAM_CODEC
+            ),
+            t -> t.data,
+            ByteBufCodecs.INT,
+            t -> t.targetMaidId,
+            JEIRequestPacket::new
+    );
+
     List<ItemStack> data;
     int targetMaidId;
+
     public JEIRequestPacket(List<ItemStack> data, int maidId) {
         this.data = data;
         this.targetMaidId = maidId;
-    }
-
-    public JEIRequestPacket(FriendlyByteBuf buffer) {
-        this.targetMaidId = buffer.readInt();
-        this.data = buffer.readList(FriendlyByteBuf::readItem);
-    }
-
-    public void toBytes(FriendlyByteBuf buffer) {
-        buffer.writeInt(targetMaidId);
-        buffer.writeCollection(data, FriendlyByteBuf::writeItem);
     }
 }

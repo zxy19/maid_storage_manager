@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -58,8 +59,8 @@ public class RecipeIngredientCache {
         return false;
     }
 
-    public static void addRecipeCache(Recipe<?> recipe) {
-        RecipeIngredientCache.addRecipeCache(recipe.getId(), recipe.getIngredients());
+    public static void addRecipeCache(RecipeHolder<? extends Recipe<?>> holder) {
+        RecipeIngredientCache.addRecipeCache(holder.id(), holder.value().getIngredients());
     }
 
     public static void addRecipeCache(ResourceLocation id, List<Ingredient> ingredients) {

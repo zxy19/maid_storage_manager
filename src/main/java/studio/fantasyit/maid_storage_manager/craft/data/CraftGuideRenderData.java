@@ -1,18 +1,38 @@
 package studio.fantasyit.maid_storage_manager.craft.data;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.items.CraftGuide;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CraftGuideRenderData {
+    static Codec<Pair<Target, ResourceLocation>> STEP_BINDING_CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    Target.CODEC.fieldOf("target").forGetter(Pair::getA),
+                    ResourceLocation.CODEC.fieldOf("recipe").forGetter(Pair::getB)
+            ).apply(instance, Pair::new)
+    );
+    public static Codec<CraftGuideRenderData> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
+                    STEP_BINDING_CODEC.listOf().fieldOf("stepBindings").forGetter(t -> t.stepBindings),
+                    ItemStack.CODEC.listOf().fieldOf("inputs").forGetter(t -> t.inputs),
+                    ItemStack.CODEC.listOf().fieldOf("outputs").forGetter(t -> t.outputs),
+                    ItemStack.CODEC.fieldOf("icon").forGetter(t -> t.icon)
+            ).apply(instance, CraftGuideRenderData::new)
+    );
+    public static StreamCodec<ByteBuf, CraftGuideRenderData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+
     public final List<Pair<Target, ResourceLocation>> stepBindings;
     public final List<ItemStack> outputs;
     public final ItemStack icon;
@@ -34,66 +54,14 @@ public class CraftGuideRenderData {
     public static final CraftGuideRenderData EMPTY = new CraftGuideRenderData(List.of(), List.of(), List.of(), ItemStack.EMPTY);
 
     public static void recalculateItemStack(ItemStack itemStack) {
-        CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemStack);
+        CraftGuideData craftGuideData = CraftGuide.getCraftGuideReadOnly(itemStack);
         CompoundTag data = new CompoundTag();
         ItemStack icon1 = CraftManager.getInstance().getType(craftGuideData.getType()).getIcon();
-        data.put("icon", icon1.save(new CompoundTag()));
-        ListTag inputs = new ListTag();
-        for (ItemStack input : craftGuideData.getInput()) {
-            if (input.isEmpty())
-                continue;
-            inputs.add(input.save(new CompoundTag()));
-        }
-        data.put("inputs", inputs);
-        ListTag outputs = new ListTag();
-        for (ItemStack output : craftGuideData.getOutput()) {
-            if (output.isEmpty())
-                continue;
-            outputs.add(output.save(new CompoundTag()));
-        }
-        data.put("outputs", outputs);
-        ListTag stepBindings = new ListTag();
-        for (CraftGuideStepData stepBinding : craftGuideData.getSteps()) {
-            CompoundTag stepBindingTag = new CompoundTag();
-            stepBindingTag.put("pos", stepBinding.getStorage().toNbt());
-            stepBindingTag.putString("type", stepBinding.action.toString());
-            stepBindings.add(stepBindingTag);
-        }
-        data.put("stepBindings", stepBindings);
-        itemStack.getOrCreateTag().put("renderData", data);
-    }
-
-    public static CraftGuideRenderData fromItemStack(ItemStack itemStack) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        if (tag.contains("input1")) {
-            CraftGuideData.fromItemStack(itemStack);
-            return fromItemStack(itemStack);
-        }
-        if (tag.contains("renderData")) {
-            CompoundTag renderData = tag.getCompound("renderData");
-            ItemStack icon = ItemStack.of(renderData.getCompound("icon"));
-            ListTag outputs = renderData.getList("outputs", Tag.TAG_COMPOUND);
-            List<ItemStack> outputs1 = new ArrayList<>();
-            for (int i = 0; i < outputs.size(); i++) {
-                outputs1.add(ItemStack.of(outputs.getCompound(i)));
-            }
-            ListTag inputs = renderData.getList("inputs", Tag.TAG_COMPOUND);
-            List<ItemStack> inputs1 = new ArrayList<>();
-            for (int i = 0; i < inputs.size(); i++) {
-                inputs1.add(ItemStack.of(inputs.getCompound(i)));
-            }
-            ListTag stepBindings = renderData.getList("stepBindings", Tag.TAG_COMPOUND);
-            List<Pair<Target, ResourceLocation>> stepBindings1 = new ArrayList<>();
-            for (int i = 0; i < stepBindings.size(); i++) {
-                CompoundTag stepBinding = stepBindings.getCompound(i);
-                stepBindings1.add(new Pair<>(Target.fromNbt(stepBinding.getCompound("pos")), ResourceLocation.tryParse(stepBinding.getString("type"))));
-            }
-            int selecting = -1;
-            if (tag.contains("selecting"))
-                selecting = tag.getInt("selecting");
-            return new CraftGuideRenderData(stepBindings1, inputs1, outputs1, icon, selecting);
-        } else {
-            return EMPTY;
-        }
+        itemStack.set(DataComponentRegistry.CRAFT_GUIDE_RENDER, new CraftGuideRenderData(
+                craftGuideData.steps.stream().map(t -> new Pair<>(t.getStorage(), t.getActionType())).toList(),
+                craftGuideData.getInput(),
+                craftGuideData.getOutput(),
+                icon1
+        ));
     }
 }

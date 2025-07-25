@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -116,7 +117,8 @@ public class CraftMemory extends AbstractTargetMemory {
         return craftGuides;
     }
 
-    public void addCraftGuide(CraftGuideData craftGuideData) {
+    public void addCraftGuide(@Nullable CraftGuideData craftGuideData) {
+        if(craftGuideData == null) return;
         if (!craftGuideData.available())
             return;
         this.craftGuides.add(craftGuideData);

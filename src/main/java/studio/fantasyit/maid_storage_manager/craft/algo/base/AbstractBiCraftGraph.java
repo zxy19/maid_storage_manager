@@ -1,8 +1,8 @@
 package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
@@ -170,8 +170,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     }
 
     public ItemNode getItemNode(ItemStack itemStack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
-        if (itemId == null) return null;
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (!itemNodeMap.containsKey(itemId)) return null;
         for (ItemNode in : itemNodeMap.get(itemId)) {
             if (ItemStackUtil.isSameInCrafting(itemStack, in.itemStack)) {
@@ -182,7 +181,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     }
 
     public ItemNode addItemNode(ItemStack itemStack) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         ItemNode itemNode = new ItemNode(nodes.size(), false, itemStack);
         nodes.add(itemNode);
         if (!itemNodeMap.containsKey(itemId))

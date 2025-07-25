@@ -11,9 +11,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.apache.logging.log4j.util.Strings;
 import studio.fantasyit.maid_storage_manager.render.SeeThroughBoxRenderType;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -124,14 +124,14 @@ public class BoxRenderUtil {
         VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderType.LINES);
         LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
         if (!Strings.isBlank(key)) {
-            Vec3 livingFrom = entity.getPosition(event.getPartialTick()).add(0, entity.getBbHeight() + 0.5f, 0);
+            Vec3 livingFrom = entity.getPosition(event.getPartialTick().getGameTimeDeltaTicks()).add(0, entity.getBbHeight() + 0.5f, 0);
             drawText(event, mc, livingFrom, key, textColor, 0);
         }
     }
 
     public static void drawText(RenderLevelStageEvent event, Minecraft mc, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
         PoseStack pose = event.getPoseStack();
-        Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick());
+        Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick().getGameTimeDeltaTicks());
         Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
         pose.pushPose();
         pose.translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);

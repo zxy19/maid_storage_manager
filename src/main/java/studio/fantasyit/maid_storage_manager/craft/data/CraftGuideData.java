@@ -2,20 +2,14 @@ package studio.fantasyit.maid_storage_manager.craft.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
-import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
-import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
-import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
-import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
-import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
@@ -30,6 +24,7 @@ public class CraftGuideData {
                             .forGetter(CraftGuideData::getType)
             ).apply(instance, CraftGuideData::new)
     );
+    public static StreamCodec<ByteBuf, CraftGuideData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 
     public List<CraftGuideStepData> steps;
     public ResourceLocation type;
@@ -79,134 +74,6 @@ public class CraftGuideData {
                 ItemStackUtil.addToList(outputsWithOptional, item.copy(), ItemStackUtil::isSameInCrafting);
             }
         }
-    }
-
-    public static CraftGuideData fromItemStack(ItemStack craftGuide) {
-        CompoundTag tag = craftGuide.getOrCreateTag();
-        if (tag.contains("input1") || tag.contains("input2") || tag.contains("output")) {
-            CraftGuideData data = compatibleToV1Type(tag);
-            tag.remove("input1");
-            tag.remove("input2");
-            tag.remove("output");
-            data.buildInputAndOutputs();
-            data.saveToItemStack(craftGuide);
-            CraftGuideRenderData.recalculateItemStack(craftGuide);
-            return data;
-        }
-        ListTag inputs = tag.getList(CraftGuide.TAG_STEPS, Tag.TAG_COMPOUND);
-        ResourceLocation type = null;
-        ArrayList<CraftGuideStepData> step = new ArrayList<>();
-        for (int i = 0; i < inputs.size(); i++) {
-            step.add(CraftGuideStepData.fromCompound(inputs.getCompound(i)));
-        }
-        if (tag.contains(CraftGuide.TAG_TYPE)) {
-            type = ResourceLocation.tryParse(tag.getString(CraftGuide.TAG_TYPE));
-        } else {
-            type = CommonType.TYPE;
-        }
-        CraftGuideData craftGuideData = new CraftGuideData(step, type);
-        craftGuideData.selecting = 0;
-        if (tag.contains(CraftGuide.TAG_SELECTING))
-            craftGuideData.selecting = tag.getInt(CraftGuide.TAG_SELECTING);
-        if (craftGuideData.selecting > craftGuideData.steps.size())
-            craftGuideData.selecting = craftGuideData.steps.size();
-        return craftGuideData;
-    }
-
-    private static void compatibleToV1TypeAddStep(CompoundTag compound, CraftGuideData craftGuideData, boolean optional, ResourceLocation type, boolean output) {
-        if (compound.contains("side")) {
-            List<ItemStack> items = new ArrayList<>();
-            Target target = Target.fromNbt(compound.getCompound("side"));
-            ListTag list = compound.getList("items", Tag.TAG_COMPOUND);
-            for (int i = 0; i < list.size(); i++) {
-                items.add(
-                        ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
-                                .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
-                );
-            }
-            if (output)
-                craftGuideData.steps.add(new CraftGuideStepData(target,
-                        new ArrayList<>(),
-                        items,
-                        type,
-                        optional,
-                        new CompoundTag()));
-            else
-                craftGuideData.steps.add(new CraftGuideStepData(target,
-                        items,
-                        new ArrayList<>(),
-                        type,
-                        optional,
-                        new CompoundTag()));
-        }
-    }
-
-    private static void compatibleToV1TypeAddCraftStep(CraftGuideData craftGuideData, CompoundTag input1, CompoundTag input2) {
-        if (input1.contains("side") && input2.contains("side")) {
-            List<ItemStack> inputs = new ArrayList<>();
-            List<ItemStack> outputs = new ArrayList<>();
-            Target target = Target.fromNbt(input1.getCompound("side"));
-            ListTag inputsList = input1.getList("items", Tag.TAG_COMPOUND);
-            for (int i = 0; i < inputsList.size(); i++) {
-                inputs.add(
-                        ItemStack.of(inputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
-                                .copyWithCount(inputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
-                );
-            }
-            ListTag outputsList = input2.getList("items", Tag.TAG_COMPOUND);
-            for (int i = 0; i < outputsList.size(); i++) {
-                outputs.add(
-                        ItemStack.of(outputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
-                                .copyWithCount(outputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
-                );
-            }
-            craftGuideData.type = CraftingType.TYPE;
-            craftGuideData.steps.add(new CraftGuideStepData(target,
-                    inputs,
-                    outputs,
-                    CraftingType.TYPE,
-                    false,
-                    new CompoundTag()));
-        }
-    }
-
-    /**
-     * 旧版本数据兼容
-     */
-    private static CraftGuideData compatibleToV1Type(CompoundTag tag) {
-        CraftGuideData craftGuideData = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
-        if (tag.contains("input1")) {
-            if (tag.getCompound("input1").contains("side")) {
-                Target target = Target.fromNbt(tag.getCompound("input1").getCompound("side"));
-                if (target.getType().equals(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "crafting"))) {
-                    compatibleToV1TypeAddCraftStep(craftGuideData, tag.getCompound("input1"), tag.getCompound("output"));
-                    return craftGuideData;
-                }
-            }
-        }
-        if (tag.contains("input1")) {
-            compatibleToV1TypeAddStep(tag.getCompound("input1"), craftGuideData, false, CommonPlaceItemAction.TYPE, false);
-        }
-        if (tag.contains("input2")) {
-            compatibleToV1TypeAddStep(tag.getCompound("input2"), craftGuideData, true, CommonPlaceItemAction.TYPE, false);
-        }
-        if (tag.contains("output")) {
-            compatibleToV1TypeAddStep(tag.getCompound("output"), craftGuideData, false, CommonTakeItemAction.TYPE, true);
-        }
-        return craftGuideData;
-    }
-
-    public void saveToItemStack(ItemStack itemStack) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        ListTag inputs = new ListTag();
-        for (CraftGuideStepData step : steps) {
-            inputs.add(step.toCompound());
-        }
-        tag.put(CraftGuide.TAG_STEPS, inputs);
-        tag.putString(CraftGuide.TAG_TYPE, type.toString());
-        if (selecting != null)
-            tag.putInt(CraftGuide.TAG_SELECTING, selecting);
-        itemStack.setTag(tag);
     }
 
     public List<CraftGuideStepData> getSteps() {
@@ -320,5 +187,12 @@ public class CraftGuideData {
             }
         }
         return false;
+    }
+
+    public CraftGuideData copy() {
+        return new CraftGuideData(
+                steps.stream().map(CraftGuideStepData::copy).toList(),
+                type
+        );
     }
 }

@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,11 +18,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -50,18 +51,11 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     }
 
     public static int getSelectId(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return 0;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        if (!tag.contains(TAG_SELECTING))
-            return 0;
-        return tag.getInt(TAG_SELECTING);
+        return itemInHand.getOrDefault(DataComponentRegistry.SELECTING, 0);
     }
 
     public static void setSelectId(ItemStack itemInHand, int value) {
-        CompoundTag tag = itemInHand.getOrCreateTag();
-        tag.putInt(TAG_SELECTING, value);
-        itemInHand.setTag(tag);
+        itemInHand.set(DataComponentRegistry.SELECTING, value);
     }
 
 
@@ -80,7 +74,7 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
         if (player.isShiftKeyDown()) return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+            serverPlayer.openMenu(this, (buffer) -> {
             });
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         }
@@ -105,53 +99,34 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     }
 
     public static ItemStack getItemStack(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return ItemStack.EMPTY;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        if (!tag.contains(TAG_ITEM))
-            return ItemStack.EMPTY;
-        return ItemStack.of(tag.getCompound(TAG_ITEM));
+        return itemInHand.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStack.EMPTY);
     }
 
     public static @Nullable Target getInput(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return null;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        if (!tag.contains(TAG_INPUT))
-            return null;
-        return Target.fromNbt(tag.getCompound(TAG_INPUT));
+        return itemInHand.get(DataComponentRegistry.LOGISTICS_INPUT);
     }
 
     public static @Nullable Target getOutput(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return null;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        if (!tag.contains(TAG_OUTPUT))
-            return null;
-        return Target.fromNbt(tag.getCompound(TAG_OUTPUT));
+        return itemInHand.get(DataComponentRegistry.LOGISTICS_INPUT);
     }
 
     public static int getWorkCount(ItemStack itemInHand) {
-        if (!itemInHand.hasTag())
-            return 0;
-        CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
-        return tag.getBoolean(TAG_SINGLE_MODE) ? 1 : 64;
+        return itemInHand.getOrDefault(DataComponentRegistry.LOGISTICS_SINGLE, false) ? 1 : 64;
     }
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
         if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown()) return InteractionResult.PASS;
-            String selectingTag = getSelectId(context.getItemInHand()) == 0 ? TAG_INPUT : TAG_OUTPUT;
+            DeferredHolder<DataComponentType<?>, DataComponentType<Target>> selecting = getSelectId(context.getItemInHand()) == 0 ? DataComponentRegistry.LOGISTICS_INPUT : DataComponentRegistry.LOGISTICS_OUTPUT;
             BlockPos clickedPos = context.getClickedPos();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
-                CompoundTag tag = item.getOrCreateTag();
-                if (tag.contains(selectingTag)) {
-                    Target storage = Target.fromNbt(tag.getCompound(selectingTag));
+                if (item.has(selecting)) {
+                    Target storage = item.get(selecting);
                     if (storage.getPos().equals(clickedPos) && storage.getSide().isPresent() && storage.getSide().get() == context.getClickedFace()) {
-                        tag.remove(selectingTag);
+                        item.remove(selecting);
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.clear_storage"));
                     } else {
                         if (storage.pos.equals(clickedPos)) {
@@ -161,13 +136,12 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
                             storage.side = null;
                         }
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
-                        tag.put(selectingTag, storage.toNbt());
+                        item.set(selecting, storage);
                     }
                 } else {
-                    tag.put(selectingTag, validTarget.toNbt());
+                    item.set(selecting, validTarget);
                     serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                 }
-                item.setTag(tag);
             }
             return InteractionResult.CONSUME;
         } else {
@@ -189,15 +163,9 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack itemStack,
-                                @Nullable Level p_41422_,
-                                @NotNull List<Component> toolTip,
-                                @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
         toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.desc").withStyle(ChatFormatting.GRAY));
-        if (!itemStack.hasTag()) {
-            return;
-        }
         @Nullable Target input = getInput(itemStack);
         if (input != null) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.input",

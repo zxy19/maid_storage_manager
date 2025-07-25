@@ -3,9 +3,10 @@ package studio.fantasyit.maid_storage_manager.craft.context.special;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -64,9 +65,9 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
             }
         }
         if (allMatch) {
-            Optional<SmithingRecipe> recipe = RecipeUtil.getSmithingRecipe(level, input);
+            Optional<RecipeHolder<SmithingRecipe>> recipe = RecipeUtil.getSmithingRecipe(level, input);
             if (recipe.isPresent()) {
-                ItemStack result = recipe.get().getResultItem(level.registryAccess());
+                ItemStack result = recipe.get().value().getResultItem(level.registryAccess());
                 if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
                 }

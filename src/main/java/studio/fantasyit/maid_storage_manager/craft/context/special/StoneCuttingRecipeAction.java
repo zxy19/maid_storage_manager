@@ -5,9 +5,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -45,12 +46,12 @@ public class StoneCuttingRecipeAction extends AbstractCraftActionContext {
         ItemStack output = craftGuideStepData.getOutput().get(0);
         ItemStack t1 = InvUtil.tryExtractForCrafting(inv, input);
         if (ItemStackUtil.isSameInCrafting(t1, input)) {
-            List<StonecutterRecipe> stonecuttingRecipe = RecipeUtil.getStonecuttingRecipe(level, t1);
-            Optional<StonecutterRecipe> first = stonecuttingRecipe.stream().filter(recipe ->
-                    ItemStackUtil.isSameInCrafting(recipe.getResultItem(level.registryAccess()), output)
+            List<RecipeHolder<StonecutterRecipe>> stonecuttingRecipe = RecipeUtil.getStonecuttingRecipe(level, t1);
+            Optional<RecipeHolder<StonecutterRecipe>> first = stonecuttingRecipe.stream().filter(recipe ->
+                    ItemStackUtil.isSameInCrafting(recipe.value().getResultItem(level.registryAccess()), output)
             ).findFirst();
             if (first.isPresent()) {
-                ItemStack tmpResult = first.get().getResultItem(level.registryAccess());
+                ItemStack tmpResult = first.get().value().getResultItem(level.registryAccess());
                 ItemStack result = tmpResult.copyWithCount(tmpResult.getCount() * input.getCount());
                 if (ItemStackUtil.isSameInCrafting(result, output)) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());

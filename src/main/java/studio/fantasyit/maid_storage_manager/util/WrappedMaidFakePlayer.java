@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -20,7 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,14 +77,14 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     }
 
     @Override
-    public boolean removeEffect(MobEffect p_21196_) {
+    public boolean removeEffect(Holder<MobEffect> p_21196_) {
         if (maid == null) return false;
         return maid.removeEffect(p_21196_);
     }
 
     @Nullable
     @Override
-    public MobEffectInstance removeEffectNoUpdate(@Nullable MobEffect p_21164_) {
+    public MobEffectInstance removeEffectNoUpdate(@Nullable Holder<MobEffect> p_21164_) {
         if (maid == null) return super.removeEffectNoUpdate(p_21164_);
         return maid.removeEffectNoUpdate(p_21164_);
     }
@@ -113,7 +114,7 @@ public class WrappedMaidFakePlayer extends FakePlayer {
 
     @Nullable
     @Override
-    public MobEffectInstance getEffect(MobEffect p_21125_) {
+    public MobEffectInstance getEffect(Holder<MobEffect> p_21125_) {
         if (maid == null) return super.getEffect(p_21125_);
         return maid.getEffect(p_21125_);
     }
@@ -125,13 +126,13 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     }
 
     @Override
-    public Map<MobEffect, MobEffectInstance> getActiveEffectsMap() {
+    public Map<Holder<MobEffect>, MobEffectInstance> getActiveEffectsMap() {
         if (maid == null) return super.getActiveEffectsMap();
         return maid.getActiveEffectsMap();
     }
 
     @Override
-    public boolean hasEffect(MobEffect p_21024_) {
+    public boolean hasEffect(Holder<MobEffect> p_21024_) {
         if (maid == null) return super.hasEffect(p_21024_);
         return maid.hasEffect(p_21024_);
     }
@@ -275,13 +276,6 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     public float getEyeHeight(Pose p_20237_) {
         if (maid == null) return 0;
         return maid.getEyeHeight(p_20237_);
-    }
-
-    @Override
-    public double getBlockReach() {
-        if (maid == null) return 0;
-        //TODO
-        return 7;
     }
 
     @Override

@@ -10,12 +10,12 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.Ch
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -63,8 +63,8 @@ public class FindAndMarkStorageFunction implements IFunctionCall<FindAndMarkStor
         Map<Target, List<ViewedInventoryMemory.ItemCount>> itemKeys = MemoryUtil.getViewedInventory(entityMaid).positionFlatten();
         StringBuilder message = new StringBuilder();
         for (String itemId : itemIdData.itemId()) {
-            ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(itemId);
-            Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
+            ResourceLocation resourceLocation = ResourceLocation.tryParse(itemId);
+            Item item = entityMaid.registryAccess().registry(Registries.ITEM).get().get(resourceLocation);
             if (item == null) {
                 message.append("Fail. Item ID: ").append(itemId).append(" is not a valid item.\n");
             }

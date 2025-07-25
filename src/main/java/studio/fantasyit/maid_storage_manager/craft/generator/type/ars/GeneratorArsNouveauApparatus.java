@@ -1,14 +1,14 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.ars;
 
-import com.hollingsworth.arsnouveau.api.enchanting_apparatus.EnchantingApparatusRecipe;
+import com.hollingsworth.arsnouveau.common.crafting.recipes.EnchantingApparatusRecipe;
 import com.hollingsworth.arsnouveau.setup.registry.RecipeRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class GeneratorArsNouveauApparatus extends GeneratorArsNouveauEnchantApp<EnchantingApparatusRecipe> {
     @Override
-    protected RegistryObject<RecipeType<EnchantingApparatusRecipe>> getRecipeType() {
+    protected DeferredHolder<RecipeType<?>, RecipeRegistry.ModRecipeType<EnchantingApparatusRecipe>> getRecipeType() {
         return RecipeRegistry.APPARATUS_TYPE;
     }
 

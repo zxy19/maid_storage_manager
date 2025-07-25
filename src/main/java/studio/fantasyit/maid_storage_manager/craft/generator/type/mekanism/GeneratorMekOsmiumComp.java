@@ -1,10 +1,10 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.mekanism;
 
-import mekanism.api.chemical.gas.Gas;
-import mekanism.api.chemical.gas.GasStack;
+import mekanism.api.recipes.ItemStackChemicalToItemStackRecipe;
 import mekanism.api.recipes.ItemStackGasToItemStackRecipe;
 import mekanism.api.recipes.ItemStackToGasRecipe;
 import mekanism.api.recipes.ingredients.ChemicalStackIngredient;
+import mekanism.api.recipes.vanilla_input.SingleItemChemicalRecipeInput;
 import mekanism.common.content.blocktype.FactoryType;
 import mekanism.common.recipe.MekanismRecipeType;
 import mekanism.common.recipe.lookup.cache.InputRecipeCache;
@@ -39,9 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStackRecipe, InputRecipeCache.ItemChemical<Gas, GasStack, ItemStackGasToItemStackRecipe>> {
+public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItemStackRecipe, SingleItemChemicalRecipeInput, InputRecipeCache.ItemChemical<ItemStackChemicalToItemStackRecipe>> {
     @Override
-    protected MekanismRecipeType<ItemStackGasToItemStackRecipe, InputRecipeCache.ItemChemical<Gas, GasStack, ItemStackGasToItemStackRecipe>> getRecipeType() {
+    protected MekanismRecipeType<SingleItemChemicalRecipeInput, ItemStackChemicalToItemStackRecipe, InputRecipeCache.ItemChemical<ItemStackChemicalToItemStackRecipe>> getRecipeType() {
         return MekanismRecipeType.COMPRESSING.get();
     }
 
@@ -71,7 +71,7 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
     }
 
     @Override
-    List<Ingredient> getRecipeIngredients(ItemStackGasToItemStackRecipe recipe, RecipeManager manager, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    List<Ingredient> getRecipeIngredients(ItemStackChemicalToItemStackRecipe recipe, RecipeManager manager, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         return List.of();
     }
 

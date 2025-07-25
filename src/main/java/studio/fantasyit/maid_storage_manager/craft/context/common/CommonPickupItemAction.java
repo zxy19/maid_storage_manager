@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.ItemHandlerHelper;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -69,7 +68,7 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
             if (!entity.isAlive()) continue;
             if (entity instanceof ItemEntity ie && ItemStackUtil.isSameInCrafting(ie.getItem(), current)) {
                 int toTakeCount = Math.min(ie.getItem().getCount(), current.getCount() - hasTaken);
-                ItemStack notPlaced = InvUtil.tryPlace(maid.getAvailableInv(false), ItemHandlerHelper.copyStackWithSize(current, toTakeCount));
+                ItemStack notPlaced = InvUtil.tryPlace(maid.getAvailableInv(false), current.copyWithCount(toTakeCount));
                 int realTake = toTakeCount - notPlaced.getCount();
                 int realRemain = ie.getItem().getCount() - realTake;
                 if (realTake != 0) {

@@ -3,12 +3,12 @@ package studio.fantasyit.maid_storage_manager.data;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.*;
@@ -52,7 +52,7 @@ public class InventoryListDataClient {
             boolean found = false;
             for (int i = 0; i < pairs.size(); i++) {
                 InventoryItem pair1 = pairs.get(i);
-                if (ItemStack.isSameItemSameTags(pair1.itemStack, pair.itemStack)) {
+                if (ItemStack.isSameItemSameComponents(pair1.itemStack, pair.itemStack)) {
                     pairs.set(i, pair);
                     found = true;
                     break;
@@ -79,11 +79,10 @@ public class InventoryListDataClient {
     public void tickRequest() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            for (ItemStack i : player.inventory.items)
+            for (ItemStack i : player.getInventory().items)
                 if (i.is(ItemRegistry.WRITTEN_INVENTORY_LIST.get()) &&
-                        i.hasTag() &&
-                        i.getTag().contains(WrittenInvListItem.TAG_UUID))
-                    requestForDataIfFirstTime(i.getTag().getUUID(WrittenInvListItem.TAG_UUID));
+                        i.has(DataComponentRegistry.INVENTORY_UUID))
+                    requestForDataIfFirstTime(i.get(DataComponentRegistry.INVENTORY_UUID));
         }
     }
 }

@@ -7,10 +7,10 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -90,7 +90,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     private void tickGather(ServerLevel level, EntityMaid maid, long p22553) {
         if (!breath.breathTick(maid)) return;
         Function<ItemStack, ItemStack> takeItem = (itemStack) -> {
-            if (checkItem != null && ItemStack.isSameItemSameTags(itemStack, checkItem))
+            if (checkItem != null && ItemStackUtil.isSame(itemStack, checkItem, true))
                 checkItem = null;
 
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
@@ -126,7 +126,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             isic.tick(itemStack -> {
                 MemoryUtil.getViewedInventory(maid).addItem(target, itemStack);
                 if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                    MemoryUtil.getCrafting(maid).addCraftGuide(CraftGuideData.fromItemStack(itemStack));
+                    MemoryUtil.getCrafting(maid).addCraftGuide(itemStack.get(DataComponentRegistry.CRAFT_GUIDE_DATA));
                 }
                 return itemStack;
             });
@@ -134,7 +134,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             if (isec.hasTask())
                 isec.tick(itemStack -> {
                     if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                        MemoryUtil.getCrafting(maid).addCraftGuide(CraftGuideData.fromItemStack(itemStack));
+                        MemoryUtil.getCrafting(maid).addCraftGuide(itemStack.get(DataComponentRegistry.CRAFT_GUIDE_DATA));
                     }
                     return itemStack;
                 });

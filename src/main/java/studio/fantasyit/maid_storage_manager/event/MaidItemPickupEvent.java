@@ -5,17 +5,17 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
+import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class MaidItemPickupEvent {
     @SubscribeEvent
     public static void onItemPickup(MaidPickupEvent.ItemResultPre event) {
@@ -43,7 +43,7 @@ public class MaidItemPickupEvent {
         if (event.isCanceled())
             return;
         if (!maid.level().isClientSide) {
-            CraftBlockOccupyDataProvider.CraftBlockOccupy occupation = CraftBlockOccupyDataProvider.get(maid.level());
+            CraftBlockOccupy occupation = CraftBlockOccupy.get(maid.level());
             if (BlockPos.betweenClosedStream(
                     entityItem.getBoundingBox().inflate(3.5)
             ).anyMatch(occupation::isOccupiedByAny)) {

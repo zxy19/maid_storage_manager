@@ -1,8 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.logistics.input;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -18,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -127,16 +126,9 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
                 .stream().filter(itemCount -> !itemCount.item().is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !itemCount.item().isEmpty()).toList();
         ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem);
         if (!filterItemStack.isEmpty()) {
-            List<ItemStack> filteredItems = new ArrayList<>();
-            CompoundTag t = filterItemStack.getOrCreateTag();
-            ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-            for (int i = 0; i < list.size(); i++) {
-                CompoundTag tmp = list.getCompound(i);
-                ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
-                filteredItems.add(item);
-            }
-            boolean matchNbt = t.getBoolean(FilterListItem.TAG_MATCH_TAG);
-            boolean isBlackMode = t.getBoolean(FilterListItem.TAG_BLACK_MODE);
+            List<ItemStack> filteredItems = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY).list();
+            boolean matchNbt = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
+            boolean isBlackMode = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false);
             itemsAt = itemsAt.stream().filter(itemCount -> {
                 boolean match = filteredItems.stream().anyMatch(itemStack -> ItemStackUtil.isSame(itemStack, itemCount.item(), matchNbt));
                 return (match != isBlackMode);

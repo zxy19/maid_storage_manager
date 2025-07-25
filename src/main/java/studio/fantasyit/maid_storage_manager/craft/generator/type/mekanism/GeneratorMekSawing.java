@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -27,9 +28,9 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import java.util.List;
 import java.util.Map;
 
-public class GeneratorMekSawing extends GeneratorMek<SawmillRecipe, InputRecipeCache.SingleItem<SawmillRecipe>> {
+public class GeneratorMekSawing extends GeneratorMek<SawmillRecipe, SingleRecipeInput, InputRecipeCache.SingleItem<SawmillRecipe>> {
     @Override
-    protected MekanismRecipeType<SawmillRecipe, InputRecipeCache.SingleItem<SawmillRecipe>> getRecipeType() {
+    protected MekanismRecipeType<SingleRecipeInput, SawmillRecipe, InputRecipeCache.SingleItem<SawmillRecipe>> getRecipeType() {
         return MekanismRecipeType.SAWING.get();
     }
 

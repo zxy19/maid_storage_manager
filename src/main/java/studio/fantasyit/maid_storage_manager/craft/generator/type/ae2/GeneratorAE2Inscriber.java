@@ -4,6 +4,7 @@ import appeng.api.config.Settings;
 import appeng.api.config.YesNo;
 import appeng.blockentity.misc.InscriberBlockEntity;
 import appeng.core.definitions.AEBlocks;
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.InscriberProcessType;
 import appeng.recipes.handlers.InscriberRecipe;
 import net.minecraft.core.BlockPos;
@@ -72,8 +73,9 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
             StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
             ItemStack topItem = inscriber.getInternalInventory().getStackInSlot(0);
             level.getRecipeManager()
-                    .getAllRecipesFor(InscriberRecipe.TYPE)
-                    .forEach(recipe -> {
+                    .getAllRecipesFor(AERecipeTypes.INSCRIBER)
+                    .forEach(holder -> {
+                        InscriberRecipe recipe = holder.value();
                         if (!posFilter.isAvailable(recipe.getResultItem()))
                             return;
                         //复制配方，全都不处理。
@@ -113,9 +115,9 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
 
                             ItemStack result = recipe.getResultItem();
                             if (hasPriority)
-                                graph.blockRecipe(transformRecipeId(recipe.getId(), false));
+                                graph.blockRecipe(transformRecipeId(holder.id(), false));
                             graph.addRecipe(
-                                    transformRecipeId(recipe.getId(), skipFirst),
+                                    transformRecipeId(holder.id(), skipFirst),
                                     ingredients,
                                     ingredients
                                             .stream()
@@ -186,15 +188,16 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(InscriberRecipe.TYPE)
-                .forEach(recipe -> {
+        manager.getAllRecipesFor(AERecipeTypes.INSCRIBER)
+                .forEach(holder -> {
+                    InscriberRecipe recipe = holder.value();
                     if (recipe.getProcessType() == InscriberProcessType.INSCRIBE && !recipe.getTopOptional().isEmpty()) {
                         List<Ingredient> ingredients = new ArrayList<>();
                         ingredients.add(recipe.getMiddleInput());
                         if (!recipe.getBottomOptional().isEmpty())
                             ingredients.add(recipe.getBottomOptional());
                         RecipeIngredientCache.addRecipeCache(
-                                transformRecipeId(recipe.getId(), true),
+                                transformRecipeId(holder.id(), true),
                                 ingredients
                         );
                     }
@@ -205,7 +208,7 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                     if (!recipe.getBottomOptional().isEmpty())
                         ingredientsFull.add(recipe.getBottomOptional());
                     RecipeIngredientCache.addRecipeCache(
-                            transformRecipeId(recipe.getId(), false),
+                            transformRecipeId(holder.id(), false),
                             ingredientsFull
                     );
                 });

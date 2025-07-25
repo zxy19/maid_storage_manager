@@ -16,8 +16,9 @@ public class CompoundTagUtil {
 
     /**
      * 删除tag中的key
-     * @param tag 待删除的tag
-     * @param key 待删除的key
+     *
+     * @param tag   待删除的tag
+     * @param key   待删除的key
      * @param depth 当前深度
      * @return 删除后的tag
      */
@@ -47,8 +48,9 @@ public class CompoundTagUtil {
 
     /**
      * 删除tag中的key
-     * @param tag 待删除的tag
-     * @param key 待删除的key
+     *
+     * @param tag   待删除的tag
+     * @param key   待删除的key
      * @param depth 当前深度
      * @return 删除后的tag
      */

@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +35,6 @@ import java.util.Objects;
 public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
     @Override
     public @NotNull ResourceLocation getType() {
-        assert RecipeRegistry.IMBUEMENT_TYPE.getId() != null;
         return RecipeRegistry.IMBUEMENT_TYPE.getId();
     }
 
@@ -66,17 +66,18 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
                     .filter(Objects::nonNull)
                     .allMatch(t -> t.getItem(0).isEmpty());
             int slots = blockPos.size();
-            List<ImbuementRecipe> recipes = level.getRecipeManager()
+            List<RecipeHolder<ImbuementRecipe>> recipes = level.getRecipeManager()
                     .getAllRecipesFor(RecipeRegistry.IMBUEMENT_TYPE.get());
-            List<ImbuementRecipe> matchRecipe = recipes.stream().filter(t -> t.isMatch(tile) || (slots == 0 && t.pedestalItems.isEmpty())).toList();
+            List<RecipeHolder<ImbuementRecipe>> matchRecipe = recipes.stream().filter(t -> t.value().matches(tile, level) || (slots == 0 && t.value().pedestalItems.isEmpty())).toList();
 
             if (slots > 0 && allEmpty) {
-                recipes.forEach(recipe -> {
+                recipes.forEach(holder -> {
+                    ImbuementRecipe recipe = holder.value();
                     if (slots == recipe.pedestalItems.size()) {
                         List<Ingredient> ingredients = new ArrayList<>(recipe.pedestalItems);
                         ingredients.add(recipe.input);
                         graph.addRecipe(
-                                recipe.getId(),
+                                holder.id(),
                                 ingredients,
                                 ingredients.stream().map(t -> 1).toList(),
                                 recipe.output,
@@ -129,11 +130,11 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
                     }
                 });
             } else if (!matchRecipe.isEmpty()) {
-
-                matchRecipe.forEach(recipe -> {
-                    graph.blockRecipe(recipe.getId());
+                matchRecipe.forEach(holder -> {
+                    ImbuementRecipe recipe = holder.value();
+                    graph.blockRecipe(holder.id());
                     graph.addRecipe(
-                            subIdGenerator(recipe.getId()),
+                            subIdGenerator(holder.id()),
                             List.of(recipe.input),
                             List.of(1),
                             recipe.output,
@@ -174,14 +175,15 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
     public void onCache(RecipeManager manager) {
         manager.getAllRecipesFor(RecipeRegistry.IMBUEMENT_TYPE.get())
                 .forEach(t -> {
-                    ResourceLocation id = t.getId();
+                    ImbuementRecipe recipe = t.value();
+                    ResourceLocation id = t.id();
                     ResourceLocation subId = subIdGenerator(id);
 
-                    List<Ingredient> ingredients = new ArrayList<>(t.pedestalItems);
-                    ingredients.add(t.input);
+                    List<Ingredient> ingredients = new ArrayList<>(recipe.pedestalItems);
+                    ingredients.add(recipe.input);
                     RecipeIngredientCache.addRecipeCache(id, ingredients);
 
-                    RecipeIngredientCache.addRecipeCache(subId, List.of(t.input));
+                    RecipeIngredientCache.addRecipeCache(subId, List.of(recipe.input));
                 });
     }
 

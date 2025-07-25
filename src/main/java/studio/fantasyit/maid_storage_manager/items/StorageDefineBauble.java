@@ -3,8 +3,6 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,14 +10,14 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.items.data.TargetList;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble {
 
@@ -37,57 +35,39 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
     }
 
     public StorageDefineBauble() {
-        super(new Properties().stacksTo(1));
+        super(
+                new Properties().stacksTo(1)
+                        .component(DataComponentRegistry.TARGETS, new TargetList().toImmutable())
+                        .component(DataComponentRegistry.STORAGE_DEFINE_MODE, Mode.APPEND.name())
+        );
     }
 
     public static Mode rollMode(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains(TAG_MODE)) {
-            tag.putString(TAG_MODE, Mode.APPEND.name());
-        }
-        Mode newMode = Mode.values()[(Mode.valueOf(tag.getString(TAG_MODE)).ordinal() + 1) % Mode.values().length];
-        tag.putString(TAG_MODE, newMode.name());
-        stack.setTag(tag);
+        Mode currentMode = Mode.valueOf(stack.getOrDefault(DataComponentRegistry.STORAGE_DEFINE_MODE, Mode.APPEND.name()));
+        Mode newMode = Mode.values()[(currentMode.ordinal() + 1) % Mode.values().length];
+        stack.set(DataComponentRegistry.STORAGE_DEFINE_MODE, newMode.name());
         return newMode;
     }
 
     public static void rollMode(ItemStack stack, ServerPlayer sender, int value) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains(TAG_MODE)) {
-            tag.putString(TAG_MODE, Mode.APPEND.name());
-        }
+        Mode currentMode = Mode.valueOf(stack.getOrDefault(DataComponentRegistry.STORAGE_DEFINE_MODE, Mode.APPEND.name()));
         int dv = value > 0 ? 1 : Mode.values().length - 1;
-        Mode newMode = Mode.values()[(Mode.valueOf(tag.getString(TAG_MODE)).ordinal() + dv) % Mode.values().length];
-        tag.putString(TAG_MODE, newMode.name());
+        Mode newMode = Mode.values()[(currentMode.ordinal() + dv) % Mode.values().length];
         sender.sendSystemMessage(Component.translatable("interaction.mode_" + switch (newMode) {
             case APPEND -> "append";
             case REMOVE -> "remove";
             case REPLACE -> "replace";
             case REPLACE_SPEC -> "replace_spec";
         }));
-        stack.setTag(tag);
+        stack.set(DataComponentRegistry.STORAGE_DEFINE_MODE, newMode.name());
     }
 
     public static Mode getMode(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains(TAG_MODE)) {
-            tag.putString(TAG_MODE, Mode.APPEND.name());
-        }
-        stack.setTag(tag);
-        return Mode.valueOf(tag.getString(TAG_MODE));
+        return Mode.valueOf(stack.getOrDefault(DataComponentRegistry.STORAGE_DEFINE_MODE, Mode.APPEND.name()));
     }
 
     public static List<Target> getStorages(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        if (!tag.contains(TAG_STORAGES)) {
-            return List.of();
-        }
-        ListTag listTag = tag.getList(TAG_STORAGES, 10);
-        List<Target> storages = new ArrayList<>();
-        for (int i = 0; i < listTag.size(); i++) {
-            storages.add(Target.fromNbt(listTag.getCompound(i)));
-        }
-        return storages;
+        return Optional.ofNullable(stack.get(DataComponentRegistry.TARGETS)).map(TargetList.Immutable::targets).orElse(List.of());
     }
 
 
@@ -99,27 +79,26 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
             if (validTarget != null) {
                 ItemStack item = serverPlayer.getMainHandItem();
-                CompoundTag tag = item.getOrCreateTag();
-                if (!tag.contains(TAG_STORAGES)) {
-                    tag.put(TAG_STORAGES, new ListTag());
-                }
-                ListTag list = tag.getList(TAG_STORAGES, 10);
+                TargetList targetList = Optional.ofNullable(item.get(DataComponentRegistry.TARGETS))
+                        .map(TargetList.Immutable::toMutable).orElse(new TargetList());
+                List<Target> list = targetList.targets();
                 boolean found = false;
                 for (int i = 0; i < list.size(); i++) {
-                    Target storage = Target.fromNbt(list.getCompound(i));
+                    Target storage = list.get(i);
                     if (storage.equals(validTarget)) {
                         list.remove(i);
                         found = true;
                         break;
                     } else if (storage.pos.equals(validTarget.pos)) {
-                        list.set(i, validTarget.toNbt());
+                        list.set(i, validTarget);
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    list.add(validTarget.withoutSide().toNbt());
+                    list.add(validTarget.withoutSide());
                 }
+                item.set(DataComponentRegistry.TARGETS, targetList.toImmutable());
             }
             return InteractionResult.CONSUME;
         } else {
@@ -133,11 +112,8 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack itemStack,
-                                @Nullable Level p_41422_,
-                                @NotNull List<Component> toolTip,
-                                @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
         Mode mode = getMode(itemStack);
         int count = getStorages(itemStack).size();
         toolTip.add(Component.translatable("interaction.mode_" + switch (mode) {

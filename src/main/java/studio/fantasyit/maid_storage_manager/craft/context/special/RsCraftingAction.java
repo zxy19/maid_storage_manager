@@ -1,8 +1,9 @@
 package studio.fantasyit.maid_storage_manager.craft.context.special;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.refinedmods.refinedstorage.api.autocrafting.ICraftingManager;
-import com.refinedmods.refinedstorage.api.autocrafting.task.ICalculationResult;
+import com.refinedmods.refinedstorage.api.autocrafting.calculation.CancellationToken;
+import com.refinedmods.refinedstorage.api.storage.Actor;
+import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -32,21 +33,15 @@ public class RsCraftingAction extends CommonTakeItemAction {
         Result result = super.tick();
         if (result == Result.SUCCESS)
             return Result.SUCCESS;
-        if (storageContext instanceof AbstractRSContext rsContext) {
+        if (storageContext instanceof AbstractRSContext rsContext && rsContext.be != null) {
             if (nextCrafting >= craftGuideStepData.getOutput().size()) {
                 if (maid.level().getServer().getTickCount() > toTick)
                     return Result.NOT_DONE;
                 return Result.CONTINUE;
             }
 
-            ICraftingManager craftingManager = rsContext.network.getCraftingManager();
-            //当前没有计算任务
-
             ItemStack itemStack = craftGuideStepData.getOutput().get(nextCrafting);
-            ICalculationResult currentCalculating = craftingManager.create(itemStack, itemStack.getCount());
-            if (currentCalculating.isOk() && currentCalculating.getTask() != null) {
-                craftingManager.start(currentCalculating.getTask());
-            }
+            rsContext.be.startTask(ItemResource.ofItemStack(itemStack), itemStack.getCount(), Actor.EMPTY, false, CancellationToken.NONE);
             nextCrafting++;
             //多等待两分钟
             toTick = maid.level().getServer().getTickCount() + 2400;

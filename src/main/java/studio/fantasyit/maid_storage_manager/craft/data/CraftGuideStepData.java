@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.data;
 import com.google.common.collect.ImmutableCollection;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -84,7 +85,7 @@ public class CraftGuideStepData {
         return new CraftGuideStepData(storage, inputs, outputs, action, false, new CompoundTag());
     }
 
-    public static CraftGuideStepData fromCompound(CompoundTag tag) {
+    public static CraftGuideStepData fromCompound(RegistryAccess registryAccess, CompoundTag tag) {
         Target storage = null;
         ResourceLocation action = null;
         boolean optional = false;
@@ -96,7 +97,7 @@ public class CraftGuideStepData {
             ListTag list = tag.getList(CraftGuide.TAG_OP_INPUT, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 inputs.add(
-                        ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStack.parseOptional(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -106,7 +107,7 @@ public class CraftGuideStepData {
             ListTag list = tag.getList(CraftGuide.TAG_OP_OUTPUT, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 outputs.add(
-                        ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStack.parseOptional(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -120,24 +121,24 @@ public class CraftGuideStepData {
         return new CraftGuideStepData(storage, inputs, outputs, action, optional, extraData);
     }
 
-    public CompoundTag toCompound() {
+    public CompoundTag toCompound(RegistryAccess registryAccess) {
         CompoundTag tag = new CompoundTag();
         tag.put(CraftGuide.TAG_OP_STORAGE, storage.toNbt());
-        if (input.size() > 0) {
+        if (!input.isEmpty()) {
             ListTag list = new ListTag();
             for (ItemStack itemStack : input) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(new CompoundTag()));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(registryAccess, new CompoundTag()));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
             tag.put(CraftGuide.TAG_OP_INPUT, list);
         }
-        if (output.size() > 0) {
+        if (!output.isEmpty()) {
             ListTag list = new ListTag();
             for (ItemStack itemStack : output) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(new CompoundTag()));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(registryAccess, new CompoundTag()));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
@@ -160,7 +161,6 @@ public class CraftGuideStepData {
     public boolean isOptional() {
         return optional;
     }
-
 
 
     public List<ItemStack> getItems() {
@@ -258,5 +258,16 @@ public class CraftGuideStepData {
 
     public void setExtraData(CompoundTag extraData) {
         this.extraData = extraData;
+    }
+
+    public CraftGuideStepData copy() {
+        return new CraftGuideStepData(
+                storage,
+                input.stream().map(ItemStack::copy).toList(),
+                output.stream().map(ItemStack::copy).toList(),
+                action,
+                optional,
+                extraData.copy()
+        );
     }
 }

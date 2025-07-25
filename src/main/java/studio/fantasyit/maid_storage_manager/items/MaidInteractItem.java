@@ -11,9 +11,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
 public class MaidInteractItem extends Item {
@@ -42,9 +42,12 @@ public class MaidInteractItem extends Item {
 
 
                     if (inv instanceof BaubleItemHandler bh) {
-                        Network.INSTANCE.send(
-                                PacketDistributor.PLAYER.with(() -> (ServerPlayer) p_41399_),
-                                new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), bh.serializeNBT())
+                        PacketDistributor.sendToPlayer((ServerPlayer) p_41399_,
+                                new MaidDataSyncToClientPacket(
+                                        MaidDataSyncToClientPacket.Type.BAUBLE,
+                                        maid.getId(),
+                                        bh.serializeNBT(p_41399_.registryAccess())
+                                )
                         );
                     }
 

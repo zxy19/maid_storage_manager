@@ -38,36 +38,23 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class RequestListItem extends MaidInteractItem implements MenuProvider {
-    public static final String TAG_ITEMS_DONE = "done";
-    public static final String TAG_ITEMS_STORED = "stored";
-    public static final String TAG_STORAGE = "storage";
-
-    public static final String TAG_STORAGE_ENTITY = "storage_entity";
-    public static final String TAG_ITEMS = "items";
-    public static final String TAG_ITEMS_ITEM = "item";
-    public static final String TAG_BLACKMODE = "blackmode";
-    public static final String TAG_ITEMS_REQUESTED = "requested";
-    public static final String TAG_ITEMS_COLLECTED = "collected";
-    public static final String TAG_ITEMS_MISSING = "missing";
-    public static final String TAG_ITEMS_FAIL_ADDITION = "fail";
-    public static final String TAG_MATCH_TAG = "match_tag";
-    public static final String TAG_UUID = "uuid";
-    public static final String TAG_IGNORE_TASK = "ignore_task";
-    public static final String TAG_COOLING_DOWN = "cooling";
-    public static final String TAG_REPEAT_INTERVAL = "interval";
-    public static final String TAG_STOCK_MODE = "stock_mode";
-    public static final String TAG_HAS_CHECK_STOCK = "has_checked_stock";
-    public static final String TAG_UNIT_SECOND = "unit_second";
-    private static final String TAG_BLACKMODE_DONE = "blackmode_done";
-    public static final String TAG_VIRTUAL = "virtual";
-    public static final String TAG_VIRTUAL_SOURCE = "virtual_source";
-    public static final String TAG_VIRTUAL_DATA = "virtual_data";
 
     public RequestListItem() {
         super(new Properties()
                 .stacksTo(1)
-                .component(DataComponentRegistry.REQUEST_ITEMS.get(), new RequestItemStackList())
+                .component(DataComponentRegistry.REQUEST_ITEMS.get(), new RequestItemStackList().toImmutable())
         );
+    }
+
+
+    public static @NotNull RequestItemStackList getMutableRequestData(ItemStack target) {
+        return getImmutableRequestData(target).toMutable();
+    }
+
+    public static @NotNull RequestItemStackList.Immutable getImmutableRequestData(ItemStack target) {
+        if (!target.has(DataComponentRegistry.REQUEST_ITEMS))
+            target.set(DataComponentRegistry.REQUEST_ITEMS.get(), new RequestItemStackList().toImmutable());
+        return Objects.requireNonNull(target.get(DataComponentRegistry.REQUEST_ITEMS.get()));
     }
 
     public static boolean isIgnored(ItemStack mainHandItem) {
@@ -75,7 +62,19 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         return Boolean.TRUE.equals(mainHandItem.get(DataComponentRegistry.REQUEST_IGNORE.get()));
     }
 
+    public static void setIgnore(ItemStack reqList) {
+        if (!reqList.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        reqList.set(DataComponentRegistry.REQUEST_IGNORE.get(), true);
+    }
+
     public static int getRepeatInterval(ItemStack mainHandItem) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return 0;
+        return Optional.ofNullable(
+                mainHandItem.get(DataComponentRegistry.REQUEST_INTERVAL.get())
+        ).orElse(0);
+    }
+
+    public static int getRepeatCd(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return 0;
         return Optional.ofNullable(
                 mainHandItem.get(DataComponentRegistry.REQUEST_CD.get())
@@ -84,10 +83,9 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void addItemStackCollected(ItemStack mainHandItem, ItemStack a, int count) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = mainHandItem.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(mainHandItem);
         List<RequestItemStackList.ListItem> items = request.getList();
-        for (int i = 0; i < items.size(); i++) {
-            RequestItemStackList.ListItem listItem = items.get(i);
+        for (RequestItemStackList.ListItem listItem : items) {
             ItemStack item = listItem.getItem();
             if (!ItemStackUtil.isSame(item, a, request.matchTag)) continue;
 
@@ -96,12 +94,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 listItem.done = true;
             }
         }
-        mainHandItem.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        mainHandItem.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
     }
 
     public static void clearItemProcess(ItemStack target) {
         if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = target.get(DataComponentRegistry.REQUEST_ITEMS.get());
+        RequestItemStackList request = getMutableRequestData(target);
         List<RequestItemStackList.ListItem> list = request.getList();
         for (RequestItemStackList.ListItem tmp : list) {
             tmp.collected = 0;
@@ -113,7 +111,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         request.blacklistDone = false;
         request.stockModeChecked = false;
 
-        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request);
+        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request.toImmutable());
         target.set(DataComponentRegistry.REQUEST_IGNORE.get(), false);
         target.set(DataComponentRegistry.REQUEST_FAIL_ADDITION.get(), "");
         target.set(DataComponentRegistry.REQUEST_WORK_UUID.get(), UUID.randomUUID());
@@ -122,12 +120,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void clearAllNonSuccess(ItemStack target) {
         if (!target.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = target.get(DataComponentRegistry.REQUEST_ITEMS.get());
+        RequestItemStackList request = getMutableRequestData(target);
         List<RequestItemStackList.ListItem> list = request.getList();
         for (RequestItemStackList.ListItem tmp : list) {
             tmp.done = tmp.collected >= tmp.requested || tmp.requested == 0;
         }
-        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request);
+        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request.toImmutable());
         target.set(DataComponentRegistry.REQUEST_FAIL_ADDITION.get(), "");
         target.set(DataComponentRegistry.REQUEST_CD.get(), 0);
         target.set(DataComponentRegistry.REQUEST_IGNORE.get(), false);
@@ -135,7 +133,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static boolean matchNbt(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        return Objects.requireNonNull(mainHandItem.get(DataComponentRegistry.REQUEST_ITEMS.get())).matchTag;
+        return Objects.requireNonNull(getImmutableRequestData(mainHandItem)).matchTag();
     }
 
     public static boolean isCoolingDown(ItemStack item) {
@@ -158,13 +156,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void markDone(ItemStack mainHandItem, ItemStack target) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = target.get(DataComponentRegistry.REQUEST_ITEMS.get());
+        RequestItemStackList request = getMutableRequestData(target);
         List<RequestItemStackList.ListItem> items = request.getList();
         for (RequestItemStackList.ListItem item : items) {
             if (!ItemStack.isSameItemSameComponents(item.item, target)) continue;
             item.done = true;
         }
-        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request);
+        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request.toImmutable());
     }
 
 
@@ -260,19 +258,22 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
         }
 
-        RequestItemStackList request = itemStack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(itemStack);
         if (request != null) {
-            List<RequestItemStackList.ListItem> list = request.getList();
+            List<RequestItemStackList.ImmutableItem> list = request.list();
             for (int i = 0; i < list.size(); i++) {
-                RequestItemStackList.ListItem tmp = list.get(i);
-                ItemStack itemstack = tmp.item;
+                RequestItemStackList.ImmutableItem tmp = list.get(i);
+                ItemStack itemstack = tmp.item();
                 if (itemstack.isEmpty()) continue;
 
 
-                Component component = Component.translatable("gui.maid_storage_manager.written_inventory_list.request_item_info", itemstack.getHoverName().getString(), tmp.collected, String.valueOf(tmp.requested == -1 ? "*" : tmp.requested));
+                Component component = Component.translatable("gui.maid_storage_manager.written_inventory_list.request_item_info",
+                        itemstack.getHoverName().getString(),
+                        tmp.collected(),
+                        String.valueOf(tmp.requested() == -1 ? "*" : tmp.requested()));
 
-                if (tmp.done) {
-                    if (tmp.collected >= tmp.requested || tmp.requested == -1) {
+                if (tmp.done()) {
+                    if (tmp.collected() >= tmp.requested() || tmp.requested() == -1) {
                         component = component.copy().withStyle(ChatFormatting.GREEN);
                     } else {
                         component = component.copy().withStyle(ChatFormatting.RED);
@@ -300,12 +301,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static boolean isAllStored(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return true;
-        return request.getList().stream().noneMatch(t -> {
-            if (t.item.isEmpty()) return false;
-            if (!t.done) return false;
-            return t.collected > t.stored;
+        return request.list().stream().noneMatch(t -> {
+            if (t.item().isEmpty()) return false;
+            if (!t.done()) return false;
+            return t.collected() > t.stored();
         });
     }
 
@@ -315,16 +316,16 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static List<Pair<ItemStack, Integer>> getItemStacksNotDone(ItemStack stack, boolean includingNoRequest) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return List.of();
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return List.of();
-        if (request.blackList) return List.of();
-        List<RequestItemStackList.ListItem> list = request.getList();
+        if (request.blackList()) return List.of();
+        List<RequestItemStackList.ImmutableItem> list = request.list();
         return list.stream()
-                .filter(t -> !t.done)
-                .filter(t -> t.requested != -1 || includingNoRequest).map(t -> {
-                    int cnt = t.requested;
-                    if (cnt != -1) cnt -= t.collected;
-                    return new Pair<>(t.item, cnt);
+                .filter(t -> !t.done())
+                .filter(t -> t.requested() != -1 || includingNoRequest).map(t -> {
+                    int cnt = t.requested();
+                    if (cnt != -1) cnt -= t.collected();
+                    return new Pair<>(t.item(), cnt);
                 }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
@@ -355,7 +356,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
      */
     public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStack.EMPTY;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return ItemStack.EMPTY;
         //如果最大收集量要比物品栈数量小，那么有一部分不算入计算
         int nonCalc = Math.max(0, collected.getCount() - maxCollect);
@@ -397,7 +398,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 if (rest <= 0) break;
             }
         }
-        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
         //黑名单情况，如果
         if (request.isBlackList()) {
             rest = 0;
@@ -407,7 +408,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return toStore.getCount();
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return toStore.getCount();
 
         //从剩余的数量中进行计算
@@ -434,7 +435,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             }
             if (rest <= 0) break;
         }
-        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
         if (request.blackList) {
             rest = 0;
         }
@@ -443,7 +444,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void updateCollectedNotStored(ItemStack stack, IItemHandler tmpStorage) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return;
         List<RequestItemStackList.ListItem> list = request.getList();
         for (RequestItemStackList.ListItem tmp : list) {
@@ -461,12 +462,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             }
             tmp.collected = (stored + Math.min(requested - stored, count));
         }
-        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
     }
 
     public static void setFailAddition(ItemStack stack, ItemStack item, String failAddition) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return;
         List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
@@ -476,19 +477,19 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 list.set(i, tmp);
             }
         }
-        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
     }
 
     public static void markAllDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return;
         List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
             list.get(i).done = true;
         }
         request.blacklistDone = true;
-        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
     }
 
     public static @NotNull UUID getUUID(ItemStack stack) {
@@ -500,7 +501,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void setMissingItem(ItemStack itemStack, ItemStack item, List<ItemStack> missing) {
         if (!itemStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = itemStack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(itemStack);
         if (request == null) return;
         List<RequestItemStackList.ListItem> list = request.getList();
         for (int i = 0; i < list.size(); i++) {
@@ -522,44 +523,43 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 break;
             }
         }
-        itemStack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        itemStack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
     }
 
     public static boolean isAllSuccess(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return false;
-        if (request.blackList) return request.blacklistDone;
-        List<RequestItemStackList.ListItem> list = request.getList();
-        for (int i = 0; i < list.size(); i++) {
-            RequestItemStackList.ListItem tmp = list.get(i);
-            if (tmp.item.isEmpty()) continue;
-            if (tmp.requested == -1) continue;
-            if (tmp.collected < tmp.requested) return false;
+        if (request.blackList()) return request.blacklistDone();
+        List<RequestItemStackList.ImmutableItem> list = request.list();
+        for (RequestItemStackList.ImmutableItem tmp : list) {
+            if (tmp.item().isEmpty()) continue;
+            if (tmp.requested() == -1) continue;
+            if (tmp.collected() < tmp.requested()) return false;
         }
         return true;
     }
 
     public static boolean isStockMode(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return false;
-        return request.isStockMode();
+        return request.stockMode();
     }
 
     public static boolean hasCheckedStock(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return false;
-        return request.isStockModeChecked();
+        return request.stockModeChecked();
     }
 
     public static void setHasCheckedStock(ItemStack stack, boolean has) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return;
         request.stockModeChecked = has;
-        stack.set(DataComponentRegistry.REQUEST_ITEMS, request);
+        stack.set(DataComponentRegistry.REQUEST_ITEMS, request.toImmutable());
     }
 
     public static boolean isVirtual(ItemStack stack) {
@@ -569,16 +569,16 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static boolean isBlackMode(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return false;
-        return request.blackList;
+        return request.blackList();
     }
 
     public static boolean isBlackModeDone(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        RequestItemStackList request = stack.get(DataComponentRegistry.REQUEST_ITEMS);
+        RequestItemStackList.Immutable request = getImmutableRequestData(stack);
         if (request == null) return false;
-        return request.blacklistDone;
+        return request.blacklistDone();
     }
 
     public static void setVirtualData(ItemStack stack, CompoundTag data) {
@@ -603,5 +603,4 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             return null;
         return new ItemSelectorMenu(p_39954_, p_39956_);
     }
-
 }

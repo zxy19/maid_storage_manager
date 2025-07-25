@@ -12,28 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RequestItemStackList {
-    public static Codec<RequestItemStackList> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                    ListItem.CODEC.listOf().fieldOf("list").forGetter(RequestItemStackList::getList),
-                    Codec.BOOL.fieldOf("matchTag").forGetter(RequestItemStackList::isMatchTag),
-                    Codec.BOOL.fieldOf("blackList").forGetter(RequestItemStackList::isBlackList),
-                    Codec.BOOL.fieldOf("stockMode").forGetter(RequestItemStackList::isStockMode),
-                    Codec.BOOL.fieldOf("stockModeChecked").forGetter(RequestItemStackList::isStockModeChecked),
-                    Codec.BOOL.fieldOf("blacklistDone").forGetter(RequestItemStackList::isBlacklistDone)
-            ).apply(instance, RequestItemStackList::new)
-    );
-    public static StreamCodec<ByteBuf, RequestItemStackList> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 
     public static class ListItem {
-        public static Codec<ListItem> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                ItemStack.CODEC.fieldOf("item").forGetter(ListItem::getItem),
-                Codec.INT.fieldOf("requested").forGetter(ListItem::getRequested),
-                Codec.INT.fieldOf("collected").forGetter(ListItem::getCollected),
-                Codec.INT.fieldOf("stored").forGetter(ListItem::getStored),
-                ItemStack.CODEC.listOf().fieldOf("missing").forGetter(ListItem::getMissing),
-                Codec.STRING.fieldOf("failAddition").forGetter(ListItem::getFailAddition),
-                Codec.BOOL.fieldOf("done").forGetter(ListItem::isDone)
-        ).apply(instance, ListItem::new));
-
         public boolean done;
         public ItemStack item;
         public int requested;
@@ -59,6 +39,18 @@ public class RequestItemStackList {
             this.missing = new ArrayList<>(missing);
             this.failAddition = failAddition;
             this.done = done;
+        }
+
+        public ListItem() {
+            this(
+                    ItemStack.EMPTY,
+                    0,
+                    0,
+                    0,
+                    new ArrayList<>(),
+                    "",
+                    false
+            );
         }
 
         public ItemStack getItem() {
@@ -105,6 +97,8 @@ public class RequestItemStackList {
         stockMode = false;
         stockModeChecked = false;
         blacklistDone = false;
+        for (int i = 0; i < 10; i++)
+            list.add(new ListItem());
     }
 
     public RequestItemStackList(
@@ -145,5 +139,73 @@ public class RequestItemStackList {
 
     public boolean isBlacklistDone() {
         return blacklistDone;
+    }
+
+
+    public record ImmutableItem(ItemStack item, int requested, int collected, int stored, boolean done,
+                                List<ItemStack> missing, String failAddition) {
+        public static Codec<ImmutableItem> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                ItemStack.CODEC.fieldOf("item").forGetter(ImmutableItem::item),
+                Codec.INT.fieldOf("requested").forGetter(ImmutableItem::requested),
+                Codec.INT.fieldOf("collected").forGetter(ImmutableItem::collected),
+                Codec.INT.fieldOf("stored").forGetter(ImmutableItem::stored),
+                Codec.BOOL.fieldOf("done").forGetter(ImmutableItem::done),
+                ItemStack.CODEC.listOf().fieldOf("missing").forGetter(ImmutableItem::missing),
+                Codec.STRING.fieldOf("failAddition").forGetter(ImmutableItem::failAddition)
+        ).apply(instance, ImmutableItem::new));
+
+        public ListItem toMutable() {
+            return new ListItem(item, requested, collected, stored, missing, failAddition, true);
+        }
+    }
+
+    public record Immutable(
+            List<ImmutableItem> list,
+            boolean matchTag,
+            boolean blackList,
+            boolean stockMode,
+            boolean stockModeChecked,
+            boolean blacklistDone
+    ) {
+        public static Codec<Immutable> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                        ImmutableItem.CODEC.listOf().fieldOf("list").forGetter(Immutable::list),
+                        Codec.BOOL.fieldOf("matchTag").forGetter(Immutable::matchTag),
+                        Codec.BOOL.fieldOf("blackList").forGetter(Immutable::blackList),
+                        Codec.BOOL.fieldOf("stockMode").forGetter(Immutable::stockMode),
+                        Codec.BOOL.fieldOf("stockModeChecked").forGetter(Immutable::stockModeChecked),
+                        Codec.BOOL.fieldOf("blacklistDone").forGetter(Immutable::blacklistDone)
+                ).apply(instance, Immutable::new)
+        );
+        public static StreamCodec<ByteBuf, Immutable> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+
+        public RequestItemStackList toMutable() {
+            return new RequestItemStackList(
+                    list.stream().map(ImmutableItem::toMutable).toList(),
+                    matchTag,
+                    blackList,
+                    stockMode,
+                    stockModeChecked,
+                    blacklistDone
+            );
+        }
+    }
+
+    public Immutable toImmutable() {
+        return new Immutable(
+                list.stream().map(item -> new ImmutableItem(
+                        item.item,
+                        item.requested,
+                        item.collected,
+                        item.stored,
+                        item.done,
+                        item.missing,
+                        item.failAddition
+                )).toList(),
+                matchTag,
+                blackList,
+                stockMode,
+                stockModeChecked,
+                blacklistDone
+        );
     }
 }

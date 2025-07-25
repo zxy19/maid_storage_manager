@@ -3,17 +3,19 @@ package studio.fantasyit.maid_storage_manager.network;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -29,6 +31,7 @@ import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
+import studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
@@ -37,19 +40,13 @@ import java.util.UUID;
 
 public class Network {
     private static final String PROTOCOL_VERSION = "1";
-    public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "go_target"),
-            () -> PROTOCOL_VERSION,
-            (v) -> true,
-            (v) -> true
-    );
 
     public static void sendItemSelectorGuiPacket(ItemSelectorGuiPacket.SlotType type, int key, int value) {
-        INSTANCE.send(PacketDistributor.SERVER.noArg(), new ItemSelectorGuiPacket(type, key, value));
+        PacketDistributor.sendToServer(new ItemSelectorGuiPacket(type, key, value));
     }
 
     public static void sendItemSelectorSetItemPacket(List<Pair<Integer, ItemStack>> list) {
-        INSTANCE.send(PacketDistributor.SERVER.noArg(), new ItemSelectorSetItemPacket(list));
+        PacketDistributor.sendToServer(new ItemSelectorSetItemPacket(list));
     }
 
     public static void sendItemSelectorSetItemPacket(Integer slot, ItemStack item) {
@@ -57,26 +54,24 @@ public class Network {
     }
 
     public static void sendRequestListPacket(UUID uuid) {
-        INSTANCE.send(PacketDistributor.SERVER.noArg(), new PartialInventoryListData(uuid, List.of()));
+        PacketDistributor.sendToServer(new PartialInventoryListData(uuid, List.of()));
     }
 
     public static void sendMaidDataSync(MaidDataSyncPacket.Type type, int id, int value) {
-        INSTANCE.send(PacketDistributor.SERVER.noArg(), new MaidDataSyncPacket(type, id, value));
+        PacketDistributor.sendToServer(new MaidDataSyncPacket(type, id, value));
     }
 
     public static void sendShowInvPacket(ServerPlayer player, InventoryItem item, int time) {
-        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new ShowInvPacket(item, time));
+        PacketDistributor.sendToPlayer(player, new ShowInvPacket(item, time));
     }
 
-    private static void registerMessage() {
-        Network.INSTANCE.registerMessage(0,
-                ItemSelectorGuiPacket.class,
-                ItemSelectorGuiPacket::toBytes,
-                ItemSelectorGuiPacket::new,
+    private static void registerMessage(PayloadRegistrar registrar) {
+        registrar.playToServer(
+                ItemSelectorGuiPacket.TYPE,
+                ItemSelectorGuiPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
-                        ServerPlayer sender = context.get().getSender();
-                        if (sender == null) return;
+                    context.enqueueWork(() -> {
+                        if (!(context.player() instanceof ServerPlayer sender)) return;
                         if (sender.containerMenu instanceof ItemSelectorMenu ism) {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
                         } else if (sender.containerMenu instanceof FilterMenu ifm) {
@@ -85,90 +80,80 @@ public class Network {
                             lgm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
-                    context.get().setPacketHandled(true);
                 }
         );
-        Network.INSTANCE.registerMessage(1,
-                ItemSelectorSetItemPacket.class,
-                ItemSelectorSetItemPacket::toBytes,
-                ItemSelectorSetItemPacket::new,
+        registrar.playToServer(
+                ItemSelectorSetItemPacket.TYPE,
+                ItemSelectorSetItemPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
-                        ServerPlayer sender = context.get().getSender();
-                        if (sender != null && sender.containerMenu instanceof ItemSelectorMenu ism) {
+                    context.enqueueWork(() -> {
+                        if (!(context.player() instanceof ServerPlayer sender)) return;
+                        if (sender.containerMenu instanceof ItemSelectorMenu ism) {
                             msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
                             ism.save();
                             ism.broadcastChanges();
-                        } else if (sender != null && sender.containerMenu instanceof FilterMenu ism) {
+                        } else if (sender.containerMenu instanceof FilterMenu ism) {
                             msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
                             ism.save();
                             ism.broadcastChanges();
                         }
                     });
-                    context.get().setPacketHandled(true);
                 }
         );
-        Network.INSTANCE.registerMessage(2,
-                DebugDataPacket.class,
-                DebugDataPacket::toBytes,
-                DebugDataPacket::new,
+        registrar.playToClient(
+                DebugDataPacket.TYPE,
+                DebugDataPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
+                    context.enqueueWork(() -> {
                         if (!Config.enableDebug) return;
                         if (Minecraft.getInstance().player != null) {
                             Minecraft.getInstance().player.sendSystemMessage(Component.literal(msg.data));
                         }
                     });
-                    context.get().setPacketHandled(true);
                 }
         );
-        Network.INSTANCE.registerMessage(3,
-                PartialInventoryListData.class,
-                PartialInventoryListData::toBytes,
-                PartialInventoryListData::new,
+        registrar.playBidirectional(
+                PartialInventoryListData.TYPE,
+                PartialInventoryListData.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
-                        if (context.get().getDirection().getReceptionSide().isClient()) {
+                    context.enqueueWork(() -> {
+                        if (context.flow().isClientbound()) {
                             InventoryListDataClient.getInstance().patch(msg.key, msg.data);
                         } else {
-                            context.get().getSender().getServer().overworld().getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY)
-                                    .ifPresent(inventoryListData -> inventoryListData.sendTo(msg.key, context.get().getSender()));
+                            context
+                                    .player()
+                                    .getServer()
+                                    .overworld()
+                                    .getData(DataAttachmentRegistry.INVENTORY_LIST_DATA)
+                                    .sendTo(msg.key, (ServerPlayer) context.player());
                         }
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(4,
-                ClientInputPacket.class,
-                ClientInputPacket::toBytes,
-                ClientInputPacket::new,
+        registrar.playToServer(
+                ClientInputPacket.TYPE,
+                ClientInputPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    NetworkEvent.Context context1 = context.get();
-                    context1.enqueueWork(() -> {
-                        ServerPlayer sender = context1.getSender();
-                        if (sender != null) {
-                            ItemStack item = sender.getItemInHand(InteractionHand.MAIN_HAND);
-                            if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
-                                CraftGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
-                            } else if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.ALT_SCROLL) {
-                                CraftGuide.rollSpecial(item, sender, msg.value > 0 ? -1 : 1);
-                            } else if (item.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
-                                StorageDefineBauble.rollMode(item, sender, msg.value > 0 ? -1 : 1);
-                            } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
-                                LogisticsGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
-                            }
+                    if (!(context.player() instanceof ServerPlayer sender)) return;
+                    context.enqueueWork(() -> {
+                        ItemStack item = sender.getItemInHand(InteractionHand.MAIN_HAND);
+                        if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
+                            CraftGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
+                        } else if (item.is(ItemRegistry.CRAFT_GUIDE.get()) && msg.type == ClientInputPacket.Type.ALT_SCROLL) {
+                            CraftGuide.rollSpecial(item, sender, msg.value > 0 ? -1 : 1);
+                        } else if (item.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
+                            StorageDefineBauble.rollMode(item, sender, msg.value > 0 ? -1 : 1);
+                        } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
+                            LogisticsGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                         }
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(5,
-                MaidDataSyncPacket.class,
-                MaidDataSyncPacket::toBytes,
-                MaidDataSyncPacket::new,
+        registrar.playToServer(
+                MaidDataSyncPacket.TYPE,
+                MaidDataSyncPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    @Nullable ServerPlayer sender = context.get().getSender();
-                    if (sender == null) return;
+                    if (!(context.player() instanceof ServerPlayer sender)) return;
                     Entity entity = sender.level().getEntity(msg.id);
                     if (entity instanceof EntityMaid maid) {
                         if (msg.type == MaidDataSyncPacket.Type.MemoryAssistant) {
@@ -229,77 +214,63 @@ public class Network {
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
-                    context.get().setPacketHandled(true);
                 }
         );
-        Network.INSTANCE.registerMessage(6,
-                CraftGuideGuiPacket.class,
-                CraftGuideGuiPacket::toBytes,
-                CraftGuideGuiPacket::new,
+        registrar.playToServer(
+                CraftGuideGuiPacket.TYPE,
+                CraftGuideGuiPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
-                        @Nullable Player sender = context.get().getSender();
-                        if (sender == null) sender = getLocalPlayer();
+                    Player sender = context.player();
+                    context.enqueueWork(() -> {
                         if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
                             icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
                         }
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(7,
-                RenderEntityPacket.class,
-                RenderEntityPacket::toBytes,
-                RenderEntityPacket::new,
+        registrar.playToClient(
+                RenderEntityPacket.TYPE,
+                RenderEntityPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
+                    context.enqueueWork(() -> {
                         BindingData.setEntityIds(msg.entityIds);
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(8,
-                ShowInvPacket.class,
-                ShowInvPacket::toBytes,
-                ShowInvPacket::new,
+        registrar.playToClient(
+                ShowInvPacket.TYPE,
+                ShowInvPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
+                    context.enqueueWork(() -> {
                         InventoryListDataClient.setShowingInv(msg.data, msg.time);
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(9,
-                JEIRequestPacket.class,
-                JEIRequestPacket::toBytes,
-                JEIRequestPacket::new,
+        registrar.playToServer(
+                JEIRequestPacket.TYPE,
+                JEIRequestPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
-                        ServerPlayer sender = context.get().getSender();
-                        if (sender == null) return;
+                    if (!(context.player() instanceof ServerPlayer sender)) return;
+                    context.enqueueWork(() -> {
                         IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(10,
-                JEIRequestResultPacket.class,
-                JEIRequestResultPacket::toBytes,
-                JEIRequestResultPacket::new,
+        registrar.playToClient(
+                JEIRequestResultPacket.TYPE,
+                JEIRequestResultPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
+                    context.enqueueWork(() -> {
                         InScreenTipData.show(msg.result, 5.0f);
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(11,
-                MaidDataSyncToClientPacket.class,
-                MaidDataSyncToClientPacket::toBytes,
-                MaidDataSyncToClientPacket::new,
+        registrar.playToClient(
+                MaidDataSyncToClientPacket.TYPE,
+                MaidDataSyncToClientPacket.STREAM_CODEC,
                 (msg, context) -> {
-                    context.get().enqueueWork(() -> {
-                        Player sender = getLocalPlayer();
+                    context.enqueueWork(() -> {
+                        Player sender = context.player();
                         if (sender.level().getEntity(msg.id) instanceof EntityMaid maid) {
                             if (msg.type == MaidDataSyncToClientPacket.Type.WORKING) {
                                 maid.getBrain().setMemory(
@@ -307,55 +278,36 @@ public class Network {
                                         ScheduleBehavior.Schedule.values()[msg.value.getInt("id")]
                                 );
                             } else if (msg.type == MaidDataSyncToClientPacket.Type.BAUBLE) {
-                                maid.getMaidBauble().deserializeNBT(msg.value);
+                                maid.getMaidBauble().deserializeNBT(sender.registryAccess(), msg.value);
                             }
                         }
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(12,
-                CreateStockManagerPacket.class,
-                CreateStockManagerPacket::toBytes,
-                CreateStockManagerPacket::new,
+        registrar.playToServer(
+                CreateStockManagerPacket.TYPE,
+                CreateStockManagerPacket.STREAM_CODEC,
                 (packet, context) -> {
-                    context.get().enqueueWork(() -> {
-                        @Nullable ServerPlayer sender = context.get().getSender();
-                        if (sender != null) {
-                            Entity target = sender.level().getEntity(packet.id);
-                            if (target instanceof EntityMaid maid) {
-                                if (packet.data == CreateStockManagerPacket.Type.OPEN_SCREEN) {
-                                    StockManagerInteract.onHandleStockManager(sender, maid, packet.ticker);
-                                } else if (packet.data == CreateStockManagerPacket.Type.SHOP_LIST) {
-                                    StockManagerInteract.onHandleShoppingList(sender, maid, packet.ticker);
-                                }
+                    if (!(context.player() instanceof ServerPlayer sender)) return;
+                    context.enqueueWork(() -> {
+                        Entity target = sender.level().getEntity(packet.id);
+                        if (target instanceof EntityMaid maid) {
+                            if (packet.data == CreateStockManagerPacket.Type.OPEN_SCREEN) {
+                                StockManagerInteract.onHandleStockManager(sender, maid, packet.ticker);
+                            } else if (packet.data == CreateStockManagerPacket.Type.SHOP_LIST) {
+                                StockManagerInteract.onHandleShoppingList(sender, maid, packet.ticker);
                             }
                         }
-                        context.get().setPacketHandled(true);
                     });
                 }
         );
     }
 
-    @OnlyIn(Dist.CLIENT)
-    private static Player getLocalPlayer() {
-        return Minecraft.getInstance().player;
-    }
-
-    @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.DEDICATED_SERVER)
-    public static class Server {
+    @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD)
+    public static class Event {
         @SubscribeEvent
-        public static void FMLClientSetupEvent(FMLDedicatedServerSetupEvent event) {
-            registerMessage();
+        public static void regis(RegisterPayloadHandlersEvent event) {
+            registerMessage(event.registrar(PROTOCOL_VERSION));
         }
-    }
-
-    @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class Client {
-        @SubscribeEvent
-        public static void FMLClientSetupEvent(FMLClientSetupEvent event) {
-            registerMessage();
-        }
-
     }
 }

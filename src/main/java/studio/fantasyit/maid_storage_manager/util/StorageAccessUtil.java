@@ -3,8 +3,7 @@ package studio.fantasyit.maid_storage_manager.util;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -17,17 +16,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackList;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
@@ -119,7 +117,7 @@ public class StorageAccessUtil {
     }
 
 
-    public static TagKey<Block> allowTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "default_storage_blocks"));
+    public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "default_storage_blocks"));
 
     /**
      * 重写目标列表。对于特定的目标，根据允许访问和禁止访问，将其重写为新的列表。
@@ -139,8 +137,7 @@ public class StorageAccessUtil {
             }
         }
         if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            CompoundTag tag = maid.getMainHandItem().getOrCreateTag();
-            ItemStack stack = ItemStack.of(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
+            ItemStack stack = maid.getMainHandItem().getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStack.EMPTY);
             if (!stack.isEmpty()) {
                 itemStack.add(stack);
             }
@@ -203,9 +200,8 @@ public class StorageAccessUtil {
         }
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
         if (blockEntity1 == null) return;
-        @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
-        if (!optCap.isPresent()) return;
-        IItemHandler inv = optCap.orElseThrow(RuntimeException::new);
+        IItemHandler inv = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, blockState, blockEntity1, null);
+        if (inv == null) return;
         if (inv.getStackInSlot(0).getCount() > 1e9)
             return;
         //确保清空第一个格子，再放入物品
@@ -213,22 +209,17 @@ public class StorageAccessUtil {
         while (inv.getStackInSlot(0).getCount() > 0 && !inv.extractItem(0, inv.getStackInSlot(0).getCount(), true).isEmpty())
             tmpExtracted.add(inv.extractItem(0, inv.getStackInSlot(0).getCount(), false));
         ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
-        CompoundTag tag = markItem.getOrCreateTag();
-        tag.putUUID("uuid", UUID.randomUUID());
-        markItem.setTag(tag);
+        markItem.set(DataComponentRegistry.MARK, UUID.randomUUID());
         inv.insertItem(0, markItem.copy(), false);
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
             if (blockPos.equals(pos)) return null;
-            BlockEntity blockEntity = level.getBlockEntity(blockPos);
-            if (blockEntity != null) {
-                blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(itemHandler -> {
-                    for (int i = 0; i < itemHandler.getSlots(); i++) {
-                        if (ItemStack.isSameItemSameTags(itemHandler.getStackInSlot(i), markItem)) {
-                            consumer.accept(blockPos);
-                        }
+            IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, null);
+            if (itemHandler != null)
+                for (int i = 0; i < itemHandler.getSlots(); i++) {
+                    if (ItemStack.isSameItemSameComponents(itemHandler.getStackInSlot(i), markItem)) {
+                        consumer.accept(blockPos);
                     }
-                });
-            }
+                }
             return null;
         }, 1);
 
@@ -283,39 +274,41 @@ public class StorageAccessUtil {
             filtered = new ArrayList<>();
             isBlackMode = true;
         } else {
-            List<CompoundTag> items = marksWithSameContainer
+            List<ItemStack> items = marksWithSameContainer
                     .stream()
                     .map(Pair::getB)
                     .filter(t -> t.is(ItemRegistry.FILTER_LIST.get()))
-                    .map(ItemStack::getOrCreateTag).toList();
-            isBlackMode = items.stream().allMatch(t -> t.getBoolean(FilterListItem.TAG_BLACK_MODE));
+                    .toList();
+            isBlackMode = items.stream().allMatch(t -> t.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false));
             filtered = new ArrayList<>();
             items
                     .stream()
-                    .filter(t -> !t.getBoolean(FilterListItem.TAG_BLACK_MODE))
+                    .filter(t -> !t.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false))
                     .forEach(t -> {
-                        ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+                        ItemStackList.Immutable fl = t.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY);
+                        Boolean matchTag = t.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
+                        List<ItemStack> list = fl.list();
                         for (int i = 0; i < list.size(); i++) {
-                            CompoundTag tmp = list.getCompound(i);
-                            ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
-                            filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
+                            ItemStack item = list.get(i);
+                            filtered.add(new Pair<>(item, matchTag));
                         }
                     });
             items
                     .stream()
-                    .filter(t -> t.getBoolean(FilterListItem.TAG_BLACK_MODE))
+                    .filter(t -> t.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false))
                     .forEach(t -> {
-                        ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+                        ItemStackList.Immutable fl = t.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY);
+                        Boolean matchTag = t.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
+                        List<ItemStack> list = fl.list();
                         for (int i = 0; i < list.size(); i++) {
-                            CompoundTag tmp = list.getCompound(i);
-                            ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                            ItemStack item = list.get(i);
                             if (isBlackMode)
-                                filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
+                                filtered.add(new Pair<>(item, matchTag));
                             else {
                                 //白名单模式下，黑名单列表的合并方式：移除撞车的
                                 for (int j = 0; j < filtered.size(); j++) {
                                     Pair<ItemStack, Boolean> pair = filtered.get(j);
-                                    if (ItemStackUtil.isSame(pair.getA(), item, tmp.getBoolean(FilterListItem.TAG_MATCH_TAG) && pair.getB())) {
+                                    if (ItemStackUtil.isSame(pair.getA(), item, matchTag && pair.getB())) {
                                         filtered.remove(pair);
                                         j--;
                                     }

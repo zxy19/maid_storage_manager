@@ -6,22 +6,20 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
 import studio.fantasyit.maid_storage_manager.network.ClientInputPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
 
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class InputEvent {
 
 
@@ -45,7 +43,7 @@ public class InputEvent {
     ));
     protected static boolean pressingSpecialKey = false;
 
-    @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModBus {
         @SubscribeEvent
         public static void registerKeyMappings(final RegisterKeyMappingsEvent event) {
@@ -56,29 +54,29 @@ public class InputEvent {
     }
 
     @SubscribeEvent
-    public static void onScroll(MouseScrollingEvent event) {
+    public static void onScroll(net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
         ItemStack itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (player.isShiftKeyDown()) {
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) || itemStack.is(ItemRegistry.LOGISTICS_GUIDE.get())) {
                 event.setCanceled(true);
-                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
-                        new ClientInputPacket(ClientInputPacket.Type.SCROLL, (int) (event.getScrollDelta() * 100))
+                PacketDistributor.sendToServer(
+                        new ClientInputPacket(ClientInputPacket.Type.SCROLL, (int) (event.getScrollDeltaY() * 100))
                 );
             }
         } else if (pressingSpecialKey) {
             event.setCanceled(true);
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
-                        new ClientInputPacket(ClientInputPacket.Type.ALT_SCROLL, (int) (event.getScrollDelta() * 100))
+                PacketDistributor.sendToServer(
+                        new ClientInputPacket(ClientInputPacket.Type.ALT_SCROLL, (int) (event.getScrollDeltaY() * 100))
                 );
             }
         }
     }
 
     @SubscribeEvent
-    public static void onKey(net.minecraftforge.client.event.InputEvent.Key event) {
+    public static void onKey(net.neoforged.neoforge.client.event.InputEvent.Key event) {
         InputConstants.Key key = InputConstants.getKey(event.getKey(), event.getScanCode());
         if (KEY_REQUEST_INGREDIENT.get().getKey().equals(key)) {
             if (event.getAction() == GLFW.GLFW_PRESS) {

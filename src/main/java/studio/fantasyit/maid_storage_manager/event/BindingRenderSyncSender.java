@@ -4,54 +4,52 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.network.RenderEntityPacket;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class BindingRenderSyncSender {
     @SubscribeEvent
-    public static void onTickPlayer(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.side == LogicalSide.SERVER) {
-            ServerPlayer player = (ServerPlayer) event.player;
+    public static void onTickPlayer(PlayerTickEvent.Post event) {
+        Player entity1 = event.getEntity();
+        if (entity1 instanceof ServerPlayer player) {
             if (BindingData.isDifferentAndUpdateItemOnHand(player)) {
-                if (event.player.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                    UUID entityId = RequestListItem.getStorageEntity(event.player.getMainHandItem());
+                if (player.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                    UUID entityId = RequestListItem.getStorageEntity(player.getMainHandItem());
                     if (entityId != null) {
                         Entity entity = ((ServerLevel) player.level()).getEntity(entityId);
                         if (entity != null && entity.isAlive()) {
-                            Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RenderEntityPacket(List.of(entity.getId())));
+                            PacketDistributor.sendToPlayer(player, new RenderEntityPacket(List.of(entity.getId())));
                             return;
                         }
                     }
                 }
-                if (event.player.getMainHandItem().is(ItemRegistry.WORK_CARD.get())) {
+                if (player.getMainHandItem().is(ItemRegistry.WORK_CARD.get())) {
                     player.level().getEntities(
                             EntityTypeTest.forClass(EntityMaid.class),
                             player.getBoundingBox().inflate(32),
                             t -> true
                     ).forEach(maid -> {
-                        Network.INSTANCE.send(
-                                PacketDistributor.PLAYER.with(() -> player),
-                                new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), maid.getMaidBauble().serializeNBT())
+                        PacketDistributor.sendToPlayer(player,
+                                new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), maid.getMaidBauble().serializeNBT(player.registryAccess()))
                         );
                     });
                 }
-                Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RenderEntityPacket(List.of()));
+                PacketDistributor.sendToPlayer(player, new RenderEntityPacket(List.of()));
             }
         }
     }

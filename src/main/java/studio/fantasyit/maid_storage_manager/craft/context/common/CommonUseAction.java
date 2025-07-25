@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
-import com.github.tartaricacid.touhoulittlemaid.capability.PowerCapabilityProvider;
+import com.github.tartaricacid.touhoulittlemaid.data.PowerAttachment;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,9 +17,10 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -32,7 +33,6 @@ import studio.fantasyit.maid_storage_manager.util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 public class CommonUseAction extends AbstractCraftActionContext {
     public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use");
@@ -59,10 +59,8 @@ public class CommonUseAction extends AbstractCraftActionContext {
     @Override
     public Result start() {
         fakePlayer = WrappedMaidFakePlayer.get(maid);
-        fakePlayer.getCapability(PowerCapabilityProvider.POWER_CAP).ifPresent(powerCapability -> {
-            powerCapability.set(maid.getExperience() * 4);
-            powerPointAtStart = powerCapability.get();
-        });
+        fakePlayer.getData(PowerAttachment.TYPE).set(maid.getExperience() * 4);
+        powerPointAtStart = fakePlayer.getData(PowerAttachment.TYPE).get();
         maid.getNavigation().stop();
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
         storedSlot = InvUtil.getTargetIndexInCrafting(maid, craftGuideStepData.getInput().get(0));
@@ -146,16 +144,19 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
 
         fakePlayer.overrideXYRot(MathUtil.vec2RotX(viewVec), MathUtil.vec2RotY(viewVec));
-        PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(fakePlayer,
+        PlayerInteractEvent.RightClickBlock event = CommonHooks.onRightClickBlock(fakePlayer,
                 InteractionHand.MAIN_HAND,
                 target,
                 result
         );
         BlockState targetState = level.getBlockState(target);
-        if (event.getUseBlock() != DENY) {
-            InteractionResult use = targetState
-                    .use(level, fakePlayer, InteractionHand.MAIN_HAND, result);
-            if (!use.consumesAction()) {
+        if (event.getUseBlock() != TriState.FALSE) {
+            boolean consume;
+            if (fakePlayer.getMainHandItem().isEmpty())
+                consume = targetState.useWithoutItem(level, fakePlayer, result).consumesAction();
+            else
+                consume = targetState.useItemOn(fakePlayer.getMainHandItem(), level, fakePlayer, InteractionHand.MAIN_HAND, result).consumesAction();
+            if (!consume) {
                 UseOnContext useContext = new UseOnContext(fakePlayer, InteractionHand.MAIN_HAND, result);
                 InteractionResult actionresult = fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).onItemUseFirst(useContext);
                 if (actionresult == InteractionResult.PASS) {
@@ -181,7 +182,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
     private boolean shouldUseFluidClip(ServerLevel level, BlockPos target) {
         if (level.getFluidState(target).isSource()) return true;
-        if (craftGuideStepData.getInput().stream().anyMatch(t -> t.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).isPresent())) {
+        if (craftGuideStepData.getInput().stream().anyMatch(t -> t.getCapability(Capabilities.FluidHandler.ITEM) != null)) {
             return true;
         }
         return false;
@@ -192,12 +193,12 @@ public class CommonUseAction extends AbstractCraftActionContext {
         if (storedSlot != -1) {
             InvUtil.swapHandAndSlot(maid, storedSlot);
         }
-        fakePlayer.getCapability(PowerCapabilityProvider.POWER_CAP).ifPresent(powerCapability -> {
-            if (powerCapability.get() != powerPointAtStart) {
-                float deltaPP = powerCapability.get() - powerPointAtStart;
-                maid.setExperience(maid.getExperience() - (int) Math.ceil(deltaPP / 4));
-            }
-        });
+
+
+        if (fakePlayer.getData(PowerAttachment.TYPE).get() != powerPointAtStart) {
+            float deltaPP = fakePlayer.getData(PowerAttachment.TYPE).get() - powerPointAtStart;
+            maid.setExperience(maid.getExperience() - (int) Math.ceil(deltaPP / 4));
+        }
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(false);
     }
 }

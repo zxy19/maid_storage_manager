@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.craft.context.special.AeCraftingAct
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.type.AE2Type;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBlockStorage;
@@ -79,7 +80,8 @@ public abstract class Ae2BaseContext extends AbstractFilterableBlockStorage impl
                 .keySet()
                 .stream()
                 .filter(key -> key instanceof AEItemKey aek && aek.getReadOnlyStack().is(ItemRegistry.CRAFT_GUIDE.get()))
-                .map(key -> CraftGuideData.fromItemStack(((AEItemKey) key).getReadOnlyStack()))
+                .map(key -> ((AEItemKey) key).getReadOnlyStack().get(DataComponentRegistry.CRAFT_GUIDE_DATA))
+                .filter(Objects::nonNull)
                 .filter(CraftGuideData::available)
                 .forEach(list::add);
 

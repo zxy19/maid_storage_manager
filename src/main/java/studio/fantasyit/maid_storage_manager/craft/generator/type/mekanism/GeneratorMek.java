@@ -17,6 +17,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -31,10 +33,13 @@ import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.integration.mekanism.MekanismIntegration;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-public abstract class GeneratorMek<T extends MekanismRecipe, C extends IInputRecipeCache> implements IAutoCraftGuideGenerator {
-    protected abstract MekanismRecipeType<T, C> getRecipeType();
+public abstract class GeneratorMek<T extends MekanismRecipe<I>, I extends RecipeInput, C extends IInputRecipeCache> implements IAutoCraftGuideGenerator {
+    protected abstract MekanismRecipeType<I, T, C> getRecipeType();
 
     @Override
     public @NotNull ResourceLocation getType() {
@@ -55,9 +60,14 @@ public abstract class GeneratorMek<T extends MekanismRecipe, C extends IInputRec
         ConfigInfo config = machine.getConfig().getConfig(TransmissionType.ITEM);
         if (config == null) return null;
         for (DataType dataType : dataTypes) {
-            Set<Direction> sidesForData = config.getSidesForData(dataType);
-            if (!sidesForData.isEmpty())
-                return sidesForData.iterator().next();
+            return config
+                    .getSideConfig()
+                    .stream()
+                    .filter(t -> t.getValue().equals(dataType))
+                    .findFirst()
+                    .map(Map.Entry::getKey)
+                    .map(t -> t.getDirection(machine.getDirection()))
+                    .orElse(null);
         }
         return null;
     }
@@ -74,17 +84,18 @@ public abstract class GeneratorMek<T extends MekanismRecipe, C extends IInputRec
         }
     }
 
-    public void generate(T recipe, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+    public void generate(RecipeHolder<T> holder, TileEntityConfigurableMachine machine, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions, StorageAccessUtil.Filter posFilter) {
+        T recipe = holder.value();
         List<Ingredient> ingredient = getRecipeIngredients(recipe, level.getRecipeManager(), recognizedTypePositions);
         List<Integer> counts = getIngredientCounts(recipe, ingredient);
         List<ItemStack> outputs = getRecipeOutputs(recipe, level.registryAccess());
         if (outputs.isEmpty() || !posFilter.isAvailable(outputs.get(0)))
             return;
-        generateForIOR(recipe, machine, pos, graph, ingredient, counts, outputs);
+        generateForIOR(holder.id(), recipe, machine, pos, graph, ingredient, counts, outputs);
     }
 
-    protected void generateForIOR(T recipe, TileEntityConfigurableMachine machine, BlockPos pos, ICachableGeneratorGraph graph, List<Ingredient> ingredient, List<Integer> counts, List<ItemStack> outputs) {
-        graph.addRecipe(recipe.getId(), ingredient, counts, outputs, (items) -> {
+    protected void generateForIOR(ResourceLocation id, T recipe, TileEntityConfigurableMachine machine, BlockPos pos, ICachableGeneratorGraph graph, List<Ingredient> ingredient, List<Integer> counts, List<ItemStack> outputs) {
+        graph.addRecipe(id, ingredient, counts, outputs, (items) -> {
             List<CraftGuideStepData> step = new ArrayList<>();
             if (addSteps(pos, machine, recipe, items, outputs, step)) {
                 return new CraftGuideData(step, CommonType.TYPE);

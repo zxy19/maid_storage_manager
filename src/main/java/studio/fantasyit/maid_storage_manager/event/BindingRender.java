@@ -9,11 +9,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -23,6 +23,7 @@ import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.*;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftAssets;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
@@ -32,7 +33,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public final class BindingRender {
     private static final float[] colors_g = new float[]{0.40f, 0.73f, 0.42f, 1};
     private static final float[] colors_r = new float[]{0.91f, 0.12f, 0.39f, 1};
@@ -112,7 +113,7 @@ public final class BindingRender {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) {
             if (mainStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                mainStack = ItemStack.of(mainStack.getOrCreateTag().getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
+                mainStack = mainStack.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStack.EMPTY);
                 if (mainStack.isEmpty())
                     return;
             } else {
@@ -176,7 +177,7 @@ public final class BindingRender {
                 return;
             }
         }
-        CraftGuideRenderData data = CraftGuideRenderData.fromItemStack(mainStack);
+        CraftGuideRenderData data = mainStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
         for (int i = 0; i < data.stepBindings.size(); i++) {
             Pair<Target, ResourceLocation> step = data.stepBindings.get(i);
             BoxRenderUtil.renderStorage(step.getA(),
@@ -252,7 +253,7 @@ public final class BindingRender {
                         BoxRenderUtil.drawText(
                                 event,
                                 mc,
-                                maid.getPosition(event.getPartialTick()),
+                                maid.getPosition(event.getPartialTick().getGameTimeDeltaTicks()),
                                 baubleItemHandler.getStackInSlot(i).getHoverName().getString(),
                                 0xFFFFFFFF,
                                 oh

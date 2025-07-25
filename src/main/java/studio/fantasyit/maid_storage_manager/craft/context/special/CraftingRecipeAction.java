@@ -6,8 +6,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -32,7 +33,7 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
 
     @Override
     public Result start() {
-        if(craftGuideStepData.getStorage() == null)
+        if (craftGuideStepData.getStorage() == null)
             return Result.FAIL;
         return Result.CONTINUE;
     }
@@ -73,9 +74,9 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
         }
         if (allMatch) {
             CraftingContainer container = RecipeUtil.wrapCraftingContainer(realInput, 3, 3);
-            Optional<CraftingRecipe> recipe = RecipeUtil.getCraftingRecipe(level, container);
+            Optional<RecipeHolder<CraftingRecipe>> recipe = RecipeUtil.getCraftingRecipe(level, container.asCraftInput());
             if (recipe.isPresent()) {
-                ItemStack result = recipe.get().assemble(container, level.registryAccess());
+                ItemStack result = recipe.get().value().assemble(container.asCraftInput(), level.registryAccess());
                 if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
                 }
@@ -87,7 +88,7 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
                         inv.extractItem(j, slotExtractCount[j], false);
                     }
 
-                    NonNullList<ItemStack> remain = recipe.get().getRemainingItems(container);
+                    NonNullList<ItemStack> remain = recipe.get().value().getRemainingItems(container.asCraftInput());
                     for (int j = 0; j < remain.size(); j++) {
                         if (!remain.get(j).isEmpty()) {
                             int total = remain.get(j).getCount();

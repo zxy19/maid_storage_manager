@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.ae2;
 
 import appeng.core.definitions.AEBlocks;
+import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.ChargerRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -43,12 +44,13 @@ public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
-                .getAllRecipesFor(ChargerRecipe.TYPE)
-                .forEach(recipe -> {
+                .getAllRecipesFor(AERecipeTypes.CHARGER)
+                .forEach(recipeHolder -> {
+                    ChargerRecipe recipe = recipeHolder.value();
                     if (!posFilter.isAvailable(recipe.getResultItem()))
                         return;
                     graph.addRecipe(
-                            recipe,
+                            recipeHolder,
                             (List<ItemStack> items) -> {
                                 List<CraftGuideStepData> steps = new ArrayList<>();
                                 steps.add(new CraftGuideStepData(
@@ -78,7 +80,7 @@ public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(ChargerRecipe.TYPE)
+        manager.getAllRecipesFor(AERecipeTypes.CHARGER)
                 .forEach(RecipeIngredientCache::addRecipeCache);
     }
 

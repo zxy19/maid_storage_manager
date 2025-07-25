@@ -1,8 +1,10 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.ars;
 
-import com.hollingsworth.arsnouveau.api.enchanting_apparatus.EnchantingApparatusRecipe;
+
 import com.hollingsworth.arsnouveau.common.block.tile.EnchantingApparatusTile;
+import com.hollingsworth.arsnouveau.common.crafting.recipes.EnchantingApparatusRecipe;
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
+import com.hollingsworth.arsnouveau.setup.registry.RecipeRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +12,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -30,7 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public abstract class GeneratorArsNouveauEnchantApp<T extends EnchantingApparatusRecipe> implements IAutoCraftGuideGenerator {
-    protected abstract RegistryObject<RecipeType<T>> getRecipeType();
+    protected abstract DeferredHolder<RecipeType<?>, RecipeRegistry.ModRecipeType<T>> getRecipeType();
 
     @Override
     public @NotNull ResourceLocation getType() {
@@ -48,15 +50,16 @@ public abstract class GeneratorArsNouveauEnchantApp<T extends EnchantingApparatu
             List<BlockPos> blockPos = tile.pedestalList();
             level.getRecipeManager()
                     .getAllRecipesFor(getRecipeType().get())
-                    .forEach(recipe -> {
-                        ArrayList<Ingredient> ingredients = new ArrayList<>(recipe.pedestalItems);
-                        ingredients.add(recipe.reagent);
-                        if (recipe.pedestalItems.size() <= blockPos.size())
+                    .forEach(holder -> {
+                        T recipe = holder.value();
+                        ArrayList<Ingredient> ingredients = new ArrayList<>(recipe.pedestalItems());
+                        ingredients.add(recipe.reagent());
+                        if (recipe.pedestalItems().size() <= blockPos.size())
                             graph.addRecipe(
-                                    recipe.getId(),
+                                    holder.id(),
                                     ingredients,
                                     ingredients.stream().map(t -> 1).toList(),
-                                    recipe.result,
+                                    recipe.result(),
                                     items -> {
                                         List<CraftGuideStepData> steps = new ArrayList<>();
                                         for (int i = 0; i < items.size() - 1; i++) {
@@ -80,7 +83,7 @@ public abstract class GeneratorArsNouveauEnchantApp<T extends EnchantingApparatu
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, pos),
                                                 List.of(),
-                                                List.of(recipe.result),
+                                                List.of(recipe.result()),
                                                 CommonTakeItemAction.TYPE,
                                                 false,
                                                 new CompoundTag()
@@ -99,9 +102,10 @@ public abstract class GeneratorArsNouveauEnchantApp<T extends EnchantingApparatu
     public void onCache(RecipeManager manager) {
         manager.getAllRecipesFor(getRecipeType().get())
                 .forEach(t -> {
-                    ArrayList<Ingredient> ingredients = new ArrayList<>(t.pedestalItems);
-                    ingredients.add(t.reagent);
-                    RecipeIngredientCache.addRecipeCache(t.id, ingredients);
+                    T recipe = t.value();
+                    ArrayList<Ingredient> ingredients = new ArrayList<>(recipe.pedestalItems());
+                    ingredients.add(recipe.reagent());
+                    RecipeIngredientCache.addRecipeCache(t.id(), ingredients);
                 });
     }
 }

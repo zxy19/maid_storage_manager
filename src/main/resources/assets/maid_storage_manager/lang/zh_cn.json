@@ -410,5 +410,7 @@
   "tooltip.maid_storage_manager.request_list.virtual": "「女仆事务，请勿插手 (´• ω •`)ﾉ」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s 个存储位置",
   "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本",
-  "key.maid_storage_manager.roll_special_mode": "切换特殊模式"
+  "key.maid_storage_manager.roll_special_mode": "切换特殊模式",
+  "config.maid_storage_manager.crafting.generate_nearest_only": "只生成最近的",
+  "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "只为距离女仆最近的方块生成配方。"
 }

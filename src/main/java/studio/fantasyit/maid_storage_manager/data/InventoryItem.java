@@ -1,9 +1,13 @@
 package studio.fantasyit.maid_storage_manager.data;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
@@ -12,7 +16,29 @@ import java.util.List;
 
 public class InventoryItem implements INBTSerializable<CompoundTag> {
     public record PositionCount(Target pos, int count, boolean isCraftGuide) {
+        public static StreamCodec<RegistryFriendlyByteBuf, PositionCount> STREAM_CODEC = StreamCodec.composite(
+                Target.STREAM_CODEC,
+                PositionCount::pos,
+                ByteBufCodecs.INT,
+                PositionCount::count,
+                ByteBufCodecs.BOOL,
+                PositionCount::isCraftGuide,
+                PositionCount::new
+        );
     }
+
+    public static StreamCodec<RegistryFriendlyByteBuf, InventoryItem> STREAM_CODEC = StreamCodec.composite(
+            ItemStack.STREAM_CODEC,
+            t -> t.itemStack,
+            ByteBufCodecs.INT,
+            t -> t.totalCount,
+            ByteBufCodecs.collection(
+                    ArrayList::new,
+                    PositionCount.STREAM_CODEC
+            ),
+            t -> t.posAndSlot,
+            InventoryItem::new
+    );
 
     public ItemStack itemStack;
     public int totalCount;
@@ -44,9 +70,9 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider t) {
         CompoundTag tag = new CompoundTag();
-        tag.put("itemStack", itemStack.serializeNBT());
+        tag.put("itemStack", itemStack.save(t));
         tag.putInt("totalCount", totalCount);
         ListTag list = new ListTag();
         for (int i = 0; i < posAndSlot.size(); i++) {
@@ -61,8 +87,8 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        itemStack = ItemStack.of(nbt.getCompound("itemStack"));
+    public void deserializeNBT(HolderLookup.Provider t, CompoundTag nbt) {
+        itemStack = ItemStack.parseOptional(t, nbt.getCompound("itemStack"));
         totalCount = nbt.getInt("totalCount");
         ListTag list = nbt.getList("posCount", 10);
         for (int i = 0; i < list.size(); i++) {
@@ -76,11 +102,9 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public static InventoryItem fromNbt(CompoundTag tag) {
+    public static InventoryItem fromNbt(HolderLookup.Provider t, CompoundTag tag) {
         InventoryItem inventoryItem = new InventoryItem(ItemStack.EMPTY, 0);
-        inventoryItem.deserializeNBT(tag);
+        inventoryItem.deserializeNBT(t, tag);
         return inventoryItem;
     }
-
-
 }

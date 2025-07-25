@@ -3,12 +3,8 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.base;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -26,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> implements IAutoCraftGuideGenerator {
+public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput> implements IAutoCraftGuideGenerator {
     protected abstract RecipeType<T> getRecipeType();
 
     protected abstract ResourceLocation getCraftType();
