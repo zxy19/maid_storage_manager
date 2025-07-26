@@ -116,11 +116,11 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackChemicalToItem
         ItemStackChemicalToItemStackRecipe recipe = holder.value();
         long capacity = 2000;
         if (machine instanceof TileEntityOsmiumCompressor oc)
-            capacity = oc.gasTank.getCapacity();
+            capacity = oc.chemicalTank.getCapacity();
         else if (machine instanceof TileEntityItemStackChemicalToItemStackFactory fc)
-            capacity = fc.getGasTank().getCapacity();
+            capacity = fc.getChemicalTank().getCapacity();
 
-        List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput(),capacity);
+        List<Pair<ItemStack, Integer>> possibleInfusion = infusionInputs(level.getRecipeManager(), recipe.getChemicalInput(), capacity);
         Ingredient ingredient = Ingredient.of(recipe.getItemInput().getRepresentations().stream());
         for (Pair<ItemStack, Integer> pair : possibleInfusion) {
             List<Ingredient> inputs = List.of(ingredient, Ingredient.of(pair.getA()));

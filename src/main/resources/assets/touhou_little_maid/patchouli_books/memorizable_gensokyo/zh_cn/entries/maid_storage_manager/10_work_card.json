@@ -1,0 +1,27 @@
+{
+  "sortnum": 10,
+  "name": "工牌",
+  "icon": "maid_storage_manager:work_card",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:work_card",
+      "text": "工牌也是一种女仆饰品，装备了工牌的女仆们隶属于同一个工作组。$(br)女仆在接到一个复合的任务时，会尝试将部分工作分发给工作组内的其他女仆（发出去的任务不会被二次分发）。$(br)其他女仆在完成任务后，会将产物交还给原女仆。"
+    },
+    {
+      "type": "text",
+      "title": "设置多个工作组",
+      "text": "不同名字的工牌对应不同的工作组，你可以通过重命名工牌来标记多个工作组。$(br2)另外，未被重命名的工牌代表了该女仆属于一个“最低工作组”，可以收到所有工作组发来的任务，但只能向同样属于“最低工作组”的女仆发任务。"
+    },
+    {
+      "type": "text",
+      "title": "工作组的优势",
+      "text": "同一个工作组内的女仆会共享记忆。一个女仆更新记忆时，所有同组女仆都会收到变化。$(br)该变化还会在女仆间传递，当一个女仆属于两个工作组，且其中一个工作组的记忆被更新时，女仆会将收到的更新消息传达给另一个工作组。"
+    },
+    {
+      "type": "altar_recipe",
+      "recipe_id": "maid_storage_manager:work_card"
+    }
+  ]
+}

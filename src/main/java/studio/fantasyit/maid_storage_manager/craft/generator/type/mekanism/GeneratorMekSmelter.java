@@ -14,9 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -59,9 +57,10 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
             //原版的SMELTING配方
             level.getRecipeManager()
                     .getAllRecipesFor(RecipeType.SMELTING)
-                    .forEach(recipe -> {
+                    .forEach(holder -> {
+                        SmeltingRecipe recipe = holder.value();
                         ItemStack output = recipe.getResultItem(level.registryAccess());
-                        graph.addRecipe(recipe.getId(),
+                        graph.addRecipe(holder.id(),
                                 recipe.getIngredients(),
                                 recipe.getIngredients().stream().map(t -> 1).toList(),
                                 output,
