@@ -1,9 +1,9 @@
 package studio.fantasyit.maid_storage_manager.integration.kubejs;
 
-import dev.latvian.mods.kubejs.KubeJSPlugin;
-import dev.latvian.mods.kubejs.script.BindingsEvent;
-import dev.latvian.mods.kubejs.script.ScriptType;
-import dev.latvian.mods.rhino.util.wrap.TypeWrappers;
+import dev.latvian.mods.kubejs.event.EventGroupRegistry;
+import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
+import dev.latvian.mods.kubejs.script.BindingRegistry;
+import dev.latvian.mods.kubejs.script.TypeWrapperRegistry;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMBinding;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMCompacted;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMTypeCasting;
@@ -21,9 +21,9 @@ import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.ty
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.item.KJSItemPair;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.item.KJSItemPairWrapper;
 
-public class KJSPlugin extends KubeJSPlugin {
+public class KJSPlugin implements KubeJSPlugin {
     @Override
-    public void registerTypeWrappers(ScriptType type, TypeWrappers typeWrappers) {
+    public void registerTypeWrappers(TypeWrapperRegistry typeWrappers) {
         typeWrappers.register(IKJSAutoCraftGuideGenerator.class, new BaseWrappedWrapper<>(KJSAutoCraftGuideGenerator::new));
         typeWrappers.register(IKJSAutoCraftGuideGenerator.Full.class, new BaseWrappedWrapper<>(KJSAutoCraftGuideGenerator::new));
         typeWrappers.register(IKJSCraftType.class, new BaseWrappedWrapper<>(KJSCraftType::new));
@@ -34,23 +34,23 @@ public class KJSPlugin extends KubeJSPlugin {
     }
 
     @Override
-    public void registerEvents() {
-        KJSRegEvent.group.register();
+    public void registerEvents(EventGroupRegistry registry) {
+        registry.register(KJSRegEvent.group);
     }
 
     @Override
-    public void registerBindings(BindingsEvent event) {
+    public void registerBindings(BindingRegistry bindings) {
         KJSMSMBinding kjsmsmBinding = new KJSMSMBinding();
-        event.add("MaidStorageManagerEnum", kjsmsmBinding);
-        event.add("MSME", kjsmsmBinding);
+        bindings.add("MaidStorageManagerEnum", kjsmsmBinding);
+        bindings.add("MSME", kjsmsmBinding);
         KJSMSMUtilities kjsmsmUtilities = new KJSMSMUtilities();
-        event.add("MaidStorageManagerUtil", kjsmsmUtilities);
-        event.add("MSMU", kjsmsmUtilities);
+        bindings.add("MaidStorageManagerUtil", kjsmsmUtilities);
+        bindings.add("MSMU", kjsmsmUtilities);
         KJSMSMTypeCasting kjsmsmTypeCasting = new KJSMSMTypeCasting();
-        event.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
-        event.add("MSMTC", kjsmsmTypeCasting);
+        bindings.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
+        bindings.add("MSMTC", kjsmsmTypeCasting);
         KJSMSMCompacted kjsmsmCompacted = new KJSMSMCompacted(kjsmsmBinding, kjsmsmUtilities, kjsmsmTypeCasting);
-        event.add("MaidStorageManager", kjsmsmCompacted);
-        event.add("MSM", kjsmsmCompacted);
+        bindings.add("MaidStorageManager", kjsmsmCompacted);
+        bindings.add("MSM", kjsmsmCompacted);
     }
 }

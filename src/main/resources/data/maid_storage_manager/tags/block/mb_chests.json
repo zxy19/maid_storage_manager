@@ -1,0 +1,26 @@
+{
+  "replace": false,
+  "values": [
+    "#c:chests",
+    {"required": false,"id":"sophisticatedstorage:chest"},
+    {"required": false,"id":"sophisticatedstorage:copper_chest"},
+    {"required": false,"id":"sophisticatedstorage:iron_chest"},
+    {"required": false,"id":"sophisticatedstorage:gold_chest"},
+    {"required": false,"id":"sophisticatedstorage:diamond_chest"},
+    {"required": false,"id":"sophisticatedstorage:netherite_chest"},
+    {"required": false,"id":"create:item_vault"},
+    {"required": false,"id":"netherchested:nether_chest"},
+    {"required": false,"id":"ironchest:iron_chest"},
+    {"required": false,"id":"ironchest:gold_chest"},
+    {"required": false,"id":"ironchest:diamond_chest"},
+    {"required": false,"id":"ironchest:copper_chest"},
+    {"required": false,"id":"ironchest:crystal_chest"},
+    {"required": false,"id":"ironchest:obsidian_chest"},
+    {"required": false,"id":"ironchest:trapped_iron_chest"},
+    {"required": false,"id":"ironchest:trapped_gold_chest"},
+    {"required": false,"id":"ironchest:trapped_diamond_chest"},
+    {"required": false,"id":"ironchest:trapped_copper_chest"},
+    {"required": false,"id":"ironchest:trapped_crystal_chest"},
+    {"required": false,"id":"ironchest:trapped_obsidian_chest"}
+  ]
+}

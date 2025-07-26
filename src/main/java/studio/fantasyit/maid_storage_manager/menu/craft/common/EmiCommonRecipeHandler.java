@@ -9,8 +9,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -60,14 +60,14 @@ public class EmiCommonRecipeHandler implements EmiRecipeHandler<CommonCraftMenu>
             for (int i = 0; i < step.step.actionType.inputCount(); i++) {
                 if (inputId < inputs.size()) {
                     if (doTransfer)
-                        inputTag.add(inputs.get(inputId).save(new CompoundTag()));
+                        inputTag.add(ItemStackUtil.saveStack(context.getScreenHandler().player.registryAccess(), inputs.get(inputId)));
                     inputId++;
                 }
             }
             for (int i = 0; i < step.step.actionType.outputCount(); i++) {
                 if (outputId < outputs.size()) {
                     if (doTransfer)
-                        outputTag.add(outputs.get(outputId).save(new CompoundTag()));
+                        outputTag.add(ItemStackUtil.saveStack(context.getScreenHandler().player.registryAccess(), outputs.get(outputId)));
                     outputId++;
                 }
             }
@@ -75,7 +75,7 @@ public class EmiCommonRecipeHandler implements EmiRecipeHandler<CommonCraftMenu>
         if (doTransfer) {
             data.put("inputs", inputTag);
             data.put("outputs", outputTag);
-            Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+            PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                     CraftGuideGuiPacket.Type.SET_ALL_INPUT,
                     0,
                     0,

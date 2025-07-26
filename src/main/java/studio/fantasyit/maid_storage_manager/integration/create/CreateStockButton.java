@@ -6,10 +6,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.network.CreateStockManagerPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class CreateStockButton extends MaidSideTabButton {
 
     public void click() {
         StockManagerInteract.setInteractedMaidId(maidId);
-        Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+        PacketDistributor.sendToServer(
                 new CreateStockManagerPacket(CreateStockManagerPacket.Type.OPEN_SCREEN,
                         ticker,
                         maidId

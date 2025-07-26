@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
+import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -24,7 +24,7 @@ public class CraftLayer {
             instance.group(
                     CraftGuideData.CODEC.optionalFieldOf("craft").forGetter(CraftLayer::getCraftData),
                     CraftGuideData.CODEC.listOf().fieldOf("usableCraft").forGetter(CraftLayer::getUsableCraftData),
-                    ItemStack.CODEC.listOf().fieldOf("item").forGetter(CraftLayer::getItems),
+                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("item").forGetter(CraftLayer::getItems),
                     Codec.INT.listOf().fieldOf("collectedCounts").forGetter(CraftLayer::getCollectedCounts),
                     Codec.INT.fieldOf("count").forGetter(CraftLayer::getCount),
                     Codec.INT.fieldOf("doneCount").forGetter(CraftLayer::getDoneCount),
@@ -109,7 +109,7 @@ public class CraftLayer {
         this.usableCraftData = usableCraftData;
     }
 
-    public boolean switchToNonOccupied(ServerLevel level, EntityMaid maid, int layerIndex, CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy) {
+    public boolean switchToNonOccupied(ServerLevel level, EntityMaid maid, int layerIndex, CraftBlockOccupy craftBlockOccupy) {
         //第一轮开始前允许更改目标
         if (step != 0) return false;
         for (CraftGuideData usable : getUsableCraftData()) {

@@ -18,7 +18,9 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -49,7 +51,7 @@ public class StorageFetchFunction implements IFunctionCall<StorageFetchFunction.
         list.forEach(item -> {
             ItemStack itemStack = item.itemStack;
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                CraftGuideData cgd = CraftGuideData.fromItemStack(itemStack);
+                CraftGuideData cgd = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
                 cgd.getOutput().forEach(add);
             } else {
                 add.accept(itemStack);

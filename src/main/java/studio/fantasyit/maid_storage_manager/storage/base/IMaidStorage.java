@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
@@ -104,7 +104,7 @@ public interface IMaidStorage {
      * @param blockPos 位置
      * @return 是否
      */
-    default boolean isCraftGuideProvider(List<ViewedInventoryMemory.ItemCount> blockPos) {
+    default boolean isCraftGuideProvider(List<ItemCount> blockPos) {
         return blockPos
                 .stream()
                 .anyMatch(i -> i.item().is(ItemRegistry.CRAFT_GUIDE.get()));

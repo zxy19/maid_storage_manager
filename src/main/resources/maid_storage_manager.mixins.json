@@ -6,6 +6,7 @@
   "refmap": "maid_storage_manager.refmap.json",
   "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
+    "AltarRecipeMultiOutputMixin",
     "ContainerOpenersCounterPatch",
     "CreateStockKeeperMenuMixin",
     "CreateStockTickerBEMixin",

@@ -18,12 +18,12 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.AutoGraphGenerator;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -117,7 +117,7 @@ public class MaidCraftPlanner {
                 .forEach((pos, itemStacks) -> {
                     if (pos.equals(storage)) return;
                     if (StorageAccessUtil.findTargetRewrite(level, maid, pos, false).isEmpty()) return;
-                    for (ViewedInventoryMemory.ItemCount itemStack : itemStacks) {
+                    for (ItemCount itemStack : itemStacks) {
                         boolean flag = false;
                         for (int i = 0; i < items.size(); i++) {
                             if (ItemStackUtil.isSameInCrafting(itemStack.getFirst(), items.get(i).getA())) {

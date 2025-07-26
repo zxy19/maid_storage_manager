@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +19,7 @@ import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
@@ -29,10 +29,12 @@ import java.util.List;
 abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends AbstractFilterScreen<T> implements ICraftGuiPacketReceiver {
     protected boolean enableScroll = false;
     protected final ResourceLocation iBackground;
-    public AbstractCraftScreen(T p_97741_, Inventory p_97742_, Component p_97743_,ResourceLocation background){
-        this(p_97741_, p_97742_, p_97743_, background,false);
+
+    public AbstractCraftScreen(T p_97741_, Inventory p_97742_, Component p_97743_, ResourceLocation background) {
+        this(p_97741_, p_97742_, p_97743_, background, false);
     }
-    public AbstractCraftScreen(T p_97741_, Inventory p_97742_, Component p_97743_,ResourceLocation background, boolean enableScroll) {
+
+    public AbstractCraftScreen(T p_97741_, Inventory p_97742_, Component p_97743_, ResourceLocation background, boolean enableScroll) {
         super(p_97741_, p_97742_, p_97743_);
         this.enableScroll = enableScroll;
         this.iBackground = background;
@@ -50,7 +52,7 @@ abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends A
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
-        renderBackground(guiGraphics);
+        
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
@@ -66,14 +68,12 @@ abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends A
                 256);
     }
 
-    protected void addButtons(){
+    protected void addButtons() {
 
     }
 
     protected void sendAndTriggerLocalPacket(CraftGuideGuiPacket packet) {
-        Network.INSTANCE.send(
-                PacketDistributor.SERVER.noArg(),
-                packet);
+        PacketDistributor.sendToServer(packet);
         menu.handleGuiPacket(packet.type, packet.key, packet.value, packet.data);
         this.handleGuiPacket(packet.type, packet.key, packet.value, packet.data);
     }
@@ -155,7 +155,7 @@ abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends A
     public void accept(FilterSlot slot, ItemStack item) {
         if (!slot.isActive() || slot.readonly) return;
         slot.set(item);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, item.save(new CompoundTag())));
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, ItemStackUtil.saveStack(menu.registryAccess(),item)));
     }
 
     @Override
@@ -168,8 +168,8 @@ abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends A
 
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
-        if(!enableScroll) return false;
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double p_94688_) {
+        if (!enableScroll) return false;
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc && !filterSlot.readonly) {
             MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
@@ -190,8 +190,9 @@ abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends A
                     )
             );
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
     }
+
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
     }

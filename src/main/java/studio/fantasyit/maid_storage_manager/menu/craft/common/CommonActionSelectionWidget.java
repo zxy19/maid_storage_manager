@@ -142,7 +142,7 @@ public class CommonActionSelectionWidget extends AbstractWidget {
     long lastRollTick = 0;
 
     @Override
-    public boolean mouseScrolled(double p_94734_, double p_94735_, double p_94736_) {
+    public boolean mouseScrolled(double p_94734_, double p_94735_,double dx, double p_94736_) {
         long currentTime = System.currentTimeMillis();
         if (lastRollTick + 50 > currentTime) {
             return false;

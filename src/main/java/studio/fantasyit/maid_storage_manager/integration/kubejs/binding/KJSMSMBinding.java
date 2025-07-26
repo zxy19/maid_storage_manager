@@ -29,7 +29,7 @@ public class KJSMSMBinding {
     public final ResourceLocation CRAFT_TYPE_RS;
     public final ResourceLocation CRAFT_TYPE_SMITHING = SmithingType.TYPE;
     public final ResourceLocation CRAFT_TYPE_STONECUTTING = StoneCuttingType.TYPE;
-    public final ResourceLocation CRAFT_TYPE_TACZ;
+//    public final ResourceLocation CRAFT_TYPE_TACZ;
 
     public final ResourceLocation CRAFT_ACTION_COMMON_TAKE_ITEM = CommonTakeItemAction.TYPE;
     public final ResourceLocation CRAFT_ACTION_COMMON_ATTACK = CommonAttackAction.TYPE;
@@ -65,7 +65,7 @@ public class KJSMSMBinding {
     public KJSMSMBinding() {
         CRAFT_TYPE_AE2 = Integrations.ae2() ? AE2Type.TYPE : UNAVAILABLE;
         CRAFT_TYPE_RS = Integrations.rs() ? RSType.TYPE : UNAVAILABLE;
-        CRAFT_TYPE_TACZ = Integrations.tacz() ? TaczType.TYPE : UNAVAILABLE;
+//        CRAFT_TYPE_TACZ = Integrations.tacz() ? TaczType.TYPE : UNAVAILABLE;
         CRAFT_ACTION_AE2 = Integrations.ae2() ? AeCraftingAction.TYPE : UNAVAILABLE;
         CRAFT_ACTION_RS = Integrations.rs() ? RsCraftingAction.TYPE : UNAVAILABLE;
 

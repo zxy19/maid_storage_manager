@@ -4,15 +4,16 @@ import dev.latvian.mods.rhino.Callable;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeObject;
 import dev.latvian.mods.rhino.Scriptable;
+import dev.latvian.mods.rhino.type.TypeInfo;
 
 import java.util.Optional;
 import java.util.function.Function;
 
-public class AbstractObjectWrapped extends AbstractWrapped{
+public class AbstractObjectWrapped extends AbstractWrapped {
     protected final NativeObject obj;
 
-    public AbstractObjectWrapped(NativeObject obj, Context context) {
-        super(context);
+    public AbstractObjectWrapped(NativeObject obj, Context context, TypeInfo typeInfo) {
+        super(context, typeInfo);
         this.obj = obj;
     }
 

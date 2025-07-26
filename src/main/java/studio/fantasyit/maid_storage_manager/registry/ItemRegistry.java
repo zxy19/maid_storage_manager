@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.registry;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -12,7 +13,7 @@ import studio.fantasyit.maid_storage_manager.items.*;
 import java.util.function.Supplier;
 
 public class ItemRegistry {
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MaidStorageManager.MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, MaidStorageManager.MODID);
 
     protected static <T extends Item> DeferredHolder<Item, T> item(String name, Supplier<T> properties) {
         return ITEMS.register(name, properties);

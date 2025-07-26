@@ -16,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -32,8 +32,8 @@ import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.*;
@@ -284,16 +284,14 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void sendAndTriggerLocalPacket(CraftGuideGuiPacket packet) {
-        Network.INSTANCE.send(
-                PacketDistributor.SERVER.noArg(),
-                packet);
+        PacketDistributor.sendToServer(packet);
         menu.handleGuiPacket(packet.type, packet.key, packet.value, packet.data);
         this.handleGuiPacket(packet.type, packet.key, packet.value, packet.data);
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
-        renderBackground(guiGraphics);
+        
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
@@ -493,8 +491,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     @Override
-    public boolean mouseScrolled(double x, double y, double p_94688_) {
-        if (actionSelector.visible) return actionSelector.mouseScrolled(x, y, p_94688_);
+    public boolean mouseScrolled(double x, double y, double dx, double p_94688_) {
+        if (actionSelector.visible) return actionSelector.mouseScrolled(x, y, dx, p_94688_);
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof CommonStepDataContainer sdc) {
             MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
@@ -533,7 +531,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_UP, 0));
             }
         }
-        return super.mouseScrolled(x, y, p_94688_);
+        return super.mouseScrolled(x, y, dx, p_94688_);
     }
 
     @Override
@@ -541,7 +539,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (slot instanceof NoPlaceFilterSlot) return;
         if (!slot.isActive()) return;
         slot.set(item);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, item.save(new CompoundTag())));
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, ItemStackUtil.saveStack(menu.player.registryAccess(),item)));
     }
 
     @Override

@@ -1,0 +1,14 @@
+{
+  "type": "maid_storage_manager:list_clear",
+  "ingredients": [
+    {
+      "item": "maid_storage_manager:written_inventory_list",
+      "count":1
+    }
+  ],
+  "result": {
+    "id": "maid_storage_manager:inventory_list",
+    "count":1
+  },
+  "show_notification": true
+}

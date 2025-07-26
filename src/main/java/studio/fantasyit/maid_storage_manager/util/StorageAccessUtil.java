@@ -24,7 +24,8 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
-import studio.fantasyit.maid_storage_manager.items.data.ItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -137,7 +138,7 @@ public class StorageAccessUtil {
             }
         }
         if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            ItemStack stack = maid.getMainHandItem().getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStack.EMPTY);
+            ItemStack stack = maid.getMainHandItem().getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(level.registryAccess());
             if (!stack.isEmpty()) {
                 itemStack.add(stack);
             }
@@ -285,7 +286,7 @@ public class StorageAccessUtil {
                     .stream()
                     .filter(t -> !t.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false))
                     .forEach(t -> {
-                        ItemStackList.Immutable fl = t.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY);
+                        FilterItemStackList.Immutable fl = t.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY);
                         Boolean matchTag = t.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
                         List<ItemStack> list = fl.list();
                         for (int i = 0; i < list.size(); i++) {
@@ -297,7 +298,7 @@ public class StorageAccessUtil {
                     .stream()
                     .filter(t -> t.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false))
                     .forEach(t -> {
-                        ItemStackList.Immutable fl = t.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY);
+                        FilterItemStackList.Immutable fl = t.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY);
                         Boolean matchTag = t.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
                         List<ItemStack> list = fl.list();
                         for (int i = 0; i < list.size(); i++) {

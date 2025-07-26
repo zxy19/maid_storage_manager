@@ -5,17 +5,14 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
-import net.minecraftforge.common.brewing.IBrewingRecipe;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
-
-import java.util.Optional;
 
 public class BrewingCraftMenu extends AbstractCraftMenu<BrewingCraftMenu> {
 
@@ -37,13 +34,13 @@ public class BrewingCraftMenu extends AbstractCraftMenu<BrewingCraftMenu> {
                 79,
                 72)
         );
-        this.setSlotFilter(i - 1, BrewingRecipeRegistry::isValidInput);
+        this.setSlotFilter(i - 1, player.level().potionBrewing()::isInput);
         this.addSlot(new FilterSlot(stepDataContainer,
                 i++,
                 61,
                 29)
         );
-        this.setSlotFilter(i - 1, BrewingRecipeRegistry::isValidIngredient);
+        this.setSlotFilter(i - 1, player.level().potionBrewing()::isIngredient);
         this.addSlot(new FilterSlot(stepDataContainer,
                 i++,
                 124,
@@ -71,14 +68,14 @@ public class BrewingCraftMenu extends AbstractCraftMenu<BrewingCraftMenu> {
                     dIndex = 2;
                 }
                 for (int i = dIndex; i < list.size(); i++) {
-                    ItemStack stack = ItemStack.of(list.getCompound(i));
+                    ItemStack stack = ItemStackUtil.parseStack(registryAccess(),list.getCompound(i));
                     stepDataContainer.setItemNoTrigger(i + 1 - dIndex, stack);
                 }
                 save();
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(registryAccess(),data));
                     save();
                 }
             }
@@ -94,7 +91,7 @@ public class BrewingCraftMenu extends AbstractCraftMenu<BrewingCraftMenu> {
         stepDataContainer.setItemNoTrigger(0, Items.BLAZE_POWDER.getDefaultInstance());
         ItemStack i1 = stepDataContainer.getItem(1);
         ItemStack i2 = stepDataContainer.getItem(2);
-        Optional<IBrewingRecipe> recipe = RecipeUtil.getBrewingRecipe(player.level(), i1, i2);
+        var recipe = RecipeUtil.getBrewingRecipe(player.level(), i1, i2);
         recipe.ifPresentOrElse(craftingRecipe -> {
             ItemStack resultItem = craftingRecipe.getOutput(i1, i2);
             stepDataContainer.setItemNoTrigger(3, resultItem);

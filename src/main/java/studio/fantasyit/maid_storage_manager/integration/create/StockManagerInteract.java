@@ -8,13 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.api.ICreateStockKeeperMaidChecker;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.network.CreateStockManagerPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 
 public class StockManagerInteract {
     public static int lastInteractedMaidId = -1;
@@ -44,7 +43,7 @@ public class StockManagerInteract {
                 return false;
             }
             if (player.level().isClientSide)
-                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(), new CreateStockManagerPacket(CreateStockManagerPacket.Type.SHOP_LIST, pos, maid.getId()));
+                PacketDistributor.sendToServer(new CreateStockManagerPacket(CreateStockManagerPacket.Type.SHOP_LIST, pos, maid.getId()));
             else
                 onHandleShoppingList((ServerPlayer) player, maid, pos);
             return true;

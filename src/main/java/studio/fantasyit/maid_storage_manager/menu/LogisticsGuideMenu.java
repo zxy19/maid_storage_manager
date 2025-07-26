@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -10,10 +9,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -36,21 +37,18 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
         super(GuiRegistry.LOGISTICS_GUIDE_MENU.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
-        CompoundTag tag = target.getOrCreateTag();
         container = new SimpleContainer(1);
-        container.setItem(0, ItemStack.of(tag.getCompound(LogisticsGuide.TAG_ITEM)));
+        container.setItem(0, target.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(player.registryAccess()).copy());
         container.addListener((e) -> save());
-        single_mode = tag.getBoolean(LogisticsGuide.TAG_SINGLE_MODE);
+        single_mode = target.getOrDefault(DataComponentRegistry.LOGISTICS_SINGLE, false);
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
     }
 
     public void save() {
-        CompoundTag tag = target.getOrCreateTag();
-        tag.put(LogisticsGuide.TAG_ITEM, container.getItem(0).save(new CompoundTag()));
-        tag.putBoolean(LogisticsGuide.TAG_SINGLE_MODE, single_mode);
-        target.setTag(tag);
+        target.set(DataComponentRegistry.LOGISTICS_SINGLE, single_mode);
+        target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(player.registryAccess(), container.getItem(0).copy()));
     }
 
     private void addFilterSlots() {

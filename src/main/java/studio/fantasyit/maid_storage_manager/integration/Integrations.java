@@ -1,8 +1,8 @@
 package studio.fantasyit.maid_storage_manager.integration;
 
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.LoadingModList;
+import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import studio.fantasyit.maid_storage_manager.Config;
 

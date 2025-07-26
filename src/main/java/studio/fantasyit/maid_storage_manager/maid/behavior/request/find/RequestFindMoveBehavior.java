@@ -12,13 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -88,11 +88,11 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (RequestListItem.isBlackMode(maid.getMainHandItem())) return false;
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
         boolean matchTag = RequestListItem.matchNbt(maid.getMainHandItem());
-        Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        Map<Target, List<ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
-        for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
+        for (Map.Entry<Target, List<ItemCount>> blockPos : viewed.entrySet()) {
             if (MemoryUtil.getRequestProgress(maid).isVisitedPos(blockPos.getKey())) continue;
-            Optional<ViewedInventoryMemory.ItemCount> targetItem = blockPos
+            Optional<ItemCount> targetItem = blockPos
                     .getValue()
                     .stream()
                     .filter(itemCount ->

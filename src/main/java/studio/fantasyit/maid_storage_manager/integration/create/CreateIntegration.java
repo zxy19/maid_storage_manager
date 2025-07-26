@@ -3,8 +3,8 @@ package studio.fantasyit.maid_storage_manager.integration.create;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingTypeRegistry;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.jetbrains.annotations.UnmodifiableView;
 import studio.fantasyit.maid_storage_manager.Config;
@@ -17,7 +17,7 @@ import java.util.List;
 public class CreateIntegration {
     public static void init() {
         if (Integrations.createStockManager())
-            MinecraftForge.EVENT_BUS.addListener(AddCreateStockButtonForMaid::addStockButton);
+            NeoForge.EVENT_BUS.addListener(AddCreateStockButtonForMaid::addStockButton);
     }
 
     public enum AddressType {

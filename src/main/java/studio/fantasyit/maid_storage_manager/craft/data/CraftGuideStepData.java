@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.craft.data;
 
-import com.google.common.collect.ImmutableCollection;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.RegistryAccess;
@@ -14,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +25,10 @@ public class CraftGuideStepData {
             instance.group(
                     Target.CODEC.fieldOf(CraftGuide.TAG_OP_STORAGE)
                             .forGetter(CraftGuideStepData::getStorage),
-                    Codec.list(ItemStack.CODEC)
+                    Codec.list(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED)
                             .fieldOf(CraftGuide.TAG_OP_INPUT)
                             .forGetter(CraftGuideStepData::getInput),
-                    Codec.list(ItemStack.CODEC)
+                    Codec.list(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED)
                             .fieldOf(CraftGuide.TAG_OP_OUTPUT)
                             .forGetter(CraftGuideStepData::getOutput),
                     ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_OP_ACTION)
@@ -97,7 +97,7 @@ public class CraftGuideStepData {
             ListTag list = tag.getList(CraftGuide.TAG_OP_INPUT, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 inputs.add(
-                        ItemStack.parseOptional(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -107,7 +107,7 @@ public class CraftGuideStepData {
             ListTag list = tag.getList(CraftGuide.TAG_OP_OUTPUT, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 outputs.add(
-                        ItemStack.parseOptional(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -128,7 +128,7 @@ public class CraftGuideStepData {
             ListTag list = new ListTag();
             for (ItemStack itemStack : input) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(registryAccess, new CompoundTag()));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(registryAccess,itemStack));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
@@ -138,7 +138,7 @@ public class CraftGuideStepData {
             ListTag list = new ListTag();
             for (ItemStack itemStack : output) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(registryAccess, new CompoundTag()));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(registryAccess,itemStack));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
@@ -179,13 +179,13 @@ public class CraftGuideStepData {
     }
 
     public void setInput(int i, ItemStack itemStack) {
-        if (input instanceof ImmutableCollection<?>)
+        if (!(input instanceof ArrayList<?>))
             input = new ArrayList<>(input);
         input.set(i, itemStack);
     }
 
     public void clearInput() {
-        if (input instanceof ImmutableCollection<?>)
+        if (!(input instanceof ArrayList<?>))
             input = new ArrayList<>(input);
         input.clear();
     }
@@ -199,13 +199,13 @@ public class CraftGuideStepData {
     }
 
     public void setOutput(int i, ItemStack itemStack) {
-        if (output instanceof ImmutableCollection<?>)
+        if (!(output instanceof ArrayList<?>))
             output = new ArrayList<>(output);
         output.set(i, itemStack);
     }
 
     public void clearOutput() {
-        if (output instanceof ImmutableCollection<?>)
+        if (!(output instanceof ArrayList<?>))
             output = new ArrayList<>(output);
         output.clear();
     }
@@ -237,14 +237,14 @@ public class CraftGuideStepData {
         this.action = action;
         this.actionType = CraftManager.getInstance().getAction(action);
         if (input.size() < actionType.inputCount()) {
-            if (input instanceof ImmutableCollection<?>)
+            if (!(input instanceof ArrayList<?>))
                 input = new ArrayList<>(input);
             for (int i = input.size(); i < actionType.inputCount(); i++) {
                 input.add(ItemStack.EMPTY);
             }
         }
         if (output.size() < actionType.outputCount()) {
-            if (output instanceof ImmutableCollection<?>)
+            if (!(output instanceof ArrayList<?>))
                 output = new ArrayList<>(output);
             for (int i = output.size(); i < actionType.outputCount(); i++) {
                 output.add(ItemStack.EMPTY);
@@ -269,5 +269,21 @@ public class CraftGuideStepData {
                 optional,
                 extraData.copy()
         );
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = storage.hashCode() * 31 + action.hashCode() * 17 + extraData.hashCode();
+        int tHash = 0;
+        for (ItemStack itemStack : input) {
+            tHash += itemStack.hashCode();
+        }
+        hash += tHash % 9941;
+        tHash = 0;
+        for (ItemStack itemStack : output) {
+            tHash += itemStack.hashCode();
+        }
+        hash += tHash % 9473;
+        return hash % 10000831;
     }
 }

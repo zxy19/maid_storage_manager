@@ -12,7 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -63,7 +63,7 @@ public class Ae2Storage implements IMaidStorage {
     }
 
     @Override
-    public boolean isCraftGuideProvider(List<ViewedInventoryMemory.ItemCount> blockPos) {
+    public boolean isCraftGuideProvider(List<ItemCount> blockPos) {
         return true;
     }
 }

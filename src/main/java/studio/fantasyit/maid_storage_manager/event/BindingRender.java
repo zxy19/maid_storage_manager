@@ -22,6 +22,7 @@ import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.*;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftAssets;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -113,7 +114,7 @@ public final class BindingRender {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) {
             if (mainStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                mainStack = mainStack.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStack.EMPTY);
+                mainStack = mainStack.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(mc.player.registryAccess());
                 if (mainStack.isEmpty())
                     return;
             } else {
@@ -169,7 +170,7 @@ public final class BindingRender {
         boolean noRenderSelecting = false;
         if (mainStack.getItem() != ItemRegistry.CRAFT_GUIDE.get()) {
             if (mainStack.getItem() == ItemRegistry.LOGISTICS_GUIDE.get()) {
-                mainStack = LogisticsGuide.getCraftGuideItemStack(mainStack);
+                mainStack = LogisticsGuide.getCraftGuideItemStack(mainStack, mc.player.registryAccess());
                 noRenderSelecting = true;
                 if (mainStack.isEmpty())
                     return;
@@ -253,7 +254,7 @@ public final class BindingRender {
                         BoxRenderUtil.drawText(
                                 event,
                                 mc,
-                                maid.getPosition(event.getPartialTick().getGameTimeDeltaTicks()),
+                                maid.getPosition(event.getPartialTick().getGameTimeDeltaPartialTick(true)),
                                 baubleItemHandler.getStackInSlot(i).getHoverName().getString(),
                                 0xFFFFFFFF,
                                 oh

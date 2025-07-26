@@ -12,16 +12,18 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.Optional;
 
-public class JeiStoneCutterRecipeHandler implements IRecipeTransferHandler<StoneCutterCraftMenu, StonecutterRecipe> {
+public class JeiStoneCutterRecipeHandler implements IRecipeTransferHandler<StoneCutterCraftMenu, RecipeHolder<StonecutterRecipe>> {
     @Override
     public Class<? extends StoneCutterCraftMenu> getContainerClass() {
         return StoneCutterCraftMenu.class;
@@ -33,29 +35,30 @@ public class JeiStoneCutterRecipeHandler implements IRecipeTransferHandler<Stone
     }
 
     @Override
-    public RecipeType<StonecutterRecipe> getRecipeType() {
+    public RecipeType<RecipeHolder<StonecutterRecipe>> getRecipeType() {
         return RecipeTypes.STONECUTTING;
     }
 
     @Override
-    public @Nullable IRecipeTransferError transferRecipe(StoneCutterCraftMenu container, StonecutterRecipe recipe, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+    public @Nullable IRecipeTransferError transferRecipe(StoneCutterCraftMenu container, RecipeHolder<StonecutterRecipe> holder, IRecipeSlotsView recipeSlots, Player player, boolean maxTransfer, boolean doTransfer) {
+        StonecutterRecipe recipe = holder.value();
         if (doTransfer) {
             ListTag inputs = new ListTag();
             recipeSlots.getSlotViews(RecipeIngredientRole.INPUT)
                     .stream()
                     .map(IRecipeSlotView::getItemStacks)
                     .map(l -> InventoryListUtil.getMatchingForPlayer(l.toList()))
-                    .map(t -> t.save(new CompoundTag()))
+                    .map(t -> ItemStackUtil.saveStack(player.registryAccess(),t))
                     .forEach(inputs::add);
             recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)
                     .stream()
                     .map(IRecipeSlotView::getItemStacks)
                     .map(l -> l.findFirst().orElse(ItemStack.EMPTY))
-                    .map(t -> t.save(new CompoundTag()))
+                    .map(t -> t.save(player.registryAccess()))
                     .forEach(inputs::add);
             CompoundTag data = new CompoundTag();
             data.put("inputs", inputs);
-            Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+            PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                     CraftGuideGuiPacket.Type.SET_ALL_INPUT,
                     0,
                     0,

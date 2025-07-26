@@ -11,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 public class JEIRequestResultPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<JEIRequestResultPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "JEIRequestResultPacket"
+                    MaidStorageManager.MODID, "jei_request_result"
             )
     );
 

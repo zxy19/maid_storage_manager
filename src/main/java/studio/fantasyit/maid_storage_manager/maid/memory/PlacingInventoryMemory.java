@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class PlacingInventoryMemory extends AbstractTargetMemory {
     public static final Codec<PlacingInventoryMemory> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     TargetData.CODEC.fieldOf("targetData").forGetter(AbstractTargetMemory::getTargetData),
-                    Codec.list(ItemStack.CODEC)
+                    Codec.list(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED)
                             .fieldOf("arrangeItems")
                             .forGetter(PlacingInventoryMemory::getArrangeItems),
                     Codec.BOOL.fieldOf("anySuccess")

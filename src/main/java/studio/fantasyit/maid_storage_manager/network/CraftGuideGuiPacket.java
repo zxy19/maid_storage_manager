@@ -11,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 public class CraftGuideGuiPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<CraftGuideGuiPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "CraftGuideGuiPacket"
+                    MaidStorageManager.MODID, "craft_guide_gui_packet"
             )
     );
 

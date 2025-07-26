@@ -1,20 +1,74 @@
 package studio.fantasyit.maid_storage_manager.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.util.DataComponentUtil;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 public class ItemStackUtil {
+    static Codec<ItemStack> CODEC_UNLIMITED = Codec.lazyInitialized(() -> RecordCodecBuilder.create((p_347288_) -> p_347288_.group(
+                    ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                    Codec.INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
+                    DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
+            ).apply(p_347288_, ItemStack::new))
+    );
+    public static Codec<ItemStack> OPTIONAL_CODEC_UNLIMITED = ExtraCodecs.optionalEmptyMap(CODEC_UNLIMITED)
+            .xmap((p_330099_) -> p_330099_.orElse(ItemStack.EMPTY), (p_330101_) -> p_330101_.isEmpty() ? Optional.empty() : Optional.of(p_330101_));
+
+
+    public static StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_STREAM_CODEC = new StreamCodec<>() {
+        private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_STREAM_CODEC;
+
+        public ItemStack decode(RegistryFriendlyByteBuf p_320491_) {
+            int i = p_320491_.readInt();
+            if (i <= 0) {
+                return ItemStack.EMPTY;
+            } else {
+                Holder<Item> holder = ITEM_STREAM_CODEC.decode(p_320491_);
+                DataComponentPatch datacomponentpatch = DataComponentPatch.STREAM_CODEC.decode(p_320491_);
+                return new ItemStack(holder, i, datacomponentpatch);
+            }
+        }
+
+        public void encode(RegistryFriendlyByteBuf p_320527_, ItemStack p_320873_) {
+            if (p_320873_.isEmpty()) {
+                p_320527_.writeInt(0);
+            } else {
+                p_320527_.writeInt(p_320873_.getCount());
+                ITEM_STREAM_CODEC.encode(p_320527_, p_320873_.getItemHolder());
+                DataComponentPatch.STREAM_CODEC.encode(p_320527_, p_320873_.getComponentsPatch());
+            }
+
+        }
+
+        static {
+            ITEM_STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
+        }
+    };
+
     public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag) {
         if (stack1.isEmpty() && stack2.isEmpty()) return true;
         if (stack1.isEmpty() || stack2.isEmpty()) return false;
@@ -84,5 +138,13 @@ public class ItemStackUtil {
         }
         list.add(itemStack.copy());
         return itemStack.copy();
+    }
+
+    public static ItemStack parseStack(HolderLookup.Provider holderLookup, CompoundTag tag) {
+        return OPTIONAL_CODEC_UNLIMITED.parse(holderLookup.createSerializationContext(NbtOps.INSTANCE), tag).getOrThrow();
+    }
+
+    public static CompoundTag saveStack(HolderLookup.Provider holderLookup, ItemStack stack) {
+        return (CompoundTag) DataComponentUtil.wrapEncodingExceptions(stack, OPTIONAL_CODEC_UNLIMITED, holderLookup);
     }
 }

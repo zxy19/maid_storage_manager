@@ -9,14 +9,14 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
+import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.InvConsumeSimulator;
@@ -47,7 +47,7 @@ public class CraftLayerChain {
             instance.group(
                     CraftLayer.CODEC.listOf().fieldOf("layers").forGetter(t -> t.layers),
                     SolvedCraftLayer.CODEC.listOf().fieldOf("nodes").forGetter(t -> t.nodes),
-                    ItemStack.CODEC.listOf().fieldOf("remainMaterials").forGetter(t -> t.remainMaterials),
+                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("remainMaterials").forGetter(t -> t.remainMaterials),
                     Codec.INT.fieldOf("freeSlots").forGetter(t -> t.freeSlots),
                     Codec.INT.fieldOf("group").forGetter(t -> t.group),
                     Codec.BOOL.fieldOf("freeze").forGetter(t -> t.freeze),
@@ -1073,7 +1073,7 @@ public class CraftLayerChain {
 
     //region 方块占用控制
     public boolean tryUseAnotherCraftGuide(ServerLevel level, EntityMaid maid) {
-        CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);
+        CraftBlockOccupy craftBlockOccupy = CraftBlockOccupy.get(level);
         CraftLayer layer = getCurrentLayer();
         SolvedCraftLayer node = getCurrentNode();
         if (layer == null) return false;
@@ -1085,7 +1085,7 @@ public class CraftLayerChain {
     }
 
     public boolean checkIsCurrentOccupied(ServerLevel level, EntityMaid maid) {
-        CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);
+        CraftBlockOccupy craftBlockOccupy = CraftBlockOccupy.get(level);
         Optional<CraftGuideData> craftDataO = getCurrentLayer().getCraftData();
         if (!craftDataO.isPresent()) return false;
         CraftGuideData craftData = craftDataO.get();
@@ -1099,7 +1099,7 @@ public class CraftLayerChain {
     }
 
     public void setOccupied(ServerLevel level, EntityMaid maid) {
-        CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);
+        CraftBlockOccupy craftBlockOccupy = CraftBlockOccupy.get(level);
         Optional<CraftGuideData> craftDataO = getCurrentLayer().getCraftData();
         if (!craftDataO.isPresent()) return;
         CraftGuideData craftData = craftDataO.get();
@@ -1111,7 +1111,7 @@ public class CraftLayerChain {
     }
 
     public void removeOccupied(ServerLevel level, EntityMaid maid) {
-        CraftBlockOccupyDataProvider.CraftBlockOccupy craftBlockOccupy = CraftBlockOccupyDataProvider.get(level);
+        CraftBlockOccupy craftBlockOccupy = CraftBlockOccupy.get(level);
         craftBlockOccupy.removeOccupyFor(maid, getCurrentNode().index());
     }
     // endregion

@@ -15,11 +15,13 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
-import studio.fantasyit.maid_storage_manager.items.data.ItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.items.data.TargetList;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
+import java.util.List;
 import java.util.UUID;
 
 public class DataComponentRegistry {
@@ -27,14 +29,16 @@ public class DataComponentRegistry {
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, MaidStorageManager.MODID);
 
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStack>> CONTAIN_ITEM = DATA_COMPONENTS
-            .register("contain_item", () -> DataComponentType.<ItemStack>builder().persistent(ItemStack.CODEC).networkSynchronized(ItemStack.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStackData>> CONTAIN_ITEM = DATA_COMPONENTS
+            .register("contain_itemstack", () -> DataComponentType.<ItemStackData>builder().persistent(ItemStackData.CODEC).networkSynchronized(ItemStackData.STREAM_CODEC).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<TargetList.Immutable>> TARGETS = DATA_COMPONENTS
             .register("targets", () -> DataComponentType.<TargetList.Immutable>builder().persistent(TargetList.Immutable.CODEC).networkSynchronized(TargetList.Immutable.STREAM_CODEC).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SELECTING = DATA_COMPONENTS
             .register("selecting", () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> MARK = DATA_COMPONENTS
             .register("mark", () -> DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<List<ItemStack>>> TO_SPAWN_ITEMS = DATA_COMPONENTS
+            .register("to_spawn_items", () -> DataComponentType.<List<ItemStack>>builder().persistent(ItemStack.CODEC.listOf()).networkSynchronized(ItemStack.LIST_STREAM_CODEC).build());
 
 
     //region RequestListItem
@@ -97,8 +101,8 @@ public class DataComponentRegistry {
             .register("filter_match_tag", () -> DataComponentType.<Boolean>builder().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> FILTER_BLACK_MODE = DATA_COMPONENTS
             .register("filter_black_mode", () -> DataComponentType.<Boolean>builder().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStackList.Immutable>> FILTER_ITEMS = DATA_COMPONENTS
-            .register("filter_items", () -> DataComponentType.<ItemStackList.Immutable>builder().persistent(ItemStackList.Immutable.CODEC).networkSynchronized(ItemStackList.Immutable.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<FilterItemStackList.Immutable>> FILTER_ITEMS = DATA_COMPONENTS
+            .register("filter_items", () -> DataComponentType.<FilterItemStackList.Immutable>builder().persistent(FilterItemStackList.Immutable.CODEC).networkSynchronized(FilterItemStackList.Immutable.STREAM_CODEC).build());
     //endregion
     //region CraftGuide
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> CRAFT_GUIDE_SPECIAL = DATA_COMPONENTS

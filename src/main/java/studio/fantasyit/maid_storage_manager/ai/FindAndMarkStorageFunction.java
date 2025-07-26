@@ -19,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -60,7 +60,7 @@ public class FindAndMarkStorageFunction implements IFunctionCall<FindAndMarkStor
 
     @Override
     public ToolResponse onToolCall(ItemIdData itemIdData, EntityMaid entityMaid) {
-        Map<Target, List<ViewedInventoryMemory.ItemCount>> itemKeys = MemoryUtil.getViewedInventory(entityMaid).positionFlatten();
+        Map<Target, List<ItemCount>> itemKeys = MemoryUtil.getViewedInventory(entityMaid).positionFlatten();
         StringBuilder message = new StringBuilder();
         for (String itemId : itemIdData.itemId()) {
             ResourceLocation resourceLocation = ResourceLocation.tryParse(itemId);

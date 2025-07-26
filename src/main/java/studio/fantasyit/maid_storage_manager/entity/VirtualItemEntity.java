@@ -15,10 +15,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.registry.EntityRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 public class VirtualItemEntity extends Entity {
-
-    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(VirtualItemEntity.class, EntityDataSerializers.ITEM_STACK);
     private int ttl;
     private int age;
     public final float bobOffs;
@@ -39,13 +39,13 @@ public class VirtualItemEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(CompoundTag p_20052_) {
-        this.setItem(ItemStack.parseOptional(registryAccess(), p_20052_.getCompound("item")));
+        this.setItem(ItemStackUtil.parseStack(registryAccess(), p_20052_.getCompound("item")));
         this.ttl = p_20052_.getInt("ttl");
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag p_20139_) {
-        p_20139_.put("Item", this.getItem().save(registryAccess(), new CompoundTag()));
+        p_20139_.put("Item", ItemStackUtil.saveStack(registryAccess(), this.getItem()));
         p_20139_.putInt("TTL", ttl);
     }
 

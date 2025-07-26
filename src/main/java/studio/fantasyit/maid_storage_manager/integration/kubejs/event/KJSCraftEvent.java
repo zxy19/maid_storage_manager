@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.integration.kubejs.event;
 
-import dev.latvian.mods.kubejs.event.EventJS;
+import dev.latvian.mods.kubejs.event.KubeEvent;
 import net.minecraft.resources.ResourceLocation;
 import studio.fantasyit.maid_storage_manager.craft.CollectCraftEvent;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
@@ -13,7 +13,7 @@ import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.co
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.generator.IKJSAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.type.IKJSCraftType;
 
-public class KJSCraftEvent extends EventJS {
+public class KJSCraftEvent implements KubeEvent {
 
     private final CollectCraftEvent event;
 

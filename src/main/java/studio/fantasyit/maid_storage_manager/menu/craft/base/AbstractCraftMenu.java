@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.base;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -10,8 +11,10 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
+import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.HashMap;
@@ -29,7 +32,7 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
         super(p_38851_, p_38852_);
         this.player = player;
         target = player.getMainHandItem();
-        craftGuideData = CraftGuideData.fromItemStack(target);
+        craftGuideData = target.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
         stepDataContainer = new StepDataContainer(craftGuideData.getSteps().get(0), this);
         addFilterSlots();
         addPlayerSlots();
@@ -179,10 +182,14 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
         recalculateRecipe();
         stepDataContainer.save();
         craftGuideData.buildInputAndOutputs();
-        craftGuideData.saveToItemStack(target);
+        target.set(DataComponentRegistry.CRAFT_GUIDE_DATA, craftGuideData);
         CraftGuideRenderData.recalculateItemStack(target);
         this.broadcastChanges();
     }
 
     abstract public void recalculateRecipe();
+
+    public HolderLookup.Provider registryAccess() {
+        return player.registryAccess();
+    }
 }

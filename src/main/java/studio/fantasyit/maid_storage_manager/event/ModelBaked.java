@@ -19,15 +19,16 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 public class ModelBaked {
     @SubscribeEvent
     public static void onModelBaked(ModelEvent.ModifyBakingResult event) {
-        event.getModels().put(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "filter_list"), "inventory"), new CustomEmptyModel());
-        event.getModels().put(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "craft_guide"), "inventory"), new CustomEmptyModel());
+        event.getModels().put(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "filter_list"), ModelResourceLocation.INVENTORY_VARIANT), new CustomEmptyModel());
+        event.getModels().put(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "craft_guide"), ModelResourceLocation.INVENTORY_VARIANT), new CustomEmptyModel());
+        event.getModels().put(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "wrapped_multi_output"), ModelResourceLocation.INVENTORY_VARIANT), new CustomEmptyModel());
     }
 
     @SubscribeEvent
-    public static void onModelBaked(ModelEvent.RegisterAdditional event) {
-        event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "filter_list_base"), "inventory"));
-        event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "craft_guide_base"), "inventory"));
-        event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "craft_guide_base_blank"), "inventory"));
+    public static void onModelBakedAdd(ModelEvent.RegisterAdditional event) {
+        event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "item/filter_list_base"), ModelResourceLocation.STANDALONE_VARIANT));
+        event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "item/craft_guide_base"), ModelResourceLocation.STANDALONE_VARIANT));
+        event.register(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "item/craft_guide_base_blank"), ModelResourceLocation.STANDALONE_VARIANT));
     }
 
     @SubscribeEvent

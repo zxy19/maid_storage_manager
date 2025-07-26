@@ -11,10 +11,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -65,14 +65,14 @@ public class JEICommonRecipeHandler implements IUniversalRecipeTransferHandler<C
             for (int i = 0; i < step.step.actionType.inputCount(); i++) {
                 if (inputId < inputs.size()) {
                     if (doTransfer)
-                        inputTag.add(inputs.get(inputId).save(new CompoundTag()));
+                        inputTag.add(ItemStackUtil.saveStack(player.registryAccess(),inputs.get(inputId)));
                     inputId++;
                 }
             }
             for (int i = 0; i < step.step.actionType.outputCount(); i++) {
                 if (outputId < outputs.size()) {
                     if (doTransfer)
-                        outputTag.add(outputs.get(outputId).save(new CompoundTag()));
+                        outputTag.add(ItemStackUtil.saveStack(player.registryAccess(),outputs.get(outputId)));
                     outputId++;
                 }
             }
@@ -80,7 +80,7 @@ public class JEICommonRecipeHandler implements IUniversalRecipeTransferHandler<C
         if (doTransfer) {
             data.put("inputs", inputTag);
             data.put("outputs", outputTag);
-            Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+            PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                     CraftGuideGuiPacket.Type.SET_ALL_INPUT,
                     0,
                     0,

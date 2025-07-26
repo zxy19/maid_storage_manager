@@ -124,14 +124,14 @@ public class BoxRenderUtil {
         VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderType.LINES);
         LevelRenderer.renderLineBox(event.getPoseStack(), buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
         if (!Strings.isBlank(key)) {
-            Vec3 livingFrom = entity.getPosition(event.getPartialTick().getGameTimeDeltaTicks()).add(0, entity.getBbHeight() + 0.5f, 0);
+            Vec3 livingFrom = entity.getPosition(event.getPartialTick().getGameTimeDeltaPartialTick(true)).add(0, entity.getBbHeight() + 0.5f, 0);
             drawText(event, mc, livingFrom, key, textColor, 0);
         }
     }
 
     public static void drawText(RenderLevelStageEvent event, Minecraft mc, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
         PoseStack pose = event.getPoseStack();
-        Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick().getGameTimeDeltaTicks());
+        Vec3 fromPos = mc.player.getEyePosition(event.getPartialTick().getGameTimeDeltaPartialTick(true));
         Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
         pose.pushPose();
         pose.translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);

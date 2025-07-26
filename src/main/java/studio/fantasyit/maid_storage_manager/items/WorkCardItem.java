@@ -18,6 +18,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.craft.work.SolvedCraftLayer;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -223,7 +224,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
 
     public static void syncStorageOn(EntityMaid maid, Target ambitiousTarget) {
         Target target = MemoryUtil.getViewedInventory(maid).ambitiousPos((ServerLevel) maid.level(), ambitiousTarget);
-        Map<String, List<ViewedInventoryMemory.ItemCount>> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAtInternal(target);
+        Map<String, List<ItemCount>> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAtInternal(target);
         ServerLevel level = (ServerLevel) maid.level();
         getNearbyMaidsSameGroup(maid, false, true)
                 .forEach(toMaid -> {

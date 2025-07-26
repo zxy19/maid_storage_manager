@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +23,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -82,24 +84,24 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     }
 
 
-    public static CraftGuideData getCraftGuideData(ItemStack itemInHand) {
-        ItemStack craftGuideItemStack = getCraftGuideItemStack(itemInHand);
+    public static CraftGuideData getCraftGuideData(ItemStack itemInHand, HolderLookup.Provider provider) {
+        ItemStack craftGuideItemStack = getCraftGuideItemStack(itemInHand, provider);
         if (craftGuideItemStack.isEmpty()) return null;
-        return CraftGuideData.fromItemStack(craftGuideItemStack);
+        return craftGuideItemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
     }
 
-    public static ItemStack getCraftGuideItemStack(ItemStack itemInHand) {
-        ItemStack item = getItemStack(itemInHand);
+    public static ItemStack getCraftGuideItemStack(ItemStack itemInHand, HolderLookup.Provider provider) {
+        ItemStack item = getItemStack(itemInHand, provider);
         return item.is(ItemRegistry.CRAFT_GUIDE.get()) ? item : ItemStack.EMPTY;
     }
 
-    public static ItemStack getFilterItemStack(ItemStack itemInHand) {
-        ItemStack item = getItemStack(itemInHand);
+    public static ItemStack getFilterItemStack(ItemStack itemInHand, HolderLookup.Provider provider) {
+        ItemStack item = getItemStack(itemInHand, provider);
         return item.is(ItemRegistry.FILTER_LIST.get()) ? item : ItemStack.EMPTY;
     }
 
-    public static ItemStack getItemStack(ItemStack itemInHand) {
-        return itemInHand.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStack.EMPTY);
+    public static ItemStack getItemStack(ItemStack itemInHand, HolderLookup.Provider provider) {
+        return itemInHand.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(provider);
     }
 
     public static @Nullable Target getInput(ItemStack itemInHand) {
@@ -107,7 +109,7 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     }
 
     public static @Nullable Target getOutput(ItemStack itemInHand) {
-        return itemInHand.get(DataComponentRegistry.LOGISTICS_INPUT);
+        return itemInHand.get(DataComponentRegistry.LOGISTICS_OUTPUT);
     }
 
     public static int getWorkCount(ItemStack itemInHand) {
@@ -184,7 +186,7 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
             ));
         }
 
-        ItemStack itemStack1 = getItemStack(itemStack);
+        ItemStack itemStack1 = getItemStack(itemStack, p_339594_.registries());
         if (itemStack1.is(ItemRegistry.CRAFT_GUIDE.get())) {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.logistics_guide.craft_guide").withStyle(ChatFormatting.YELLOW));
         } else if (itemStack1.is(ItemRegistry.FILTER_LIST.get())) {

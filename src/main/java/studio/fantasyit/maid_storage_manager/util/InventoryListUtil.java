@@ -46,7 +46,7 @@ public class InventoryListUtil {
             Optional<CraftGuideData> craftable = InventoryListDataClient.getInstance().get(uuid)
                     .stream()
                     .filter(i -> i.itemStack.is(ItemRegistry.CRAFT_GUIDE.get()))
-                    .map(i -> i.itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.EMPTY))
+                    .map(i -> i.itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty()))
                     .filter(i -> i.getOutput().stream().anyMatch(ii -> ii.is(itemStack1.getItem())))
                     .findFirst();
             if (craftable.isPresent())

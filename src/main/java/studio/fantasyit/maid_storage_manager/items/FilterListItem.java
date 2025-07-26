@@ -14,20 +14,20 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.items.data.ItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 
 import java.util.List;
 
 public class FilterListItem extends HangUpItem implements MenuProvider {
-    public static final ItemStackList.Immutable EMPTY = new ItemStackList().toImmutable();
+    public static final FilterItemStackList.Immutable EMPTY = new FilterItemStackList().toImmutable();
 
     public FilterListItem() {
         super(
                 new Properties()
                         .stacksTo(1)
-                        .component(DataComponentRegistry.FILTER_ITEMS, new ItemStackList().toImmutable())
+                        .component(DataComponentRegistry.FILTER_ITEMS, new FilterItemStackList().toImmutable())
         );
     }
 
@@ -63,7 +63,7 @@ public class FilterListItem extends HangUpItem implements MenuProvider {
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.filter_list.white_mode"));
 
 
-        List<ItemStack> list = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new ItemStackList().toImmutable()).list();
+        List<ItemStack> list = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new FilterItemStackList().toImmutable()).list();
         for (ItemStack itemstack : list) {
             if (itemstack.isEmpty()) continue;
             Component component = Component.translatable("gui.maid_storage_manager.filter_list.item",

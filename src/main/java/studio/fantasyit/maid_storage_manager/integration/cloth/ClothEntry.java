@@ -6,8 +6,8 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.AbstractFieldBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
@@ -22,14 +22,16 @@ import java.util.function.BiConsumer;
 
 public class ClothEntry {
     public static void registryConfigPage() {
-        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () ->
-                new ConfigScreenHandler.ConfigScreenFactory((client, parent) -> {
+        ModLoadingContext.get().getActiveContainer().registerExtensionPoint(
+                IConfigScreenFactory.class,
+                (t, c) -> {
                     ConfigBuilder root = ConfigBuilder.create().setTitle(Component.translatable("config.maid_storage_manager.title"));
                     root.setGlobalized(true);
                     root.setGlobalizedExpanded(false);
                     createEntry(root, root.entryBuilder());
-                    return root.setParentScreen(parent).build();
-                }));
+                    return root.setParentScreen(c).build();
+                }
+        );
     }
 
     public static void createEntry(ConfigBuilder root, ConfigEntryBuilder entryBuilder) {

@@ -5,12 +5,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
@@ -73,7 +75,7 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
                 ListTag list = data.getList("inputs", 10);
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag tag = list.getCompound(i);
-                    ItemStack stack = ItemStack.of(tag);
+                    ItemStack stack = ItemStackUtil.parseStack(registryAccess(), tag);
                     stepDataContainer.setItemNoTrigger(i, stack);
                 }
                 for (int i = list.size(); i < stepDataContainer.getContainerSize(); i++) {
@@ -83,7 +85,7 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(registryAccess(), data));
                     save();
                 }
             }
@@ -96,12 +98,12 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
         for (int i = 0; i < stepDataContainer.inputCount; i++) {
             items.add(stepDataContainer.getItem(i));
         }
-        Optional<AltarRecipe> recipe = RecipeUtil.getAltarRecipe(player.level(), RecipeUtil.wrapAltarRecipeInventory(items));
+        Optional<RecipeHolder<AltarRecipe>> recipe = RecipeUtil.getAltarRecipe(player.level(), RecipeUtil.wrapAltarRecipeInventory(items));
         recipe.ifPresentOrElse(craftingRecipe -> {
-            ItemStack resultItem = craftingRecipe.getResultItem(player.level().registryAccess());
+            ItemStack resultItem = craftingRecipe.value().getResultItem(player.level().registryAccess());
             stepDataContainer.setItemNoTrigger(6, resultItem);
             stepDataContainer.setCount(6, resultItem.getCount());
-            ppcost = craftingRecipe.getPowerCost();
+            ppcost = craftingRecipe.value().getPower();
         }, () -> {
             stepDataContainer.setItemNoTrigger(6, ItemStack.EMPTY);
             ppcost = -1;

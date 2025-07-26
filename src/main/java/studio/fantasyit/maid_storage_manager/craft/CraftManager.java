@@ -5,8 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
@@ -25,7 +25,6 @@ import studio.fantasyit.maid_storage_manager.craft.generator.type.ars.GeneratorA
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ars.GeneratorArsNouveauEnchanting;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.ars.GeneratorArsNouveauImbuement;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
-import studio.fantasyit.maid_storage_manager.craft.generator.type.botania.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.create.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.mekanism.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
@@ -34,7 +33,6 @@ import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.KJSEventPort;
-import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +59,7 @@ public class CraftManager {
         ArrayList<IAutoCraftGuideGenerator> autoCraftGuideGenerators = new ArrayList<>();
         CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators);
         fireInternal(event);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
         if (Integrations.kjs())
             KJSEventPort.postCraftCollect(event);
 
@@ -258,9 +256,9 @@ public class CraftManager {
                     1
             );
         }
-        if (Integrations.taczRecipe()) {
-            TaczRecipe.addType(event);
-        }
+//        if (Integrations.taczRecipe()) {
+//            TaczRecipe.addType(event);
+//        }
         if (Integrations.create()) {
             event.addAutoCraftGuideGenerator(new GeneratorCreatePress());
             event.addAutoCraftGuideGenerator(new GeneratorCreateCompact());
@@ -285,14 +283,14 @@ public class CraftManager {
             event.addAutoCraftGuideGenerator(new GeneratorAE2Charger());
             event.addAutoCraftGuideGenerator(new GeneratorAE2ItemTransform());
         }
-        if (Integrations.botania()) {
-            event.addAutoCraftGuideGenerator(new GeneratorBotaniaRunicAltar());
-            event.addAutoCraftGuideGenerator(new GeneratorBotaniaApothecary());
-            event.addAutoCraftGuideGenerator(new GeneratorBotaniaManaInfuse());
-            event.addAutoCraftGuideGenerator(new GeneratorBotaniaMythicalFlower());
-            event.addAutoCraftGuideGenerator(new GeneratorBotaniaElven());
-            event.addAutoCraftGuideGenerator(new GeneratorBotaniaDaisy());
-        }
+//        if (Integrations.botania()) {
+//            event.addAutoCraftGuideGenerator(new GeneratorBotaniaRunicAltar());
+//            event.addAutoCraftGuideGenerator(new GeneratorBotaniaApothecary());
+//            event.addAutoCraftGuideGenerator(new GeneratorBotaniaManaInfuse());
+//            event.addAutoCraftGuideGenerator(new GeneratorBotaniaMythicalFlower());
+//            event.addAutoCraftGuideGenerator(new GeneratorBotaniaElven());
+//            event.addAutoCraftGuideGenerator(new GeneratorBotaniaDaisy());
+//        }
         if (Integrations.ars()) {
             event.addAutoCraftGuideGenerator(new GeneratorArsNouveauImbuement());
             event.addAutoCraftGuideGenerator(new GeneratorArsNouveauApparatus());

@@ -10,7 +10,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 public class ItemSelectorGuiPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<ItemSelectorGuiPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "ItemSelectorGuiPacket"
+                    MaidStorageManager.MODID, "item_selector_gui_packet"
             )
     );
 

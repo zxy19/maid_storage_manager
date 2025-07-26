@@ -1,7 +1,5 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -13,13 +11,18 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+
+import java.util.List;
 
 public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilter {
     public Player player;
@@ -37,14 +40,14 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         super(GuiRegistry.ITEM_SELECTOR_MENU.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
-        CompoundTag tag = target.getOrCreateTag();
         filteredItems = new FilterContainer(10, this);
-        filteredItems.deserializeNBT(tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
-        matchTag = tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
-        repeat = tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL);
-        blackmode = tag.getBoolean(RequestListItem.TAG_BLACKMODE);
-        stockMode = tag.getBoolean(RequestListItem.TAG_STOCK_MODE);
-        unitSecond = tag.getBoolean(RequestListItem.TAG_UNIT_SECOND);
+        RequestItemStackList.Immutable requestData = target.getOrDefault(DataComponentRegistry.REQUEST_ITEMS, RequestItemStackList.EMPTY);
+        filteredItems.loadFromRequestData(requestData);
+        matchTag = requestData.matchTag();
+        blackmode = requestData.blackList();
+        stockMode = requestData.stockMode();
+        repeat = target.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0);
+        unitSecond = target.getOrDefault(DataComponentRegistry.REQUEST_CD_UNIT, false);
         if (unitSecond)
             repeat /= 20;
         storageHandler = new SimpleContainer(1) {
@@ -54,7 +57,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 save();
             }
         };
-        storageHandler.setItem(0, ItemStack.of(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE)));
+        storageHandler.setItem(0, target.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(player.registryAccess()).copy());
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
@@ -67,29 +70,20 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     }
 
     public void save() {
-        CompoundTag tag = target.getOrCreateTag();
-        ListTag list = new ListTag();
-        if (tag.contains(RequestListItem.TAG_ITEMS))
-            list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-        while (list.size() <= filteredItems.getContainerSize())
-            list.add(new CompoundTag());
+        RequestItemStackList data = RequestListItem.getMutableRequestData(target);
+        List<RequestItemStackList.ListItem> list = data.getList();
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {
-            CompoundTag tmp = list.getCompound(i);
-            tmp.put(RequestListItem.TAG_ITEMS_ITEM, filteredItems.getItem(i).serializeNBT());
-            tmp.putInt(RequestListItem.TAG_ITEMS_REQUESTED, filteredItems.count[i].getValue());
-            list.set(i, tmp);
+            ItemStack itemStack = filteredItems.getItem(i);
+            list.get(i).item = itemStack;
+            list.get(i).requested = filteredItems.getCount(i);
         }
-        tag.put(RequestListItem.TAG_ITEMS, list);
-        tag.putBoolean(RequestListItem.TAG_MATCH_TAG, matchTag);
-        if (unitSecond)
-            tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat * 20);
-        else
-            tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat);
-        tag.putBoolean(RequestListItem.TAG_BLACKMODE, blackmode);
-        tag.putBoolean(RequestListItem.TAG_STOCK_MODE, stockMode);
-        tag.putBoolean(RequestListItem.TAG_UNIT_SECOND, unitSecond);
-        tag.put(StorageDefineBauble.TAG_STORAGE_DEFINE, storageHandler.getItem(0).serializeNBT());
-        target.setTag(tag);
+        data.stockMode = stockMode;
+        data.matchTag = matchTag;
+        data.blackList = blackmode;
+        target.set(DataComponentRegistry.REQUEST_ITEMS, data.toImmutable());
+        target.set(DataComponentRegistry.REQUEST_CD_UNIT, unitSecond);
+        target.set(DataComponentRegistry.REQUEST_INTERVAL, repeat * (unitSecond ? 20 : 1));
+        target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(player.registryAccess(), storageHandler.getItem(0).copy()));
     }
 
     private void addFilterSlots() {
@@ -246,7 +240,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 int containerSize = this.filteredItems.getContainerSize();
                 boolean found = false;
                 for (int i = 0; i < containerSize; i++)
-                    if (ItemStack.isSameItemSameTags(this.filteredItems.getItem(i), slot.getItem()))
+                    if (ItemStackUtil.isSame(this.filteredItems.getItem(i), slot.getItem(), true))
                         found = true;
                 if (!found) {
                     for (int i = 0; i < containerSize; i++) {

@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
@@ -69,7 +70,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
         switch (type) {
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(registryAccess(), data));
                     recalculateRecipe();
                     save();
                 }
@@ -78,7 +79,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
                 if (data != null) {
                     ListTag list = data.getList("inputs", 10);
                     for (int i = 0; i < 2; i++) {
-                        stepDataContainer.setItem(i, ItemStack.of(list.getCompound(i)));
+                        stepDataContainer.setItem(i, ItemStackUtil.parseStack(registryAccess(), list.getCompound(i)));
                     }
                     recalculateRecipe();
                     save();
@@ -115,9 +116,9 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
     public void recalculateRecipe() {
         if (this.displayOnlySlots == null) return;
         if (!stepDataContainer.getItem(0).isEmpty()) {
-            List<StonecutterRecipe> recipe = RecipeUtil.getStonecuttingRecipe(player.level(), stepDataContainer.getItem(0));
+            List<RecipeHolder<StonecutterRecipe>> recipe = RecipeUtil.getStonecuttingRecipe(player.level(), stepDataContainer.getItem(0));
             if (!recipe.isEmpty()) {
-                availableItems = recipe.stream().map(re -> re.getResultItem(player.level().registryAccess())).toList();
+                availableItems = recipe.stream().map(re -> re.value().getResultItem(player.level().registryAccess())).toList();
                 Optional<ItemStack> first = availableItems.stream().filter(
                         itemStack -> ItemStackUtil.isSameInCrafting(stepDataContainer.getItem(1), itemStack)
                 ).findAny();

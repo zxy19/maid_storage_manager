@@ -13,7 +13,7 @@ import java.util.List;
 public class RenderEntityPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<RenderEntityPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "RenderEntityPacket"
+                    MaidStorageManager.MODID, "render_entity"
             )
     );
 

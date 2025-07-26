@@ -1,0 +1,20 @@
+{
+  "type": "touhou_little_maid:altar_recipe_serializers",
+  "entity": "minecraft:item",
+  "group": "altar_recipe",
+  "category": "misc",
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "result": {
+    "id": "maid_storage_manager:change_flag",
+    "count": 1
+  },
+  "power": 0,
+  "ingredients": [
+    {
+      "item": "minecraft:orange_banner"
+    },
+    {
+      "item": "minecraft:stick"
+    }
+  ]
+}

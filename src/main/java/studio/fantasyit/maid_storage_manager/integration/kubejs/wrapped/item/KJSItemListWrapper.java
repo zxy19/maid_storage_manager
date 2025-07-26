@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.item;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeArray;
 import dev.latvian.mods.rhino.NativeObject;
+import dev.latvian.mods.rhino.type.TypeInfo;
 import dev.latvian.mods.rhino.util.wrap.TypeWrapperFactory;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.util.TypeCastingUtil;
 
@@ -13,7 +14,7 @@ public class KJSItemListWrapper implements TypeWrapperFactory<KJSItemPair[]> {
     public static final TypeWrapperFactory<KJSItemPair> wrapper = new KJSItemPairWrapper();
 
     @Override
-    public KJSItemPair[] wrap(Context context, Object o) {
+    public KJSItemPair[] wrap(Context context, Object o, TypeInfo typeInfo) {
         if (o instanceof NativeObject obj) {
             return new KJSItemPair[]{TypeCastingUtil.wrapOrThrow(obj, context, wrapper)};
         } else if (o instanceof NativeArray arr) {

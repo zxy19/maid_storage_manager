@@ -7,8 +7,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
@@ -85,7 +85,7 @@ public class MaidStorage {
         return null;
     }
 
-    public boolean isCraftGuideProvider(Target target, List<ViewedInventoryMemory.ItemCount> blockPos) {
+    public boolean isCraftGuideProvider(Target target, List<ItemCount> blockPos) {
         IMaidStorage storage = getStorage(target.type);
         if (storage == null) return false;
         return storage.isCraftGuideProvider(blockPos);

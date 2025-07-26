@@ -10,12 +10,12 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -121,10 +121,10 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
 
     private void calculateLayer(ServerLevel level, EntityMaid maid) {
         ItemStack currentLogisticsGuideItem = MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem();
-        CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(currentLogisticsGuideItem);
-        List<ViewedInventoryMemory.ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target)
+        CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(currentLogisticsGuideItem, level.registryAccess());
+        List<ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target)
                 .stream().filter(itemCount -> !itemCount.item().is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !itemCount.item().isEmpty()).toList();
-        ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem);
+        ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem, level.registryAccess());
         if (!filterItemStack.isEmpty()) {
             List<ItemStack> filteredItems = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY).list();
             boolean matchNbt = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
@@ -145,7 +145,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
                 output = null;
             }
         } else if (!itemsAt.isEmpty()) {
-            ViewedInventoryMemory.ItemCount itemCount = itemsAt.get(0);
+            ItemCount itemCount = itemsAt.get(0);
             ItemStack itemStack = itemCount.item();
             if (count == 64)
                 itemStack = itemStack.copyWithCount(Math.min(itemCount.count(), itemStack.getMaxStackSize()));
@@ -164,7 +164,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             failCount = 0;
     }
 
-    private int getAvailableCountFromCraftAndSetLayer(EntityMaid maid, CraftGuideData craftGuideData, List<ViewedInventoryMemory.ItemCount> itemsAt, int count) {
+    private int getAvailableCountFromCraftAndSetLayer(EntityMaid maid, CraftGuideData craftGuideData, List<ItemCount> itemsAt, int count) {
         List<ItemStack> inputs = craftGuideData.getInput();
         List<ItemStack> costedInputs = inputs.stream().map(ItemStack::copy).toList();
         for (ItemStack output : craftGuideData.getOutput()) {
@@ -182,7 +182,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             ItemStack input = inputs.get(i);
             ItemStack costedInput = costedInputs.get(i);
             int availableCount = 0;
-            for (ViewedInventoryMemory.ItemCount itemCount : itemsAt) {
+            for (ItemCount itemCount : itemsAt) {
                 if (ItemStackUtil.isSame(input, itemCount.item(), false)) {
                     availableCount += itemCount.getSecond();
                 }

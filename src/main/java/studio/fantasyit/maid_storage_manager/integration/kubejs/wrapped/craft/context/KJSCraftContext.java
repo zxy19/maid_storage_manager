@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.c
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeObject;
+import dev.latvian.mods.rhino.type.TypeInfo;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -11,8 +12,10 @@ import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.CraftCont
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.base.AbstractObjectWrapped;
 
 public class KJSCraftContext extends AbstractObjectWrapped implements IKJSCraftContext {
-    public KJSCraftContext(NativeObject obj, Context context) {
-        super(obj, context);
+
+
+    public KJSCraftContext(NativeObject obj, Context context, TypeInfo typeInfo) {
+        super(obj, context, typeInfo);
     }
 
     @Override

@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +14,7 @@ public class ResortingMemory extends AbstractTargetMemory {
             instance.group(
                     TargetData.CODEC.fieldOf("targetData")
                             .forGetter(ResortingMemory::getTargetData),
-                    Codec.list(ItemStack.CODEC)
+                    Codec.list(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED)
                             .fieldOf("needToResort")
                             .forGetter(ResortingMemory::getNeedToResort)
             ).apply(instance, ResortingMemory::new)

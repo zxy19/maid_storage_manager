@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
@@ -21,7 +22,7 @@ import java.util.Optional;
 
 public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraftMenu> {
     public CraftingTableCraftMenu(int p_38852_, Player player) {
-        super(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), p_38852_,player);
+        super(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), p_38852_, player);
     }
 
     @Override
@@ -52,17 +53,17 @@ public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraft
                 ListTag list = data.getList("inputs", 10);
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag tag = list.getCompound(i);
-                    ItemStack stack = ItemStack.of(tag);
+                    ItemStack stack = ItemStackUtil.parseStack(registryAccess(), tag);
                     stepDataContainer.setItemNoTrigger(i, stack);
                 }
-                for(int i = list.size(); i < stepDataContainer.getContainerSize(); i++){
+                for (int i = list.size(); i < stepDataContainer.getContainerSize(); i++) {
                     stepDataContainer.setItemNoTrigger(i, ItemStack.EMPTY);
                 }
                 save();
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(registryAccess(), data));
                     save();
                 }
             }
@@ -70,11 +71,11 @@ public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraft
     }
 
     public void recalculateRecipe() {
-        Optional<CraftingRecipe> recipe = RecipeUtil.getCraftingRecipe(player.level(), RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3));
+        Optional<RecipeHolder<CraftingRecipe>> recipe = RecipeUtil.getCraftingRecipe(player.level(), RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3).asCraftInput());
         recipe.ifPresentOrElse(craftingRecipe -> {
             List<ItemStack> result = new ArrayList<>();
-            result.add(craftingRecipe.getResultItem(player.level().registryAccess()));
-            NonNullList<ItemStack> remain = craftingRecipe.getRemainingItems(RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3));
+            result.add(craftingRecipe.value().getResultItem(player.level().registryAccess()));
+            NonNullList<ItemStack> remain = craftingRecipe.value().getRemainingItems(RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3).asCraftInput());
             remain.forEach(i -> ItemStackUtil.addToList(result, i, true));
             for (int i = 0; i < stepDataContainer.outputCount; i++) {
                 if (i < result.size()) {

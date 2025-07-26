@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +16,7 @@ import java.util.Map;
 public class InvConsumeSimulator {
     public static Codec<InvConsumeSimulator> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.unboundedMap(ItemStack.CODEC, Codec.INT).fieldOf("itemConsumeCount").forGetter(t -> t.itemConsumeCount)
+                    Codec.unboundedMap(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED, Codec.INT).fieldOf("itemConsumeCount").forGetter(t -> t.itemConsumeCount)
             ).apply(instance, InvConsumeSimulator::new)
     );
 

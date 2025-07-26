@@ -13,9 +13,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import studio.fantasyit.maid_storage_manager.Config;
@@ -24,7 +24,6 @@ import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.network.JEIRequestPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -127,7 +126,7 @@ public class IngredientRequestClient {
         }
         toRequest.forEach(i -> i.setCount(i.getCount() * IngredientRequestClient.multiple));
         if (toRequest.size() > 0) {
-            Network.INSTANCE.send(PacketDistributor.SERVER.noArg(), new JEIRequestPacket(toRequest, IngredientRequestClient.preferMaidId));
+            PacketDistributor.sendToServer(new JEIRequestPacket(toRequest, IngredientRequestClient.preferMaidId));
         }
     }
 
@@ -198,9 +197,12 @@ public class IngredientRequestClient {
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(0, 0, 500);
             InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics,
-                    x,
-                    y,
+                    x - 25,
+                    y - 25,
+                    x + 25,
+                    y + 25,
                     50,
+                    0.1F,
                     x - mouseX,
                     y - maid.getEyeHeight() * 50 - mouseY,
                     maid);

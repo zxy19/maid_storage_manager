@@ -83,7 +83,8 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
         level.getRecipeManager()
                 .getAllRecipesFor(getRecipeType())
-                .forEach((T recipe) -> {
+                .forEach((RecipeHolder<T> holder) -> {
+                    T recipe = holder.value();
                     if (!isValid(inventory, level, pos, recipe))
                         return;
                     List<Ingredient> ingredients = ingredientsTransform(inventory, level, recipe);
@@ -92,7 +93,7 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
                         return;
                     List<Integer> ingredientCounts = ingredientCountsTransform(inventory, level, recipe, ingredients);
                     List<ItemStack> resultItem = List.of(recipe.getResultItem(level.registryAccess()));
-                    graph.addRecipe(recipe.getId(), ingredients, ingredientCounts, output, (items) -> {
+                    graph.addRecipe(holder.id(), ingredients, ingredientCounts, output, (items) -> {
                         C container = getWrappedContainer(recipe, items);
                         List<ItemStack> result = new ArrayList<>(resultItem);
                         CraftGuideStepData step = new CraftGuideStepData(
@@ -113,10 +114,11 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(getRecipeType()).forEach(recipe -> {
+        manager.getAllRecipesFor(getRecipeType()).forEach(holder -> {
+            T recipe = holder.value();
             if (isValid(recipe) && shouldCache(recipe)) {
                 List<Ingredient> ingredients = cacheIngredientsTransform(recipe);
-                RecipeIngredientCache.addRecipeCache(recipe.getId(), ingredients);
+                RecipeIngredientCache.addRecipeCache(holder.id(), ingredients);
             }
         });
     }

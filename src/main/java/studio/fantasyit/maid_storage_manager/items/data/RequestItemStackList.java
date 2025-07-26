@@ -3,15 +3,18 @@ package studio.fantasyit.maid_storage_manager.items.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RequestItemStackList {
+
+    public static final Immutable EMPTY = new RequestItemStackList().toImmutable();
 
     public static class ListItem {
         public boolean done;
@@ -145,17 +148,43 @@ public class RequestItemStackList {
     public record ImmutableItem(ItemStack item, int requested, int collected, int stored, boolean done,
                                 List<ItemStack> missing, String failAddition) {
         public static Codec<ImmutableItem> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                ItemStack.CODEC.fieldOf("item").forGetter(ImmutableItem::item),
+                ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.fieldOf("item").forGetter(ImmutableItem::item),
                 Codec.INT.fieldOf("requested").forGetter(ImmutableItem::requested),
                 Codec.INT.fieldOf("collected").forGetter(ImmutableItem::collected),
                 Codec.INT.fieldOf("stored").forGetter(ImmutableItem::stored),
                 Codec.BOOL.fieldOf("done").forGetter(ImmutableItem::done),
-                ItemStack.CODEC.listOf().fieldOf("missing").forGetter(ImmutableItem::missing),
+                ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("missing").forGetter(ImmutableItem::missing),
                 Codec.STRING.fieldOf("failAddition").forGetter(ImmutableItem::failAddition)
         ).apply(instance, ImmutableItem::new));
+        public static StreamCodec<RegistryFriendlyByteBuf, ImmutableItem> STREAM_CODEC = StreamCodec.of(
+                (t, v) -> {
+                    t.writeNbt(ItemStackUtil.saveStack(t.registryAccess(), v.item()));
+                    t.writeInt(v.requested());
+                    t.writeInt(v.collected());
+                    t.writeInt(v.stored());
+                    t.writeBoolean(v.done());
+                    t.writeCollection(
+                            v.missing(),
+                            (t1, v1) -> t1.writeNbt(ItemStackUtil.saveStack(t.registryAccess(), v1))
+                    );
+                    t.writeUtf(v.failAddition);
+                },
+                (t) -> new ImmutableItem(
+                        ItemStackUtil.parseStack(t.registryAccess(), t.readNbt()),
+                        t.readInt(),
+                        t.readInt(),
+                        t.readInt(),
+                        t.readBoolean(),
+                        t.readCollection(
+                                ArrayList::new,
+                                RegistryFriendlyByteBuf::readNbt
+                        ).stream().map(d -> ItemStackUtil.parseStack(t.registryAccess(), d)).toList(),
+                        t.readUtf()
+                )
+        );
 
         public ListItem toMutable() {
-            return new ListItem(item, requested, collected, stored, missing, failAddition, true);
+            return new ListItem(item, requested, collected, stored, missing, failAddition, done);
         }
     }
 
@@ -176,7 +205,24 @@ public class RequestItemStackList {
                         Codec.BOOL.fieldOf("blacklistDone").forGetter(Immutable::blacklistDone)
                 ).apply(instance, Immutable::new)
         );
-        public static StreamCodec<ByteBuf, Immutable> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+        public static StreamCodec<RegistryFriendlyByteBuf, Immutable> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.collection(
+                        ArrayList::new,
+                        ImmutableItem.STREAM_CODEC
+                ),
+                Immutable::list,
+                ByteBufCodecs.BOOL,
+                Immutable::matchTag,
+                ByteBufCodecs.BOOL,
+                Immutable::blackList,
+                ByteBufCodecs.BOOL,
+                Immutable::stockMode,
+                ByteBufCodecs.BOOL,
+                Immutable::stockModeChecked,
+                ByteBufCodecs.BOOL,
+                Immutable::blacklistDone,
+                Immutable::new
+        );
 
         public RequestItemStackList toMutable() {
             return new RequestItemStackList(

@@ -138,13 +138,10 @@ repositories {
     maven { url = "https://maven.createmod.net" }
     maven { url = "https://maven.architectury.dev/" }
     maven { url = "https://maven.latvian.dev/releases" }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
-
-
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     compileOnly "curse.maven:touhou-little-maid-355044:6657437"
     runtimeOnly "curse.maven:touhou-little-maid-355044:6657437"
 
@@ -173,32 +170,37 @@ dependencies {
     compileOnly "curse.maven:geckolib-388172:6659026"
     compileOnly "curse.maven:jade-324717:6738687"
 
+
+//    runtimeOnly "curse.maven:botania-225643:5594997"
+//    runtimeOnly "curse.maven:timeless-and-classics-zero-1028108:6632240"
     runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     runtimeOnly "curse.maven:applied-energistics-2-223794:6763533"
-    runtimeOnly "curse.maven:patchouli-306770:6164575"
-    runtimeOnly "curse.maven:sophisticated-storage-619320:6217888"
-    runtimeOnly "curse.maven:sophisticated-core-618298:6266807"
+    runtimeOnly "com.tterrag.registrate:Registrate:MC1.21-1.3.0+62"
+//    runtimeOnly "curse.maven:patchouli-306770:6164617"
+    runtimeOnly "curse.maven:sophisticated-storage-619320:6759132"
+    runtimeOnly "curse.maven:sophisticated-core-618298:6760141"
     runtimeOnly "curse.maven:mouse-tweaks-60089:5637846"
     runtimeOnly "curse.maven:create-328085:6641610"
     runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
-    runtimeOnly "curse.maven:botania-225643:5594997"
-    runtimeOnly "curse.maven:curios-309927:6058834"
-    runtimeOnly "curse.maven:refined-storage-243076:6798977"
-//    runtimeOnly "curse.maven:timeless-and-classics-zero-1028108:6632240"
     runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:15.0.140")
+    runtimeOnly "curse.maven:curios-309927:6529130"
+    runtimeOnly "curse.maven:refined-storage-243076:6798977"
     runtimeOnly "mekanism:Mekanism:${mekanism_version}"// Mekanism
     runtimeOnly "mekanism:Mekanism:${mekanism_version}:additions"// Mekanism: Additions
     runtimeOnly "mekanism:Mekanism:${mekanism_version}:generators"// Mekanism: Generators
     runtimeOnly "mekanism:Mekanism:${mekanism_version}:tools"// Mekanism: Tools
-    runtimeOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
-    runtimeOnly "dev.latvian.mods:rhino-neoforge:${rhino_version}"
-    runtimeOnly "dev.architectury:architectury-neoforge:${architectury_version}"
-    runtimeOnly "curse.maven:probejs-585406:5820894"
+//    runtimeOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+//    runtimeOnly "dev.latvian.mods:rhino-neoforge:${rhino_version}"
+//    runtimeOnly "dev.architectury:architectury-neoforge:${architectury_version}"
+//    runtimeOnly "curse.maven:probejs-585406:5820894"
     runtimeOnly "curse.maven:ars-nouveau-401955:6770346"
     runtimeOnly "curse.maven:jade-324717:6738687"
     runtimeOnly "org.anti_ad.mc:InventoryProfilesNext-neoforge-1.21:2.1.10"
     runtimeOnly "org.anti_ad.mc:libIPN-neoforge-1.21:6.5.1"
     runtimeOnly "curse.maven:kotlin-for-neoforge-351264:6706911"
+    runtimeOnly "curse.maven:geckolib-388172:6659026"
+    runtimeOnly "curse.maven:guideme-1173950:6688687"
+
 }
 
 

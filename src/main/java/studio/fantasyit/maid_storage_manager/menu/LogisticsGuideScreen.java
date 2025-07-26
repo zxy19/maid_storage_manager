@@ -64,7 +64,7 @@ public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuide
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
-        renderBackground(guiGraphics);
+        
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 

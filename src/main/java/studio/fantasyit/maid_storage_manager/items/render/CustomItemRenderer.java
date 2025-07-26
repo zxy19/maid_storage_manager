@@ -12,10 +12,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
-import studio.fantasyit.maid_storage_manager.items.data.ItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
@@ -64,6 +65,28 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
         pose.popPose();
     }
 
+    private void renderWrappedMulti(@NotNull ItemStack itemStack, @NotNull ItemDisplayContext context, @NotNull PoseStack pose, @NotNull MultiBufferSource multiBufferSource, int light, int overlay) {
+        @Nullable List<ItemStack> items = itemStack.get(DataComponentRegistry.TO_SPAWN_ITEMS);
+        if (items != null && !items.isEmpty()) {
+            int i = (Minecraft.getInstance().player.tickCount / 20) % items.size();
+            ItemStack item = items.get(i);
+            Minecraft.getInstance().getItemRenderer().render(item,
+                    context,
+                    true,
+                    pose,
+                    multiBufferSource,
+                    light,
+                    overlay,
+                    Minecraft.getInstance().getItemRenderer().getModel(
+                            item,
+                            null,
+                            null,
+                            0
+                    )
+            );
+        }
+    }
+
     private void renderLogistics(@NotNull ItemStack itemStack,
                                  @NotNull ItemDisplayContext context,
                                  @NotNull PoseStack pose,
@@ -71,7 +94,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                  int light,
                                  int overlay) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "logistics_guide"), "inventory")
+                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "logistics_guide"), ModelResourceLocation.INVENTORY_VARIANT)
         );
         for (var rendertype : model.getRenderTypes(itemStack, false)) {
             VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
@@ -86,14 +109,14 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                               int light,
                               int overlay) {
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "filter_list_base"), "inventory")
+                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "item/filter_list_base"), ModelResourceLocation.STANDALONE_VARIANT)
         );
         for (var rendertype : model.getRenderTypes(itemStack, false)) {
             VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
             Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
         }
 
-        List<ItemStack> items = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new ItemStackList().toImmutable())
+        List<ItemStack> items = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new FilterItemStackList().toImmutable())
                 .list()
                 .stream()
                 .filter(i -> !i.isEmpty())
@@ -143,7 +166,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
         CraftGuideRenderData data = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
         List<ItemStack> items = data.outputs;
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, items.isEmpty() ? "craft_guide_base" : "craft_guide_base_blank"), "inventory")
+                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, items.isEmpty() ? "item/craft_guide_base" : "item/craft_guide_base_blank"), ModelResourceLocation.STANDALONE_VARIANT)
         );
         for (var rendertype : model.getRenderTypes(itemStack, false)) {
             VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());

@@ -10,7 +10,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 public class MaidDataSyncPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<MaidDataSyncPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "MaidDataSyncPacket"
+                    MaidStorageManager.MODID, "maid_data_sync"
             )
     );
 

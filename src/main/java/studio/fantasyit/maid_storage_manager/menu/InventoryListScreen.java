@@ -2,15 +2,18 @@ package studio.fantasyit.maid_storage_manager.menu;
 
 import me.towdium.jecharacters.utils.Match;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
@@ -223,6 +226,7 @@ public class InventoryListScreen extends Screen {
     }
 
     private void reGenerateList() {
+        LocalPlayer player = Minecraft.getInstance().player;
         if (search.equals(""))
             list = originalList;
         else
@@ -234,7 +238,7 @@ public class InventoryListScreen extends Screen {
                                 return true;
                             if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
                                 return true;
-                            if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+                            if (itemStack.getTooltipLines(Item.TooltipContext.EMPTY, player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
                                 return true;
                             }
                         }
@@ -242,7 +246,7 @@ public class InventoryListScreen extends Screen {
                             return true;
                         if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
                             return true;
-                        return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
+                        return itemStack.getTooltipLines(Item.TooltipContext.EMPTY, player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
                     }).toList();
 
         list = list.stream().filter(filterOption.predicate).sorted(sortingOption.comparator).toList();
@@ -250,7 +254,7 @@ public class InventoryListScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int x, int y, float p_282465_) {
-        this.renderBackground(guiGraphics);
+        
         super.render(guiGraphics, x, y, p_282465_);
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.columns; j++) {
@@ -309,11 +313,11 @@ public class InventoryListScreen extends Screen {
                 0xFFFFFF);
     }
 
-    @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
-        if (p_94688_ < 0)
+
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double dy) {
+        if (dy < 0)
             doNext();
-        else if (p_94688_ > 0)
+        else if (dy > 0)
             doPrev();
         return true;
     }

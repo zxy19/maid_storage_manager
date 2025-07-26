@@ -2,13 +2,14 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
@@ -17,23 +18,6 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class ViewedInventoryMemory extends AbstractTargetMemory {
-
-    public record ItemCount(ItemStack item, int count) {
-        public static final Codec<ItemCount> CODEC = RecordCodecBuilder.create(instance ->
-                instance.group(
-                        ItemStack.CODEC.fieldOf("item").forGetter(ItemCount::item),
-                        Codec.INT.fieldOf("count").forGetter(ItemCount::count)
-                ).apply(instance, ItemCount::new)
-        );
-
-        public ItemStack getFirst() {
-            return item;
-        }
-
-        public int getSecond() {
-            return count;
-        }
-    }
 
     public static final Codec<ViewedInventoryMemory> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -52,7 +36,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                             .forGetter(ViewedInventoryMemory::getCoolingDown),
                     Target.CODEC.listOf().fieldOf("mark_changed")
                             .forGetter(ViewedInventoryMemory::getMarkChanged),
-                    ItemStack.CODEC.listOf().fieldOf("waitingAdd")
+                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("waitingAdd")
                             .forGetter(ViewedInventoryMemory::getWaitingAdd)
             ).apply(instance, ViewedInventoryMemory::new)
     );
@@ -107,7 +91,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                 slot.getValue().forEach(itemCount -> {
                     boolean found = false;
                     for (int i = 0; i < itemCounts.size(); i++) {
-                        if (ItemStack.isSameItemSameTags(itemCounts.get(i).getFirst(), itemCount.getFirst())) {
+                        if (ItemStackUtil.isSame(itemCounts.get(i).getFirst(), itemCount.getFirst(),true)) {
                             itemCounts.set(i, new ItemCount(itemCounts.get(i).getFirst(),
                                     itemCounts.get(i).count() + itemCount.count()));
                             found = true;
@@ -150,7 +134,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                     if (itemCount.getFirst().isEmpty()) continue;
                     boolean found = false;
                     for (int i = 0; i < result.size(); i++) {
-                        if (ItemStack.isSameItemSameTags(result.get(i).itemStack, itemCount.getFirst())) {
+                        if (ItemStackUtil.isSame(result.get(i).itemStack, itemCount.getFirst(),true)) {
                             result.get(i).addCount(pos, itemCount.getSecond());
                             found = true;
                             break;
@@ -184,11 +168,11 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             return;
         Map<String, List<ItemCount>> map = viewedInventory.get(pos.toStoreString());
 
-        String itemKey = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString();
+        String itemKey = Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(itemStack.getItem())).toString();
         List<ItemCount> list = map.getOrDefault(itemKey, new ArrayList<>());
         for (int i = 0; i < list.size(); i++) {
             ItemCount itemCount = list.get(i);
-            if (ItemStack.isSameItemSameTags(itemCount.getFirst(), itemStack)) {
+            if (ItemStackUtil.isSame(itemCount.getFirst(), itemStack,true)) {
                 list.set(i, new ItemCount(itemStack, itemCount.getSecond() - count));
                 if (itemCount.getSecond() - count <= 0)
                     list.remove(i);
@@ -209,12 +193,12 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
             viewedInventory.put(pos.toStoreString(), new HashMap<>());
         Map<String, List<ItemCount>> map = viewedInventory.get(pos.toStoreString());
 
-        String itemKey = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString();
+        String itemKey = Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(itemStack.getItem())).toString();
         List<ItemCount> list = map.getOrDefault(itemKey, new ArrayList<>());
         boolean found = false;
         for (int i = 0; i < list.size(); i++) {
             ItemCount itemCount = list.get(i);
-            if (ItemStack.isSameItemSameTags(itemCount.getFirst(), itemStack)) {
+            if (ItemStackUtil.isSame(itemCount.getFirst(), itemStack,true)) {
                 list.set(i, new ItemCount(itemStack, (int) Math.min((long) itemCount.getSecond() + (long) count, Integer.MAX_VALUE / 2)));
                 found = true;
                 break;

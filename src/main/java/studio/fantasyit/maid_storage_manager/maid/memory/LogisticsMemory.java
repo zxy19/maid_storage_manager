@@ -21,7 +21,7 @@ public class LogisticsMemory extends AbstractTargetMemory {
                             .forGetter(LogisticsMemory::getCraftLayerO),
                     CraftLayer.CODEC.optionalFieldOf("result")
                             .forGetter(LogisticsMemory::getResultLayerO),
-                    ItemStack.CODEC.fieldOf("currentLogisticsGuideItem").orElse(ItemStack.EMPTY)
+                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.fieldOf("currentLogisticsGuideItem").orElse(ItemStack.EMPTY)
                             .forGetter(LogisticsMemory::getCurrentLogisticsGuideItem),
                     Codec.INT.fieldOf("next")
                             .forGetter(LogisticsMemory::getNext),

@@ -21,7 +21,9 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
@@ -60,7 +62,7 @@ public class GetStorageFunction implements IFunctionCall<GetStorageFunction.Filt
         list.forEach(item -> {
             ItemStack itemStack = item.itemStack;
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                CraftGuideData cgd = CraftGuideData.fromItemStack(itemStack);
+                CraftGuideData cgd = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
                 cgd.getOutput().forEach(t -> add.accept(t, 0));
             } else {
                 if (item.totalCount != 0)

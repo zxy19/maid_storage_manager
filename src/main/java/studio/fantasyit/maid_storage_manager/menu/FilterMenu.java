@@ -1,7 +1,5 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -10,11 +8,14 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
+import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     public boolean isBlackList;
@@ -27,32 +28,23 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
         super(GuiRegistry.FILTER_MENU.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
-        CompoundTag tag = target.getOrCreateTag();
-        filteredItems = new FilterContainer(27, this);
-        filteredItems.deserializeNBT(tag.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
-        matchTag = tag.getBoolean(FilterListItem.TAG_MATCH_TAG);
-        isBlackList = tag.getBoolean(FilterListItem.TAG_BLACK_MODE);
+        filteredItems = new FilterContainer(20, this);
+        filteredItems.loadFromFilterItemStackList(target.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY));
+        matchTag = target.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);
+        isBlackList = target.getOrDefault(DataComponentRegistry.FILTER_BLACK_MODE, false);
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
     }
 
     public void save() {
-        CompoundTag tag = target.getOrCreateTag();
-        ListTag list = new ListTag();
-        if (tag.contains(FilterListItem.TAG_ITEMS))
-            list = tag.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-        while (list.size() <= filteredItems.getContainerSize())
-            list.add(new CompoundTag());
+        FilterItemStackList list = new FilterItemStackList();
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {
-            CompoundTag tmp = new CompoundTag();
-            tmp.put(FilterListItem.TAG_ITEMS_ITEM, filteredItems.getItem(i).serializeNBT());
-            list.set(i, tmp);
+            list.list.set(i, filteredItems.getItem(i));
         }
-        tag.put(FilterListItem.TAG_ITEMS, list);
-        tag.putBoolean(FilterListItem.TAG_BLACK_MODE, isBlackList);
-        tag.putBoolean(FilterListItem.TAG_MATCH_TAG, matchTag);
-        target.setTag(tag);
+        target.set(DataComponentRegistry.FILTER_ITEMS, list.toImmutable());
+        target.set(DataComponentRegistry.FILTER_MATCH_TAG, matchTag);
+        target.set(DataComponentRegistry.FILTER_BLACK_MODE, isBlackList);
     }
 
     private void addFilterSlots() {
@@ -162,7 +154,7 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
                 int containerSize = this.filteredItems.getContainerSize();
                 boolean found = false;
                 for (int i = 0; i < containerSize; i++)
-                    if (ItemStack.isSameItemSameTags(this.filteredItems.getItem(i), slot.getItem()))
+                    if (ItemStackUtil.isSame(this.filteredItems.getItem(i), slot.getItem(), true))
                         found = true;
                 if (!found) {
                     for (int i = 0; i < containerSize; i++) {

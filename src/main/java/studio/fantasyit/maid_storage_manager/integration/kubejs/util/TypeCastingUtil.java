@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.integration.kubejs.util;
 
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeJavaObject;
+import dev.latvian.mods.rhino.type.TypeInfo;
 import dev.latvian.mods.rhino.util.wrap.TypeWrapperFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +26,6 @@ public class TypeCastingUtil {
     }
 
     public static <T> @NotNull T wrapOrThrow(Object t, Context context, TypeWrapperFactory<T> wrapper) {
-        return Optional.ofNullable(wrapper.wrap(context, t)).orElseThrow();
+        return Optional.ofNullable(wrapper.wrap(context, t, TypeInfo.VOID)).orElseThrow();
     }
 }

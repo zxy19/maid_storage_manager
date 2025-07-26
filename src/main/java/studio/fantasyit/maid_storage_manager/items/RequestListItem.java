@@ -59,7 +59,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static boolean isIgnored(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        return Boolean.TRUE.equals(mainHandItem.get(DataComponentRegistry.REQUEST_IGNORE.get()));
+        return mainHandItem.getOrDefault(DataComponentRegistry.REQUEST_IGNORE.get(), false);
     }
 
     public static void setIgnore(ItemStack reqList) {

@@ -34,7 +34,14 @@ import java.util.List;
 import java.util.Objects;
 
 public class CraftGuide extends Item implements MenuProvider {
-    public static CraftGuideData EMPTY = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
+    private static CraftGuideData EMPTY = null;
+
+    public static CraftGuideData empty() {
+        if (EMPTY == null)
+            EMPTY = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
+        return EMPTY;
+    }
+
     public static final String TAG_RESULT = "result";
     public static final String TAG_SELECTING = "selecting";
     public static final String TAG_STEPS = "steps";
@@ -98,11 +105,11 @@ public class CraftGuide extends Item implements MenuProvider {
     }
 
     public static CraftGuideData getCraftGuide(ItemStack itemInHand) {
-        return itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.EMPTY).copy();
+        return itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty()).copy();
     }
 
     public static CraftGuideData getCraftGuideReadOnly(ItemStack itemInHand) {
-        return itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.EMPTY);
+        return itemInHand.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
     }
 
     @Override
@@ -146,6 +153,7 @@ public class CraftGuide extends Item implements MenuProvider {
                 return InteractionResult.PASS;
             ItemStack itemInHand = context.getItemInHand();
             CraftGuideData craftGuideData = getCraftGuide(itemInHand);
+            craftGuideData.selecting = getSelectId(itemInHand);
             SpecialOP specialOP = getSpecialOP(itemInHand);
             @NotNull InteractionResult result = switch (specialOP) {
                 case NONE -> operateNormal(context, serverPlayer, craftGuideData, itemInHand);
@@ -288,4 +296,7 @@ public class CraftGuide extends Item implements MenuProvider {
         if (type == null) return null;
         return type.createGui(p_39954_, p_39956_.level(), p_39956_, craftGuideData);
     }
+
+
+
 }

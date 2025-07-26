@@ -11,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 public class ShowInvPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<ShowInvPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "ShowInvPacket"
+                    MaidStorageManager.MODID, "show_inv"
             )
     );
 

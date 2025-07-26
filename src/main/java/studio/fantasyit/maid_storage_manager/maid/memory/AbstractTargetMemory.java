@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public abstract class AbstractTargetMemory {
                                 .forGetter(TargetData::getVisitedPos),
                         Target.CODEC.fieldOf("target")
                                 .forGetter(TargetData::getTarget),
-                        ItemStack.CODEC.optionalFieldOf("check")
+                        ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.optionalFieldOf("check")
                                 .forGetter(TargetData::getCheckItem)
                 ).apply(instance, TargetData::new));
         public static ResourceLocation NO_TARGET = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_target");

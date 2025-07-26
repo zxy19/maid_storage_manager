@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeArray;
 import dev.latvian.mods.rhino.NativeObject;
+import dev.latvian.mods.rhino.type.TypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -31,8 +32,9 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class KJSCraftType extends AbstractObjectWrapped implements IKJSCraftType.Full, ICraftType {
-    public KJSCraftType(NativeObject obj, Context context) {
-        super(obj, context);
+
+    public KJSCraftType(NativeObject obj, Context context, TypeInfo typeInfo) {
+        super(obj, context, typeInfo);
     }
 
     @Override

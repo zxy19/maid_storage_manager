@@ -1,9 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    {
-      "id": "botania:twig_wand",
-      "required": "false"
-    }
-  ]
-}

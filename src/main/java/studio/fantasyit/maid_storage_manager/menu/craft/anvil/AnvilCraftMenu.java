@@ -10,6 +10,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 public class AnvilCraftMenu extends AbstractCraftMenu<AnvilCraftMenu> {
     AnvilMenu anvilMenu;
@@ -39,6 +40,7 @@ public class AnvilCraftMenu extends AbstractCraftMenu<AnvilCraftMenu> {
                 true
         ));
     }
+
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
@@ -46,14 +48,14 @@ public class AnvilCraftMenu extends AbstractCraftMenu<AnvilCraftMenu> {
                 ListTag list = data.getList("inputs", 10);
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag tag = list.getCompound(i);
-                    ItemStack stack = ItemStack.of(tag);
+                    ItemStack stack = ItemStackUtil.parseStack(registryAccess(), tag);
                     stepDataContainer.setItem(i, stack);
                 }
                 save();
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(registryAccess(), data));
                     save();
                 }
             }
@@ -65,7 +67,7 @@ public class AnvilCraftMenu extends AbstractCraftMenu<AnvilCraftMenu> {
     }
 
     public void recalculateRecipe() {
-        if(this.anvilMenu == null) return;
+        if (this.anvilMenu == null) return;
         CompoundTag extra = stepDataContainer.step.getExtraData();
         String name = extra.getString("name");
         anvilMenu.setItem(0, 0, stepDataContainer.getItem(0));

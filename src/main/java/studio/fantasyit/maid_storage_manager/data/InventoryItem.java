@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
     }
 
     public static StreamCodec<RegistryFriendlyByteBuf, InventoryItem> STREAM_CODEC = StreamCodec.composite(
-            ItemStack.STREAM_CODEC,
+            ItemStackUtil.OPTIONAL_STREAM_CODEC,
             t -> t.itemStack,
             ByteBufCodecs.INT,
             t -> t.totalCount,
@@ -88,7 +89,7 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(HolderLookup.Provider t, CompoundTag nbt) {
-        itemStack = ItemStack.parseOptional(t, nbt.getCompound("itemStack"));
+        itemStack = ItemStackUtil.parseStack(t, nbt.getCompound("itemStack"));
         totalCount = nbt.getInt("totalCount");
         ListTag list = nbt.getList("posCount", 10);
         for (int i = 0; i < list.size(); i++) {

@@ -1,21 +1,17 @@
 package studio.fantasyit.maid_storage_manager.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
 
-@Mixin(ContainerOpenersCounter.class)
+@Mixin(value = ContainerOpenersCounter.class,remap = false)
 public class ContainerOpenersCounterPatch {
-    @Inject(method = "getOpenCount", at = @At("RETURN"), cancellable = true)
-    private void getOpenCount(Level p_155458_, BlockPos p_155459_, CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(
-                SimulateTargetInteractHelper.openCount(p_155459_)
-                        + cir.getReturnValue()
-        );
+    @ModifyVariable(method = "recheckOpeners", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/util/List;size()I"))
+    private int getOpenCount(int i, @Local(argsOnly = true) BlockPos pos) {
+        return SimulateTargetInteractHelper.openCount(pos) + i;
     }
 }

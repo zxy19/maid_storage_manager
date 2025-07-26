@@ -10,7 +10,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 public class DebugDataPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<DebugDataPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "DebugDataPacket"
+                    MaidStorageManager.MODID, "debug"
             )
     );
 

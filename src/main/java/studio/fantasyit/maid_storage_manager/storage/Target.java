@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
@@ -29,8 +30,8 @@ public class Target {
             Target::getType,
             BlockPos.STREAM_CODEC,
             Target::getPos,
-            Direction.STREAM_CODEC,
-            Target::getSideV,
+            ByteBufCodecs.optional(Direction.STREAM_CODEC),
+            Target::getSide,
             Target::new
     );
     public ResourceLocation type;

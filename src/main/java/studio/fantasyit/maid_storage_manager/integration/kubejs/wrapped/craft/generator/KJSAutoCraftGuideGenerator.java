@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBF
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeArray;
 import dev.latvian.mods.rhino.NativeObject;
+import dev.latvian.mods.rhino.type.TypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -31,8 +32,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class KJSAutoCraftGuideGenerator extends AbstractObjectWrapped implements IAutoCraftGuideGenerator, IKJSAutoCraftGuideGenerator.Full {
-    public KJSAutoCraftGuideGenerator(NativeObject obj, Context context) {
-        super(obj, context);
+
+    public KJSAutoCraftGuideGenerator(NativeObject obj, Context context, TypeInfo typeInfo) {
+        super(obj, context, typeInfo);
     }
 
     @Override

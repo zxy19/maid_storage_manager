@@ -2,12 +2,13 @@ package studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.item;
 
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.NativeObject;
+import dev.latvian.mods.rhino.type.TypeInfo;
 import dev.latvian.mods.rhino.util.wrap.TypeWrapperFactory;
 import net.minecraft.world.item.ItemStack;
 
 public class KJSItemPairWrapper implements TypeWrapperFactory<KJSItemPair> {
     @Override
-    public KJSItemPair wrap(Context context, Object o) {
+    public KJSItemPair wrap(Context context, Object o, TypeInfo typeInfo) {
         if (o instanceof NativeObject obj) {
             int count = -1;
             if (obj.containsKey("count") && obj.get("count") instanceof Integer c)

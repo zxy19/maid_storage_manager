@@ -1,7 +1,5 @@
 package studio.fantasyit.maid_storage_manager.integration.jade;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
@@ -14,7 +12,10 @@ import snownee.jade.api.ui.IElementHelper;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+
+import java.util.List;
 
 public class VirtualFrameDataProvider implements IEntityComponentProvider {
     public static final ResourceLocation VANILLA_ID = ResourceLocation.tryParse("minecraft:item_frame");
@@ -30,11 +31,9 @@ public class VirtualFrameDataProvider implements IEntityComponentProvider {
         tooltip.add(icon);
         tooltip.append(itemStack.getHoverName());
         if (itemStack.is(ItemRegistry.FILTER_LIST.get())) {
-            ListTag list = itemStack.getOrCreateTag().getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+            List<ItemStack> list = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY).list();
             int c = 0;
-            for (int i = 0; i < list.size(); i++) {
-                CompoundTag tmp = list.getCompound(i);
-                ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+            for (ItemStack item : list) {
                 if (item.isEmpty())
                     continue;
                 IElement tmpDisplay = elements.item(item).size(new Vec2(16, 16)).translate(new Vec2(0, -2));

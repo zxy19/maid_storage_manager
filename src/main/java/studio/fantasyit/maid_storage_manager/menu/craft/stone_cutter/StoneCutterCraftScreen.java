@@ -86,7 +86,7 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
                                 sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM,
                                         1,
                                         0,
-                                        menu.displayOnlySlots.getItem(index).save(new CompoundTag())
+                                        ItemStackUtil.saveStack(menu.registryAccess(), menu.displayOnlySlots.getItem(index))
                                 ));
                             }
                             return new SelectButtonWidget.Option<>(
@@ -166,7 +166,7 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double p_94688_) {
         double inGuiX = p_94686_ - getGuiLeft();
         double inGuiY = p_94687_ - getGuiTop();
         if (inGuiX < 129 && inGuiY < 122 && inGuiX > 39 && inGuiY > 68) {
@@ -182,7 +182,7 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
                 }
             }
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
     }
 
     @Override

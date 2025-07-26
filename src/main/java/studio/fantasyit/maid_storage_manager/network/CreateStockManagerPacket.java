@@ -11,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 public class CreateStockManagerPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<CreateStockManagerPacket> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "CreateStockManagerPacket"
+                    MaidStorageManager.MODID, "create_stock_manager_packet"
             )
     );
 

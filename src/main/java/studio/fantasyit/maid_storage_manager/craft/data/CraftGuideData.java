@@ -38,7 +38,7 @@ public class CraftGuideData {
     public Integer selecting;
 
     public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type) {
-        this.steps = steps;
+        this.steps = new ArrayList<>(steps);
         this.type = type;
         this.buildInputAndOutputs();
     }
@@ -194,5 +194,10 @@ public class CraftGuideData {
                 steps.stream().map(CraftGuideStepData::copy).toList(),
                 type
         );
+    }
+
+    @Override
+    public int hashCode() {
+        return steps.hashCode() * 31 + type.hashCode() * 17;
     }
 }

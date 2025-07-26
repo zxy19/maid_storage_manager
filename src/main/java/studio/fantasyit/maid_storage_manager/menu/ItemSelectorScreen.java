@@ -9,8 +9,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
@@ -33,6 +31,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.InventorySelectButton;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
@@ -73,16 +72,15 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
         List<ItemStack> itemStackStream = null;
         Component additionFailMessage = null;
         if (listItem != null) {
-            CompoundTag tag = listItem.getOrCreateTag();
-            itemStackStream = tag
-                    .getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND)
-                    .getCompound(slot)
-                    .getList(RequestListItem.TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND)
+            RequestItemStackList.Immutable data = listItem.getOrDefault(DataComponentRegistry.REQUEST_ITEMS, RequestItemStackList.EMPTY);
+            itemStackStream = data
+                    .list()
+                    .get(slot)
+                    .missing()
                     .stream()
-                    .map(t -> ItemStack.of((CompoundTag) t))
                     .toList();
-            if (tag.contains(RequestListItem.TAG_ITEMS_FAIL_ADDITION))
-                additionFailMessage = Component.translatable(tag.getString(RequestListItem.TAG_ITEMS_FAIL_ADDITION));
+            if (!data.list().get(slot).failAddition().isBlank())
+                additionFailMessage = Component.translatable(data.list().get(slot).failAddition());
         }
 
         List<Component> tooltip = this.getTooltipFromContainerItem(filteredItems.getItem(slot));
@@ -269,8 +267,8 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
             }
 
             @Override
-            public boolean mouseScrolled(double p_94734_, double p_94735_, double p_94736_) {
-                int dv = (int) (Math.abs(p_94736_) / p_94736_);
+            public boolean mouseScrolled(double p_94734_, double p_94735_, double dx, double dy) {
+                int dv = (int) (Math.abs(dy) / dy);
                 if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
                     dv *= 10;
                 if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL))
@@ -316,7 +314,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float p_97788_, int p_97789_, int p_97790_) {
-        renderBackground(guiGraphics);
+        
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
@@ -457,11 +455,11 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double dy) {
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot) {
             MutableInt count = this.getMenu().filteredItems.count[filterSlot.getContainerSlot()];
-            int dv = (int) (Math.abs(p_94688_) / p_94688_);
+            int dv = (int) (Math.abs(dy) / dy);
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
                 dv *= 10;
 
@@ -476,7 +474,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
                     count.getValue()
             );
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, dx, dy);
     }
 
     @Override

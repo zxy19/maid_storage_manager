@@ -14,8 +14,10 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.network.PartialInventoryListData;
 import studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -76,7 +78,7 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
         Registry<Item> reg = provider.registryOrThrow(Registries.ITEM);
         for (InventoryItem existingItem : list) {
             if (existingItem.itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                CraftGuideData cgd = CraftGuideData.fromItemStack(existingItem.itemStack);
+                CraftGuideData cgd = existingItem.itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
                 if (cgd.available()) {
                     cgd.getOutput().forEach(itemStack -> {
                         String key = String.valueOf(reg.getKey(itemStack.getItem()));

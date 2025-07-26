@@ -16,7 +16,7 @@ import java.util.UUID;
 public class PartialInventoryListData implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<PartialInventoryListData> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "PartialInventoryListData"
+                    MaidStorageManager.MODID, "partial_inventory"
             )
     );
 

@@ -1,20 +1,19 @@
 package studio.fantasyit.maid_storage_manager.menu.container;
 
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.INBTSerializable;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 
 import java.util.Arrays;
+import java.util.List;
 
-public class FilterContainer implements Container, INBTSerializable<ListTag> {
+public class FilterContainer implements Container {
     private final AbstractContainerMenu menu;
     protected int size;
     ItemStack[] items;
@@ -116,17 +115,6 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
         this.setChanged();
     }
 
-    @Override
-    public ListTag serializeNBT() {
-        ListTag tag = new ListTag();
-        for (int i = 0; i < size; i++) {
-            CompoundTag tmp = new CompoundTag();
-            tmp.put(RequestListItem.TAG_ITEMS_ITEM, items[i].serializeNBT());
-            tmp.putInt(RequestListItem.TAG_ITEMS_REQUESTED, count[i].getValue());
-            tag.add(tmp);
-        }
-        return tag;
-    }
 
     public void setCount(int index, int count) {
         if (count != this.count[index].getValue()) {
@@ -142,14 +130,26 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
         return count[index].getValue();
     }
 
-    @Override
-    public void deserializeNBT(ListTag nbt) {
-        for (int i = 0; i < size; i++) {
-            CompoundTag tmp = nbt.getCompound(i);
-            items[i] = ItemStack.of(tmp.getCompound(RequestListItem.TAG_ITEMS_ITEM));
-            count[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_REQUESTED));
-            collected[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_COLLECTED));
-            done[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_DONE));
+
+    public void loadFromFilterItemStackList(FilterItemStackList.Immutable filterItemStack) {
+        List<ItemStack> list = filterItemStack.list();
+        for (int i = 0; i < list.size(); i++) {
+            if (i >= size) continue;
+            setItemNoTrigger(i, list.get(i));
+            setCount(i, 1);
+        }
+        setChanged();
+    }
+
+    public void loadFromRequestData(RequestItemStackList.Immutable requestData) {
+        List<RequestItemStackList.ImmutableItem> list = requestData.list();
+        for (int i = 0; i < list.size(); i++) {
+            if (i >= size) continue;
+            RequestItemStackList.ImmutableItem tmp = list.get(i);
+            setItemNoTrigger(i, tmp.item());
+            setCount(i, tmp.requested());
+            done[i].setValue(tmp.done() ? 1 : 0);
+            collected[i].setValue(tmp.collected());
         }
     }
 }

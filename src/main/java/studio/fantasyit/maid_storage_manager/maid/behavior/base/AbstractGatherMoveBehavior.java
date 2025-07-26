@@ -8,9 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -81,11 +81,11 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
         AbstractTargetMemory memory = getMemory(maid);
         List<ItemStack> targets = getPriorityItems(level, maid);
         if (targets.isEmpty()) return false;
-        Map<Target, List<ViewedInventoryMemory.ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        Map<Target, List<ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
-        for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : viewed.entrySet()) {
+        for (Map.Entry<Target, List<ItemCount>> blockPos : viewed.entrySet()) {
             if (memory.isVisitedPos(blockPos.getKey())) continue;
-            Optional<ViewedInventoryMemory.ItemCount> first = blockPos
+            Optional<ItemCount> first = blockPos
                     .getValue()
                     .stream()
                     .filter(itemCount -> isTargetItem(level, maid, targets, itemCount.item()))

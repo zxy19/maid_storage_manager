@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
@@ -70,7 +70,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                         BlockState axeStrippingState = AxeItem.getAxeStrippingState(blockItem.getBlock().defaultBlockState());
                         if (axeStrippingState == null) return;
                         ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
-                        @Nullable ResourceLocation _key = ForgeRegistries.ITEMS.getKey(strippedItem.getItem());
+                        @Nullable ResourceLocation _key = BuiltInRegistries.ITEM.getKey(strippedItem.getItem());
                         if (_key == null) return;
                         ResourceLocation key = ResourceLocation.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
                         graph.addRecipe(
@@ -133,8 +133,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                         BlockState axeStrippingState = AxeItem.getAxeStrippingState(blockItem.getBlock().defaultBlockState());
                         if (axeStrippingState == null) return;
                         ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
-                        @Nullable ResourceLocation _key = ForgeRegistries.ITEMS.getKey(strippedItem.getItem());
-                        if (_key == null) return;
+                        @Nullable ResourceLocation _key = BuiltInRegistries.ITEM.getKey(strippedItem.getItem());
                         ResourceLocation key = ResourceLocation.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
                         RecipeIngredientCache.addRecipeCache(
                                 key,

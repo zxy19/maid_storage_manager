@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
@@ -13,14 +14,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public class GraphOperator{
+public class GraphOperator {
     public ICachableGeneratorGraph graph;
 
     public GraphOperator(ICachableGeneratorGraph graph) {
         this.graph = graph;
     }
 
-    public void addRecipeObj(Recipe<?> recipe, BiFunction<ItemStack[], CraftGuideOperator, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipeObj(RecipeHolder<Recipe<?>> recipe, BiFunction<ItemStack[], CraftGuideOperator, @Nullable CraftGuideData> craftGuideSupplier) {
         graph.addRecipe(recipe, t -> craftGuideSupplier.apply(t.toArray(new ItemStack[0]), CraftGuideOperator.INSTANCE));
     }
 

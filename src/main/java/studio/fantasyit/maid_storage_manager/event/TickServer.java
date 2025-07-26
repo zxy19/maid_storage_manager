@@ -17,7 +17,7 @@ public class TickServer {
     }
 
     @SubscribeEvent
-    public static void onWorldTick(LevelTickEvent event) {
+    public static void onWorldTick(LevelTickEvent.Post event) {
         if (event.getLevel().isClientSide) return;
         CraftBlockOccupy.get(event.getLevel()).tick((ServerLevel) event.getLevel());
     }

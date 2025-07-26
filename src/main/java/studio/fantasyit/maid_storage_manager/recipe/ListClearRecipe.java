@@ -1,20 +1,19 @@
 package studio.fantasyit.maid_storage_manager.recipe;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.*;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
-import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
+import studio.fantasyit.maid_storage_manager.items.data.TargetList;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 public class ListClearRecipe extends ShapelessRecipe {
@@ -25,6 +24,10 @@ public class ListClearRecipe extends ShapelessRecipe {
                 recipe.getResultItem(RegistryAccess.EMPTY),
                 recipe.getIngredients()
         );
+    }
+
+    public ListClearRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStack p_252071_, NonNullList<Ingredient> p_250689_) {
+        super(p_249640_, p_249390_, p_252071_, p_250689_);
     }
 
     @Override
@@ -39,18 +42,13 @@ public class ListClearRecipe extends ShapelessRecipe {
             }
             if (stack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {
                 ItemStack tmp = stack.copy();
-                CompoundTag tag = tmp.getOrCreateTag();
-                tag.put(StorageDefineBauble.TAG_STORAGES, new ListTag());
-                tmp.setTag(tag);
+                tmp.set(DataComponentRegistry.TARGETS, new TargetList().toImmutable());
                 return tmp;
             }
             if (stack.is(ItemRegistry.WRITTEN_INVENTORY_LIST.get())) {
-                if (!stack.hasTag()) return stack;
                 ItemStack tmp = ItemRegistry.INVENTORY_LIST.get().getDefaultInstance().copy();
-                if (stack.getTag().contains(WrittenInvListItem.TAG_UUID)) {
-                    CompoundTag tag = tmp.getOrCreateTag();
-                    tag.putUUID(WrittenInvListItem.TAG_UUID, stack.getTag().getUUID(WrittenInvListItem.TAG_UUID));
-                    tmp.setTag(tag);
+                if (stack.has(DataComponentRegistry.INVENTORY_UUID)) {
+                    tmp.set(DataComponentRegistry.INVENTORY_UUID, stack.get(DataComponentRegistry.INVENTORY_UUID));
                 }
                 return tmp;
             }
@@ -60,22 +58,26 @@ public class ListClearRecipe extends ShapelessRecipe {
 
 
     public static class Serializer implements RecipeSerializer<ListClearRecipe> {
+        private static final MapCodec<ListClearRecipe> CODEC = RecordCodecBuilder.mapCodec((p_340779_) ->
+                p_340779_.group(Codec.STRING.optionalFieldOf("group", "").forGetter(ShapelessRecipe::getGroup),
+                        CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(ShapelessRecipe::category),
+                        ItemStack.STRICT_CODEC.fieldOf("result").forGetter((p_301142_) -> p_301142_.getResultItem(RegistryAccess.EMPTY)),
+                        Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients")
+                                .flatXmap((p_301021_) -> DataResult.success(NonNullList.of(Ingredient.EMPTY, p_301021_.toArray(Ingredient[]::new))), DataResult::success)
+                                .forGetter(ShapelessRecipe::getIngredients)
+                ).apply(p_340779_, ListClearRecipe::new));
+        private static final StreamCodec<RegistryFriendlyByteBuf, ListClearRecipe> STREAM_CODEC = StreamCodec.composite(
+                RecipeSerializer.SHAPELESS_RECIPE.streamCodec(),
+                t -> t,
+                ListClearRecipe::new
+        );
 
-        @Override
         public MapCodec<ListClearRecipe> codec() {
-            return RecordCodecBuilder.mapCodec(builder -> builder.group(
-                            RecipeSerializer.SHAPELESS_RECIPE.codec().fieldOf("recipe").forGetter(t -> t)
-                    ).apply(builder, ListClearRecipe::new)
-            );
+            return CODEC;
         }
 
-        @Override
         public StreamCodec<RegistryFriendlyByteBuf, ListClearRecipe> streamCodec() {
-            return StreamCodec.composite(
-                    RecipeSerializer.SHAPELESS_RECIPE.streamCodec(),
-                    t -> t,
-                    ListClearRecipe::new
-            );
+            return STREAM_CODEC;
         }
     }
 }

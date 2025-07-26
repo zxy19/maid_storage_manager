@@ -12,6 +12,7 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -19,7 +20,6 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
@@ -111,8 +111,8 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         List<BlockPos> targetFilterPos = null;
 
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
-        Map<Target, List<ViewedInventoryMemory.ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
-        for (Map.Entry<Target, List<ViewedInventoryMemory.ItemCount>> blockPos : blockPosListMap.entrySet()) {
+        Map<Target, List<ItemCount>> blockPosListMap = MemoryUtil.getViewedInventory(maid).positionFlatten();
+        for (Map.Entry<Target, List<ItemCount>> blockPos : blockPosListMap.entrySet()) {
             if (targetFilter != null) break;
 
             //过滤器判断
@@ -166,7 +166,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             //内容物判断
             if (targetContent != null) continue;
             boolean foundTarget = false;
-            for (ViewedInventoryMemory.ItemCount itemCount : blockPos.getValue()) {
+            for (ItemCount itemCount : blockPos.getValue()) {
                 boolean found = false;
                 for (ItemStack itemStack : maidAvailableItems) {
                     if (!itemCount.getFirst().isEmpty() && ItemStack.isSameItem(itemStack, itemCount.getFirst())) {
