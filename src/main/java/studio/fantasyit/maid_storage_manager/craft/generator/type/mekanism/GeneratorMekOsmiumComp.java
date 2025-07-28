@@ -78,9 +78,6 @@ public class GeneratorMekOsmiumComp extends GeneratorMek<ItemStackGasToItemStack
 
     @Override
     protected boolean addSteps(BlockPos pos, TileEntityConfigurableMachine machine, ItemStackGasToItemStackRecipe recipe, List<ItemStack> inputs, List<ItemStack> outputs, List<CraftGuideStepData> steps) {
-        if (machine instanceof TileEntityOsmiumCompressor oc) {
-            oc.getGasManager();
-        }
         Direction inputSide = getTypeDirection(machine, List.of(DataType.INPUT, DataType.INPUT_OUTPUT));
         Direction outputSide = getTypeDirection(machine, List.of(DataType.OUTPUT, DataType.INPUT_OUTPUT));
         Direction extra = getTypeDirection(machine, List.of(DataType.EXTRA));

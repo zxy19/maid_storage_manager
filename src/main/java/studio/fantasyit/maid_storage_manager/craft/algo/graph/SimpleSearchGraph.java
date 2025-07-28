@@ -167,8 +167,6 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
     public int dfsCalcCraftNode(CraftNode node, int maxRequire, boolean estimating) {
         int restRequire = maxRequire;
-        if (node.maxSuccess < restRequire)
-            restRequire = node.maxSuccess;
         int simulateRequire = maxRequire;
         int totalSuccess = 0;
         //无原料合成，直接返回全部成功
@@ -176,13 +174,6 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             totalSuccess = maxRequire;
             simulateRequire = 0;
             restRequire = 0;
-        } else {
-            for (Pair<Integer, Integer> toNodePair : node.edges) {
-                Node toNode = getNode(toNodePair.getA());
-                if (simulateRequire * toNodePair.getB() > toNode.maxSuccess) {
-                    simulateRequire = toNode.maxSuccess / toNodePair.getB();
-                }
-            }
         }
         //对合成进行模拟。假设每次合成simulateRequire个
         while (simulateRequire > 0) {
