@@ -47,6 +47,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.PLACE) return false;
+        if (MemoryUtil.isWorking(owner)) return false;
         if (Conditions.isWaitingForReturn(owner)) return false;
         return !Conditions.isNothingToPlace(owner);
     }
@@ -177,7 +178,6 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 if (found) {
                     foundTarget = true;
                     targetContentList.add(itemCount.getFirst());
-                    break;
                 }
             }
             if (foundTarget) {

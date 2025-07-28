@@ -300,20 +300,11 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(),
                 new MutableBoolean()
         ));
-        if (push.node.maxSuccess < push.restRequire.getValue())
-            push.restRequire.setValue(push.node.maxSuccess);
         //无原料合成，直接返回全部成功
         if (push.node.edges.isEmpty()) {
             push.totalSuccess.setValue(push.maxRequire);
             push.simulateRequire.setValue(0);
             push.restRequire.setValue(0);
-        } else {
-            for (Pair<Integer, Integer> toNodePair : push.node.edges) {
-                Node toNodeN = getNode(toNodePair.getA());
-                if (push.simulateRequire.getValue() * toNodePair.getB() > toNodeN.maxSuccess) {
-                    push.simulateRequire.setValue(toNodeN.maxSuccess / toNodePair.getB());
-                }
-            }
         }
     }
 
