@@ -45,4 +45,6 @@ public class ItemRegistry {
 
     public static final DeferredHolder<Item, LogisticsGuide> LOGISTICS_GUIDE = item("logistics_guide", LogisticsGuide::new);
     public static final DeferredHolder<Item, ChangeFlag> CHANGE_FLAG = item("change_flag", ChangeFlag::new);
+
+    public static final DeferredHolder<Item, ProgressPad> PROGRESS_PAD = item("progress_pad", ProgressPad::new);
 }
