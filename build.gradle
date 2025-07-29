@@ -189,10 +189,10 @@ dependencies {
     runtimeOnly "mekanism:Mekanism:${mekanism_version}:additions"// Mekanism: Additions
     runtimeOnly "mekanism:Mekanism:${mekanism_version}:generators"// Mekanism: Generators
     runtimeOnly "mekanism:Mekanism:${mekanism_version}:tools"// Mekanism: Tools
-    runtimeOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
-    runtimeOnly "dev.latvian.mods:rhino-neoforge:${rhino_version}"
-    runtimeOnly "dev.architectury:architectury-neoforge:${architectury_version}"
-    runtimeOnly "curse.maven:probejs-585406:5820894"
+//    runtimeOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+//    runtimeOnly "dev.latvian.mods:rhino-neoforge:${rhino_version}"
+//    runtimeOnly "dev.architectury:architectury-neoforge:${architectury_version}"
+//    runtimeOnly "curse.maven:probejs-585406:5820894"
     runtimeOnly "curse.maven:ars-nouveau-401955:6770346"
     runtimeOnly "curse.maven:jade-324717:6738687"
     runtimeOnly "org.anti_ad.mc:InventoryProfilesNext-neoforge-1.21:2.1.10"

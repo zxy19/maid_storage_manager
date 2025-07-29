@@ -6,6 +6,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 public class CraftingChatBubbleData implements IChatBubbleData {
@@ -53,9 +55,10 @@ public class CraftingChatBubbleData implements IChatBubbleData {
         return 10;
     }
 
-
+    @OnlyIn(Dist.CLIENT)
     private IChatBubbleRenderer renderer;
 
+    @OnlyIn(Dist.CLIENT)
     @Override
     public IChatBubbleRenderer getRenderer(IChatBubbleRenderer.Position position) {
         if (this.renderer == null) {
