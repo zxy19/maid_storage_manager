@@ -46,4 +46,6 @@ public class ItemRegistry {
 
     public static final RegistryObject<Item> LOGISTICS_GUIDE = item("logistics_guide", LogisticsGuide::new);
     public static final RegistryObject<Item> CHANGE_FLAG = item("change_flag", ChangeFlag::new);
+
+    public static final RegistryObject<Item> PROGRESS_PAD = item("progress_pad", ProgressPad::new);
 }

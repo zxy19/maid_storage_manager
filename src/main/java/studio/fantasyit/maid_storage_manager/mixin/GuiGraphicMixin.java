@@ -16,7 +16,7 @@ public abstract class GuiGraphicMixin implements IGuiGraphics {
     private PoseStack pose;
 
     @Override
-    public void battery_shield$setPose(PoseStack pose) {
+    public void maid_storage_manager$setPose(PoseStack pose) {
         this.pose = pose;
     }
 }
