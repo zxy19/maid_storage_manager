@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 
@@ -24,6 +25,10 @@ public class CustomGraphics {
     private final PoseStack pose;
     private final MultiBufferSource.BufferSource bufferSource;
     private final Minecraft minecraft;
+
+    private static final Matrix4f GUI_MAT4 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateY((-(float) Math.PI / 8F)).rotateX(2.3561945F);
+    private static final Vector3f DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, 1.0F, -0.7F)).normalize();
+    private static final Vector3f DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, 1.0F, 0.7F)).normalize();
 
     public CustomGraphics(Minecraft mc, PoseStack p_281669_, MultiBufferSource.BufferSource p_281893_) {
         this.minecraft = mc;
@@ -82,10 +87,12 @@ public class CustomGraphics {
         if (!p_281675_.isEmpty()) {
             BakedModel bakedmodel = this.minecraft.getItemRenderer().getModel(p_281675_, p_281754_, p_282619_, p_283260_);
             this.pose.pushPose();
-            this.pose.translate((float) (p_281271_ + 8), (float) (p_282210_ + 8), (float) (150 + (bakedmodel.isGui3d() ? p_281995_ : 0)));
+            this.pose.translate((float) (p_281271_ + 8), (float) (p_282210_ + 8), 20);
             this.pose.scale(16.0F, -16.0F, 16.0F);
+            ItemStackLighting.setup();
             this.minecraft.getItemRenderer().render(p_281675_, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY, bakedmodel);
             this.flush();
+            ItemStackLighting.restore();
             this.pose.popPose();
         }
     }
@@ -114,11 +121,13 @@ public class CustomGraphics {
         RenderSystem.setShaderTexture(0, p_283461_);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         Matrix4f matrix4f = this.pose.last().pose();
-        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.addVertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).setUv(p_283247_, p_282883_);
-        bufferbuilder.addVertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).setUv(p_283247_, p_283017_);
-        bufferbuilder.addVertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).setUv(p_282598_, p_283017_);
-        bufferbuilder.addVertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).setUv(p_282598_, p_282883_);
-        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+
+        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.vertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).uv(p_283247_, p_282883_).endVertex();
+        bufferbuilder.vertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).uv(p_283247_, p_283017_).endVertex();
+        bufferbuilder.vertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).uv(p_282598_, p_283017_).endVertex();
+        bufferbuilder.vertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).uv(p_282598_, p_282883_).endVertex();
+        BufferUploader.drawWithShader(bufferbuilder.end());
     }
 }
