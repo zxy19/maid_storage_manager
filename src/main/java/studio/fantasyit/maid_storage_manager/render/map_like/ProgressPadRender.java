@@ -27,7 +27,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     @Override
     public float getWidth(RenderHandMapLikeEvent.MapLikeRenderContext context) {
         return switch (context) {
-            case ITEM_FRAME_LARGE -> 132;
+            case ITEM_FRAME_LARGE -> 132.5f;
             case ITEM_FRAME_SMALL -> 66;
             default -> 98;
         };
@@ -36,7 +36,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     @Override
     public float getHeight(RenderHandMapLikeEvent.MapLikeRenderContext context) {
         return switch (context) {
-            case ITEM_FRAME_SMALL -> 66;
+            case ITEM_FRAME_SMALL -> 65.3f;
             default -> 132;
         };
     }
