@@ -121,13 +121,11 @@ public class CustomGraphics {
         RenderSystem.setShaderTexture(0, p_283461_);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         Matrix4f matrix4f = this.pose.last().pose();
-
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.vertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).uv(p_283247_, p_282883_).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).uv(p_283247_, p_283017_).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).uv(p_282598_, p_283017_).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).uv(p_282598_, p_282883_).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.addVertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).setUv(p_283247_, p_282883_);
+        bufferbuilder.addVertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).setUv(p_283247_, p_283017_);
+        bufferbuilder.addVertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).setUv(p_282598_, p_283017_);
+        bufferbuilder.addVertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).setUv(p_282598_, p_282883_);
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
     }
 }

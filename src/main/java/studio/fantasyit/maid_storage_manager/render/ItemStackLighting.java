@@ -25,7 +25,7 @@ public class ItemStackLighting {
         if (depth == 0)
             throw new RuntimeException("ItemStackLighting.restore() called without setup()");
         depth--;
-        if(depth == 0) {
+        if (depth == 0) {
             RenderSystem.setShaderLights(shaderLightDirections$1, shaderLightDirections$2);
             shaderLightDirections$1 = null;
             shaderLightDirections$2 = null;

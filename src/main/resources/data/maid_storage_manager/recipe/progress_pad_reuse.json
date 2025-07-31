@@ -7,7 +7,7 @@
     }
   ],
   "result": {
-    "item": "maid_storage_manager:progress_pad",
+    "id": "maid_storage_manager:progress_pad",
     "count": 1
   },
   "show_notification": true

@@ -6,7 +6,19 @@
   "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
   "result": {
     "id": "maid_storage_manager:logistics_guide",
-    "count": 3
+    "components": {
+      "maid_storage_manager:to_spawn_items": [
+        {
+          "id": "maid_storage_manager:logistics_guide"
+        },
+        {
+          "id": "maid_storage_manager:logistics_guide"
+        },
+        {
+          "id": "maid_storage_manager:logistics_guide"
+        }
+      ]
+    }
   },
   "power": 0,
   "ingredients": [
