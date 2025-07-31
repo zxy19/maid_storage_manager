@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.render.map_like;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
@@ -17,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
 import studio.fantasyit.maid_storage_manager.event.RenderHandMapLikeEvent;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
+import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
 
 import java.util.UUID;
 
@@ -54,7 +54,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     private static final ImageAsset PROGRESS = new ImageAsset(ELEM, 15, 89, 72, 1);
 
     @Override
-    public void renderOnHand(GuiGraphics graphics, ItemStack pStack, int pCombinedLight, RenderHandMapLikeEvent.MapLikeRenderContext context) {
+    public void renderOnHand(CustomGraphics graphics, ItemStack pStack, int pCombinedLight, RenderHandMapLikeEvent.MapLikeRenderContext context) {
         int tcr = Minecraft.getInstance().player.tickCount / 20;
         float widthScaleFactor = (getWidth(context) - 12) / 78;
         float maxWidth = getWidth(context) / 90 * 160;
@@ -176,7 +176,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
         }
     }
 
-    public void drawCenteredString(GuiGraphics graphics, Font pFont, Component pText, int pX, int pY, int maxWidth, int pColor) {
+    public void drawCenteredString(CustomGraphics graphics, Font pFont, Component pText, int pX, int pY, int maxWidth, int pColor) {
         FormattedCharSequence formattedcharsequence = pText.getVisualOrderText();
         int textWidth = pFont.width(formattedcharsequence);
         int drawWidth = Math.max(textWidth, maxWidth);
@@ -199,7 +199,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
         }
     }
 
-    protected void blit(GuiGraphics graphics, ImageAsset asset, int x, int y, float xScale) {
+    protected void blit(CustomGraphics graphics, ImageAsset asset, int x, int y, float xScale) {
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0);
         graphics.pose().scale(xScale, 1, 1);

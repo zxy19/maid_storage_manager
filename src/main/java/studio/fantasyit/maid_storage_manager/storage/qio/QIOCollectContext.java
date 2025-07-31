@@ -36,7 +36,7 @@ public class QIOCollectContext extends QIOBaseContext implements IStorageExtract
 
     @Override
     public boolean isDone() {
-        return toExtract != null && index >= toExtract.size();
+        return frequency == null || (toExtract != null && index >= toExtract.size());
     }
 
     @Override
@@ -51,7 +51,7 @@ public class QIOCollectContext extends QIOBaseContext implements IStorageExtract
 
     @Override
     public void tick(Function<ItemStack, ItemStack> process) {
-        if (toExtract == null || index >= toExtract.size())
+        if (toExtract == null || index >= toExtract.size() || frequency == null)
             return;
         ItemStack item = toExtract.get(index++);
         ItemStack itemStack = frequency.removeItem(item, item.getCount());
