@@ -12,7 +12,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderItemInFrameEvent;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
 
 public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplayEntity> {
     public VirtualDisplayEntityRender(EntityRendererProvider.Context p_174204_) {
@@ -43,7 +42,6 @@ public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplay
                     p_115079_.scale(0.35F, 0.35F, 0.35F);
                 else
                     p_115079_.scale(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup();
                 this.itemRenderer.renderStatic(entity.getItem(),
                         ItemDisplayContext.FIXED,
                         p_115081_,
@@ -52,10 +50,6 @@ public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplay
                         p_115080_,
                         entity.level(),
                         entity.getId());
-
-                if (p_115080_ instanceof MultiBufferSource.BufferSource bufferSource)
-                    bufferSource.endBatch();
-                ItemStackLighting.restore();
             }
             p_115079_.popPose();
         }

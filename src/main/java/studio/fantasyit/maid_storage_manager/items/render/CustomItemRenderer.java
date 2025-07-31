@@ -13,12 +13,12 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
 
 import java.util.List;
 
@@ -115,9 +115,9 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.translate(-0.78, 0.23, -0.46);
                 }
 //                pose.translate(0.04, 0.2, 0.45F);
-                pose.scale(0.55f, 0.55f, 0.01F);
+                pose.scale(0.55f, 0.55f, 1);
+                pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup();
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
@@ -133,9 +133,6 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                 0
                         )
                 );
-                if (multiBufferSource instanceof MultiBufferSource.BufferSource bufferSource)
-                    bufferSource.endBatch();
-                ItemStackLighting.restore();
                 pose.popPose();
             }
         }
@@ -172,9 +169,9 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 }
                 pose.translate(0, -0.05, 0);
 //                pose.translate(0.04, 0.2, 0.45F);
-                pose.scale(0.55f, 0.55f, 0.01F);
+                pose.scale(0.55f, 0.55f, 1);
+                pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup();
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
@@ -190,9 +187,6 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                 0
                         )
                 );
-                if (multiBufferSource instanceof MultiBufferSource.BufferSource bufferSource)
-                    bufferSource.endBatch();
-                ItemStackLighting.restore();
                 pose.popPose();
             }
         }
@@ -210,9 +204,9 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.translate(-0.78, 0.23, -0.46);
                 }
                 pose.translate(0.3F, -0.2F, 0.02F);
-                pose.scale(0.40f, 0.40f, 0.01F);
+                pose.scale(0.40f, 0.40f, 1);
+                pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup();
                 Minecraft.getInstance().getItemRenderer().render(
                         icon,
                         ItemDisplayContext.GUI,
@@ -228,9 +222,6 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                 0
                         )
                 );
-                if (multiBufferSource instanceof MultiBufferSource.BufferSource bufferSource)
-                    bufferSource.endBatch();
-                ItemStackLighting.restore();
                 pose.popPose();
             }
         }

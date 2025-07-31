@@ -33,7 +33,8 @@ public abstract class ItemFrameTickMixin extends Entity {
             if (ifr.getItem().is(ItemRegistry.PROGRESS_PAD.get()) && ifr.tickCount % 5 == 0) {
                 UUID uuid = ProgressPad.getBindingUUID(ifr.getItem());
                 if (uuid != null && ((ServerLevel) level()).getEntity(uuid) instanceof EntityMaid maid) {
-                    int count = ifr.getRotation() == 0 ? 1 : ifr.getRotation() == 1 ? 15 : 10;
+                    int rotation = ifr.getRotation() % 4;
+                    int count = rotation == 0 ? 1 : rotation == 1 ? 15 : 10;
                     Network.INSTANCE.send(
                             PacketDistributor.TRACKING_ENTITY.with(() -> ifr),
                             new ProgressPadUpdatePacket(
