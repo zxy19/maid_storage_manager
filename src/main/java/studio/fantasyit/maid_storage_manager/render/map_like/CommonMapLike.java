@@ -8,8 +8,8 @@ import org.joml.Matrix4f;
 
 public class CommonMapLike {
     public static void renderBgSliced(float x1, float y1, float x2, float y2, float borderSz, PoseStack pPoseStack, MultiBufferSource bufferSource, int combinedLight, RenderType renderType) {
-        float borderUV_W = 0.05f;
-        float borderUV_H = 0.05f;
+        float borderUV_W = 0.1f;
+        float borderUV_H = 0.1f;
         //TL
         renderBgSlicedPiece(x1, y1, x1 + borderSz, y1 + borderSz, 0, 0, borderUV_W, borderUV_H, pPoseStack, bufferSource, combinedLight, renderType);
         //TR

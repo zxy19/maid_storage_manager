@@ -76,7 +76,7 @@ public class RenderItemFrameEvent {
             poseStack.translate(0.5f, 0.5f, -0.01f);
             poseStack.scale(-0.015f, -0.015f, -0.015f);
 
-            CommonMapLike.renderBgSliced(0, 0, width, height, 4, poseStack, bs, pCombinedLight, mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, bs, pCombinedLight, event.getItemStack()));
+            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, bs, pCombinedLight, mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, bs, pCombinedLight, event.getItemStack()));
             bs.endBatch();
 
             mlr.extraTransform(poseStack, context);
