@@ -23,6 +23,7 @@ import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
+import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Queue;
 
 public class MaidCraftPlanner {
+    private final CraftMemory craftingMemory;
     ICraftGraphLike currentAvailableGraph;
 
     boolean done = false;
@@ -53,6 +55,7 @@ public class MaidCraftPlanner {
     CraftLayerChain plan;
 
     public MaidCraftPlanner(ServerLevel level, EntityMaid maid) {
+        this.craftingMemory = MemoryUtil.getCrafting(maid);
         this.maid = maid;
         this.level = level;
         this.count = 0;
@@ -287,6 +290,8 @@ public class MaidCraftPlanner {
                     autoGraphGenerator.getDone(),
                     autoGraphGenerator.getTotal()
             ), autoGraphGenerator.getProgress());
+            craftingMemory.calculatingProgress = autoGraphGenerator.getDone();
+            craftingMemory.calculatingTotal = autoGraphGenerator.getTotal();
             return;
         }
         if (biCalc == null) return;
@@ -296,6 +301,8 @@ public class MaidCraftPlanner {
                 String.valueOf(futureSteps.getTotalStep() - restSteps),
                 String.valueOf(futureSteps.getTotalStep())
         ), (double) futureSteps.getTotalStep() / (futureSteps.getTotalStep() - restSteps));
+        craftingMemory.calculatingProgress = futureSteps.getTotalStep() - restSteps;
+        craftingMemory.calculatingTotal = futureSteps.getTotalStep();
     }
 
     public boolean anySuccess() {

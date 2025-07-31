@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.event;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,24 +18,44 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.joml.Matrix4f;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.IGuiGraphics;
+import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public class RenderHandMapLikeEvent {
+    public enum MapLikeRenderContext {
+        MAIN_HAND,
+        OFF_HAND,
+        BOTH_HANDS,
+        ITEM_FRAME_LARGE,
+        ITEM_FRAME_SMALL,
+        ITEM_FRAME_SIDE
+    }
+
     public interface MapLikeRenderItem {
-        default float getWidth() {
+        MapLikeRenderer getRenderer();
+
+        default boolean available(ItemStack stack) {
+            return true;
+        }
+    }
+
+    public interface MapLikeRenderer {
+        default float getWidth(MapLikeRenderContext context) {
             return 142.0F;
         }
 
-        default float getHeight() {
+        default float getHeight(MapLikeRenderContext context) {
             return 142.0F;
         }
 
         RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack);
 
-        void renderOnHand(GuiGraphics graphics, ItemStack pStack, int pCombinedLight);
+        void renderOnHand(GuiGraphics graphics, ItemStack pStack, int pCombinedLight, MapLikeRenderContext context);
+
+        default void extraTransform(PoseStack pPoseStack, MapLikeRenderContext context) {
+        }
     }
 
     @SubscribeEvent
@@ -46,7 +65,8 @@ public class RenderHandMapLikeEvent {
         InteractionHand hand = event.getHand();
         ItemStack stack = event.getItemStack();
 
-        if (hand == InteractionHand.MAIN_HAND && stack.getItem() instanceof MapLikeRenderItem) {
+        if (hand == InteractionHand.MAIN_HAND && stack.getItem() instanceof MapLikeRenderItem mli) {
+            if (!mli.available(stack)) return;
             event.getPoseStack().pushPose();
             if (player.getOffhandItem().isEmpty())
                 renderTwoHandedMap(mc,
@@ -68,7 +88,8 @@ public class RenderHandMapLikeEvent {
                         stack);
             event.getPoseStack().popPose();
             event.setCanceled(true);
-        } else if (hand == InteractionHand.OFF_HAND && stack.getItem() instanceof MapLikeRenderItem) {
+        } else if (hand == InteractionHand.OFF_HAND && stack.getItem() instanceof MapLikeRenderItem mli) {
+            if (!mli.available(stack)) return;
             event.getPoseStack().pushPose();
             renderOneHandedMap(mc,
                     event.getPoseStack(),
@@ -121,7 +142,7 @@ public class RenderHandMapLikeEvent {
         pPoseStack.translate(f * f3, f4 - 0.3F * f2, f5);
         pPoseStack.mulPose(Axis.XP.rotationDegrees(f2 * -45.0F));
         pPoseStack.mulPose(Axis.YP.rotationDegrees(f * f2 * -30.0F));
-        doRenderOnHand(mc, pPoseStack, pBuffer, pCombinedLight, pStack);
+        doRenderOnHand(mc, pPoseStack, pBuffer, pCombinedLight, pStack, pHand == HumanoidArm.RIGHT ? MapLikeRenderContext.MAIN_HAND : MapLikeRenderContext.OFF_HAND);
         pPoseStack.popPose();
     }
 
@@ -150,30 +171,31 @@ public class RenderHandMapLikeEvent {
         float f4 = Mth.sin(f * (float) Math.PI);
         pPoseStack.mulPose(Axis.XP.rotationDegrees(f4 * 20.0F));
         pPoseStack.scale(2.0F, 2.0F, 2.0F);
-        doRenderOnHand(mc, pPoseStack, pBuffer, pCombinedLight, pStack);
+        doRenderOnHand(mc, pPoseStack, pBuffer, pCombinedLight, pStack, MapLikeRenderContext.BOTH_HANDS);
     }
 
-    private static void doRenderOnHand(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack) {
-        if (pStack.getItem() instanceof MapLikeRenderItem mlr) {
+    private static void doRenderOnHand(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack, MapLikeRenderContext context) {
+        if (pStack.getItem() instanceof MapLikeRenderItem mli) {
+            MapLikeRenderer mlr = mli.getRenderer();
             pPoseStack.pushPose();
             pPoseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             pPoseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
             pPoseStack.scale(0.38F, 0.38F, 0.38F);
             pPoseStack.translate(-0.5F, -0.5F, 0.0F);
             pPoseStack.scale(0.0078125F, 0.0078125F, 0.0078125F);
+            mlr.extraTransform(pPoseStack, context);
             //渲染背景图片
-            VertexConsumer vertexconsumer = pBuffer.getBuffer(mlr.backgroundRenderType(mc, pPoseStack, pBuffer, pCombinedLight, pStack));
-            Matrix4f matrix4f = pPoseStack.last().pose();
-            vertexconsumer.vertex(matrix4f, 64 - mlr.getWidth() / 2, mlr.getHeight() - 7, 0.0F).color(255, 255, 255, 255).uv(0.0F, 1.0F).uv2(pCombinedLight).endVertex();
-            vertexconsumer.vertex(matrix4f, 64 + mlr.getWidth() / 2, mlr.getHeight() - 7, 0.0F).color(255, 255, 255, 255).uv(1.0F, 1.0F).uv2(pCombinedLight).endVertex();
-            vertexconsumer.vertex(matrix4f, 64 + mlr.getWidth() / 2, -7.0F, 0.0F).color(255, 255, 255, 255).uv(1.0F, 0.0F).uv2(pCombinedLight).endVertex();
-            vertexconsumer.vertex(matrix4f, 64 - mlr.getWidth() / 2, -7.0F, 0.0F).color(255, 255, 255, 255).uv(0.0F, 0.0F).uv2(pCombinedLight).endVertex();
+            float height = mlr.getHeight(context);
+            float width = mlr.getWidth(context);
+            CommonMapLike.renderBgSliced(64 - width / 2, -7.0F, 64 + width / 2, height - 7.0F, 4, pPoseStack, pBuffer, pCombinedLight, mlr.backgroundRenderType(mc, pPoseStack, pBuffer, pCombinedLight, pStack));
             if (pBuffer instanceof MultiBufferSource.BufferSource bs) {
                 bs.endBatch();
-                pPoseStack.translate(-mlr.getWidth() / 2, -mlr.getHeight() + 7, 1);
+                pPoseStack.translate((64 - width / 2), -7, -1);
+                pPoseStack.scale(1, 1, -0.01f);
                 GuiGraphics graphics = new GuiGraphics(mc, bs);
                 ((IGuiGraphics) graphics).maid_storage_manager$setPose(pPoseStack);
-                mlr.renderOnHand(graphics, pStack, pCombinedLight);
+                RenderSystem.enableDepthTest();
+                mlr.renderOnHand(graphics, pStack, pCombinedLight, context);
                 graphics.flush();
             }
             pPoseStack.popPose();

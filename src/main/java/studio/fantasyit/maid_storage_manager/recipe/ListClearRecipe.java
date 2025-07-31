@@ -12,6 +12,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
@@ -51,6 +52,13 @@ public class ListClearRecipe extends ShapelessRecipe {
                     tag.putUUID(WrittenInvListItem.TAG_UUID, stack.getTag().getUUID(WrittenInvListItem.TAG_UUID));
                     tmp.setTag(tag);
                 }
+                return tmp;
+            }
+            if (stack.is(ItemRegistry.PROGRESS_PAD.get())) {
+                ItemStack tmp = stack.copy();
+                CompoundTag tag = tmp.getOrCreateTag();
+                tag.remove(ProgressPad.TAG_BINDING_UUID);
+                tmp.setTag(tag);
                 return tmp;
             }
         }

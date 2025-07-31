@@ -10,6 +10,7 @@
     "CreateStockKeeperMenuMixin",
     "CreateStockTickerBEMixin",
     "EMIRecipeTransferHook",
+    "ItemFrameTickMixin",
     "JeiGuiIconToggleButtonAccessor",
     "JEIRecipeTransferHook",
     "WorldRecipeLoaderMixin"

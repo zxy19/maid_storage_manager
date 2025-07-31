@@ -32,6 +32,7 @@ import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInte
 import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
+import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -166,6 +167,8 @@ public class Network {
                                 StorageDefineBauble.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                             } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
                                 LogisticsGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
+                            } else if (item.is(ItemRegistry.PROGRESS_PAD.get())) {
+                                ProgressPad.rollViewing(item, sender, msg.value > 0 ? -1 : 1);
                             }
                         }
                         context.get().setPacketHandled(true);
@@ -342,6 +345,17 @@ public class Network {
                             }
                         }
                         context.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(13,
+                ProgressPadUpdatePacket.class,
+                ProgressPadUpdatePacket::toNetwork,
+                ProgressPadUpdatePacket::new,
+                (p, c) -> {
+                    c.get().enqueueWork(() -> {
+                        ProgressPadUpdatePacket.handle(p);
+                        c.get().setPacketHandled(true);
                     });
                 }
         );

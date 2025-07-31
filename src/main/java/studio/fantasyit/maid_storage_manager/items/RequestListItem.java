@@ -364,6 +364,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 }).filter(i -> !i.getA().isEmpty()).toList();
     }
 
+
     public static @Nullable UUID getStorageEntity(ItemStack stack) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return null;
         if (!stack.hasTag()) return null;
