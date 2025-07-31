@@ -187,7 +187,7 @@ public class RenderHandMapLikeEvent {
             //渲染背景图片
             float height = mlr.getHeight(context);
             float width = mlr.getWidth(context);
-            CommonMapLike.renderBgSliced(64 - width / 2, -7.0F, 64 + width / 2, height - 7.0F, 4, pPoseStack, pBuffer, pCombinedLight, mlr.backgroundRenderType(mc, pPoseStack, pBuffer, pCombinedLight, pStack));
+            CommonMapLike.renderBgSliced(64 - width / 2, -7.0F, 64 + width / 2, height - 7.0F, 8, pPoseStack, pBuffer, pCombinedLight, mlr.backgroundRenderType(mc, pPoseStack, pBuffer, pCombinedLight, pStack));
             if (pBuffer instanceof MultiBufferSource.BufferSource bs) {
                 bs.endBatch();
                 pPoseStack.translate((64 - width / 2), -7, -1);
