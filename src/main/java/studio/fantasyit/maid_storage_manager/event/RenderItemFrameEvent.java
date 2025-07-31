@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -16,8 +15,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.api.IGuiGraphics;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
+import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID)
@@ -79,8 +78,7 @@ public class RenderItemFrameEvent {
             bs.endBatch();
 
             mlr.extraTransform(poseStack, context);
-            GuiGraphics graphics = new GuiGraphics(Minecraft.getInstance(), bs);
-            ((IGuiGraphics) graphics).maid_storage_manager$setPose(poseStack);
+            CustomGraphics graphics = new CustomGraphics(Minecraft.getInstance(), poseStack, bs);
             poseStack.scale(1, 1, 0.01f);
             poseStack.translate(0, 0, 1f);
             RenderSystem.enableDepthTest();

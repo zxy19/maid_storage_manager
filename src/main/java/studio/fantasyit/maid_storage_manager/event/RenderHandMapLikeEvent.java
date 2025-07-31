@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -19,7 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.api.IGuiGraphics;
+import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
@@ -52,7 +51,7 @@ public class RenderHandMapLikeEvent {
 
         RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack);
 
-        void renderOnHand(GuiGraphics graphics, ItemStack pStack, int pCombinedLight, MapLikeRenderContext context);
+        void renderOnHand(CustomGraphics graphics, ItemStack pStack, int pCombinedLight, MapLikeRenderContext context);
 
         default void extraTransform(PoseStack pPoseStack, MapLikeRenderContext context) {
         }
@@ -192,8 +191,7 @@ public class RenderHandMapLikeEvent {
                 bs.endBatch();
                 pPoseStack.translate((64 - width / 2), -7, -1);
                 pPoseStack.scale(1, 1, -0.01f);
-                GuiGraphics graphics = new GuiGraphics(mc, bs);
-                ((IGuiGraphics) graphics).maid_storage_manager$setPose(pPoseStack);
+                CustomGraphics graphics = new CustomGraphics(mc, pPoseStack, bs);
                 RenderSystem.enableDepthTest();
                 mlr.renderOnHand(graphics, pStack, pCombinedLight, context);
                 graphics.flush();
