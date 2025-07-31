@@ -4,31 +4,33 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Vector3f;
 
-public class ItemStackLighting {
+import java.util.ArrayList;
+import java.util.List;
 
-    private static Vector3f shaderLightDirections$1 = null;
-    private static Vector3f shaderLightDirections$2 = null;
-    private static int depth = 0;
+public class ItemStackLighting {
+    private static final List<Vector3f[]> shaderLightDirectionsStack = new ArrayList<>();
+
+    public static void setup(Vector3f vec) {
+        Vector3f shaderLightDirections$1 = new Vector3f(RenderSystem.shaderLightDirections[0]);
+        Vector3f shaderLightDirections$2 = new Vector3f(RenderSystem.shaderLightDirections[1]);
+        shaderLightDirectionsStack.add(new Vector3f[]{shaderLightDirections$1, shaderLightDirections$2});
+        vec = vec.normalize();
+        RenderSystem.setShaderLights(vec, vec.mul(-1, -1, -1));
+    }
 
     public static void setup() {
-        if (depth > 10)
+        if (shaderLightDirectionsStack.size() > 10)
             throw new RuntimeException("ItemStackLighting.setup() called too many times without release");
-        if (depth == 0) {
-            shaderLightDirections$1 = new Vector3f(RenderSystem.shaderLightDirections[0]);
-            shaderLightDirections$2 = new Vector3f(RenderSystem.shaderLightDirections[1]);
-            Lighting.setupForFlatItems();
-        }
-        depth++;
+        Vector3f shaderLightDirections$1 = new Vector3f(RenderSystem.shaderLightDirections[0]);
+        Vector3f shaderLightDirections$2 = new Vector3f(RenderSystem.shaderLightDirections[1]);
+        shaderLightDirectionsStack.add(new Vector3f[]{shaderLightDirections$1, shaderLightDirections$2});
+        Lighting.setupForFlatItems();
     }
 
     public static void restore() {
-        if (depth == 0)
+        if (shaderLightDirectionsStack.isEmpty())
             throw new RuntimeException("ItemStackLighting.restore() called without setup()");
-        depth--;
-        if (depth == 0) {
-            RenderSystem.setShaderLights(shaderLightDirections$1, shaderLightDirections$2);
-            shaderLightDirections$1 = null;
-            shaderLightDirections$2 = null;
-        }
+        Vector3f[] shaderLightDirections = shaderLightDirectionsStack.removeLast();
+        RenderSystem.setShaderLights(shaderLightDirections[0], shaderLightDirections[1]);
     }
 }

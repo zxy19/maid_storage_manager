@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID)
@@ -79,11 +80,14 @@ public class RenderItemFrameEvent {
 
             mlr.extraTransform(poseStack, context);
             CustomGraphics graphics = new CustomGraphics(Minecraft.getInstance(), poseStack, bs);
-            poseStack.scale(1, 1, 0.01f);
-            poseStack.translate(0, 0, 1f);
+            poseStack.scale(1, 1, 1f);
+            poseStack.translate(0, 0, 0.01f);
             RenderSystem.enableDepthTest();
+
+            ItemStackLighting.setup(event.getItemFrameEntity().getDirection().getOpposite().step());
             mlr.renderOnHand(graphics, event.getItemStack(), pCombinedLight, context);
             graphics.flush();
+            ItemStackLighting.restore();
             poseStack.popPose();
             poseStack.popPose();
             event.setCanceled(true);

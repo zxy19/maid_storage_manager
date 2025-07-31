@@ -19,6 +19,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
@@ -190,10 +191,13 @@ public class RenderHandMapLikeEvent {
             if (pBuffer instanceof MultiBufferSource.BufferSource bs) {
                 bs.endBatch();
                 pPoseStack.translate((64 - width / 2), -7, -1);
-                pPoseStack.scale(1, 1, -0.01f);
+                pPoseStack.scale(1, 1, -1f);
                 CustomGraphics graphics = new CustomGraphics(mc, pPoseStack, bs);
                 RenderSystem.enableDepthTest();
+
+                ItemStackLighting.setup(mc.player.getViewVector(0).toVector3f());
                 mlr.renderOnHand(graphics, pStack, pCombinedLight, context);
+                ItemStackLighting.restore();
                 graphics.flush();
             }
             pPoseStack.popPose();

@@ -59,14 +59,18 @@ public class ProgressData {
     public final List<ItemStack> items;
     public final int total;
     public final int progress;
+    public final int tickCount;
+    public final int maxSz;
 
-    public ProgressData(List<TaskProgress> working, Component maidName, List<Component> workGroups, List<ItemStack> items, int total, int progress) {
+    public ProgressData(List<TaskProgress> working, Component maidName, List<Component> workGroups, List<ItemStack> items, int total, int progress, int tickCount, int maxSz) {
         this.working = working;
         this.maidName = maidName;
         this.workGroups = workGroups;
         this.items = items;
         this.total = total;
         this.progress = progress;
+        this.tickCount = tickCount;
+        this.maxSz = maxSz;
     }
 
     public void toNetwork(RegistryFriendlyByteBuf buf) {
@@ -79,6 +83,8 @@ public class ProgressData {
         });
         buf.writeInt(total);
         buf.writeInt(progress);
+        buf.writeInt(tickCount);
+        buf.writeInt(maxSz);
     }
 
     public static ProgressData fromNetwork(RegistryFriendlyByteBuf buf) {
@@ -91,6 +97,8 @@ public class ProgressData {
                         return ItemStackUtil.parseStack(t1.registryAccess(), t1.readNbt());
                     return ItemStack.EMPTY;
                 }),
+                buf.readInt(),
+                buf.readInt(),
                 buf.readInt(),
                 buf.readInt()
         );
@@ -171,11 +179,12 @@ public class ProgressData {
                 WorkCardItem.getAllWorkCards(maid),
                 targetItem,
                 total,
-                done
-        );
+                done,
+                maid.tickCount,
+                maxSz);
     }
 
-    public static ProgressData fromMaidNoPlan(EntityMaid maid) {
+    public static ProgressData fromMaidNoPlan(EntityMaid maid,int maxSz) {
         Item icon = (switch (MemoryUtil.getCurrentlyWorking(maid)) {
             case CO_WORK -> Items.PLAYER_HEAD;
             case MEAL -> Items.COOKED_BEEF;
@@ -189,7 +198,9 @@ public class ProgressData {
                 WorkCardItem.getAllWorkCards(maid),
                 icon != null ? List.of(icon.getDefaultInstance()) : List.of(),
                 0,
-                0
+                0,
+                maid.tickCount,
+                maxSz
         );
     }
 
@@ -219,8 +230,9 @@ public class ProgressData {
                 WorkCardItem.getAllWorkCards(maid),
                 List.of(ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance()),
                 total.getValue(),
-                done.getValue()
-        );
+                done.getValue(),
+                maid.tickCount,
+                maxSz);
     }
 
     private static ProgressData fromPlacing(EntityMaid maid, ServerLevel level, PlacingInventoryMemory placingInv, ProgressPad.Viewing viewing, int maxSz) {
@@ -235,8 +247,9 @@ public class ProgressData {
                 WorkCardItem.getAllWorkCards(maid),
                 List.of(Items.CHEST.getDefaultInstance()),
                 0,
-                0
-        );
+                0,
+                maid.tickCount,
+                maxSz);
     }
 
     public static ProgressData fromMaidAuto(EntityMaid maid, ServerLevel level, ProgressPad.Viewing viewing, int maxSz) {
@@ -251,14 +264,15 @@ public class ProgressData {
                             WorkCardItem.getAllWorkCards(maid),
                             List.of(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get().getDefaultInstance()),
                             MemoryUtil.getCrafting(maid).calculatingTotal,
-                            MemoryUtil.getCrafting(maid).calculatingProgress
-                    );
+                            MemoryUtil.getCrafting(maid).calculatingProgress,
+                            maid.tickCount,
+                            maxSz);
                 return ProgressData.fromRequest(maid, level, maid.getMainHandItem(), viewing, maxSz);
             }
         } else if (MemoryUtil.getCurrentlyWorking(maid) == ScheduleBehavior.Schedule.PLACE) {
             return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, maxSz);
         }
-        return ProgressData.fromMaidNoPlan(maid);
+        return ProgressData.fromMaidNoPlan(maid, maxSz);
     }
 
 }

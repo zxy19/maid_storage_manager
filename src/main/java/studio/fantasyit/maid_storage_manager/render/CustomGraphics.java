@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
@@ -87,12 +88,11 @@ public class CustomGraphics {
         if (!p_281675_.isEmpty()) {
             BakedModel bakedmodel = this.minecraft.getItemRenderer().getModel(p_281675_, p_281754_, p_282619_, p_283260_);
             this.pose.pushPose();
-            this.pose.translate((float) (p_281271_ + 8), (float) (p_282210_ + 8), 20);
+            this.pose.translate((float) (p_281271_ + 8), (float) (p_282210_ + 8), 0.1);
             this.pose.scale(16.0F, -16.0F, 16.0F);
-            ItemStackLighting.setup();
-            this.minecraft.getItemRenderer().render(p_281675_, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY, bakedmodel);
+            this.pose.mulPose(new Matrix4f().scale(1, 1, 0.01f));
+            this.minecraft.getItemRenderer().render(p_281675_, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
             this.flush();
-            ItemStackLighting.restore();
             this.pose.popPose();
         }
     }
