@@ -22,7 +22,7 @@ import java.util.UUID;
 
 public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer {
     public static final ProgressPadRender INSTANCE = new ProgressPadRender();
-    private static final RenderType MAP_BACKGROUND = RenderType.text(new ResourceLocation(MaidStorageManager.MODID, "textures/gui/process_pad.png"));
+    private static final RenderType MAP_BACKGROUND = RenderType.text(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad.png"));
 
     @Override
     public float getWidth(RenderHandMapLikeEvent.MapLikeRenderContext context) {
@@ -47,7 +47,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     }
 
 
-    private static final ResourceLocation ELEM = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/process_pad_element.png");
+    private static final ResourceLocation ELEM = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad_element.png");
     private static final ImageAsset LINE = new ImageAsset(ELEM, 14, 39, 154, 2);
     private static final ImageAsset PROGRESS_ALL = new ImageAsset(ELEM, 14, 37, 154, 1);
     private static final ImageAsset BORDER = new ImageAsset(ELEM, 14, 44, 78, 41);

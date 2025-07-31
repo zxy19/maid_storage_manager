@@ -35,9 +35,9 @@ public class CommonMapLike {
     private static void renderBgSlicedPiece(float x1, float y1, float x2, float y2, float u1, float v1, float u2, float v2, PoseStack poseStack, MultiBufferSource bufferSource, int combinedLight, RenderType renderType) {
         Matrix4f m = poseStack.last().pose();
         VertexConsumer buffer = bufferSource.getBuffer(renderType);
-        buffer.vertex(m, x1, y2, 0.0F).color(255, 255, 255, 255).uv(u1, v2).uv2(combinedLight).endVertex();
-        buffer.vertex(m, x2, y2, 0.0F).color(255, 255, 255, 255).uv(u2, v2).uv2(combinedLight).endVertex();
-        buffer.vertex(m, x2, y1, 0.0F).color(255, 255, 255, 255).uv(u2, v1).uv2(combinedLight).endVertex();
-        buffer.vertex(m, x1, y1, 0.0F).color(255, 255, 255, 255).uv(u1, v1).uv2(combinedLight).endVertex();
+        buffer.addVertex(m, x1, y2, 0.0F).setColor(255, 255, 255, 255).setUv(u1, v2).setLight(combinedLight);
+        buffer.addVertex(m, x2, y2, 0.0F).setColor(255, 255, 255, 255).setUv(u2, v2).setLight(combinedLight);
+        buffer.addVertex(m, x2, y1, 0.0F).setColor(255, 255, 255, 255).setUv(u2, v1).setLight(combinedLight);
+        buffer.addVertex(m, x1, y1, 0.0F).setColor(255, 255, 255, 255).setUv(u1, v1).setLight(combinedLight);
     }
 }

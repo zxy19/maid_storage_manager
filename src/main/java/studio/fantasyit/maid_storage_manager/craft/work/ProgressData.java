@@ -1,10 +1,10 @@
 package studio.fantasyit.maid_storage_manager.craft.work;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -14,10 +14,12 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
@@ -29,18 +31,25 @@ public class ProgressData {
     public record TaskProgress(List<ItemStack> outputs, int total, int progress, Component taker) {
         public static TaskProgress fromNetwork(FriendlyByteBuf friendlyByteBuf) {
             return new TaskProgress(
-                    friendlyByteBuf.readCollection(ArrayList::new, FriendlyByteBuf::readItem),
+                    friendlyByteBuf.readCollection(ArrayList::new, (t) -> {
+                        if (t instanceof RegistryFriendlyByteBuf t1)
+                            return ItemStackUtil.parseStack(t1.registryAccess(), t1.readNbt());
+                        return ItemStack.EMPTY;
+                    }),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readInt(),
-                    friendlyByteBuf.readComponent()
+                    friendlyByteBuf.readJsonWithCodec(ComponentSerialization.CODEC)
             );
         }
 
-        public void toNetwork(FriendlyByteBuf friendlyByteBuf) {
-            friendlyByteBuf.writeCollection(outputs, FriendlyByteBuf::writeItem);
+        public void toNetwork(RegistryFriendlyByteBuf friendlyByteBuf) {
+            friendlyByteBuf.writeCollection(outputs, (t, c) -> {
+                if (t instanceof RegistryFriendlyByteBuf t1)
+                    t1.writeNbt(ItemStackUtil.saveStack(t1.registryAccess(), c));
+            });
             friendlyByteBuf.writeInt(total);
             friendlyByteBuf.writeInt(progress);
-            friendlyByteBuf.writeComponent(taker);
+            friendlyByteBuf.writeJsonWithCodec(ComponentSerialization.CODEC, taker);
         }
     }
 
@@ -60,21 +69,28 @@ public class ProgressData {
         this.progress = progress;
     }
 
-    public void toNetwork(FriendlyByteBuf buf) {
-        buf.writeCollection(working, (t, d) -> d.toNetwork(t));
-        buf.writeComponent(maidName);
-        buf.writeCollection(workGroups, FriendlyByteBuf::writeComponent);
-        buf.writeCollection(items, FriendlyByteBuf::writeItem);
+    public void toNetwork(RegistryFriendlyByteBuf buf) {
+        buf.writeCollection(working, (t, d) -> d.toNetwork((RegistryFriendlyByteBuf) t));
+        buf.writeJsonWithCodec(ComponentSerialization.CODEC, maidName);
+        buf.writeCollection(workGroups, (t, c) -> t.writeJsonWithCodec(ComponentSerialization.CODEC, c));
+        buf.writeCollection(items, (t, c) -> {
+            if (t instanceof RegistryFriendlyByteBuf t1)
+                t1.writeNbt(ItemStackUtil.saveStack(t1.registryAccess(), c));
+        });
         buf.writeInt(total);
         buf.writeInt(progress);
     }
 
-    public static ProgressData fromNetwork(FriendlyByteBuf buf) {
+    public static ProgressData fromNetwork(RegistryFriendlyByteBuf buf) {
         return new ProgressData(
                 buf.readCollection(ArrayList::new, TaskProgress::fromNetwork),
-                buf.readComponent(),
-                buf.readCollection(ArrayList::new, FriendlyByteBuf::readComponent),
-                buf.readCollection(ArrayList::new, FriendlyByteBuf::readItem),
+                buf.readJsonWithCodec(ComponentSerialization.CODEC),
+                buf.readCollection(ArrayList::new, t -> t.readJsonWithCodec(ComponentSerialization.CODEC)),
+                buf.readCollection(ArrayList::new, t -> {
+                    if (t instanceof RegistryFriendlyByteBuf t1)
+                        return ItemStackUtil.parseStack(t1.registryAccess(), t1.readNbt());
+                    return ItemStack.EMPTY;
+                }),
                 buf.readInt(),
                 buf.readInt()
         );
@@ -178,17 +194,17 @@ public class ProgressData {
     }
 
     public static ProgressData fromRequest(EntityMaid maid, ServerLevel level, ItemStack requestList, ProgressPad.Viewing viewing, int maxSz) {
-        if (!requestList.hasTag()) return fromMaidNoPlan(maid);
-        ListTag list = Objects.requireNonNull(requestList.getTag()).getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList.Immutable requestData = RequestListItem.getImmutableRequestData(requestList);
+        List<RequestItemStackList.ImmutableItem> list = requestData.list();
         MutableInt total = new MutableInt(0);
         MutableInt done = new MutableInt(0);
         List<TaskProgress> progresses = list.stream()
-                .filter(t -> !((CompoundTag) t).getBoolean(RequestListItem.TAG_ITEMS_DONE))
+                .filter(t -> !t.done())
                 .map(t -> {
-                    ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(RequestListItem.TAG_ITEMS_ITEM));
+                    ItemStack item = t.item();
                     if (item.isEmpty()) return null;
-                    int cnt = ((CompoundTag) t).getInt(RequestListItem.TAG_ITEMS_REQUESTED);
-                    int collected = ((CompoundTag) t).getInt(RequestListItem.TAG_ITEMS_COLLECTED);
+                    int cnt = t.requested();
+                    int collected = t.collected();
                     total.increment();
                     if (cnt != -1 && collected >= cnt)
                         done.increment();

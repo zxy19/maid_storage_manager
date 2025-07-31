@@ -301,6 +301,15 @@ public class Network {
                     });
                 }
         );
+        registrar.playToClient(
+                ProgressPadUpdatePacket.TYPE,
+                ProgressPadUpdatePacket.STREAM_CODEC,
+                (packet, context) -> {
+                    context.enqueueWork(() -> {
+                        ProgressPadUpdatePacket.handle(packet);
+                    });
+                }
+        );
     }
 
     @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD)

@@ -9,6 +9,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
@@ -16,7 +17,6 @@ import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.network.ProgressPadUpdatePacket;
 import studio.fantasyit.maid_storage_manager.network.RenderEntityPacket;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -27,9 +27,8 @@ import java.util.UUID;
 @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class BindingRenderSyncSender {
     @SubscribeEvent
-    public static void onTickPlayer(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.side == LogicalSide.SERVER) {
-            ServerPlayer player = (ServerPlayer) event.player;
+    public static void onTickPlayer(PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             syncEntitySelector(player);
             syncProgressPad(player, player.getMainHandItem());
             syncProgressPad(player, player.getOffhandItem());
@@ -43,7 +42,7 @@ public class BindingRenderSyncSender {
                 if (entityId != null) {
                     Entity entity = ((ServerLevel) player.level()).getEntity(entityId);
                     if (entity != null && entity.isAlive()) {
-                        Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RenderEntityPacket(List.of(entity.getId())));
+                        PacketDistributor.sendToPlayer(player, new RenderEntityPacket(List.of(entity.getId())));
                         return;
                     }
                 }
@@ -54,13 +53,12 @@ public class BindingRenderSyncSender {
                         player.getBoundingBox().inflate(32),
                         t -> true
                 ).forEach(maid -> {
-                    Network.INSTANCE.send(
-                            PacketDistributor.PLAYER.with(() -> player),
-                            new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), maid.getMaidBauble().serializeNBT())
+                    PacketDistributor.sendToPlayer(player,
+                            new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), maid.getMaidBauble().serializeNBT(player.registryAccess()))
                     );
                 });
             }
-            Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new RenderEntityPacket(List.of()));
+            PacketDistributor.sendToPlayer(player, new RenderEntityPacket(List.of()));
         }
 
     }
@@ -70,7 +68,7 @@ public class BindingRenderSyncSender {
             UUID uuid = ProgressPad.getBindingUUID(itemStack);
             if (uuid != null)
                 if (player.tickCount % 5 == 0 && player.level() instanceof ServerLevel level && level.getEntity(uuid) instanceof EntityMaid maid) {
-                    Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
+                    PacketDistributor.sendToPlayer(player,
                             new ProgressPadUpdatePacket(
                                     uuid,
                                     ProgressData.fromMaidAuto(maid, level, ProgressPad.getViewing(itemStack), 10)

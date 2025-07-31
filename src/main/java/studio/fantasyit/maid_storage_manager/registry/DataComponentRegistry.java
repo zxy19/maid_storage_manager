@@ -112,6 +112,12 @@ public class DataComponentRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CraftGuideRenderData>> CRAFT_GUIDE_RENDER = DATA_COMPONENTS
             .register("craft_render", () -> DataComponentType.<CraftGuideRenderData>builder().persistent(CraftGuideRenderData.CODEC).networkSynchronized(CraftGuideRenderData.STREAM_CODEC).build());
     //endregion
+    //region ProgressPad
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> PROGRESS_PAD_BINDING = DATA_COMPONENTS
+            .register("progress_pad_binding", () -> DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PROGRESS_PAD_VIEWING = DATA_COMPONENTS
+            .register("progress_pad_viewing", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
+    //endregion
 
     public static void register(IEventBus bus) {
         DATA_COMPONENTS.register(bus);

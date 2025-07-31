@@ -11,16 +11,16 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraftforge.client.event.RenderItemInFrameEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.IGuiGraphics;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = MaidStorageManager.MODID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID)
 public class RenderItemFrameEvent {
 
     private static final ModelResourceLocation MAP_FRAME_LOCATION = ModelResourceLocation.vanilla("item_frame", "map=true");
@@ -53,7 +53,6 @@ public class RenderItemFrameEvent {
                 poseStack.translate(0.48, 0, 0);
 
             //渲染边框
-            ModelResourceLocation MAP_FRAME_LOCATION = ModelResourceLocation.vanilla("item_frame", "map=true");
             BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
             ModelManager modelmanager = blockRenderer.getBlockModelShaper().getModelManager();
             poseStack.pushPose();

@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -11,16 +10,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
 import studio.fantasyit.maid_storage_manager.event.RenderHandMapLikeEvent;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.render.map_like.ProgressPadRender;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.MapLikeRenderItem {
@@ -38,35 +36,19 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     }
 
     public static @Nullable UUID getBindingUUID(ItemStack itemStack) {
-        if (!itemStack.hasTag())
-            return null;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (!tag.contains(TAG_BINDING_UUID))
-            return null;
-        return tag.getUUID(TAG_BINDING_UUID);
+        return itemStack.get(DataComponentRegistry.PROGRESS_PAD_BINDING);
     }
 
     public static void setBindingUUID(ItemStack itemStack, @Nullable UUID uuid) {
-        if (!itemStack.hasTag())
-            itemStack.setTag(new CompoundTag());
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (uuid == null)
-            tag.remove(TAG_BINDING_UUID);
-        else
-            tag.putUUID(TAG_BINDING_UUID, uuid);
+        itemStack.set(DataComponentRegistry.PROGRESS_PAD_BINDING, uuid);
     }
 
     public static Viewing getViewing(ItemStack itemStack) {
-        if (!itemStack.hasTag()) return Viewing.WORKING;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (!tag.contains(TAG_VIEWING))
-            return Viewing.WORKING;
-        return Viewing.valueOf(tag.getString(TAG_VIEWING));
+        return Viewing.valueOf(itemStack.getOrDefault(DataComponentRegistry.PROGRESS_PAD_VIEWING, Viewing.WORKING.name()));
     }
 
     public static void setViewing(ItemStack itemStack, Viewing viewing) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        tag.putString(TAG_VIEWING, viewing.name());
+        itemStack.set(DataComponentRegistry.PROGRESS_PAD_VIEWING, viewing.name());
     }
 
     public static void rollViewing(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
@@ -109,8 +91,9 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     }
 
 
-    public void appendHoverText(@NotNull ItemStack itemStack, @Nullable Level p_41422_, @NotNull List<Component> toolTip, @NotNull TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
+    @Override
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
         UUID bindingUUID = getBindingUUID(itemStack);
         ProgressData byMaid = MaidProgressData.getByMaid(bindingUUID);
         if (bindingUUID != null) {

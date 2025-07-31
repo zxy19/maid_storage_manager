@@ -14,15 +14,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.IGuiGraphics;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public class RenderHandMapLikeEvent {
     public enum MapLikeRenderContext {
         MAIN_HAND,
@@ -105,7 +105,7 @@ public class RenderHandMapLikeEvent {
     }
 
     private static void renderMapHand(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, HumanoidArm pSide) {
-        RenderSystem.setShaderTexture(0, mc.player.getSkinTextureLocation());
+        RenderSystem.setShaderTexture(0, mc.player.getSkin().texture());
         PlayerRenderer playerrenderer = (PlayerRenderer) mc.getEntityRenderDispatcher().<AbstractClientPlayer>getRenderer(mc.player);
         pPoseStack.pushPose();
         float f = pSide == HumanoidArm.RIGHT ? 1.0F : -1.0F;
@@ -216,7 +216,7 @@ public class RenderHandMapLikeEvent {
         pPoseStack.mulPose(Axis.YP.rotationDegrees(f * f6 * 70.0F));
         pPoseStack.mulPose(Axis.ZP.rotationDegrees(f * f5 * -20.0F));
         AbstractClientPlayer abstractclientplayer = mc.player;
-        RenderSystem.setShaderTexture(0, abstractclientplayer.getSkinTextureLocation());
+        RenderSystem.setShaderTexture(0, abstractclientplayer.getSkin().texture());
         pPoseStack.translate(f * -1.0F, 3.6F, 3.5F);
         pPoseStack.mulPose(Axis.ZP.rotationDegrees(f * 120.0F));
         pPoseStack.mulPose(Axis.XP.rotationDegrees(200.0F));
