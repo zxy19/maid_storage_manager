@@ -59,7 +59,7 @@ public class InputEvent {
         if (player == null) return;
         ItemStack itemStack = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (player.isShiftKeyDown()) {
-            if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) || itemStack.is(ItemRegistry.LOGISTICS_GUIDE.get())) {
+            if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) || itemStack.is(ItemRegistry.LOGISTICS_GUIDE.get()) || itemStack.is(ItemRegistry.PROGRESS_PAD.get())) {
                 event.setCanceled(true);
                 PacketDistributor.sendToServer(
                         new ClientInputPacket(ClientInputPacket.Type.SCROLL, (int) (event.getScrollDeltaY() * 100))

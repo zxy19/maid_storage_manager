@@ -328,6 +328,7 @@
   "interaction.select_store": "Selecting Store Position",
   "item.maid_storage_manager.allow_access": "Allow Access",
   "item.maid_storage_manager.change_flag": "Change Flag",
+  "item.maid_storage_manager.progress_pad": "Progress Pad",
   "item.maid_storage_manager.craft_guide": "Craft Guide",
   "item.maid_storage_manager.filter_list": "Filter List",
   "item.maid_storage_manager.inventory_list": "Empty Inventory List",
@@ -410,9 +411,14 @@
   "tooltip.maid_storage_manager.request_list.virtual": "「Maid's duty, no meddling (｡•̀ᴗ-)✧」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s Storage Set",
   "tooltip.maid_storage_manager.written_request_list.desc": "A notebook that recorded the item your maid has view.",
+  "tooltip.maid_storage_manager.progress_pad.binding": "Binding to [%s]",
+  "tooltip.maid_storage_manager.progress_pad.viewing_working": "Viewing Working Tasks",
+  "tooltip.maid_storage_manager.progress_pad.viewing_waiting": "Viewing Waiting Tasks",
+  "tooltip.maid_storage_manager.progress_pad.viewing_done": "Viewing Done Tasks",
   "tooltip.maid_storage_manager.to_spawn_items.desc": "All result items:",
   "tooltip.maid_storage_manager.to_spawn_items.line": "%s * %s",
   "key.maid_storage_manager.roll_special_mode": "Switch Special Mode",
   "config.maid_storage_manager.crafting.generate_nearest_only": "Generate Nearest only",
-  "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "Only generate recipe with nearest block to maid."
+  "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "Only generate recipe with nearest block to maid.",
+  "gui.maid_storage_manager.progress_pad.no_task": "No Task Currently"
 }

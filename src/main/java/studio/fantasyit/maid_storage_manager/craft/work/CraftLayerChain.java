@@ -360,6 +360,19 @@ public class CraftLayerChain {
     public List<CraftLayer> getLayers() {
         return layers;
     }
+
+    public CraftLayer getLayer(int i) {
+        return layers.get(i);
+    }
+
+    public SolvedCraftLayer getNode(int i) {
+        return nodes.get(i);
+    }
+
+    public int getLayerCount() {
+        return layers.size();
+    }
+
     //endregion
 
 
@@ -532,6 +545,11 @@ public class CraftLayerChain {
         }
     }
 
+    public UUID getLayerTaker(int layerIndex) {
+        return dispatchedTaskMapping.entrySet()
+                .stream().filter(entry -> entry.getValue().getA() == layerIndex)
+                .findFirst().map(Map.Entry::getKey).orElse(null);
+    }
     // endregion
 
 
@@ -617,6 +635,10 @@ public class CraftLayerChain {
 
     public int getMaxParallel() {
         return maxParallel;
+    }
+
+    public int getCurrentGroup() {
+        return group;
     }
 
     /**

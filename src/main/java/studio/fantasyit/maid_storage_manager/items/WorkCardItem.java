@@ -169,6 +169,16 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return false;
     }
 
+    public static List<Component> getAllWorkCards(EntityMaid maid){
+        List<Component> workCards = new ArrayList<>();
+        BaubleItemHandler inv = maid.getMaidBauble();
+        for (int i = 0; i < inv.getSlots(); i++) {
+            if (inv.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
+                workCards.add(inv.getStackInSlot(i).getHoverName());
+            }
+        }
+        return workCards;
+    }
     public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, boolean requireAvailable, boolean propagate) {
         List<EntityMaid> maids = new ArrayList<>();
         Set<Component> hasChecked = new HashSet<>();

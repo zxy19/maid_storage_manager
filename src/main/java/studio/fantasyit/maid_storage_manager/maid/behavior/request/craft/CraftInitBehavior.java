@@ -77,6 +77,8 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getRequestProgress(maid).setReturn(true);
             DebugData.sendDebug("[REQUEST_CRAFT] Failed to find recipe for any items");
             ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE_NO_RESULT);
+            MemoryUtil.getCrafting(maid).calculatingProgress = 0;
+            MemoryUtil.getCrafting(maid).calculatingTotal = 0;
         } else {
             MemoryUtil.getCrafting(maid).setPlan(planner.getPlan());
             MemoryUtil.getCrafting(maid).addIgnoreTargetFromRequest(maid, p_22548_);

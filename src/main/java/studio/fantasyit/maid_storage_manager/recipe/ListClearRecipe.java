@@ -11,6 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
+import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.items.data.TargetList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
@@ -50,6 +51,13 @@ public class ListClearRecipe extends ShapelessRecipe {
                 if (stack.has(DataComponentRegistry.INVENTORY_UUID)) {
                     tmp.set(DataComponentRegistry.INVENTORY_UUID, stack.get(DataComponentRegistry.INVENTORY_UUID));
                 }
+                return tmp;
+            }
+            if (stack.is(ItemRegistry.PROGRESS_PAD.get())) {
+                ItemStack tmp = stack.copy();
+                CompoundTag tag = tmp.getOrCreateTag();
+                tag.remove(ProgressPad.TAG_BINDING_UUID);
+                tmp.setTag(tag);
                 return tmp;
             }
         }

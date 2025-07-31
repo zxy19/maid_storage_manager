@@ -47,6 +47,9 @@ public class CraftMemory extends AbstractTargetMemory {
     private List<Target> ignoreTargets;
     private boolean isGatheringDispatched;
 
+    public int calculatingTotal = -1;
+    public int calculatingProgress = -1;
+
     public CraftMemory(TargetData targetData,
                        List<CraftGuideData> craftGuides,
                        boolean goPlacingBeforeCraft,
@@ -78,11 +81,13 @@ public class CraftMemory extends AbstractTargetMemory {
         }
         if (!plan.isMaster())
             this.isGatheringDispatched = true;
+        this.calculatingProgress = this.calculatingTotal = -1;
     }
 
     public void clearPlan() {
         this.plan = null;
         this.isGatheringDispatched = false;
+        this.calculatingProgress = this.calculatingTotal = -1;
     }
 
     public boolean hasPlan() {
