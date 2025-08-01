@@ -199,6 +199,7 @@ public class CraftMemory extends AbstractTargetMemory {
     public void addIgnoreTargetFromRequest(EntityMaid maid, ServerLevel level) {
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
+            clearIgnoreTargets();
             addIgnoreTargets(storageBlock);
             StorageAccessUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
                 addIgnoreTargets(storageBlock.sameType(pos, null));

@@ -141,6 +141,10 @@ public class Config {
             .comment("Render the maid at the bottom of the screen when pressing ingredient request key.")
             .define("render.maid_render_ingredient_request", true);
 
+    private static final ForgeConfigSpec.BooleanValue USING_BETTER_LIGHT_ON_ITEM = BUILDER
+            .comment("Using a direct light to make itemstack appears brighter.")
+            .define("render.using_better_light_on_item", true);
+
     //性能
     private static final ForgeConfigSpec.BooleanValue FAST_PATH_SCHEDULE = BUILDER
             .comment("Disable the 'shortest path limitation' to gain faster path finding.")
@@ -225,6 +229,7 @@ public class Config {
     public static ThrowMethod throwItemVector;
     public static VirtualItemFrameRender virtualItemFrameRender;
     public static boolean renderMaidWhenIngredientRequest;
+    public static boolean usingBetterLightOnItems;
     public static boolean twoStepAiResponse;
     public static double pickupRequireWhenPlace;
     public static boolean fastPathSchedule;
@@ -293,6 +298,7 @@ public class Config {
         craftingShortestPathEvaluator = CRAFTING_PREFER_SHORTEST_PATH.get();
         noBubbleForSub = NO_BUBBLE_FOR_SUB_TASK.get();
         generateNearestOnly = CRAFTING_GENERATING_NEAREST_ONLY.get();
+        usingBetterLightOnItems = USING_BETTER_LIGHT_ON_ITEM.get();
     }
 
     public static void save() {
@@ -341,6 +347,7 @@ public class Config {
         CRAFTING_PREFER_SHORTEST_PATH.set(craftingShortestPathEvaluator);
         NO_BUBBLE_FOR_SUB_TASK.set(noBubbleForSub);
         CRAFTING_GENERATING_NEAREST_ONLY.set(generateNearestOnly);
+        USING_BETTER_LIGHT_ON_ITEM.set(usingBetterLightOnItems);
     }
 
     public static void saveAfter(Runnable o) {

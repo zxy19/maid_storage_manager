@@ -253,6 +253,12 @@ public class ClothEntry {
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.renderMaidWhenIngredientRequest = t))
                         .build()
         );
+        builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.render.using_better_light_on_items"), Config.usingBetterLightOnItems)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.render.using_better_light_on_items.tooltip"))
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.usingBetterLightOnItems = t))
+                        .build()
+        );
     }
 
     private static void addEntryCrafting(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {

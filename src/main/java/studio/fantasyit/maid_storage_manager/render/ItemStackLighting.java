@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.joml.Vector3f;
+import studio.fantasyit.maid_storage_manager.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +23,10 @@ public class ItemStackLighting {
         Vector3f shaderLightDirections$1 = new Vector3f(RenderSystem.shaderLightDirections[0]);
         Vector3f shaderLightDirections$2 = new Vector3f(RenderSystem.shaderLightDirections[1]);
         shaderLightDirectionsStack.add(new Vector3f[]{shaderLightDirections$1, shaderLightDirections$2});
-        Vector3f vec = poseStack.last().pose().transformDirection(new Vector3f(0, 0, 1)).normalize();
-        RenderSystem.setShaderLights(vec, vec);
+        if (Config.usingBetterLightOnItems) {
+            Vector3f vec = poseStack.last().pose().transformDirection(new Vector3f(0, 0, 1)).normalize();
+            RenderSystem.setShaderLights(vec, vec);
+        }
     }
 
     public static void flushAndRestore(MultiBufferSource multiBufferSource) {
