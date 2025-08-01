@@ -16,6 +16,8 @@ import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
+import java.util.ArrayList;
+
 public class VirtualFrameDataProvider implements IEntityComponentProvider {
     public static final ResourceLocation VANILLA_ID = ResourceLocation.tryParse("minecraft:item_frame");
     protected static final int PER_ROW = 6;
@@ -25,10 +27,7 @@ public class VirtualFrameDataProvider implements IEntityComponentProvider {
         VirtualDisplayEntity entity = (VirtualDisplayEntity) entityAccessor.getEntity();
         ItemStack itemStack = entity.getItem();
         IElementHelper elements = IElementHelper.get();
-        IElement icon = elements.item(itemStack, 0.5f).translate(new Vec2(0, -1));
-        tooltip.remove(VANILLA_ID);
-        tooltip.add(icon);
-        tooltip.append(itemStack.getHoverName());
+        ArrayList<IElement> elList = new ArrayList<>();
         if (itemStack.is(ItemRegistry.FILTER_LIST.get())) {
             ListTag list = itemStack.getOrCreateTag().getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
             int c = 0;
@@ -37,12 +36,18 @@ public class VirtualFrameDataProvider implements IEntityComponentProvider {
                 ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                 if (item.isEmpty())
                     continue;
-                IElement tmpDisplay = elements.item(item).size(new Vec2(16, 16)).translate(new Vec2(0, -2));
-                tmpDisplay.translate(new Vec2((c % PER_ROW) * 16, c % PER_ROW == 0 ? 0 : -16));
-                tmpDisplay.size(new Vec2(16, c % PER_ROW == 0 ? 18 : 0));
+                IElement tmpDisplay = elements.item(item);
+                tmpDisplay.translate(new Vec2(0, 0));
+                tmpDisplay.size(new Vec2(18, 18));
+                elList.add(tmpDisplay);
+                if (elList.size() >= PER_ROW) {
+                    tooltip.add(elList);
+                    elList = new ArrayList<>();
+                }
                 c++;
-                tooltip.add(tmpDisplay);
             }
+            if (!elList.isEmpty())
+                tooltip.add(elList);
         }
     }
 
