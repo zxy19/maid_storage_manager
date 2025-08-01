@@ -1,0 +1,35 @@
+{
+  "parent": "maid_storage_manager:request_list",
+  "criteria": {
+    "maid_event": {
+      "conditions": {
+        "event": "progress_pad"
+      },
+      "trigger": "touhou_little_maid:maid/tamed_maid"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "background": "touhou_little_maid:textures/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancements.maid_storage_manager.progress_pad.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "maid_storage_manager:progress_pad"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.maid_storage_manager.progress_pad.title"
+    }
+  },
+  "requirements": [
+    [
+      "maid_event"
+    ]
+  ],
+  "rewards": {
+  },
+  "sends_telemetry_event": true
+}
