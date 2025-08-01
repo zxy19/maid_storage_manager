@@ -15,7 +15,7 @@ public class ItemStackLighting {
         Vector3f shaderLightDirections$2 = new Vector3f(RenderSystem.shaderLightDirections[1]);
         shaderLightDirectionsStack.add(new Vector3f[]{shaderLightDirections$1, shaderLightDirections$2});
         vec = vec.normalize();
-        RenderSystem.setShaderLights(vec, vec.mul(-1, -1, -1));
+        RenderSystem.setShaderLights(vec, new Vector3f(0, -1, 0));
     }
 
     public static void setup() {
@@ -30,7 +30,7 @@ public class ItemStackLighting {
     public static void restore() {
         if (shaderLightDirectionsStack.isEmpty())
             throw new RuntimeException("ItemStackLighting.restore() called without setup()");
-        Vector3f[] shaderLightDirections = shaderLightDirectionsStack.removeLast();
+        Vector3f[] shaderLightDirections = shaderLightDirectionsStack.remove(shaderLightDirectionsStack.size() - 1);
         RenderSystem.setShaderLights(shaderLightDirections[0], shaderLightDirections[1]);
     }
 }

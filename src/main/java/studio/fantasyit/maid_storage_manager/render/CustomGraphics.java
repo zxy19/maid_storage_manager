@@ -90,7 +90,7 @@ public class CustomGraphics {
             this.pose.pushPose();
             this.pose.translate((float) (p_281271_ + 8), (float) (p_282210_ + 8), 0.1);
             this.pose.scale(16.0F, -16.0F, 16.0F);
-            this.pose.mulPose(new Matrix4f().scale(1, 1, 0.01f));
+            this.pose.mulPoseMatrix(new Matrix4f().scale(1, 1, 0.01f));
             this.minecraft.getItemRenderer().render(p_281675_, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
             this.flush();
             this.pose.popPose();

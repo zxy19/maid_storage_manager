@@ -168,7 +168,7 @@ public class ProgressData {
                 maxSz);
     }
 
-    public static ProgressData fromMaidNoPlan(EntityMaid maid,int maxSz) {
+    public static ProgressData fromMaidNoPlan(EntityMaid maid, int maxSz) {
         Item icon = (switch (MemoryUtil.getCurrentlyWorking(maid)) {
             case CO_WORK -> Items.PLAYER_HEAD;
             case MEAL -> Items.COOKED_BEEF;
@@ -189,7 +189,7 @@ public class ProgressData {
     }
 
     public static ProgressData fromRequest(EntityMaid maid, ServerLevel level, ItemStack requestList, ProgressPad.Viewing viewing, int maxSz) {
-        if (!requestList.hasTag()) return fromMaidNoPlan(maid);
+        if (!requestList.hasTag()) return fromMaidNoPlan(maid, maxSz);
         ListTag list = Objects.requireNonNull(requestList.getTag()).getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
         MutableInt total = new MutableInt(0);
         MutableInt done = new MutableInt(0);
