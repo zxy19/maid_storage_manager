@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.init.InitTrigger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
 import studio.fantasyit.maid_storage_manager.event.RenderHandMapLikeEvent;
@@ -81,6 +83,8 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
         if (!p_41399_.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND && entity instanceof EntityMaid maid) {
             if (p_41399_.getUUID().equals(maid.getOwner().getUUID())) {
                 setBindingUUID(itemStack, maid.getUUID());
+
+                InitTrigger.MAID_EVENT.trigger((ServerPlayer) p_41399_, AdvancementTypes.PROGRESS_PAD);
                 return InteractionResult.SUCCESS;
             }
         }

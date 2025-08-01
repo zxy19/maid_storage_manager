@@ -1,0 +1,24 @@
+{
+  "type": "touhou_little_maid:altar_crafting",
+  "output": {
+    "type": "minecraft:item",
+    "nbt": {
+      "Item": {
+        "id": "maid_storage_manager:progress_pad",
+        "Count": 1
+      }
+    }
+  },
+  "power": 0,
+  "ingredients": [
+    {
+      "item": "maid_storage_manager:work_card"
+    },
+    {
+      "item": "minecraft:filled_map"
+    },
+    {
+      "item": "minecraft:ender_pearl"
+    }
+  ]
+}
