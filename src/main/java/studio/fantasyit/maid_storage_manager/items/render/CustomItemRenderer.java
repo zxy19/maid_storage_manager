@@ -140,7 +140,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.55f, 0.55f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup(pose);
+                ItemStackLighting.flushAndSetup(multiBufferSource,pose);
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
@@ -196,7 +196,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.55f, 0.55f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup(pose);
+                ItemStackLighting.flushAndSetup(multiBufferSource,pose);
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
@@ -233,7 +233,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.40f, 0.40f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.setup(pose);
+                ItemStackLighting.flushAndSetup(multiBufferSource,pose);
                 Minecraft.getInstance().getItemRenderer().render(
                         icon,
                         ItemDisplayContext.GUI,
