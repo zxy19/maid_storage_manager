@@ -20,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
 
 import java.util.List;
 
@@ -139,6 +140,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.55f, 0.55f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
+                ItemStackLighting.setup(pose);
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
@@ -154,6 +156,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                 0
                         )
                 );
+                ItemStackLighting.flushAndRestore(multiBufferSource);
                 pose.popPose();
             }
         }
@@ -193,6 +196,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.55f, 0.55f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
+                ItemStackLighting.setup(pose);
                 Minecraft.getInstance().getItemRenderer().render(
                         item,
                         ItemDisplayContext.GUI,
@@ -208,6 +212,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                 0
                         )
                 );
+                ItemStackLighting.flushAndRestore(multiBufferSource);
                 pose.popPose();
             }
         }
@@ -228,6 +233,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.40f, 0.40f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
+                ItemStackLighting.setup(pose);
                 Minecraft.getInstance().getItemRenderer().render(
                         icon,
                         ItemDisplayContext.GUI,
@@ -243,6 +249,7 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                                 0
                         )
                 );
+                ItemStackLighting.flushAndRestore(multiBufferSource);
                 pose.popPose();
             }
         }
