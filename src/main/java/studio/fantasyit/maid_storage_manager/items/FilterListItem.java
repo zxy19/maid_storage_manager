@@ -45,6 +45,7 @@ public class FilterListItem extends HangUpItem implements MenuProvider {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown())
                 serverPlayer.openMenu(this, (buffer) -> {
+                    buffer.writeInt(-1);
                 });
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
         } else {
@@ -80,6 +81,6 @@ public class FilterListItem extends HangUpItem implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int p_39954_, Inventory p_39955_, Player p_39956_) {
-        return new FilterMenu(p_39954_, p_39956_);
+        return new FilterMenu(p_39954_, p_39956_, -1);
     }
 }
