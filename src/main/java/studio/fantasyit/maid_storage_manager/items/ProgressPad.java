@@ -66,7 +66,7 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
             if (p_41399_.getUUID().equals(maid.getOwner().getUUID())) {
                 setBindingUUID(itemStack, maid.getUUID());
 
-                InitTrigger.MAID_EVENT.trigger((ServerPlayer) p_41399_, AdvancementTypes.PROGRESS_PAD);
+                InitTrigger.MAID_EVENT.get().trigger((ServerPlayer) p_41399_, AdvancementTypes.PROGRESS_PAD);
                 return InteractionResult.SUCCESS;
             }
         }

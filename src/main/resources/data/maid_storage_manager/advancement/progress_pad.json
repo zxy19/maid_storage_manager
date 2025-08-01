@@ -5,7 +5,7 @@
       "conditions": {
         "event": "progress_pad"
       },
-      "trigger": "touhou_little_maid:maid/tamed_maid"
+      "trigger": "touhou_little_maid:maid_event"
     }
   },
   "display": {
@@ -17,7 +17,7 @@
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "maid_storage_manager:progress_pad"
+      "id": "maid_storage_manager:progress_pad"
     },
     "show_toast": true,
     "title": {
