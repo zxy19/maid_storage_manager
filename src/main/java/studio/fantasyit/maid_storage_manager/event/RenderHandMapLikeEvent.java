@@ -194,7 +194,6 @@ public class RenderHandMapLikeEvent {
                 pPoseStack.scale(1, 1, -1f);
                 CustomGraphics graphics = new CustomGraphics(mc, pPoseStack, bs);
                 RenderSystem.enableDepthTest();
-
                 ItemStackLighting.setup(pPoseStack);
                 mlr.renderOnHand(graphics, pStack, pCombinedLight, context);
                 ItemStackLighting.restore();

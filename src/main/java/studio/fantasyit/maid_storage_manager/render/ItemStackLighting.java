@@ -11,6 +11,13 @@ import java.util.List;
 public class ItemStackLighting {
     private static final List<Vector3f[]> shaderLightDirectionsStack = new ArrayList<>();
 
+
+    public static void flushAndSetup(MultiBufferSource multiBufferSource, PoseStack poseStack) {
+        if (multiBufferSource instanceof MultiBufferSource.BufferSource bufferSource)
+            bufferSource.endBatch();
+        setup(poseStack);
+    }
+
     public static void setup(PoseStack poseStack) {
         Vector3f shaderLightDirections$1 = new Vector3f(RenderSystem.shaderLightDirections[0]);
         Vector3f shaderLightDirections$2 = new Vector3f(RenderSystem.shaderLightDirections[1]);
