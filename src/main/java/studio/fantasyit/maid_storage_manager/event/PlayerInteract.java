@@ -19,6 +19,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
@@ -96,9 +97,9 @@ public class PlayerInteract {
     public static void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
         if (event.getEntity() instanceof ServerPlayer sp) {
             if (event.getTarget() instanceof ItemFrame ifr) {
-                if (ifr.getItem().is(ItemRegistry.FILTER_LIST)) {
+                if (ifr.getItem().is(ItemRegistry.FILTER_LIST.get())) {
                     if (event.getEntity().isShiftKeyDown()) {
-                        sp.openMenu(new MenuProvider() {
+                        NetworkHooks.openScreen(sp, new MenuProvider() {
                             @Override
                             public Component getDisplayName() {
                                 return Component.empty();

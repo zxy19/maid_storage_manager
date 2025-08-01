@@ -187,7 +187,7 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     @Override
     public boolean stillValid(Player player) {
         if (targetIfr != null && targetIfr.isAlive())
-            return targetIfr.distanceTo(player) <= player.entityInteractionRange();
+            return targetIfr.distanceTo(player) <= player.getEntityReach();
         return player.getMainHandItem() == target;
     }
 
