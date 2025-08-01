@@ -26,7 +26,7 @@ public class GuiRegistry {
     public static final RegistryObject<MenuType<ItemSelectorMenu>> ITEM_SELECTOR_MENU = MENU_TYPES.register("item_selector",
             () -> IForgeMenuType.create((windowId, inv, data) -> new ItemSelectorMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<FilterMenu>> FILTER_MENU = MENU_TYPES.register("filter_menu",
-            () -> IForgeMenuType.create((windowId, inv, data) -> new FilterMenu(windowId, inv.player)));
+            () -> IForgeMenuType.create((windowId, inv, data) -> new FilterMenu(windowId, inv.player, data.readInt())));
     public static final RegistryObject<MenuType<LogisticsGuideMenu>> LOGISTICS_GUIDE_MENU = MENU_TYPES.register("logistics_guide",
             () -> IForgeMenuType.create((windowId, inv, data) -> new LogisticsGuideMenu(windowId, inv.player)));
     public static final RegistryObject<MenuType<CommonCraftMenu>> CRAFT_GUIDE_MENU_COMMON = MENU_TYPES.register("craft_guide_menu_common",

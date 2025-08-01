@@ -4,10 +4,15 @@ import com.github.tartaricacid.touhoulittlemaid.api.event.InteractMaidEvent;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -18,6 +23,9 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
+import studio.fantasyit.maid_storage_manager.items.HangUpItem;
+import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -82,5 +90,34 @@ public class PlayerInteract {
                 event.getPos(),
                 event.getFace()
         );
+    }
+
+    @SubscribeEvent
+    public static void onPlayerInteractEntity(PlayerInteractEvent.EntityInteract event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            if (event.getTarget() instanceof ItemFrame ifr) {
+                if (ifr.getItem().is(ItemRegistry.FILTER_LIST)) {
+                    if (event.getEntity().isShiftKeyDown()) {
+                        sp.openMenu(new MenuProvider() {
+                            @Override
+                            public Component getDisplayName() {
+                                return Component.empty();
+                            }
+
+                            @Override
+                            public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
+                                return new FilterMenu(i, player, ifr.getId());
+                            }
+                        }, (buffer) -> {
+                            buffer.writeInt(ifr.getId());
+                        });
+                    }
+
+                    event.setCanceled(true);
+                } else if (ifr.getItem().getItem() instanceof HangUpItem hi && hi.allowClickThrough()) {
+                    event.setCanceled(true);
+                }
+            }
+        }
     }
 }

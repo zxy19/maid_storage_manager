@@ -126,4 +126,9 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
             case WAITING -> Component.translatable("tooltip.maid_storage_manager.progress_pad.viewing_waiting");
         });
     }
+
+    @Override
+    public boolean allowClickThrough() {
+        return false;
+    }
 }

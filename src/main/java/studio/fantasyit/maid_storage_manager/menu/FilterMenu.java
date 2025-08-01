@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.menu;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -20,13 +21,19 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     public boolean isBlackList;
     Player player;
     ItemStack target;
+    ItemFrame targetIfr = null;
     public FilterContainer filteredItems;
     public boolean matchTag = false;
 
-    public FilterMenu(int p_38852_, Player player) {
+    public FilterMenu(int p_38852_, Player player, int entityId) {
         super(GuiRegistry.FILTER_MENU.get(), p_38852_);
         this.player = player;
-        target = player.getMainHandItem();
+        if (entityId == -1)
+            target = player.getMainHandItem();
+        else if (player.level().getEntity(entityId) instanceof ItemFrame ifr) {
+            targetIfr = ifr;
+            target = ifr.getItem();
+        }
         CompoundTag tag = target.getOrCreateTag();
         filteredItems = new FilterContainer(27, this);
         filteredItems.deserializeNBT(tag.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
@@ -179,6 +186,8 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
 
     @Override
     public boolean stillValid(Player player) {
+        if (targetIfr != null && targetIfr.isAlive())
+            return targetIfr.distanceTo(player) <= player.entityInteractionRange();
         return player.getMainHandItem() == target;
     }
 

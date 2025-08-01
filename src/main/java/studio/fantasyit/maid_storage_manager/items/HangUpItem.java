@@ -33,4 +33,8 @@ public class HangUpItem extends Item {
         }
         return super.useOn(context);
     }
+
+    public boolean allowClickThrough() {
+        return true;
+    }
 }
