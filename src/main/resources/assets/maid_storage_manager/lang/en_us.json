@@ -422,5 +422,7 @@
   "key.maid_storage_manager.roll_special_mode": "Switch Special Mode",
   "config.maid_storage_manager.crafting.generate_nearest_only": "Generate Nearest only",
   "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "Only generate recipe with nearest block to maid.",
-  "gui.maid_storage_manager.progress_pad.no_task": "No Task Currently"
+  "gui.maid_storage_manager.progress_pad.no_task": "No Task Currently",
+  "config.maid_storage_manager.render.using_better_light_on_items": "Using better light on items",
+  "config.maid_storage_manager.render.using_better_light_on_items.tooltip": "Using a direct light to make itemstack appears brighter."
 }
