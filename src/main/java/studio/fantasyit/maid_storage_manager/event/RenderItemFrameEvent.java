@@ -85,7 +85,7 @@ public class RenderItemFrameEvent {
             poseStack.translate(0, 0, 0.01f);
             RenderSystem.enableDepthTest();
 
-            ItemStackLighting.setup();
+            ItemStackLighting.setup(poseStack);
             mlr.renderOnHand(graphics, event.getItemStack(), pCombinedLight, context);
             graphics.flush();
             ItemStackLighting.restore();
