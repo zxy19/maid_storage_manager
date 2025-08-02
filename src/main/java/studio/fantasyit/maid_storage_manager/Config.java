@@ -141,7 +141,7 @@ public class Config {
             .comment("Render the maid at the bottom of the screen when pressing ingredient request key.")
             .define("render.maid_render_ingredient_request", true);
 
-    private static final ForgeConfigSpec.BooleanValue USING_BETTER_LIGHT_ON_ITEM = BUILDER
+    private static final ModConfigSpec.BooleanValue USING_BETTER_LIGHT_ON_ITEM = BUILDER
             .comment("Using a direct light to make itemstack appears brighter.")
             .define("render.using_better_light_on_item", true);
 
