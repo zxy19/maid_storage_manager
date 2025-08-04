@@ -179,4 +179,11 @@ public class MemoryUtil {
     public static void clearPickUpItemTemp(EntityMaid maid) {
         maid.getBrain().eraseMemory(MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get());
     }
+
+    public static void goRestrictCenterAndWait(EntityMaid maid, float speed) {
+        if (!maid.hasRestriction()) return;
+        BlockPos restrictCenter = maid.getRestrictCenter();
+        if (maid.distanceToSqr(restrictCenter.getCenter()) < 9) return;
+        setTarget(maid, restrictCenter, speed);
+    }
 }

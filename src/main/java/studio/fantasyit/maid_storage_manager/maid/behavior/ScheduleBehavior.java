@@ -46,7 +46,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
         } else if (MemoryUtil.getViewedInventory(maid).isViewing())
             //正在查看，必须保证完成查看！
             next = Schedule.VIEW;
-        else if (MemoryUtil.getCrafting(maid).isGoPlacingBeforeCraft() && !MemoryUtil.getRequestProgress(maid).isReturning()) {
+        if (MemoryUtil.getCrafting(maid).isGoPlacingBeforeCraft() && !MemoryUtil.getRequestProgress(maid).isReturning()) {
             //之前在执行请求且上次任务完成，而且不在返回存储物品（也就意味着上次任务或者失败或者完全存储完成了），则应该先存储背包的所有东西
             //如果背包清空，则继续执行任务
             if (Conditions.isNothingToPlace(maid)) {

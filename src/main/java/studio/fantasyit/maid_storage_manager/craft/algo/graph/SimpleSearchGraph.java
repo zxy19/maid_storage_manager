@@ -132,6 +132,12 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         }
         if (remainToCraft.getValue() > 0) {
             node.maxSuccess = oMaxRequire - remainToCraft.getValue();
+            if (node.maxSuccess == node.lastMaxSuccess) {
+                node.maxSuccessCount++;
+            } else {
+                node.lastMaxSuccess = node.maxSuccess;
+                node.maxSuccessCount = 1;
+            }
         }
         if (node.clearMaxSuccessAfter) {
             removeListedUntil(node);
@@ -268,8 +274,15 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             }
         }
         pushHistory(node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
-        if (totalSuccess < maxRequire)
+        if (totalSuccess < maxRequire) {
             node.maxSuccess = totalSuccess;
+            if (node.maxSuccess == node.lastMaxSuccess) {
+                node.maxSuccessCount++;
+            } else {
+                node.lastMaxSuccess = node.maxSuccess;
+                node.maxSuccessCount = 1;
+            }
+        }
         removeInStack(node);
         return totalSuccess;
     }

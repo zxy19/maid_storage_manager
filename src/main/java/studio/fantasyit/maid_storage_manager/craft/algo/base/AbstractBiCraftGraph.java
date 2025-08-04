@@ -39,6 +39,9 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             Node pop = listed.pop();
             pop.listed = false;
             pop.maxSuccess = Integer.MAX_VALUE;
+            if (pop.maxSuccessCount > 10) {
+                pop.maxSuccess = pop.lastMaxSuccess;
+            }
             pop.clearMaxSuccessAfter = false;
             if (pop.id == node.id)
                 break;
@@ -51,6 +54,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         public boolean listed;
         public boolean clearMaxSuccessAfter;
         public int maxSuccessCount;
+        public int lastMaxSuccess;
         //一般
         public int id;
         public boolean related;
@@ -65,6 +69,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             this.edges = new ArrayList<>();
             this.revEdges = new ArrayList<>();
             maxSuccess = Integer.MAX_VALUE;
+            lastMaxSuccess = maxSuccess;
             maxSuccessCount = 0;
             clearMaxSuccessAfter = false;
             listed = false;
@@ -342,8 +347,6 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             } else if (node instanceof CraftNode craftNode) {
                 craftNode.scheduled = 0;
                 craftNode.hasLoopIngredient = false;
-                craftNode.sameData.clear();
-                craftNode.sameData.add(craftNode.craftGuideData);
             }
         }
     }
