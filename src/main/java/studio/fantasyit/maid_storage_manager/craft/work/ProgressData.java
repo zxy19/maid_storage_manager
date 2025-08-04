@@ -143,9 +143,9 @@ public class ProgressData {
                                 status = Status.FAILED;
                             }
                         }
-                        if (MemoryUtil.getRequestProgress(takerMaid).isReturning()) {
-                            processedSteps = totalSteps;
-                        }
+                    }
+                    if (MemoryUtil.getRequestProgress(takerMaid).isReturning()) {
+                        totalSteps = processedSteps = 1;
                     }
                 }
             }
