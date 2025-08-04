@@ -275,6 +275,12 @@ public class ClothEntry {
                         .build()
         );
         builder.add(
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.experimental_optimization"), Config.craftingExperimentalOptimization)
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.experimental_optimization.tooltip"))
+                        .setSaveConsumer(s -> Config.saveAfter(() -> Config.craftingExperimentalOptimization = s))
+                        .build()
+        );
+        builder.add(
                 entryBuilder.startEnumSelector(Component.translatable("config.maid_storage_manager.crafting.shortest_path_evaluator"), CraftPlanEvaluator.class, Config.craftingShortestPathEvaluator)
                         .setEnumNameProvider(t -> Component.translatable("config.maid_storage_manager.crafting.shortest_path_evaluator." + t.name().toLowerCase()))
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingShortestPathEvaluator = t))

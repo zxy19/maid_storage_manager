@@ -85,6 +85,8 @@
   "config.maid_storage_manager.behavior.throw_item_vector.tooltip": "女仆如何扔出物品. [最终落点] 会尝试使物品掉落在目标点上. [穿过目标点] 会尝试让物品穿过目标点. [固定] 总是会以0.6长度的向量扔出",
   "config.maid_storage_manager.behavior.use_all_storage": "使用所有存储",
   "config.maid_storage_manager.crafting": "合成",
+  "config.maid_storage_manager.crafting.experimental_optimization": "实验性优化",
+  "config.maid_storage_manager.crafting.experimental_optimization.tooltip": "一些实验性的优化选项。如果某些合成计算不能正确完成，请尝试关闭这一项。",
   "config.maid_storage_manager.crafting.generate": "生成合成指南",
   "config.maid_storage_manager.crafting.generate.desc": "配方生成会根据女仆工作区域内的可识别方块生成合成指南。这可能导致一些性能问题或者女仆不会按你想要的制作某些物品。",
   "config.maid_storage_manager.crafting.generate_generator": "配方生成算法",
