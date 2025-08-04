@@ -262,7 +262,7 @@ public class CraftLayerChain {
                 inputConsume.add(Math.ceil((double) item.getCount() / item.getMaxStackSize()));
             layer.getCraftData().ifPresent(craftData -> {
                 craftData.getAllOutputItemsWithOptional().forEach(item -> {
-                    outputConsume.add(Math.ceil((double) item.getCount() / item.getMaxStackSize()));
+                    outputConsume.add(Math.ceil((double) item.getCount() * layer.getCount() / item.getMaxStackSize()));
                 });
             });
             //因为是估算，可能会得到比背包总格子数更大的数字(逆天)，这里直接将其限制为最大格子数，即要求其必须独立运行

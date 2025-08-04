@@ -254,10 +254,8 @@ public class MaidCraftPlanner {
             }
             RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
         } else {
-            List<CraftLayer> optimize;
-            if (StorageManagerConfigData.get(maid).alwaysSingleCrafting()) {
-                optimize = ResultListOptimizer.splitIntoSingleStep(results);
-            } else {
+            List<CraftLayer> optimize = results;
+            if (!StorageManagerConfigData.get(maid).alwaysSingleCrafting()) {
                 optimize = ResultListOptimizer.optimize(results);
             }
             optimize.forEach(craftLayer -> plan.addLayer(craftLayer));

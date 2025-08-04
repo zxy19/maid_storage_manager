@@ -46,7 +46,6 @@ public class CraftResultContext {
             if (maxSlotConsume < currentMaxConsume && !isFirst) {
                 layer.setPlaceBefore();
                 consumer.clear();
-                this.slotConsume = 0;
                 --_i;
                 isFirst = true;
             } else {

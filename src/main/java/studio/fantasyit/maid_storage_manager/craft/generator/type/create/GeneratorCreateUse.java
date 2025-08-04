@@ -4,7 +4,6 @@ import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.content.kinetics.deployer.ManualApplicationRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +21,6 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseActio
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
-import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
@@ -132,24 +130,8 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(AllRecipeTypes.ITEM_APPLICATION.getType())
-                .forEach(recipe -> {
-                    if ((Recipe<?>) recipe instanceof ManualApplicationRecipe manualApplicationRecipe) {
-                        if (manualApplicationRecipe.getRequiredHeldItem().isEmpty()) {
-                            return;
-                        }
-                        List<Ingredient> ingredients = new ArrayList<>(manualApplicationRecipe.getIngredients());
-                        Optional<Ingredient> toolOptional = GenerateIngredientUtil.optionalIngredient(
-                                GenerateIngredientUtil.getIngredientForDestroyBlockItem(manualApplicationRecipe.getResultItem(RegistryAccess.EMPTY))
-                        );
-                        toolOptional.ifPresent(ingredients::add);
-                        RecipeIngredientCache.addRecipeCache(
-                                manualApplicationRecipe.getId(),
-                                ingredients
-                        );
-                    }
-                });
     }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.create.application");

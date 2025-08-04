@@ -41,12 +41,16 @@ public class ThreadedSearchGraph extends SimpleSearchGraph {
     @Override
     public void restoreCurrent() {
         super.restoreCurrent();
-        running = null;
+        if (running != null && running.isDone()) {
+            running = null;
+        }
     }
 
     @Override
     public void startContext(ItemStack item, int count) {
         super.startContext(item, count);
-        running = null;
+        if (running != null && running.isDone()) {
+            running = null;
+        }
     }
 }
