@@ -185,5 +185,14 @@ public class MemoryUtil {
         BlockPos restrictCenter = maid.getRestrictCenter();
         if (maid.distanceToSqr(restrictCenter.getCenter()) < 9) return;
         setTarget(maid, restrictCenter, speed);
+        setGoingCenter(maid, true);
+    }
+
+    public static boolean isGoingCenter(EntityMaid maid) {
+        return maid.getBrain().getMemory(MemoryModuleRegistry.RETURN_CENTER.get()).orElse(false);
+    }
+
+    public static void setGoingCenter(EntityMaid maid, boolean goingCenter) {
+        maid.getBrain().setMemory(MemoryModuleRegistry.RETURN_CENTER.get(), goingCenter);
     }
 }

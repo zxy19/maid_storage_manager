@@ -43,6 +43,8 @@ public class MemoryModuleRegistry {
             = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<MealMemory>> MEAL
             = REGISTER.register("meal", () -> new MemoryModuleType<>(Optional.of(MealMemory.CODEC)));
+    public static final RegistryObject<MemoryModuleType<Boolean>> RETURN_CENTER
+            = REGISTER.register("return_center", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<Boolean>> IS_WORKING = REGISTER.register("is_working", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<Integer>> PARALLEL_WORKING = REGISTER.register("parallel_working", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<UUID>> ENABLE_PICKUP_TEMP = REGISTER.register("enable_pickup_temp", () -> new MemoryModuleType<>(Optional.empty()));
