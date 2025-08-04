@@ -50,8 +50,28 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     private static final ResourceLocation ELEM = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad_element.png");
     private static final ImageAsset LINE = new ImageAsset(ELEM, 14, 39, 154, 2);
     private static final ImageAsset PROGRESS_ALL = new ImageAsset(ELEM, 14, 37, 154, 1);
+    private static final ImageAsset PROGRESS_ALL_WAIT = new ImageAsset(ELEM, 14, 35, 154, 1);
+    private static final ImageAsset PROGRESS_ALL_ERROR = new ImageAsset(ELEM, 14, 33, 154, 1);
     private static final ImageAsset BORDER = new ImageAsset(ELEM, 14, 44, 78, 41);
     private static final ImageAsset PROGRESS = new ImageAsset(ELEM, 15, 89, 72, 1);
+    private static final ImageAsset PROGRESS_WAIT = new ImageAsset(ELEM, 15, 91, 72, 1);
+    private static final ImageAsset PROGRESS_ERROR = new ImageAsset(ELEM, 15, 93, 72, 1);
+
+    public ImageAsset pickProgress(ProgressData.Status status) {
+        return switch (status) {
+            case WAITING -> PROGRESS_WAIT;
+            case FAILED -> PROGRESS_ERROR;
+            default -> PROGRESS;
+        };
+    }
+
+    public ImageAsset pickProgressAll(ProgressData.Status status) {
+        return switch (status) {
+            case WAITING -> PROGRESS_ALL_WAIT;
+            case FAILED -> PROGRESS_ALL_ERROR;
+            default -> PROGRESS_ALL;
+        };
+    }
 
     @Override
     public void renderOnHand(CustomGraphics graphics, ItemStack pStack, int pCombinedLight, RenderHandMapLikeEvent.MapLikeRenderContext context) {
@@ -101,7 +121,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
                         17,
                         0xffffffff
                 );
-            blit(graphics, PROGRESS_ALL, 14, 37, widthScaleFactor * data.progress / data.total);
+            blit(graphics, pickProgressAll(data.status), 14, 37, widthScaleFactor * data.progress / data.total);
         } else if (data.working.isEmpty()) {
             graphics.drawString(
                     font,
@@ -159,7 +179,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
                     iy + 29,
                     0xFFFFFFFF
             );
-            blit(graphics, PROGRESS, ix + 2, iy + 38, 1.0f * progress.progress() / progress.total());
+            blit(graphics, pickProgress(progress.status()), ix + 2, iy + 38, 1.0f * progress.progress() / progress.total());
 
             drawCenteredString(graphics, font, progress.taker(), ix + 2, iy + 29, 40, 0xFFbbdefb);
 

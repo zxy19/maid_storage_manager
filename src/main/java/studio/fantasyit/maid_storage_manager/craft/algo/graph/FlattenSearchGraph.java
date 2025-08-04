@@ -209,8 +209,15 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 logger.log("Item exceed += %d", crafted - context.oMaxRequire.getValue());
                 pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - context.oMaxRequire.getValue());
             }
-            if (context.remainToCraft.getValue() > 0)
+            if (context.remainToCraft.getValue() > 0) {
                 node.maxSuccess = context.oMaxRequire.getValue() - context.remainToCraft.getValue();
+                if (node.maxSuccess == node.lastMaxSuccess) {
+                    node.maxSuccessCount++;
+                } else {
+                    node.lastMaxSuccess = node.maxSuccess;
+                    node.maxSuccessCount = 1;
+                }
+            }
             if (node.clearMaxSuccessAfter) {
                 removeListedUntil(node);
                 node.clearMaxSuccessAfter = false;
@@ -417,8 +424,15 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             }
         }
         pushHistory(context.node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
-        if (totalSuccess < context.maxRequire)
+        if (totalSuccess < context.maxRequire) {
             context.node.maxSuccess = totalSuccess;
+            if (context.node.maxSuccess == context.node.lastMaxSuccess) {
+                context.node.maxSuccessCount++;
+            } else {
+                context.node.lastMaxSuccess = context.node.maxSuccess;
+                context.node.maxSuccessCount = 1;
+            }
+        }
         removeInStack(context.node);
         setReturnValue(totalSuccess);
     }
