@@ -26,12 +26,19 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class ProgressData {
-    public record TaskProgress(List<ItemStack> outputs, int total, int progress, Component taker) {
+    public enum Status {
+        NORMAL,
+        WAITING,
+        FAILED
+    }
+
+    public record TaskProgress(List<ItemStack> outputs, int total, int progress, Status status, Component taker) {
         public static TaskProgress fromNetwork(FriendlyByteBuf friendlyByteBuf) {
             return new TaskProgress(
                     friendlyByteBuf.readCollection(ArrayList::new, FriendlyByteBuf::readItem),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readInt(),
+                    friendlyByteBuf.readEnum(Status.class),
                     friendlyByteBuf.readComponent()
             );
         }
@@ -40,6 +47,7 @@ public class ProgressData {
             friendlyByteBuf.writeCollection(outputs, FriendlyByteBuf::writeItem);
             friendlyByteBuf.writeInt(total);
             friendlyByteBuf.writeInt(progress);
+            friendlyByteBuf.writeEnum(status);
             friendlyByteBuf.writeComponent(taker);
         }
     }
@@ -50,10 +58,11 @@ public class ProgressData {
     public final List<ItemStack> items;
     public final int total;
     public final int progress;
+    public final Status status;
     public final int tickCount;
     public final int maxSz;
 
-    public ProgressData(List<TaskProgress> working, Component maidName, List<Component> workGroups, List<ItemStack> items, int total, int progress, int tickCount, int maxSz) {
+    public ProgressData(List<TaskProgress> working, Component maidName, List<Component> workGroups, List<ItemStack> items, int total, int progress, int tickCount, int maxSz, Status status) {
         this.working = working;
         this.maidName = maidName;
         this.workGroups = workGroups;
@@ -62,6 +71,7 @@ public class ProgressData {
         this.progress = progress;
         this.tickCount = tickCount;
         this.maxSz = maxSz;
+        this.status = status;
     }
 
     public void toNetwork(FriendlyByteBuf buf) {
@@ -73,6 +83,7 @@ public class ProgressData {
         buf.writeInt(progress);
         buf.writeInt(tickCount);
         buf.writeInt(maxSz);
+        buf.writeEnum(status);
     }
 
     public static ProgressData fromNetwork(FriendlyByteBuf buf) {
@@ -84,7 +95,8 @@ public class ProgressData {
                 buf.readInt(),
                 buf.readInt(),
                 buf.readInt(),
-                buf.readInt()
+                buf.readInt(),
+                buf.readEnum(ProgressData.Status.class)
         );
     }
 
@@ -102,10 +114,15 @@ public class ProgressData {
             peekItem = true;
             if (!switch (node.progress().getValue()) {
                 case IDLE, WAITING -> viewing == ProgressPad.Viewing.WAITING;
-                case DISPATCHED, WORKING, GATHERING -> viewing == ProgressPad.Viewing.WORKING;
+                case DISPATCHED, WORKING, GATHERING, FAILED -> viewing == ProgressPad.Viewing.WORKING;
                 case FINISHED -> viewing == ProgressPad.Viewing.DONE;
                 default -> false;
             }) continue;
+            Status status = switch (node.progress().getValue()) {
+                case IDLE, WAITING -> Status.WAITING;
+                case FAILED -> Status.FAILED;
+                default -> Status.NORMAL;
+            };
             int totalSteps = layer.getTotalStep() * layer.getCount() + 1;
             int processedSteps = layer.getDoneCount() * layer.getTotalStep() + layer.getStep();
             if (node.progress().getValue() == SolvedCraftLayer.Progress.WORKING || node.progress().getValue() == SolvedCraftLayer.Progress.GATHERING)
@@ -122,6 +139,12 @@ public class ProgressData {
                             CraftLayer dispatchedLayer = dispatchedPlan.getCurrentLayer();
                             totalSteps = dispatchedLayer.getTotalStep() * dispatchedLayer.getCount() + 1;
                             processedSteps = dispatchedLayer.getDoneCount() * dispatchedLayer.getTotalStep() + dispatchedLayer.getStep() + 1;
+                            if (plan.getIsStoppingAdding()) {
+                                status = Status.FAILED;
+                            }
+                        }
+                        if (MemoryUtil.getRequestProgress(takerMaid).isReturning()) {
+                            processedSteps = totalSteps;
                         }
                     }
                 }
@@ -132,6 +155,7 @@ public class ProgressData {
                     layer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of()),
                     totalSteps,
                     processedSteps,
+                    status,
                     taker
             ));
         }
@@ -165,7 +189,9 @@ public class ProgressData {
                 total,
                 done,
                 maid.tickCount,
-                maxSz);
+                maxSz,
+                plan.getIsStoppingAdding() ? Status.FAILED : Status.NORMAL
+        );
     }
 
     public static ProgressData fromMaidNoPlan(EntityMaid maid, int maxSz) {
@@ -184,7 +210,8 @@ public class ProgressData {
                 0,
                 0,
                 maid.tickCount,
-                maxSz
+                maxSz,
+                Status.WAITING
         );
     }
 
@@ -203,7 +230,7 @@ public class ProgressData {
                     total.increment();
                     if (cnt != -1 && collected >= cnt)
                         done.increment();
-                    return new TaskProgress(List.of(item), collected, cnt, Component.empty());
+                    return new TaskProgress(List.of(item), collected, cnt, Status.NORMAL, Component.empty());
                 }).filter(Objects::nonNull)
                 .toList();
         if (progresses.size() > maxSz)
@@ -216,12 +243,13 @@ public class ProgressData {
                 total.getValue(),
                 done.getValue(),
                 maid.tickCount,
-                maxSz);
+                maxSz,
+                Status.NORMAL);
     }
 
     private static ProgressData fromPlacing(EntityMaid maid, ServerLevel level, PlacingInventoryMemory placingInv, ProgressPad.Viewing viewing, int maxSz) {
         List<TaskProgress> list = placingInv.arrangeItems.stream()
-                .map(item -> new TaskProgress(List.of(item), 1, 0, Component.empty()))
+                .map(item -> new TaskProgress(List.of(item), 1, 0, Status.NORMAL, Component.empty()))
                 .toList();
         if (list.size() > maxSz)
             list = list.subList(0, maxSz);
@@ -233,12 +261,16 @@ public class ProgressData {
                 0,
                 0,
                 maid.tickCount,
-                maxSz);
+                maxSz,
+                Status.NORMAL);
     }
 
     public static ProgressData fromMaidAuto(EntityMaid maid, ServerLevel level, ProgressPad.Viewing viewing, int maxSz) {
         if (Conditions.takingRequestList(maid)) {
-            if (MemoryUtil.getCrafting(maid).hasPlan()) {
+            if (MemoryUtil.getCrafting(maid).hasPlan() && !MemoryUtil.getRequestProgress(maid).isReturning()) {
+                if (MemoryUtil.getCrafting(maid).isGoPlacingBeforeCraft()) {
+                    return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, maxSz);
+                }
                 return ProgressData.fromPlan(maid, level, MemoryUtil.getCrafting(maid).plan(), viewing, maxSz);
             } else if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
                 if (MemoryUtil.getCrafting(maid).calculatingTotal != -1)
@@ -250,7 +282,8 @@ public class ProgressData {
                             MemoryUtil.getCrafting(maid).calculatingTotal,
                             MemoryUtil.getCrafting(maid).calculatingProgress,
                             maid.tickCount,
-                            maxSz);
+                            maxSz,
+                            Status.NORMAL);
                 return ProgressData.fromRequest(maid, level, maid.getMainHandItem(), viewing, maxSz);
             }
         } else if (MemoryUtil.getCurrentlyWorking(maid) == ScheduleBehavior.Schedule.PLACE) {

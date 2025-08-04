@@ -124,6 +124,9 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
         } else {
             MemoryUtil.getCrafting(maid).addPathFindingFailCount();
+            if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 180) {
+                MemoryUtil.goRestrictCenterAndWait(maid, (float) Config.craftWorkSpeed);
+            }
             if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
                 List<ItemStack> missing = layer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of());
                 DebugData.sendDebug("[REQUEST_CRAFT_WORK]Path finding fail.");
