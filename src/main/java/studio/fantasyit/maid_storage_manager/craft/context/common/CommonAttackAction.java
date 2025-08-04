@@ -66,7 +66,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
     @Override
     public Result tick() {
-        if (startDestroyBlock) {
+         if (startDestroyBlock) {
             return tickDestroyBlock();
         }
         //破坏任务中不用关心面，只需离开目标所在pos

@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.maid.behavior.GoCenterBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.CoWorkChestView;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowActionBehavior;
@@ -99,6 +100,7 @@ public class StorageManageTask implements IMaidTask {
     @Override
     public @NotNull List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid entityMaid) {
         ArrayList<Pair<Integer, BehaviorControl<? super EntityMaid>>> list = new ArrayList<>();
+        list.add(Pair.of(10, new GoCenterBehavior()));
         //找到列表的任务
         list.add(Pair.of(10, new FindListItemBehavior()));
         //寻找/存放
