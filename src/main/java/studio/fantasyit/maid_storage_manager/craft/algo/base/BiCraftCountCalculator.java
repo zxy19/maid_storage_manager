@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -39,14 +40,39 @@ public class BiCraftCountCalculator {
         if (!availableCraftGraph.processQueues()) return true;
         List<CraftLayer> currentResults = availableCraftGraph.getResults();
         CraftResultContext context = null;
+        boolean success = false;
         if (currentResults != null && !currentResults.isEmpty()) {
             hasAnySuccessCraftingCalc = true;
             context = new CraftResultContext(currentResults);
-            if (context.getSlotConsume() > availableSlots) {
-                context.splitTaskWith(availableSlots);
-                if (context.getSlotConsume() > availableSlots)
-                    currentResults = null;
+            //正常情况下的合成占用
+            if (context.getSlotConsume() <= availableSlots) {
+                success = true;
             }
+            //尝试中途进行一个存储
+            if (!success) {
+                context.splitTaskWith(availableSlots);
+                if (context.getSlotConsume() <= availableSlots) {
+                    success = true;
+                }
+            }
+            //如果仍然不成功，尝试分离到单步，然后进行合成
+            if (!success) {
+                currentResults = ResultListOptimizer.splitIntoSingleStep(currentResults);
+                context = new CraftResultContext(currentResults);
+            }
+            if (context.getSlotConsume() <= availableSlots) {
+                success = true;
+            }
+            //仍然不成功，再次尝试中途进行存储
+            if (!success) {
+                context.splitTaskWith(availableSlots);
+                if (context.getSlotConsume() <= availableSlots) {
+                    success = true;
+                }
+            }
+            //仍然不成功，那么就放弃
+            if (!success)
+                currentResults = null;
         }
         if (currentResults != null && !currentResults.isEmpty()) {
             if (!singleItemProcess && currentRequire != 1 && availableCraftGraph.shouldStartUsingSingleItemProcess()) {

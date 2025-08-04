@@ -71,6 +71,10 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
     private void dfsItemPre(DfsLayerItem context) {
         ItemNode node = context.node;
+        if (!node.listed) {
+            node.listed = true;
+            listed.add(node);
+        }
         int maxRequire = context.maxRequire;
         int stepCount = context.stepCount;
         logger.log("Item use available: %d", node.getCurrentRemain());
@@ -102,10 +106,24 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
             if (maxRequire > alignedRequire)
                 node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
+
+            //如果其他的有环情况断开的话，不满足成功数量单调。需要清空优化数值。
+            node.clearMaxSuccessAfter = true;
+
             setReturnValue(alignedRequire);
             return;
         }
 
+        //超过最大深度，直接退出
+        if (addInStack(node) > maxDepthAllow) {
+            int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
+            pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            if (maxRequire > alignedRequire)
+                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
+
+            setReturnValue(alignedRequire);
+            return;
+        }
         // 本步骤的消耗。正常情况下，消耗所有的。
         int stepCost = node.getCurrentRemain();
 
@@ -193,6 +211,11 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             }
             if (context.remainToCraft.getValue() > 0)
                 node.maxSuccess = context.oMaxRequire.getValue() - context.remainToCraft.getValue();
+            if (node.clearMaxSuccessAfter) {
+                removeListedUntil(node);
+                node.clearMaxSuccessAfter = false;
+            }
+            removeInStack(node);
             setReturnValue(Math.max(context.oMaxRequire.getValue() - context.remainToCraft.getValue(), 0));
         }
     }
@@ -231,11 +254,17 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             setReturnValue(node.bestRecipeStartAt);
             //循环配方，直接返回当前作为起点。寻找最短环作为目标
         else if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient)
-            setReturnValue(maxRequire);
+            setReturnValue(0);
         else if (node.edges.size() <= 1)
             setReturnValue(0);
-        else
+        else {
             node.bestRecipeStartAtCalculating = true;
+
+            if (!node.listed) {
+                node.listed = true;
+                listed.add(node);
+            }
+        }
     }
 
     public void dfsStartAtCall(DfsLayerStartAt context) {
@@ -247,6 +276,10 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             context.node.bestRecipeStartAt = context.startAt.getValue();
             context.node.bestRecipeStartAtCalculating = false;
             setReturnValue(context.startAt.getValue());
+            if (context.node.clearMaxSuccessAfter) {
+                removeListedUntil(context.node);
+                context.node.clearMaxSuccessAfter = false;
+            }
             return;
         }
 
@@ -300,11 +333,26 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(),
                 new MutableBoolean()
         ));
+        if (addInStack(push.node) > maxDepthAllow) {
+            removeInStack(push.node);
+            setReturnValue(0);
+        }
+        if (push.node.maxSuccess < push.restRequire.getValue()) {
+            push.restRequire.setValue(push.node.maxSuccess);
+            push.simulateRequire.setValue(push.node.maxSuccess);
+        }
         //无原料合成，直接返回全部成功
         if (push.node.edges.isEmpty()) {
             push.totalSuccess.setValue(push.maxRequire);
             push.simulateRequire.setValue(0);
             push.restRequire.setValue(0);
+        } else {
+            for (Pair<Integer, Integer> toNodePair : push.node.edges) {
+                Node toNode1 = getNode(toNodePair.getA());
+                if (push.simulateRequire.getValue() * toNodePair.getB() > toNode1.maxSuccess) {
+                    push.simulateRequire.setValue(toNode1.maxSuccess / toNodePair.getB());
+                }
+            }
         }
     }
 
@@ -371,6 +419,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         pushHistory(context.node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
         if (totalSuccess < context.maxRequire)
             context.node.maxSuccess = totalSuccess;
+        removeInStack(context.node);
         setReturnValue(totalSuccess);
     }
 

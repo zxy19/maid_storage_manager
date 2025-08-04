@@ -50,3 +50,99 @@ act--FAIL-->失败
 
 ```
 
+## 合成计算流程
+
+```mermaid
+graph TB
+item(物品需求)
+craft(合成需求)
+start([请求开始])==初始物品==>item
+item==>predicate_loop{检测当前物品<br>上次请求的数量<br>是否小于本次}
+predicate_loop==是==>return_item([返回])
+predicate_loop==否==>predicate_enough{检测当前节点<br>目前是否数量充足}
+predicate_enough==是==>return_item([返回])
+predicate_enough==否==>craft
+
+craft==>predicate_loop_craft{检测当前物品<br>上次请求的数量<br>是否小于本次}
+predicate_loop_craft==是==>return_craft([返回])
+predicate_loop_craft==否==>loop[遍历配方]
+loop==>predicate_item{物品可获取}
+
+predicate_item==>item
+predicate_item==是==>return_craft([返回])
+predicate_item==否==>loop
+```
+
+```javascript
+function getStartAtIndex(item, count) {
+    let maxSuccess;
+    let maxScore;
+    let maxI;
+    for (let _i = 0; _i < item.crafts.length; _i++) {
+        let i = (_i + startAt) % item.crafts.length;
+        let craft = item.crafts[i];
+        //边权重即表示配方一次输出的物品数量。
+        let require = Math.ceil(stillRequire / item.crafts[i].weight);
+        success = calcCraft(craft, require) * craft.weight;
+        
+        let currentScore = getScore();//从上下文获取合成方案评分。有些冗长，大致是在合成递归过程中收集各类信息然后根据一个固定公式计算。
+        
+        if(success > maxSuccess || (success == maxSuccess &&  score > maxScore)){
+            maxSuccess = success;
+            maxScore = currentScore;
+            maxI = i;
+        }
+    }
+    return maxI;
+}
+
+function calcItem(item, count) {
+    if (item.count >= count) {
+        //物品已满足需求，直接返回
+        return item.count;
+    }
+    if (item.lastRequestCount < count) {
+        //物品这次需要的数量比上次需要的数量更大，说明物品处在一个递减的环中，此时继续迭代不可能计算得到结果，直接返回当前可用的数量
+        return item.count;
+    }
+    let stillRequire = count - item.count;
+    标记物品已使用();
+    //获取最优配方。通过这种方式来实现计算出消耗物品较少或者合成路径较短的方案
+    let startAt = getStartAtIndex(item, count);
+    for (let _i = 0; _i < item.crafts.length; _i++) {
+        let i = (_i + startAt) % item.crafts.length;
+        let craft = item.crafts[i];
+        //边权重即表示配方一次输出的物品数量。
+        let require = Math.ceil(stillRequire / item.crafts[i].weight);
+        success = calcCraft(craft, require) * craft.weight;
+        stillRequire -= success;
+        //所有都成功了
+        if (stillRequire <= 0) {
+            return require;
+        }
+    }
+    return require - stillRequire;
+}
+
+function calcCraft(craft, count) {
+    let currentRequire = count;
+    while (currentRequire > 0) {
+        for (let i = 0; i < craft.inputs.length; i++) {
+            let input = craft.inputs[i];
+            //这是require次合成需要的输入物品总量
+            let require = count * input.weight;
+            let currentSuccess = calcItem(input, require);
+            //如果合成失败，那么记录最小成功的数量，然后重试
+            if (currentSuccess < require) {
+                currentRequire = currentSuccess;
+                break;
+            }
+            //返回最终成功的数量
+            if (i === craft.inputs.length - 1) {
+                return currentRequire;
+            }
+        }
+    }
+    return currentRequire;
+}
+```

@@ -39,7 +39,7 @@ public class CreateIntegration {
 
     public static @UnmodifiableView List<FanProcessingType> getFanProcessingTypes() {
         if (ModList.get().getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("create")
-                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.0")) >= 0))
+                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("6.0.4")) >= 0))
             return FanProcessingTypeRegistry.SORTED_TYPES_VIEW;
         try {
             Method getSortedTypesView = FanProcessingTypeRegistry.class.getMethod("getSortedTypesView", (Class<?>[]) null);

@@ -6,19 +6,58 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
+import studio.fantasyit.maid_storage_manager.craft.algo.misc.PrefilterByChunk;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
 
 public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
+    public Stack<Node> listed = new Stack<>();
+    public Map<Integer, Integer> inStack = new HashMap<>();
+    public int maxDepthAllow = Integer.MAX_VALUE;
+
+    public int addInStack(Node node) {
+        if (!inStack.containsKey(node.id)) {
+            inStack.put(node.id, 1);
+        } else {
+            inStack.put(node.id, inStack.get(node.id) + 1);
+        }
+        return inStack.size();
+    }
+
+    public int removeInStack(Node node) {
+        inStack.put(node.id, inStack.get(node.id) - 1);
+        if (inStack.get(node.id) <= 0) {
+            inStack.remove(node.id);
+        }
+        return inStack.size();
+    }
+
+    public void removeListedUntil(Node node) {
+        while (!listed.isEmpty()) {
+            Node pop = listed.pop();
+            pop.listed = false;
+            pop.maxSuccess = Integer.MAX_VALUE;
+            pop.clearMaxSuccessAfter = false;
+            if (pop.id == node.id)
+                break;
+        }
+    }
 
     public static class Node {
+        //不降序列优化
+        public int maxSuccess;
+        public boolean listed;
+        public boolean clearMaxSuccessAfter;
+        public int maxSuccessCount;
+        //一般
         public int id;
         public boolean related;
-        public int maxSuccess;
         public final List<Pair<Integer, Integer>> edges;
         public final List<Pair<Integer, Integer>> revEdges;
+        //强连通分量ID
+        public int sccId;
 
         public Node(int id, boolean related) {
             this.id = id;
@@ -26,6 +65,9 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             this.edges = new ArrayList<>();
             this.revEdges = new ArrayList<>();
             maxSuccess = Integer.MAX_VALUE;
+            maxSuccessCount = 0;
+            clearMaxSuccessAfter = false;
+            listed = false;
         }
 
         public void addEdge(Node to, int weight) {
@@ -258,7 +300,12 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
                 }
             }
         }
-        return buildGraphIndex >= nodes.size();
+        if (buildGraphIndex >= nodes.size()) {
+            PrefilterByChunk prefilterByChunk = new PrefilterByChunk(this);
+            prefilterByChunk.process();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -277,10 +324,15 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     @Override
     public void restoreCurrent() {
+        listed.clear();
+        inStack = new HashMap<>();
         existCrafting = new HashMap<>();
         for (Node node : nodes) {
             node.related = false;
             node.maxSuccess = Integer.MAX_VALUE;
+            node.maxSuccessCount = 0;
+            node.listed = false;
+            node.clearMaxSuccessAfter = false;
             if (node instanceof ItemNode itemNode) {
                 itemNode.minStepRequire = Integer.MAX_VALUE;
                 itemNode.required = 0;

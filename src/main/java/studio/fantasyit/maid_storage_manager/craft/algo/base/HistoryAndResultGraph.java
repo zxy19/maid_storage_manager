@@ -105,7 +105,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
     public List<CraftLayer> getResults() {
         if (targetAvailable == 0) return List.of();
         if (this.results.isEmpty()) return List.of();
-        List<CraftLayer> results = new LinkedList<>();
+        List<CraftLayer> results = new ArrayList<>();
         CraftResultNode lastOne = this.results.peekLast();
         while (!this.results.isEmpty()) {
             CraftResultNode resultNode = this.results.removeFirst();

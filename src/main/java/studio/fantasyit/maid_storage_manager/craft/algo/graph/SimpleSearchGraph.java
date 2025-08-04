@@ -18,7 +18,11 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         super(items, craftGuides);
     }
 
-    private int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount, boolean estimating) {
+    protected int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount, boolean estimating) {
+        if (!node.listed) {
+            node.listed = true;
+            listed.add(node);
+        }
         logger.log("Item use available: %d", node.getCurrentRemain());
         //CASE:物品数量够用：直接返回不需要计算方案
         if (node.getCurrentRemain() >= maxRequire) {
@@ -45,6 +49,20 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             if (maxRequire > alignedRequire)
                 node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+
+
+            //如果其他的有环情况断开的话，不满足成功数量单调。需要清空优化数值。
+            node.clearMaxSuccessAfter = true;
+
+            return alignedRequire;
+        }
+        //超过最大深度，直接退出
+        if (addInStack(node) > maxDepthAllow) {
+            int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
+            if (maxRequire > alignedRequire)
+                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
+            pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
+            removeInStack(node);
             return alignedRequire;
         }
         // 本步骤的消耗。正常情况下，消耗所有的。
@@ -112,21 +130,30 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             logger.log("Item exceed += %d", crafted - oMaxRequire);
             pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - oMaxRequire);
         }
-        if (remainToCraft.getValue() > 0)
+        if (remainToCraft.getValue() > 0) {
             node.maxSuccess = oMaxRequire - remainToCraft.getValue();
+        }
+        if (node.clearMaxSuccessAfter) {
+            removeListedUntil(node);
+            node.clearMaxSuccessAfter = false;
+        }
+        removeInStack(node);
         return Math.max(oMaxRequire - remainToCraft.getValue(), 0);
     }
 
-    private int dfsCalcItemNodeStartsAt(ItemNode node, int maxRequire) {
+    protected int dfsCalcItemNodeStartsAt(ItemNode node, int maxRequire) {
         if (Config.craftingShortestPathEvaluator == CraftPlanEvaluator.NONE) return 0;
         if (node.bestRecipeStartAt != -1) return node.bestRecipeStartAt;
         //循环配方，直接返回当前作为起点。寻找最短环作为目标
-        if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient) return maxRequire;
+        if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient) return 0;
         if (node.edges.size() <= 1) return 0;
         node.bestRecipeStartAtCalculating = true;
         int historyId = this.historyId.getValue();
         int resultId = results.size();
-
+        if (!node.listed) {
+            node.listed = true;
+            listed.add(node);
+        }
         int maxCollected = 0;
         int minScore = Integer.MAX_VALUE;
         int startAt = 0;
@@ -162,11 +189,21 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         }
         node.bestRecipeStartAt = startAt;
         node.bestRecipeStartAtCalculating = false;
+        if (node.clearMaxSuccessAfter) {
+            removeListedUntil(node);
+            node.clearMaxSuccessAfter = false;
+        }
         return startAt;
     }
 
     public int dfsCalcCraftNode(CraftNode node, int maxRequire, boolean estimating) {
+        if (addInStack(node) > maxDepthAllow) {
+            removeInStack(node);
+            return 0;
+        }
         int restRequire = maxRequire;
+        if (node.maxSuccess < restRequire)
+            restRequire = node.maxSuccess;
         int simulateRequire = maxRequire;
         int totalSuccess = 0;
         //无原料合成，直接返回全部成功
@@ -174,6 +211,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             totalSuccess = maxRequire;
             simulateRequire = 0;
             restRequire = 0;
+        } else {
+            for (Pair<Integer, Integer> toNodePair : node.edges) {
+                Node toNode = getNode(toNodePair.getA());
+                if (simulateRequire * toNodePair.getB() > toNode.maxSuccess) {
+                    simulateRequire = toNode.maxSuccess / toNodePair.getB();
+                }
+            }
         }
         //对合成进行模拟。假设每次合成simulateRequire个
         while (simulateRequire > 0) {
@@ -226,11 +270,19 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         pushHistory(node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
         if (totalSuccess < maxRequire)
             node.maxSuccess = totalSuccess;
+        removeInStack(node);
         return totalSuccess;
     }
 
     @Override
     public boolean process() {
+        for (int i = 10; i < 61; i += 10) {
+            maxDepthAllow = i;
+            targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
+            if (targetAvailable >= targetCount) return true;
+            restoreCurrentAndStartContext(targetItem, targetCount);
+        }
+        maxDepthAllow = Integer.MAX_VALUE;
         targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
         return true;
     }
