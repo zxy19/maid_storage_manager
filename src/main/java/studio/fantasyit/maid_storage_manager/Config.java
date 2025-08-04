@@ -166,6 +166,9 @@ public class Config {
                     List.of(CraftSolver.DFS_THREADED.name()),
                     o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
             );
+    private static final ForgeConfigSpec.BooleanValue CRAFTING_EXPERIMENTAL_OPTIMIZATION = BUILDER
+            .comment("Some experimental optimization. If some crafting calculation cannot done successfully, try turn this off.")
+            .define("crafting.experimental_optimization", true);
     private static final ForgeConfigSpec.IntValue LOOP_SOLVER_MAX_KEEP_LENGTH = BUILDER
             .comment("Max length to calculate in loop solver.")
             .defineInRange("crafting.loop_solver.max_length", 10, 0, 100);
@@ -240,6 +243,7 @@ public class Config {
     public static List<CraftSolver> craftingSolver;
     public static boolean craftingMatchTag;
     public static int craftingLoopSolverMaxSize;
+    public static boolean craftingExperimentalOptimization;
     public static boolean craftingLoopSolverPreventIndirect;
     public static boolean craftingLoopSolverPreventNewByProduct;
     public static List<String> noMatchPaths;
@@ -284,6 +288,7 @@ public class Config {
         generateVirtualItemFrame = GENERATE_VIRTUAL_ITEM_FRAME.get();
         renderMaidWhenIngredientRequest = RENDER_MAID_WHEN_INGREDIENT_REQUEST.get();
         craftingSolver = CRAFTING_SOLVER.get().stream().map(CraftSolver::valueOf).toList();
+        craftingExperimentalOptimization = CRAFTING_EXPERIMENTAL_OPTIMIZATION.get();
         pickupIgnoreDelay = PICKUP_IGNORE_DELAY.get();
         craftingMatchTag = USE_NBT.get();
         noMatchPaths = NBT_NO_MATCH_PATH.get().stream().map(t -> (String) t).toList();
@@ -337,6 +342,7 @@ public class Config {
         USE_NBT.set(craftingMatchTag);
         NBT_NO_MATCH_PATH.set(noMatchPaths);
         THROW_ITEM_VECTOR.set(throwItemVector);
+        CRAFTING_EXPERIMENTAL_OPTIMIZATION.set(craftingExperimentalOptimization);
         CRAFTING_GENERATE_CRAFT_GUIDE.set(craftingGenerateCraftGuide);
         CRAFTING_NO_CALCULATOR.set(craftingNoCalculator);
         CRAFTING_GENERATING_PARTIAL.set(generatePartial);

@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.PrefilterByChunk;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -39,7 +40,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             Node pop = listed.pop();
             pop.listed = false;
             pop.maxSuccess = Integer.MAX_VALUE;
-            if (pop.maxSuccessCount > 10) {
+            if (pop.maxSuccessCount > 10 && Config.craftingExperimentalOptimization) {
                 pop.maxSuccess = pop.lastMaxSuccess;
             }
             pop.clearMaxSuccessAfter = false;
