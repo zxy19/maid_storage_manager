@@ -34,6 +34,8 @@ public class IntegrationMixinControlPlugin implements IMixinConfigPlugin {
             return Integrations.createLoading();
         } else if (mixinClass("CreateStockTickerBEMixin").equals(mixinClassName)) {
             return Integrations.createLoading();
+        } else if (mixinClass("TLMFeatureCenterSidePathFinding").equals(mixinClassName)) {
+            return Integrations.TLMFeatureCenterSidePathFinding();
         }
         return true;
     }

@@ -34,6 +34,8 @@ public abstract class ItemFrameTickMixin extends Entity {
                 if (uuid != null && ((ServerLevel) level()).getEntity(uuid) instanceof EntityMaid maid) {
                     int rotation = ifr.getRotation() % 4;
                     int count = rotation == 0 ? 1 : rotation == 1 ? 15 : 10;
+                    if (ProgressPad.getStyle(ifr.getItem()) == ProgressPad.Style.SMALL)
+                        count *= 2;
                     PacketDistributor.sendToPlayersTrackingEntity(
                             ifr,
                             new ProgressPadUpdatePacket(

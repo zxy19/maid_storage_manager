@@ -7,6 +7,13 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import studio.fantasyit.maid_storage_manager.Config;
 
 public class Integrations {
+    public static boolean TLMFeatureCenterSidePathFinding() {
+        ModFileInfo create = LoadingModList.get().getModFileById("touhou_little_maid");
+        if (create == null) return false;
+        return create.getMods().stream().anyMatch(modInfo -> modInfo.getModId().equals("touhou_little_maid")
+                && modInfo.getVersion().compareTo(new DefaultArtifactVersion("1.3.6")) <= 0);
+    }
+
     public static boolean JEIIngredientRequest() {
         return ModList.get().isLoaded("jei") && Config.enableJeiIngredientRequest;
     }
@@ -94,10 +101,12 @@ public class Integrations {
     public static boolean kjs() {
         return ModList.get().isLoaded("kubejs");
     }
-    public static boolean botania(){
+
+    public static boolean botania() {
         return ModList.get().isLoaded("botania");
     }
-    public static boolean ars(){
+
+    public static boolean ars() {
         return ModList.get().isLoaded("ars_nouveau");
     }
 }

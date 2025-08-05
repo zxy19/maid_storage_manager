@@ -181,8 +181,9 @@ public class MemoryUtil {
     }
 
     public static void goRestrictCenterAndWait(EntityMaid maid, float speed) {
+        
         if (!maid.hasRestriction()) return;
-        BlockPos restrictCenter = maid.getRestrictCenter();
+        BlockPos restrictCenter = maid.getSchedulePos().getWorkPos();
         if (maid.distanceToSqr(restrictCenter.getCenter()) < 9) return;
         setTarget(maid, restrictCenter, speed);
         setGoingCenter(maid, true);

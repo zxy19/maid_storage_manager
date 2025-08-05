@@ -37,8 +37,20 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     public void onTick(EntityMaid maid, ItemStack baubleItem) {
         if (maid.level().isClientSide) return;
         checkTask(maid, baubleItem);
+        syncTaskWorkPos(maid, baubleItem);
         tryDispatch(maid, baubleItem);
         tryDispatchFind(maid, baubleItem);
+    }
+
+    private void syncTaskWorkPos(EntityMaid maid, ItemStack baubleItem) {
+        CraftMemory craftMemory = MemoryUtil.getCrafting(maid);
+        if (!craftMemory.hasPlan()) return;
+        CraftLayerChain plan = craftMemory.plan();
+        if (plan.isMaster()) return;
+        UUID masterUUID = plan.getMasterUUID();
+        if (masterUUID != null && ((ServerLevel) maid.level()).getEntity(masterUUID) instanceof EntityMaid toMaid) {
+            maid.getSchedulePos().restrictTo(toMaid);
+        }
     }
 
     private void checkTask(EntityMaid maid, ItemStack baubleItem) {
@@ -169,7 +181,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return false;
     }
 
-    public static List<Component> getAllWorkCards(EntityMaid maid){
+    public static List<Component> getAllWorkCards(EntityMaid maid) {
         List<Component> workCards = new ArrayList<>();
         BaubleItemHandler inv = maid.getMaidBauble();
         for (int i = 0; i < inv.getSlots(); i++) {
@@ -179,6 +191,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         }
         return workCards;
     }
+
     public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, boolean requireAvailable, boolean propagate) {
         List<EntityMaid> maids = new ArrayList<>();
         Set<Component> hasChecked = new HashSet<>();
