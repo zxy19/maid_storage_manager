@@ -156,13 +156,13 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static void markDone(ItemStack mainHandItem, ItemStack target) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        RequestItemStackList request = getMutableRequestData(target);
+        RequestItemStackList request = getMutableRequestData(mainHandItem);
         List<RequestItemStackList.ListItem> items = request.getList();
         for (RequestItemStackList.ListItem item : items) {
             if (!ItemStack.isSameItemSameComponents(item.item, target)) continue;
             item.done = true;
         }
-        target.set(DataComponentRegistry.REQUEST_ITEMS.get(), request.toImmutable());
+        mainHandItem.set(DataComponentRegistry.REQUEST_ITEMS.get(), request.toImmutable());
     }
 
 

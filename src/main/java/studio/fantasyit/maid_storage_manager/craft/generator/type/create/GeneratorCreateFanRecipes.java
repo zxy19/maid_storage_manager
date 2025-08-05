@@ -44,6 +44,7 @@ import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>, ProcessingRecipeParams, RecipeType<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>>, RecipeInput, BlockPos> {
     ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
@@ -169,6 +170,60 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
         return null;
     }
 
+    private List<RecipeHolder<Recipe<SingleRecipeInput>>> buildFor(RecipeType<Recipe<SingleRecipeInput>> type1, RecipeType<Recipe<SingleRecipeInput>> type2, RecipeType<Recipe<SingleRecipeInput>> typeExc, RecipeManager manager, Level level) {
+        List<RecipeHolder<Recipe<SingleRecipeInput>>> list = new ArrayList<>();
+        List<ItemStack> recItems = new ArrayList<>();
+        manager.getAllRecipesFor(type1).forEach(t -> {
+            Recipe<SingleRecipeInput> value = t.value();
+            Ingredient first = value.getIngredients().getFirst();
+            if (first == null || first.isEmpty()) return;
+            ItemStack firstItem = first.getItems()[0];
+            Optional<RecipeHolder<Recipe<SingleRecipeInput>>> excRecipe = manager.getRecipeFor(typeExc, new SingleRecipeInput(firstItem), level);
+            if (excRecipe.isPresent()) {
+                if (ItemStack.isSameItem(excRecipe.get().value().getResultItem(level.registryAccess()), value.getResultItem(level.registryAccess()))) {
+                    return;
+                }
+            }
+            recItems.add(firstItem);
+            list.add(t);
+        });
+        manager.getAllRecipesFor(type2).forEach(t -> {
+            Recipe<SingleRecipeInput> value = t.value();
+            Ingredient first = value.getIngredients().getFirst();
+            if (first == null || first.isEmpty()) return;
+            if (recItems.stream().anyMatch(first)) {
+                return;
+            }
+            ItemStack firstItem = first.getItems()[0];
+            Optional<RecipeHolder<Recipe<SingleRecipeInput>>> excRecipe = manager.getRecipeFor(typeExc, new SingleRecipeInput(firstItem), level);
+            if (excRecipe.isPresent()) {
+                if (ItemStack.isSameItem(excRecipe.get().value().getResultItem(level.registryAccess()), value.getResultItem(level.registryAccess()))) {
+                    return;
+                }
+            }
+            list.add(t);
+        });
+        return list;
+    }
+
+    private List<RecipeHolder<Recipe<RecipeInput>>> getInputs(FanProcessingType typeAt, Level level, RecipeManager manager) {
+        if (typeAt instanceof AllFanProcessingTypes.BlastingType) {
+            if (BLASTING.getValue()) {
+                return buildFor((RecipeType) RecipeType.BLASTING, (RecipeType) RecipeType.SMELTING, (RecipeType) RecipeType.SMOKING, manager, level);
+            }
+        } else if (typeAt instanceof AllFanProcessingTypes.SmokingType) {
+            if (SMOKING.getValue())
+                return buildFor((RecipeType) RecipeType.SMOKING, (RecipeType) RecipeType.SMELTING, (RecipeType) RecipeType.BLASTING, manager, level);
+        } else if (typeAt instanceof AllFanProcessingTypes.HauntingType) {
+            if (HAUNTING.getValue())
+                return manager.getAllRecipesFor(AllRecipeTypes.HAUNTING.getType());
+        } else if (typeAt instanceof AllFanProcessingTypes.SplashingType) {
+            if (SPLASHING.getValue())
+                return manager.getAllRecipesFor(AllRecipeTypes.SPLASHING.getType());
+        }
+        return List.of();
+    }
+
     private void generateFor(FanProcessingType typeAt, Level level, BlockPos test, ICachableGeneratorGraph graph, Pair<MutableBoolean, MutableBoolean> furnaceReplace) {
         RecipeType<?> type = getRecipeType(typeAt);
         if (type != null) {
@@ -180,8 +235,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                 addRecipeForPos(level, test, (RecipeType<ProcessingRecipe<RecipeInput, ProcessingRecipeParams>>) type, graph, recipe -> true);
             else {
                 StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, test);
-                level.getRecipeManager()
-                        .getAllRecipesFor((RecipeType<Recipe<RecipeInput>>) type)
+                getInputs(typeAt, level, level.getRecipeManager())
                         .forEach((holder) -> {
                             Recipe<?> recipe = holder.value();
                             ItemStack resultItem = recipe.getResultItem(level.registryAccess());

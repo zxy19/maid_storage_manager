@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.registry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraftforge.registries.RegistryObject;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -44,7 +43,7 @@ public class MemoryModuleRegistry {
             = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<MealMemory>> MEAL
             = REGISTER.register("meal", () -> new MemoryModuleType<>(Optional.of(MealMemory.CODEC)));
-    public static final RegistryObject<MemoryModuleType<Boolean>> RETURN_CENTER
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Boolean>> RETURN_CENTER
             = REGISTER.register("return_center", () -> new MemoryModuleType<>(Optional.empty()));
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Boolean>> IS_WORKING = REGISTER.register("is_working", () -> new MemoryModuleType<>(Optional.empty()));
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Integer>> PARALLEL_WORKING = REGISTER.register("parallel_working", () -> new MemoryModuleType<>(Optional.empty()));
@@ -54,3 +53,4 @@ public class MemoryModuleRegistry {
         REGISTER.register(eventBus);
     }
 }
+
