@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
@@ -35,6 +36,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
 
     private final float moveSpeed;
 
+    boolean hasAnyFailPathing;
     Target chestPos = null;
 
     abstract protected AbstractTargetMemory getMemory(EntityMaid maid);
@@ -54,6 +56,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         super.start(level, maid, p_22542_);
+        hasAnyFailPathing = false;
         AbstractTargetMemory memory = getMemory(maid);
         if (hasFinishedPre(level, maid)) return;
         if (!this.priorityTarget(level, maid))
@@ -62,6 +65,10 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
 
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
             if (memory.confirmNoTarget()) {
+                if (hasAnyFailPathing && maid.hasRestriction() && maid.distanceToSqr(maid.getRestrictCenter().getCenter()) > 9) {
+                    MemoryUtil.goRestrictCenterAndWait(maid, (float) Config.collectSpeed);
+                    return;
+                }
                 DebugData.sendDebug("[GATHERING] No More Target");
                 noTarget(level, maid);
             }
@@ -109,6 +116,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             if (targetPos == null) {
                 //因为getAvailablePos会破坏nodeEvaluator，所以重新创建一次
                 pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
+                hasAnyFailPathing = true;
                 continue;
             }
 

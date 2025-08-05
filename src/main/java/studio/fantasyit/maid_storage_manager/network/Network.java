@@ -168,7 +168,9 @@ public class Network {
                             } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
                                 LogisticsGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                             } else if (item.is(ItemRegistry.PROGRESS_PAD.get())) {
-                                ProgressPad.rollViewing(item, sender, msg.value > 0 ? -1 : 1);
+                                if (msg.type == ClientInputPacket.Type.SCROLL)
+                                    ProgressPad.rollViewing(item, sender, msg.value > 0 ? -1 : 1);
+                                else ProgressPad.rollStyle(item, sender, msg.value > 0 ? -1 : 1);
                             }
                         }
                         context.get().setPacketHandled(true);

@@ -70,15 +70,19 @@ public class BindingRenderSyncSender {
     public static void syncProgressPad(ServerPlayer player, ItemStack itemStack) {
         if (itemStack.is(ItemRegistry.PROGRESS_PAD.get())) {
             UUID uuid = ProgressPad.getBindingUUID(itemStack);
-            if (uuid != null)
+            if (uuid != null) {
                 if (player.tickCount % 5 == 0 && player.level() instanceof ServerLevel level && level.getEntity(uuid) instanceof EntityMaid maid) {
+                    int count = 10;
+                    if (ProgressPad.getStyle(itemStack) == ProgressPad.Style.SMALL)
+                        count *= 2;
                     Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
                             new ProgressPadUpdatePacket(
                                     uuid,
-                                    ProgressData.fromMaidAuto(maid, level, ProgressPad.getViewing(itemStack), 10)
+                                    ProgressData.fromMaidAuto(maid, level, ProgressPad.getViewing(itemStack), count)
                             )
                     );
                 }
+            }
         }
     }
 

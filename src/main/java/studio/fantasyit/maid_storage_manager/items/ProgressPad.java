@@ -28,11 +28,18 @@ import java.util.UUID;
 public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.MapLikeRenderItem {
     public static final String TAG_BINDING_UUID = "binding_uuid";
     public static final String TAG_VIEWING = "viewing";
+    public static final String TAG_STYLE = "style";
+
 
     public enum Viewing {
         WORKING,
         DONE,
         WAITING
+    }
+
+    public enum Style {
+        NORMAL,
+        SMALL
     }
 
     public ProgressPad() {
@@ -56,6 +63,27 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
             tag.remove(TAG_BINDING_UUID);
         else
             tag.putUUID(TAG_BINDING_UUID, uuid);
+    }
+
+    public static Style getStyle(ItemStack itemStack) {
+        if (!itemStack.hasTag())
+            return Style.NORMAL;
+        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
+        if (!tag.contains(TAG_STYLE))
+            return Style.NORMAL;
+        return Style.valueOf(tag.getString(TAG_STYLE));
+    }
+
+    public static void setStyle(ItemStack itemStack, Style style) {
+        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
+        tag.putString(TAG_STYLE, style.name());
+        itemStack.setTag(tag);
+    }
+
+    public static void rollStyle(ItemStack itemStack, ServerPlayer player, int value) {
+        Style style = getStyle(itemStack);
+        style = Style.values()[(style.ordinal() + Style.values().length + value) % Style.values().length];
+        setStyle(itemStack, style);
     }
 
     public static Viewing getViewing(ItemStack itemStack) {

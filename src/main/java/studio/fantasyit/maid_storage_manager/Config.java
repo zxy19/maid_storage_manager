@@ -133,6 +133,9 @@ public class Config {
     private static final ForgeConfigSpec.EnumValue<ThrowMethod> THROW_ITEM_VECTOR = BUILDER
             .comment("How maid will throw Item.FINALLY_POS will try make the item stop at the position. GO_THROUGH will try to make item go through the target position. FIXED will always use the vector of length 0.6")
             .defineEnum("behavior.throw_item_vector", ThrowMethod.FINALLY_POS, ThrowMethod.values());
+    private static final ForgeConfigSpec.BooleanValue TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING = BUILDER
+            .comment("Try going to work center when fail pathfinding.")
+            .define("behavior.try_go_center_when_fail_pathfinding", false);
     //渲染控制选项
     private static final ForgeConfigSpec.ConfigValue<VirtualItemFrameRender> VIRTUAL_ITEM_FRAME_RENDER = BUILDER
             .comment("Virtual Item Frame's render method allow access/no access/filter.")
@@ -240,6 +243,7 @@ public class Config {
     public static boolean aiFunctions;
     public static boolean generateVirtualItemFrame;
     public static boolean pickupIgnoreDelay;
+    public static boolean tryGoingWorkCenterWhenFailPathFinding;
     public static List<CraftSolver> craftingSolver;
     public static boolean craftingMatchTag;
     public static int craftingLoopSolverMaxSize;
@@ -290,6 +294,7 @@ public class Config {
         craftingSolver = CRAFTING_SOLVER.get().stream().map(CraftSolver::valueOf).toList();
         craftingExperimentalOptimization = CRAFTING_EXPERIMENTAL_OPTIMIZATION.get();
         pickupIgnoreDelay = PICKUP_IGNORE_DELAY.get();
+        tryGoingWorkCenterWhenFailPathFinding = TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING.get();
         craftingMatchTag = USE_NBT.get();
         noMatchPaths = NBT_NO_MATCH_PATH.get().stream().map(t -> (String) t).toList();
         throwItemVector = THROW_ITEM_VECTOR.get();
@@ -354,6 +359,7 @@ public class Config {
         NO_BUBBLE_FOR_SUB_TASK.set(noBubbleForSub);
         CRAFTING_GENERATING_NEAREST_ONLY.set(generateNearestOnly);
         USING_BETTER_LIGHT_ON_ITEM.set(usingBetterLightOnItems);
+        TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING.set(tryGoingWorkCenterWhenFailPathFinding);
     }
 
     public static void saveAfter(Runnable o) {

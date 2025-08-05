@@ -203,6 +203,7 @@ public class CraftLayerChain {
     }
 
     public UUID getMasterUUID() {
+        if (dispatchedTaskMapping.isEmpty()) return null;
         return this.dispatchedTaskMapping.keySet().iterator().next();
     }
 
@@ -483,6 +484,7 @@ public class CraftLayerChain {
             clearAndStopAdding(StoppingAdding.RESCHEDULE);
             handleStopAddingEvent(maid);
         }
+        targetMaid.getSchedulePos().restrictTo(targetMaid);
         return true;
     }
 

@@ -53,6 +53,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     private static final ImageAsset PROGRESS_ALL_WAIT = new ImageAsset(ELEM, 14, 35, 154, 1);
     private static final ImageAsset PROGRESS_ALL_ERROR = new ImageAsset(ELEM, 14, 33, 154, 1);
     private static final ImageAsset BORDER = new ImageAsset(ELEM, 14, 44, 78, 41);
+    private static final ImageAsset BORDER_SMALL = new ImageAsset(ELEM, 90, 44, 78, 22);
     private static final ImageAsset PROGRESS = new ImageAsset(ELEM, 15, 89, 72, 1);
     private static final ImageAsset PROGRESS_WAIT = new ImageAsset(ELEM, 15, 91, 72, 1);
     private static final ImageAsset PROGRESS_ERROR = new ImageAsset(ELEM, 15, 93, 72, 1);
@@ -81,6 +82,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
         graphics.pose().scale(0.49f, 0.49f, 1);
         blit(graphics, LINE, 14, 39, widthScaleFactor);
         UUID bindingUUID = ProgressPad.getBindingUUID(pStack);
+        ProgressPad.Style style = ProgressPad.getStyle(pStack);
         if (bindingUUID == null) return;
         ProgressData data = MaidProgressData.getByMaid(bindingUUID);
         if (data == null) return;
@@ -144,19 +146,33 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
             case ITEM_FRAME_SMALL -> 1;
             default -> 5;
         };
+        if (style == ProgressPad.Style.SMALL)
+            MAX_ROWS *= 2;
         if (context == RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_SMALL) {
             iy += 20;
         }
         //90 - 14 + 1 = 76
         //83 - 44 + 1 = 40
+        int lineHeight = switch (style) {
+            case NORMAL -> 39;
+            case SMALL -> 20;
+        };
         for (int i = 0; i < data.working.size(); i++) {
             ProgressData.TaskProgress progress = data.working.get(i);
-            BORDER.blit(graphics, ix, iy);
+            (switch (style) {
+                case NORMAL -> BORDER;
+                case SMALL -> BORDER_SMALL;
+            }).blit(graphics, ix, iy);
+
             if (!progress.outputs().isEmpty()) {
                 ItemStack display = progress.outputs().get(tcr % progress.outputs().size());
                 graphics.pose().pushPose();
-                graphics.pose().translate(ix + 5, iy + 5, 0);
-                graphics.pose().scale(1.4f, 1.4f, 1f);
+                if (style == ProgressPad.Style.SMALL) {
+                    graphics.pose().translate(ix + 2, iy + 2, 0);
+                } else {
+                    graphics.pose().translate(ix + 5, iy + 5, 0);
+                    graphics.pose().scale(1.4f, 1.4f, 1f);
+                }
                 graphics.renderItem(display, 0, 0);
                 graphics.pose().popPose();
 
@@ -165,29 +181,40 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
                         font,
                         display.getHoverName(),
                         ix + 76 - 2 - nameW,
-                        iy + 5,
+                        iy + 2,
                         40,
                         0xFFFFFFFF
                 );
             }
-            String progressText = String.format("%d/%d", progress.progress(), progress.total());
-            int progressW = font.width(progressText);
-            graphics.drawString(
-                    font,
-                    progressText,
-                    ix + 76 - 2 - progressW,
-                    iy + 29,
-                    0xFFFFFFFF
-            );
-            blit(graphics, pickProgress(progress.status()), ix + 2, iy + 38, 1.0f * progress.progress() / progress.total());
+            if (style == ProgressPad.Style.NORMAL) {
+                String progressText = String.format("%d/%d", progress.progress(), progress.total());
+                int progressW = font.width(progressText);
+                graphics.drawString(
+                        font,
+                        progressText,
+                        ix + 76 - 2 - progressW,
+                        iy + lineHeight - 11,
+                        0xFFFFFFFF
+                );
+            }
+            blit(graphics, pickProgress(progress.status()), ix + 2, iy + lineHeight - 1, 1.0f * progress.progress() / progress.total());
 
-            drawCenteredString(graphics, font, progress.taker(), ix + 2, iy + 29, 40, 0xFFbbdefb);
+            if (style == ProgressPad.Style.SMALL) {
+                float _scale = 0.8f;
+                float takerWidth = Math.min(font.width(progress.taker()), 40) * _scale;
+                graphics.pose().pushPose();
+                graphics.pose().translate(ix + 76 - 2 - takerWidth, iy + lineHeight - 11 * _scale, 0);
+                graphics.pose().scale(_scale, _scale, 1f);
+                drawCenteredString(graphics, font, progress.taker(), 0, 0, 40, 0xFFbbdefb);
+                graphics.pose().popPose();
+            } else
+                drawCenteredString(graphics, font, progress.taker(), ix + 2, iy + lineHeight - 11, 40, 0xFFbbdefb);
 
             if (i % COLS != COLS - 1) {
                 ix += 76;
             } else {
                 ix = 14;
-                iy += 40;
+                iy += lineHeight;
                 row++;
                 if (row >= MAX_ROWS) {
                     break;

@@ -69,7 +69,7 @@ public class InputEvent {
             }
         } else if (pressingSpecialKey) {
             event.setCanceled(true);
-            if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
+            if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.PROGRESS_PAD.get())) {
                 Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
                         new ClientInputPacket(ClientInputPacket.Type.ALT_SCROLL, (int) (event.getScrollDelta() * 100))
                 );

@@ -13,6 +13,7 @@
     "ItemFrameTickMixin",
     "JeiGuiIconToggleButtonAccessor",
     "JEIRecipeTransferHook",
+    "TLMFeatureCenterSidePathFinding",
     "WorldRecipeLoaderMixin"
   ],
   "client": [
