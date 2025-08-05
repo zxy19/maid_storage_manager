@@ -7,6 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -27,8 +29,8 @@ public class CreateStockTickerStorage implements IMaidStorage {
     }
 
     @Override
-    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side) {
-        return level.getBlockState(block).is(AllBlocks.STOCK_TICKER.get());
+    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side, BlockState blockState, BlockEntity blockEntity) {
+        return blockState.is(AllBlocks.STOCK_TICKER.get());
     }
 
     @Override

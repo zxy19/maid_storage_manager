@@ -189,6 +189,32 @@ public class StorageAccessUtil {
         return rewrite.contains(target);
     }
 
+
+    private static HashMap<BlockPos, List<BlockPos>> cacheNearby = new HashMap<>();
+    private static long cachedTickCount = -1;
+
+    private static List<BlockPos> getNearByContainersCache(Level _level, BlockPos pos) {
+        if (_level instanceof ServerLevel level) {
+            if (level.getServer().getTickCount() != cachedTickCount) {
+                cacheNearby.clear();
+                cachedTickCount = level.getServer().getTickCount();
+            } else if (cacheNearby.containsKey(pos)) {
+                return cacheNearby.get(pos);
+            }
+        }
+        return null;
+    }
+
+    private static void setNearByCache(Level level, BlockPos pos, List<BlockPos> list) {
+        if (level instanceof ServerLevel serverLevel) {
+            if (serverLevel.getServer().getTickCount() != cachedTickCount) {
+                cacheNearby.clear();
+                cachedTickCount = serverLevel.getServer().getTickCount();
+            }
+            cacheNearby.put(pos, list);
+        }
+    }
+
     /**
      * 检查附近的方块是否属于同一个容器，如果是则调用consumer
      *
@@ -199,6 +225,11 @@ public class StorageAccessUtil {
     public static void checkNearByContainers(Level level, BlockPos pos, Consumer<BlockPos> consumer) {
         BlockState blockState = level.getBlockState(pos);
         if (!blockState.is(allowTag)) {
+            return;
+        }
+        List<BlockPos> nearByContainersCache = getNearByContainersCache(level, pos);
+        if (nearByContainersCache != null) {
+            nearByContainersCache.forEach(consumer);
             return;
         }
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
@@ -217,6 +248,7 @@ public class StorageAccessUtil {
         tag.putUUID("uuid", UUID.randomUUID());
         markItem.setTag(tag);
         inv.insertItem(0, markItem.copy(), false);
+        List<BlockPos> list = new ArrayList<>();
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
             if (blockPos.equals(pos)) return null;
             BlockEntity blockEntity = level.getBlockEntity(blockPos);
@@ -225,6 +257,7 @@ public class StorageAccessUtil {
                     for (int i = 0; i < itemHandler.getSlots(); i++) {
                         if (ItemStack.isSameItemSameTags(itemHandler.getStackInSlot(i), markItem)) {
                             consumer.accept(blockPos);
+                            list.add(blockPos);
                         }
                     }
                 });
@@ -243,6 +276,10 @@ public class StorageAccessUtil {
         while (!tmpExtracted.isEmpty()) {
             inv.insertItem(0, tmpExtracted.poll(), false);
         }
+
+        list.forEach(blockPos -> {
+            setNearByCache(level, blockPos, list);
+        });
     }
 
     public static class Filter {

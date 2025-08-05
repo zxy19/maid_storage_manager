@@ -9,6 +9,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -26,8 +28,8 @@ public class RSStorage implements IMaidStorage {
     }
 
     @Override
-    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side) {
-        return level.getBlockState(block).is(GRID) || level.getBlockState(block).is(CRAFTING_GRID);
+    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side, BlockState blockState, BlockEntity blockEntity) {
+        return blockState.is(GRID) || blockState.is(CRAFTING_GRID);
     }
 
     @Override

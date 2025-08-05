@@ -5,6 +5,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
@@ -55,9 +57,12 @@ public class MaidStorage {
     }
 
     public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, Target target) {
+        BlockState blockState = level.getBlockState(target.pos);
+        if (blockState.isAir()) return null;
+        BlockEntity blockEntity = level.getBlockEntity(target.pos);
         ResourceLocation type = target.getType();
         for (IMaidStorage storage : storages) {
-            if (storage.getType().equals(type) && storage.isValidTarget(level, maid, target.pos, target.side))
+            if (storage.getType().equals(type) && storage.isValidTarget(level, maid, target.pos, target.side, blockState, blockEntity))
                 return target;
         }
         return null;
@@ -68,8 +73,11 @@ public class MaidStorage {
     }
 
     public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, Direction side) {
+        BlockState blockState = level.getBlockState(block);
+        if (blockState.isAir()) return null;
+        BlockEntity blockEntity = level.getBlockEntity(block);
         for (IMaidStorage storage : storages) {
-            if (storage.isValidTarget(level, maid, block, side)) {
+            if (storage.isValidTarget(level, maid, block, side, blockState, blockEntity)) {
                 return new Target(storage.getType(), block, side);
             }
         }
