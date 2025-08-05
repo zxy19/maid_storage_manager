@@ -6,6 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -48,13 +50,15 @@ public interface IMaidStorage {
     /**
      * 目标是否为当前类型的存储
      *
-     * @param level 服务器世界
-     * @param maid  maid
-     * @param block 位置
-     * @param side  交互面
+     * @param level       服务器世界
+     * @param maid        maid
+     * @param block       位置
+     * @param side        交互面
+     * @param blockState
+     * @param blockEntity
      * @return 是否为当前类型的存储
      */
-    boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side);
+    boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side, BlockState blockState, BlockEntity blockEntity);
 
     /**
      * 开始收集物品上下文

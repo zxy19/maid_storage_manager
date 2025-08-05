@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -24,8 +25,9 @@ public class ItemHandlerStorage implements IMaidStorage {
     }
 
     @Override
-    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side) {
-        IItemHandler cap;
+    public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side, BlockState blockState, BlockEntity blockEntity) {
+        if (blockEntity == null) return false;
+        @NotNull LazyOptional<IItemHandler> cap;
         if (side == null) {
             cap = level.getCapability(Capabilities.ItemHandler.BLOCK, block, null);
         } else {
