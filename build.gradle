@@ -211,7 +211,10 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6657436")
     runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:6657436")
+
+
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
+    runtimeOnly fg.deobf("curse.maven:reforgedplay-mod-1018692:5637596")
 //    compileOnly fg.deobf("libs:touhoulittlemaid-1.20.1-release:1.3.2")
 //    runtimeOnly fg.deobf("libs:touhoulittlemaid-1.20.1-release:1.3.2")
 

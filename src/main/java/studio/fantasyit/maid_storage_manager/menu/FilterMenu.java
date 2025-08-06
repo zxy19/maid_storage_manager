@@ -45,6 +45,7 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     }
 
     public void save() {
+        if (player.level().isClientSide) return;
         CompoundTag tag = target.getOrCreateTag();
         ListTag list = new ListTag();
         if (tag.contains(FilterListItem.TAG_ITEMS))

@@ -11,8 +11,10 @@ public class MaidProgressData {
 
     public static void setByMaid(UUID uuid, ProgressData data) {
         if (progressData.containsKey(uuid)) {
-            if (progressData.get(uuid).tickCount > data.tickCount) return;
-            if (data.tickCount - progressData.get(uuid).tickCount < 10 && progressData.get(uuid).maxSz >= data.maxSz)
+            if (progressData.get(uuid).tickCount > data.tickCount) {
+                if (progressData.get(uuid).tickCount - data.tickCount > 40)
+                    progressData.remove(uuid);
+            } else if (data.tickCount - progressData.get(uuid).tickCount < 10 && progressData.get(uuid).maxSz >= data.maxSz)
                 return;
         }
         progressData.put(uuid, data);
@@ -20,5 +22,9 @@ public class MaidProgressData {
 
     public static ProgressData getByMaid(UUID uuid) {
         return progressData.get(uuid);
+    }
+
+    public static void clearAll() {
+        progressData.clear();
     }
 }

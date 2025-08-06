@@ -47,6 +47,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
     }
 
     public void save() {
+        if (player.level().isClientSide) return;
         CompoundTag tag = target.getOrCreateTag();
         tag.put(LogisticsGuide.TAG_ITEM, container.getItem(0).save(new CompoundTag()));
         tag.putBoolean(LogisticsGuide.TAG_SINGLE_MODE, single_mode);

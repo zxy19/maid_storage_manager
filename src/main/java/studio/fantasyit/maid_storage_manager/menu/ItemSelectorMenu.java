@@ -67,6 +67,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     }
 
     public void save() {
+        if (player.level().isClientSide) return;
         CompoundTag tag = target.getOrCreateTag();
         ListTag list = new ListTag();
         if (tag.contains(RequestListItem.TAG_ITEMS))
