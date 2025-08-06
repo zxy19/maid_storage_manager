@@ -133,7 +133,7 @@ public class Config {
     private static final ModConfigSpec.EnumValue<ThrowMethod> THROW_ITEM_VECTOR = BUILDER
             .comment("How maid will throw Item.FINALLY_POS will try make the item stop at the position. GO_THROUGH will try to make item go through the target position. FIXED will always use the vector of length 0.6")
             .defineEnum("behavior.throw_item_vector", ThrowMethod.FINALLY_POS, ThrowMethod.values());
-    private static final ForgeConfigSpec.BooleanValue TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING = BUILDER
+    private static final ModConfigSpec.BooleanValue TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING = BUILDER
             .comment("Try going to work center when fail pathfinding.")
             .define("behavior.try_go_center_when_fail_pathfinding", false);
     //渲染控制选项

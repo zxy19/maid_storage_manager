@@ -53,18 +53,11 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     }
 
     public static Style getStyle(ItemStack itemStack) {
-        if (!itemStack.hasTag())
-            return Style.NORMAL;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (!tag.contains(TAG_STYLE))
-            return Style.NORMAL;
-        return Style.valueOf(tag.getString(TAG_STYLE));
+        return Style.valueOf(itemStack.getOrDefault(DataComponentRegistry.PROGRESS_PAD_STYLE, Style.NORMAL.name()));
     }
 
     public static void setStyle(ItemStack itemStack, Style style) {
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        tag.putString(TAG_STYLE, style.name());
-        itemStack.setTag(tag);
+        itemStack.set(DataComponentRegistry.PROGRESS_PAD_STYLE, style.name());
     }
 
     public static void rollStyle(ItemStack itemStack, ServerPlayer player, int value) {
