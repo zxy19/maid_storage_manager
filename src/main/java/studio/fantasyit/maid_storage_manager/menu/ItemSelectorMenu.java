@@ -70,6 +70,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     }
 
     public void save() {
+        if (player.level().isClientSide) return;
         RequestItemStackList data = RequestListItem.getMutableRequestData(target);
         List<RequestItemStackList.ListItem> list = data.getList();
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {

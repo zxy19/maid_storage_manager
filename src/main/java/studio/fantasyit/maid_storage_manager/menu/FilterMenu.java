@@ -45,6 +45,7 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     }
 
     public void save() {
+        if (player.level().isClientSide) return;
         FilterItemStackList list = new FilterItemStackList();
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {
             list.list.set(i, filteredItems.getItem(i));

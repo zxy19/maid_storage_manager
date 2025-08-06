@@ -47,6 +47,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
     }
 
     public void save() {
+        if (player.level().isClientSide) return;
         target.set(DataComponentRegistry.LOGISTICS_SINGLE, single_mode);
         target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(player.registryAccess(), container.getItem(0).copy()));
     }
