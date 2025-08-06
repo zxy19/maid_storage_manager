@@ -213,7 +213,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
             }
         } else if (typeAt instanceof AllFanProcessingTypes.SmokingType) {
             if (SMOKING.getValue())
-                return buildFor((RecipeType) RecipeType.SMOKING, (RecipeType) RecipeType.SMELTING, (RecipeType) RecipeType.BLASTING, manager, level);
+                return (List) manager.getAllRecipesFor(RecipeType.SMOKING);
         } else if (typeAt instanceof AllFanProcessingTypes.HauntingType) {
             if (HAUNTING.getValue())
                 return manager.getAllRecipesFor(AllRecipeTypes.HAUNTING.getType());
