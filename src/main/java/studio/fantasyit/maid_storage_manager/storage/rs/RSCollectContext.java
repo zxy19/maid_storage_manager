@@ -95,6 +95,7 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
 
     @Override
     public void reset() {
+        super.reset();
         this.current = 0;
     }
 

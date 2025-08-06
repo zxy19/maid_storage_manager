@@ -23,6 +23,7 @@ public class RSViewContext extends AbstractRSContext implements IStorageInteract
 
     @Override
     public void reset() {
+        super.reset();
         if (itemStorage != null) {
             List<ItemStack> tmp = itemStorage.getAll()
                     .stream()

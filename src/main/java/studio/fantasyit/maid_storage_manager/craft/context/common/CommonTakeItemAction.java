@@ -91,6 +91,8 @@ public class CommonTakeItemAction extends AbstractCraftActionContext {
                 return Result.SUCCESS;
             else {
                 storageContext.reset();
+                if (storageContext instanceof IStorageExtractableContext isec)
+                    isec.clearTask();
                 return hasChange.getValue() ? Result.CONTINUE_INTERRUPTABLE : Result.NOT_DONE_INTERRUPTABLE;
             }
         return hasChange.getValue() ? Result.CONTINUE : Result.NOT_DONE;

@@ -59,6 +59,14 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
     public void reset() {
         current = 0;
         setDone(false);
+        if (inv != null)
+            this.keys = inv
+                    .getAvailableStacks()
+                    .keySet()
+                    .stream()
+                    .filter(key -> key instanceof AEItemKey)
+                    .map(key -> (AEItemKey) key)
+                    .toList();
     }
 
 

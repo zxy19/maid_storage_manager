@@ -56,7 +56,7 @@ public class MaidStorage {
 
     public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, Target target) {
         BlockState blockState = level.getBlockState(target.pos);
-        if (blockState.isAir()) return null;
+        if (blockState.is(Blocks.AIR)) return null;
         BlockEntity blockEntity = level.getBlockEntity(target.pos);
         ResourceLocation type = target.getType();
         for (IMaidStorage storage : storages) {
