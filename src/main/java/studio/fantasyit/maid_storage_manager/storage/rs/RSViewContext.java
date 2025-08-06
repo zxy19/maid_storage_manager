@@ -22,6 +22,7 @@ public class RSViewContext extends AbstractRSContext implements IStorageInteract
 
     @Override
     public void reset() {
+        super.reset();
         if (stackListStacks != null)
             iter = stackListStacks.iterator();
     }

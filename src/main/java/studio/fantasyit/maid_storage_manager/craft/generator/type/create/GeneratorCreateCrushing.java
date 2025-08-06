@@ -97,7 +97,7 @@ public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRec
             action = CommonPickupItemAction.TYPE;
         } else {
             testPos = pos;
-            while (level.getBlockEntity(testPos.below()).getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()) {
+            while (level.getBlockEntity(testPos.below()) != null && level.getBlockEntity(testPos.below()).getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent()) {
                 testPos = testPos.below();
             }
             action = CommonTakeItemAction.TYPE;

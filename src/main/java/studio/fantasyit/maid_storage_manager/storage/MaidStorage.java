@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
@@ -58,7 +59,7 @@ public class MaidStorage {
 
     public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, Target target) {
         BlockState blockState = level.getBlockState(target.pos);
-        if (blockState.isAir()) return null;
+        if (blockState.is(Blocks.AIR)) return null;
         BlockEntity blockEntity = level.getBlockEntity(target.pos);
         ResourceLocation type = target.getType();
         for (IMaidStorage storage : storages) {
