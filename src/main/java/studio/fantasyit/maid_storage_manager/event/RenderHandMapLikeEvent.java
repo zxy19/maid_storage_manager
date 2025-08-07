@@ -18,8 +18,9 @@ import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
 import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
+import studio.fantasyit.maid_storage_manager.render.base.CustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.base.ICustomGraphics;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
@@ -52,7 +53,7 @@ public class RenderHandMapLikeEvent {
 
         RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack);
 
-        void renderOnHand(CustomGraphics graphics, ItemStack pStack, int pCombinedLight, MapLikeRenderContext context);
+        void renderOnHand(ICustomGraphics graphics, ItemStack pStack, int pCombinedLight, MapLikeRenderContext context);
 
         default void extraTransform(PoseStack pPoseStack, MapLikeRenderContext context) {
         }

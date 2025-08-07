@@ -10,6 +10,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -18,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
@@ -32,14 +35,54 @@ public class ProgressData {
         FAILED
     }
 
-    public record TaskProgress(List<ItemStack> outputs, int total, int progress, Status status, Component taker) {
+    public record ProgressMeta(UUID uuid, ProgressPad.Viewing viewing, ProgressPad.Style style,
+                               ProgressPad.Merge merge) {
+        public static ProgressMeta fromNetwork(FriendlyByteBuf buf) {
+            return new ProgressMeta(buf.readUUID(), ProgressPad.Viewing.valueOf(buf.readUtf()),
+                    ProgressPad.Style.valueOf(buf.readUtf()), ProgressPad.Merge.valueOf(buf.readUtf()));
+        }
+
+        public static @Nullable ProgressMeta fromItemStack(ItemStack itemStack) {
+            UUID bindingUUID = ProgressPad.getBindingUUID(itemStack);
+            if (bindingUUID == null)
+                return null;
+            return new ProgressMeta(
+                    bindingUUID,
+                    ProgressPad.getViewing(itemStack),
+                    ProgressPad.getStyle(itemStack),
+                    ProgressPad.getMerge(itemStack)
+            );
+        }
+
+        public void toNetwork(FriendlyByteBuf buf) {
+            buf.writeUUID(this.uuid);
+            buf.writeUtf(this.viewing.name());
+            buf.writeUtf(this.style.name());
+            buf.writeUtf(this.merge.name());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof ProgressMeta progressMeta) {
+                return progressMeta.uuid.equals(this.uuid) && progressMeta.viewing == this.viewing && progressMeta.style == this.style && progressMeta.merge == this.merge;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return uuid.hashCode() * 31 + merge.hashCode() * 17 + viewing.hashCode() * 13 + style.hashCode();
+        }
+    }
+
+    public record TaskProgress(List<ItemStack> outputs, int total, int progress, Status status, List<Component> taker) {
         public static TaskProgress fromNetwork(FriendlyByteBuf friendlyByteBuf) {
             return new TaskProgress(
                     friendlyByteBuf.readCollection(ArrayList::new, FriendlyByteBuf::readItem),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readEnum(Status.class),
-                    friendlyByteBuf.readComponent()
+                    friendlyByteBuf.readCollection(ArrayList::new, FriendlyByteBuf::readComponent)
             );
         }
 
@@ -48,7 +91,7 @@ public class ProgressData {
             friendlyByteBuf.writeInt(total);
             friendlyByteBuf.writeInt(progress);
             friendlyByteBuf.writeEnum(status);
-            friendlyByteBuf.writeComponent(taker);
+            friendlyByteBuf.writeCollection(taker, FriendlyByteBuf::writeComponent);
         }
     }
 
@@ -100,7 +143,7 @@ public class ProgressData {
         );
     }
 
-    public static ProgressData fromPlan(EntityMaid maid, ServerLevel level, CraftLayerChain plan, ProgressPad.Viewing viewing, int maxSz) {
+    public static ProgressData fromPlan(EntityMaid maid, ServerLevel level, CraftLayerChain plan, ProgressPad.Viewing viewing, ProgressPad.Merge merge, int maxSz) {
         List<TaskProgress> toList = new ArrayList<>();
         List<ItemStack> targetItem = List.of();
         boolean peekItem = false;
@@ -114,31 +157,31 @@ public class ProgressData {
             peekItem = true;
             if (!switch (node.progress().getValue()) {
                 case IDLE, WAITING -> viewing == ProgressPad.Viewing.WAITING;
-                case DISPATCHED, WORKING, GATHERING, FAILED -> viewing == ProgressPad.Viewing.WORKING;
+                case DISPATCHED, WORKING, GATHERING -> viewing == ProgressPad.Viewing.WORKING;
                 case FINISHED -> viewing == ProgressPad.Viewing.DONE;
-                default -> false;
+                case FAILED -> viewing != ProgressPad.Viewing.WORKING;
             }) continue;
             Status status = switch (node.progress().getValue()) {
                 case IDLE, WAITING -> Status.WAITING;
                 case FAILED -> Status.FAILED;
                 default -> Status.NORMAL;
             };
-            int totalSteps = layer.getTotalStep() * layer.getCount() + 1;
-            int processedSteps = layer.getDoneCount() * layer.getTotalStep() + layer.getStep();
+            int totalSteps = layer.getCount();
+            int processedSteps = layer.getDoneCount();
             if (node.progress().getValue() == SolvedCraftLayer.Progress.WORKING || node.progress().getValue() == SolvedCraftLayer.Progress.GATHERING)
                 processedSteps += 1;
-            Component taker = Component.empty();
+            List<Component> taker = List.of();
             if (node.progress().getValue() == SolvedCraftLayer.Progress.DISPATCHED) {
                 UUID takerUUID = plan.getLayerTaker(node.index());
                 if (level.getEntity(takerUUID) instanceof EntityMaid takerMaid) {
-                    taker = takerMaid.getDisplayName();
+                    taker = List.of(takerMaid.getDisplayName());
 
                     if (MemoryUtil.getCrafting(takerMaid).hasPlan()) {
                         CraftLayerChain dispatchedPlan = MemoryUtil.getCrafting(takerMaid).plan();
                         if (dispatchedPlan.hasCurrent()) {
                             CraftLayer dispatchedLayer = dispatchedPlan.getCurrentLayer();
-                            totalSteps = dispatchedLayer.getTotalStep() * dispatchedLayer.getCount() + 1;
-                            processedSteps = dispatchedLayer.getDoneCount() * dispatchedLayer.getTotalStep() + dispatchedLayer.getStep() + 1;
+                            totalSteps = dispatchedLayer.getCount();
+                            processedSteps = dispatchedLayer.getDoneCount();
                             if (plan.getIsStoppingAdding()) {
                                 status = Status.FAILED;
                             }
@@ -160,12 +203,7 @@ public class ProgressData {
             ));
         }
 
-        if (toList.size() > maxSz) {
-            if (viewing != ProgressPad.Viewing.DONE)
-                toList = toList.subList(0, maxSz);
-            else
-                toList = toList.subList(toList.size() - maxSz, toList.size());
-        }
+        toList = mergeAndSlice(merge, maxSz, toList);
 
         int done = 0;
         int total = 0;
@@ -215,7 +253,7 @@ public class ProgressData {
         );
     }
 
-    public static ProgressData fromRequest(EntityMaid maid, ServerLevel level, ItemStack requestList, ProgressPad.Viewing viewing, int maxSz) {
+    public static ProgressData fromRequest(EntityMaid maid, ServerLevel level, ItemStack requestList, ProgressPad.Viewing viewing, ProgressPad.Merge merge, int maxSz) {
         if (!requestList.hasTag()) return fromMaidNoPlan(maid, maxSz);
         ListTag list = Objects.requireNonNull(requestList.getTag()).getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
         MutableInt total = new MutableInt(0);
@@ -230,11 +268,10 @@ public class ProgressData {
                     total.increment();
                     if (cnt != -1 && collected >= cnt)
                         done.increment();
-                    return new TaskProgress(List.of(item), collected, cnt, Status.NORMAL, Component.empty());
+                    return new TaskProgress(List.of(item), cnt, collected, Status.NORMAL, List.of());
                 }).filter(Objects::nonNull)
                 .toList();
-        if (progresses.size() > maxSz)
-            progresses = progresses.subList(0, maxSz);
+        progresses = mergeAndSlice(merge, maxSz, progresses);
         return new ProgressData(
                 progresses,
                 maid.getName(),
@@ -247,12 +284,24 @@ public class ProgressData {
                 Status.NORMAL);
     }
 
-    private static ProgressData fromPlacing(EntityMaid maid, ServerLevel level, PlacingInventoryMemory placingInv, ProgressPad.Viewing viewing, int maxSz) {
+    @NotNull
+    private static List<TaskProgress> mergeAndSlice(ProgressPad.Merge merge, int maxSz, List<TaskProgress> progresses) {
+        if (merge == ProgressPad.Merge.ALWAYS)
+            progresses = ProgressData.mergeSame(progresses);
+        if (progresses.size() > maxSz) {
+            if (merge == ProgressPad.Merge.OVERFLOW_ONLY)
+                progresses = ProgressData.mergeSame(progresses.subList(0, maxSz));
+            if (progresses.size() > maxSz)
+                progresses = progresses.subList(0, maxSz);
+        }
+        return progresses;
+    }
+
+    private static ProgressData fromPlacing(EntityMaid maid, ServerLevel level, PlacingInventoryMemory placingInv, ProgressPad.Viewing viewing, ProgressPad.Merge merge, int maxSz) {
         List<TaskProgress> list = placingInv.arrangeItems.stream()
-                .map(item -> new TaskProgress(List.of(item), 1, 0, Status.NORMAL, Component.empty()))
+                .map(item -> new TaskProgress(List.of(item), 1, 0, Status.NORMAL, List.of()))
                 .toList();
-        if (list.size() > maxSz)
-            list = list.subList(0, maxSz);
+        list = mergeAndSlice(merge, maxSz, (List<TaskProgress>) list);
         return new ProgressData(
                 list,
                 maid.getName(),
@@ -265,13 +314,13 @@ public class ProgressData {
                 Status.NORMAL);
     }
 
-    public static ProgressData fromMaidAuto(EntityMaid maid, ServerLevel level, ProgressPad.Viewing viewing, int maxSz) {
+    public static ProgressData fromMaidAuto(EntityMaid maid, ServerLevel level, ProgressPad.Viewing viewing, ProgressPad.Merge merge, int maxSz) {
         if (Conditions.takingRequestList(maid)) {
             if (MemoryUtil.getCrafting(maid).hasPlan() && !MemoryUtil.getRequestProgress(maid).isReturning()) {
                 if (MemoryUtil.getCrafting(maid).isGoPlacingBeforeCraft()) {
-                    return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, maxSz);
+                    return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, merge, maxSz);
                 }
-                return ProgressData.fromPlan(maid, level, MemoryUtil.getCrafting(maid).plan(), viewing, maxSz);
+                return ProgressData.fromPlan(maid, level, MemoryUtil.getCrafting(maid).plan(), viewing, merge, maxSz);
             } else if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
                 if (MemoryUtil.getCrafting(maid).calculatingTotal != -1)
                     return new ProgressData(
@@ -284,12 +333,46 @@ public class ProgressData {
                             maid.tickCount,
                             maxSz,
                             Status.NORMAL);
-                return ProgressData.fromRequest(maid, level, maid.getMainHandItem(), viewing, maxSz);
+                return ProgressData.fromRequest(maid, level, maid.getMainHandItem(), viewing, merge, maxSz);
             }
         } else if (MemoryUtil.getCurrentlyWorking(maid) == ScheduleBehavior.Schedule.PLACE) {
-            return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, maxSz);
+            return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, merge, maxSz);
         }
         return ProgressData.fromMaidNoPlan(maid, maxSz);
     }
 
+    public static List<TaskProgress> mergeSame(List<TaskProgress> tasks) {
+        List<TaskProgress> res = new ArrayList<>();
+        for (TaskProgress task : tasks) {
+            boolean found = false;
+            for (int i = res.size() - 1; i >= 0; i--) {
+                if (task.outputs.size() != res.get(i).outputs.size()) continue;
+                boolean eq = true;
+                for (int j = 0; eq && j < task.outputs.size(); j++) {
+                    eq = eq && ItemStackUtil.isSameInCrafting(task.outputs.get(j), res.get(i).outputs.get(j));
+                }
+                if (eq) {
+                    List<ItemStack> newOutputs = new ArrayList<>();
+                    List<Component> allTakers = new ArrayList<>();
+                    for (int j = 0; j < task.outputs.size(); j++) {
+                        newOutputs.add(res.get(i).outputs.get(j).copyWithCount(task.outputs.get(j).getCount() + res.get(i).outputs.get(j).getCount()));
+                    }
+                    allTakers.addAll(res.get(i).taker());
+                    allTakers.addAll(task.taker());
+                    res.set(i, new TaskProgress(
+                            newOutputs,
+                            task.total() + res.get(i).total(),
+                            task.progress() + res.get(i).progress(),
+                            task.status(),
+                            allTakers
+                    ));
+                    found = true;
+                }
+            }
+            if (!found) {
+                res.add(task);
+            }
+        }
+        return res;
+    }
 }

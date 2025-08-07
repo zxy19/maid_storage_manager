@@ -30,6 +30,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
     Target target;
     IStorageContext context;
     int currentHoldingContainerId = -1;
+    int holdStamp = -1;
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel worldIn, EntityMaid maid) {
@@ -81,6 +82,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
         }
         context.start(maid, level, target);
         MemoryUtil.setLookAt(maid, target.pos);
+        holdStamp = level.getServer().getTickCount();
     }
 
     @Override
@@ -113,7 +115,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
             context = null;
         }
         if (target != null) {
-            WorkCardItem.syncStorageOn(maid, target);
+            WorkCardItem.syncStorageOn(maid, target, holdStamp);
             MemoryUtil.getViewedInventory(maid).clearLock();
         }
         if (maid.getOwner() instanceof ServerPlayer sp) {

@@ -44,7 +44,8 @@ public class CraftResultContext {
 
             //如果发现目前已经用超背包了，而且不是放置后的第一层，那么可以尝试放一次东西再合成。
             if (maxSlotConsume < currentMaxConsume && !isFirst) {
-                layer.setPlaceBefore();
+                //TODO:验证可行性
+//                layer.setPlaceBefore();
                 consumer.clear();
                 --_i;
                 isFirst = true;

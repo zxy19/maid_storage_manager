@@ -17,8 +17,10 @@ import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
-import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
 import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
+import studio.fantasyit.maid_storage_manager.render.base.CustomCommonGraphics;
+import studio.fantasyit.maid_storage_manager.render.base.CustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.base.ICustomGraphics;
 import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
@@ -28,7 +30,7 @@ public class RenderItemFrameEvent {
 
     @SubscribeEvent
     public static void renderItemFrame(RenderItemInFrameEvent event) {
-        if (event.getItemStack().getItem() instanceof RenderHandMapLikeEvent.MapLikeRenderItem mli && event.getMultiBufferSource() instanceof MultiBufferSource.BufferSource bs) {
+        if (event.getItemStack().getItem() instanceof RenderHandMapLikeEvent.MapLikeRenderItem mli) {
             if (!mli.available(event.getItemStack()))
                 return;
             int pCombinedLight = event.getPackedLight();
@@ -77,11 +79,13 @@ public class RenderItemFrameEvent {
             poseStack.translate(0.5f, 0.5f, -0.01f);
             poseStack.scale(-0.015f, -0.015f, -0.015f);
 
-            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, bs, pCombinedLight, mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, bs, pCombinedLight, event.getItemStack()));
-            bs.endBatch();
+            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, event.getMultiBufferSource(), pCombinedLight, mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, event.getMultiBufferSource(), pCombinedLight, event.getItemStack()));
 
             mlr.extraTransform(poseStack, context);
-            CustomGraphics graphics = new CustomGraphics(Minecraft.getInstance(), poseStack, bs);
+            ICustomGraphics graphics = (event.getMultiBufferSource() instanceof MultiBufferSource.BufferSource bs) ?
+                    new CustomGraphics(Minecraft.getInstance(), poseStack, bs) :
+                    new CustomCommonGraphics(Minecraft.getInstance(), poseStack, event.getMultiBufferSource());
+            graphics.flush();
             poseStack.scale(1, 1, 1f);
             poseStack.translate(0, 0, 0.01f);
             RenderSystem.enableDepthTest();

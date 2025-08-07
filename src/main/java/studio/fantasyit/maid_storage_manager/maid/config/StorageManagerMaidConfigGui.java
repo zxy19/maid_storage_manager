@@ -148,17 +148,17 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
         ));
 
         this.addRenderableWidget(new PatchedConfigButton(startLeft, startTop + 91,
-                Component.translatable("gui.maid_storage_manager.config.single_crafting"),
-                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.alwaysSingleCrafting())),
+                Component.translatable("gui.maid_storage_manager.config.crafting_repeat_count"),
+                Component.literal(String.valueOf(this.currentMAData.maxCraftingLayerRepeatCount())),
                 button -> {
-                    this.currentMAData.alwaysSingleCrafting(false);
-                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
-                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.SingleCrafting, this.maid.getId(), 0);
+                    this.currentMAData.maxCraftingLayerRepeatCount(this.currentMAData.maxCraftingLayerRepeatCount() / 2);
+                    button.setValue(Component.literal(String.valueOf(this.currentMAData.maxCraftingLayerRepeatCount())));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.CraftingRepeatCount, this.maid.getId(), this.currentMAData.maxCraftingLayerRepeatCount());
                 },
                 button -> {
-                    this.currentMAData.alwaysSingleCrafting(true);
-                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
-                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.SingleCrafting, this.maid.getId(), 1);
+                    this.currentMAData.maxCraftingLayerRepeatCount(this.currentMAData.maxCraftingLayerRepeatCount() * 2);
+                    button.setValue(Component.literal(String.valueOf(this.currentMAData.maxCraftingLayerRepeatCount())));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.CraftingRepeatCount, this.maid.getId(), this.currentMAData.maxCraftingLayerRepeatCount());
                 }
         ));
     }

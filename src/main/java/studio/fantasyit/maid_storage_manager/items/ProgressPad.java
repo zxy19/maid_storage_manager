@@ -30,6 +30,11 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     public static final String TAG_VIEWING = "viewing";
     public static final String TAG_STYLE = "style";
 
+    public enum Selecting {
+        Viewing,
+        Style,
+        Merge
+    }
 
     public enum Viewing {
         WORKING,
@@ -40,6 +45,12 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     public enum Style {
         NORMAL,
         SMALL
+    }
+
+    public enum Merge {
+        NONE,
+        OVERFLOW_ONLY,
+        ALWAYS
     }
 
     public ProgressPad() {
@@ -83,6 +94,7 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     public static void rollStyle(ItemStack itemStack, ServerPlayer player, int value) {
         Style style = getStyle(itemStack);
         style = Style.values()[(style.ordinal() + Style.values().length + value) % Style.values().length];
+        player.sendSystemMessage(Component.translatable("interaction.progress_pad.style." + style.name().toLowerCase()), false);
         setStyle(itemStack, style);
     }
 
@@ -102,9 +114,61 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     public static void rollViewing(ItemStack itemInHand, ServerPlayer serverPlayer, int value) {
         Viewing selectId = getViewing(itemInHand);
         selectId = Viewing.values()[((selectId.ordinal() + value + Viewing.values().length) % (Viewing.values().length))];
+        serverPlayer.sendSystemMessage(Component.translatable("interaction.progress_pad.viewing." + selectId.name().toLowerCase()), false);
         setViewing(itemInHand, selectId);
     }
 
+    public static Merge getMerge(ItemStack itemStack) {
+        if (!itemStack.hasTag())
+            return Merge.OVERFLOW_ONLY;
+        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
+        if (!tag.contains("merge"))
+            return Merge.OVERFLOW_ONLY;
+        return Merge.valueOf(tag.getString("merge"));
+    }
+
+    public static void setMerge(ItemStack itemStack, Merge merge) {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        tag.putString("merge", merge.name());
+        itemStack.setTag(tag);
+    }
+
+    public static void rollMerge(ItemStack itemStack, ServerPlayer player, int value) {
+        Merge merge = getMerge(itemStack);
+        merge = Merge.values()[(merge.ordinal() + value + Merge.values().length) % Merge.values().length];
+        player.sendSystemMessage(Component.translatable("interaction.progress_pad.merge." + merge.name().toLowerCase()), false);
+        setMerge(itemStack, merge);
+    }
+
+    public static Selecting getSelecting(ItemStack itemStack) {
+        if (!itemStack.hasTag())
+            return Selecting.Viewing;
+        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
+        if (!tag.contains("selecting"))
+            return Selecting.Viewing;
+        return Selecting.valueOf(tag.getString("selecting"));
+    }
+
+    public static void setSelecting(ItemStack itemStack, Selecting selecting) {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        tag.putString("selecting", selecting.name());
+        itemStack.setTag(tag);
+    }
+
+    public static void rollSelecting(ItemStack itemStack, ServerPlayer player, int value) {
+        Selecting selecting = getSelecting(itemStack);
+        selecting = Selecting.values()[(selecting.ordinal() + value + Selecting.values().length) % Selecting.values().length];
+        player.sendSystemMessage(Component.translatable("interaction.progress_pad.selecting." + selecting.name().toLowerCase()), false);
+        setSelecting(itemStack, selecting);
+    }
+
+    public static void rollValue(ItemStack itemStack, ServerPlayer player, int value) {
+        switch (getSelecting(itemStack)) {
+            case Viewing -> rollViewing(itemStack, player, value);
+            case Style -> rollStyle(itemStack, player, value);
+            case Merge -> rollMerge(itemStack, player, value);
+        }
+    }
 
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player p_41399_, LivingEntity entity, InteractionHand p_41401_) {
@@ -127,9 +191,7 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
 
     @Override
     public boolean available(ItemStack stack) {
-        UUID bindingUUID = getBindingUUID(stack);
-        if (bindingUUID == null) return false;
-        ProgressData data = MaidProgressData.getByMaid(bindingUUID);
+        ProgressData data = MaidProgressData.getByMaid(ProgressData.ProgressMeta.fromItemStack(stack));
         return data != null;
     }
 
@@ -144,8 +206,8 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     public void appendHoverText(@NotNull ItemStack itemStack, @Nullable Level p_41422_, @NotNull List<Component> toolTip, @NotNull TooltipFlag p_41424_) {
         super.appendHoverText(itemStack, p_41422_, toolTip, p_41424_);
         UUID bindingUUID = getBindingUUID(itemStack);
-        ProgressData byMaid = MaidProgressData.getByMaid(bindingUUID);
         if (bindingUUID != null) {
+            ProgressData byMaid = MaidProgressData.getByMaid(ProgressData.ProgressMeta.fromItemStack(itemStack));
             if (byMaid == null)
                 toolTip.add(Component.translatable("tooltip.maid_storage_manager.progress_pad.binding", bindingUUID.toString()));
             else

@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.graph.SimpleSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.ThreadedSearchGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.TopologyCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
+import studio.fantasyit.maid_storage_manager.craft.algo.utils.RequestListSplitter;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.AutoGraphGenerator;
@@ -254,12 +255,8 @@ public class MaidCraftPlanner {
             }
             RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
         } else {
-            List<CraftLayer> optimize = results;
-            if (StorageManagerConfigData.get(maid).alwaysSingleCrafting()) {
-                optimize = ResultListOptimizer.splitIntoSingleStep(optimize);
-            } else {
-                optimize = ResultListOptimizer.optimize(results);
-            }
+            List<CraftLayer> optimize = ResultListOptimizer.optimize(results);
+            optimize = RequestListSplitter.splitLayerMax(optimize, StorageManagerConfigData.get(maid).maxCraftingLayerRepeatCount());
             optimize.forEach(craftLayer -> plan.addLayer(craftLayer));
 
             DebugData.sendDebug(

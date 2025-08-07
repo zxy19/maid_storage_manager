@@ -14,7 +14,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         private SuppressStrategy suppressStrategy = SuppressStrategy.AFTER_ALL;
         private boolean allowSeekWorkMeal = false;
         private int maxParallel;
-        private boolean alwaysSingleCrafting;
+        private int maxCraftingLayerRepeatCount;
 
         public Data(MemoryAssistant memoryAssistant,
                     boolean noSortPlacement,
@@ -23,7 +23,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     boolean allowSeekWorkMeal,
                     boolean useMemorizedCraftGuide,
                     int maxParallel,
-                    boolean alwaysSingleCrafting
+                    int maxCraftingLayerRepeatCount
         ) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
@@ -32,7 +32,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             this.allowSeekWorkMeal = allowSeekWorkMeal;
             this.useMemorizedCraftGuide = useMemorizedCraftGuide;
             this.maxParallel = maxParallel;
-            this.alwaysSingleCrafting = alwaysSingleCrafting;
+            this.maxCraftingLayerRepeatCount = maxCraftingLayerRepeatCount;
         }
 
         public static Data getDefault() {
@@ -43,7 +43,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     false,
                     false,
                     5,
-                    false
+                    8
             );
         }
 
@@ -103,12 +103,22 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             this.maxParallel = Math.max(0, Math.min(10, maxParallel));
         }
 
-        public boolean alwaysSingleCrafting() {
-            return alwaysSingleCrafting;
+        public int maxCraftingLayerRepeatCount() {
+            return this.maxCraftingLayerRepeatCount;
         }
 
-        public void alwaysSingleCrafting(boolean alwaysSingleCrafting) {
-            this.alwaysSingleCrafting = alwaysSingleCrafting;
+        public void maxCraftingLayerRepeatCount(int maxCraftingLayerRepeatCount) {
+            if (maxCraftingLayerRepeatCount < 1)
+                maxCraftingLayerRepeatCount = 1;
+            for (int i = 1; i <= 32; i *= 2) {
+                if (i == maxCraftingLayerRepeatCount)
+                    this.maxCraftingLayerRepeatCount = i;
+                else if (i > maxCraftingLayerRepeatCount)
+                    this.maxCraftingLayerRepeatCount = i / 2;
+                else continue;
+                return;
+            }
+            this.maxCraftingLayerRepeatCount = 32;
         }
     }
 
@@ -130,7 +140,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         tag.putBoolean("allowSeekWorkMeal", data.allowSeekWorkMeal());
         tag.putBoolean("useMemorizedCraftGuide", data.useMemorizedCraftGuide());
         tag.putInt("maxParallel", data.maxParallel());
-        tag.putBoolean("alwaysSingleCrafting", data.alwaysSingleCrafting());
+        tag.putInt("maxCraftingLayerRepeatCount", data.maxCraftingLayerRepeatCount());
         return tag;
     }
 
@@ -148,7 +158,10 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                 ? compound.getInt("maxParallel")
                 : 5;
         boolean alwaysSingleCrafting = compound.getBoolean("alwaysSingleCrafting");
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, alwaysSingleCrafting);
+        int maxCraftingLayerRepeatCount = compound.contains("maxCraftingLayerRepeatCount")
+                ? compound.getInt("maxCraftingLayerRepeatCount")
+                : (alwaysSingleCrafting ? 1 : 8);
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, maxCraftingLayerRepeatCount);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {
