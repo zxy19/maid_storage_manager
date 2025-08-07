@@ -19,7 +19,7 @@ public class ViewedInventoryUtil {
                 .forEach(maid1 -> MemoryUtil.getViewedInventory(maid1).ambitiousRemoveItem(level, target, itemStack, count));
     }
 
-    public static void syncStorageOn(EntityMaid maid, Target target) {
-        WorkCardItem.syncStorageOn(maid, target);
+    public static void syncStorageOn(EntityMaid maid, Target target, int holdStamp) {
+        WorkCardItem.syncStorageOn(maid, target, holdStamp);
     }
 }

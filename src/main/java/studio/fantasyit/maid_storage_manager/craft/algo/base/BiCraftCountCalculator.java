@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
+import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListUtils;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -57,7 +57,8 @@ public class BiCraftCountCalculator {
             }
             //如果仍然不成功，尝试分离到单步，然后进行合成
             if (!success) {
-                currentResults = ResultListOptimizer.splitIntoSingleStep(currentResults);
+                ResultListUtils.unsetPlaceBefore(currentResults);
+                currentResults = ResultListUtils.splitIntoSingleStep(currentResults);
                 context = new CraftResultContext(currentResults);
             }
             if (context.getSlotConsume() <= availableSlots) {

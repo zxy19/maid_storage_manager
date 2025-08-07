@@ -397,7 +397,7 @@ public class CraftLayerChain {
             invConsumeSimulator.addLayerOutput(layer);
             int totalConsume = invConsumeSimulator.getCurrentSlotConsume();
             invConsumeSimulator.restoreSnapshot();
-            if (totalConsume > freeSlots) {
+            if (totalConsume > freeSlots - 1) {
                 continue;
             }
             if (layer.getCraftData().isEmpty())
@@ -481,6 +481,7 @@ public class CraftLayerChain {
             checkAndSwitchGroup(maid);
             checkIsFullInv(maid);
         } else {
+            node.progress().setValue(SolvedCraftLayer.Progress.FAILED);
             clearAndStopAdding(StoppingAdding.RESCHEDULE);
             handleStopAddingEvent(maid);
         }

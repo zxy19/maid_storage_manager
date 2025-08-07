@@ -8,8 +8,6 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
 
-import java.util.UUID;
-
 public class ProgressPadUpdatePacket implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<ProgressPadUpdatePacket> TYPE = new CustomPacketPayload.Type<>(
@@ -29,25 +27,25 @@ public class ProgressPadUpdatePacket implements CustomPacketPayload {
     }
 
     private final ProgressData data;
-    private final UUID uuid;
+    private final ProgressData.ProgressMeta meta;
 
-    public ProgressPadUpdatePacket(UUID uuid, ProgressData data) {
-        this.uuid = uuid;
+    public ProgressPadUpdatePacket(ProgressData.ProgressMeta meta, ProgressData data) {
+        this.meta = meta;
         this.data = data;
     }
 
-    public ProgressPadUpdatePacket(RegistryFriendlyByteBuf buf) {
-        this.uuid = buf.readUUID();
+    public ProgressPadUpdatePacket(FriendlyByteBuf buf) {
+        this.meta = ProgressData.ProgressMeta.fromNetwork(buf);
         this.data = ProgressData.fromNetwork(buf);
     }
 
-    public void toNetwork(RegistryFriendlyByteBuf buf) {
-        buf.writeUUID(this.uuid);
-        this.data.toNetwork(buf);
+    public void toNetwork(FriendlyByteBuf buf) {
+        meta.toNetwork(buf);
+        data.toNetwork(buf);
     }
 
     public static void handle(ProgressPadUpdatePacket packet) {
-        MaidProgressData.setByMaid(packet.uuid, packet.data);
+        MaidProgressData.setByMaid(packet.meta, packet.data);
     }
 
 }

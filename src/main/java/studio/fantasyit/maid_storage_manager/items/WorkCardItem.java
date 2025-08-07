@@ -245,7 +245,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return new AABB(maid.blockPosition()).inflate(7);
     }
 
-    public static void syncStorageOn(EntityMaid maid, Target ambitiousTarget) {
+    public static void syncStorageOn(EntityMaid maid, Target ambitiousTarget, int holdStamp) {
         Target target = MemoryUtil.getViewedInventory(maid).ambitiousPos((ServerLevel) maid.level(), ambitiousTarget);
         Map<String, List<ItemCount>> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAtInternal(target);
         ServerLevel level = (ServerLevel) maid.level();

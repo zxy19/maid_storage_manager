@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.menu.base;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import studio.fantasyit.maid_storage_manager.render.CustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.base.ICustomGraphics;
 
 public class ImageAsset {
     public ResourceLocation location;
@@ -31,7 +31,7 @@ public class ImageAsset {
         graphics.blit(location, x, y, u, v, w, h, iw, ih);
     }
 
-    public void blit(CustomGraphics graphics, int x, int y) {
+    public void blit(ICustomGraphics graphics, int x, int y) {
         graphics.blit(location, x, y, u, v, w, h, iw, ih);
     }
 }

@@ -17,8 +17,6 @@ import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.network.ProgressPadUpdatePacket;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
-import java.util.UUID;
-
 @Mixin(BlockAttachedEntity.class)
 public abstract class ItemFrameTickMixin extends Entity {
     public ItemFrameTickMixin(EntityType<?> p_19870_, Level p_19871_) {
@@ -30,8 +28,8 @@ public abstract class ItemFrameTickMixin extends Entity {
         if (level().isClientSide) return;
         if (((Object) this) instanceof ItemFrame ifr)
             if (ifr.getItem().is(ItemRegistry.PROGRESS_PAD.get()) && ifr.tickCount % 5 == 0) {
-                UUID uuid = ProgressPad.getBindingUUID(ifr.getItem());
-                if (uuid != null && ((ServerLevel) level()).getEntity(uuid) instanceof EntityMaid maid) {
+                ProgressData.ProgressMeta progressMeta = ProgressData.ProgressMeta.fromItemStack(ifr.getItem());
+                if (progressMeta != null && ((ServerLevel) level()).getEntity(progressMeta.uuid()) instanceof EntityMaid maid) {
                     int rotation = ifr.getRotation() % 4;
                     int count = rotation == 0 ? 1 : rotation == 1 ? 15 : 10;
                     if (ProgressPad.getStyle(ifr.getItem()) == ProgressPad.Style.SMALL)
@@ -39,8 +37,8 @@ public abstract class ItemFrameTickMixin extends Entity {
                     PacketDistributor.sendToPlayersTrackingEntity(
                             ifr,
                             new ProgressPadUpdatePacket(
-                                    uuid,
-                                    ProgressData.fromMaidAuto(maid, (ServerLevel) level(), ProgressPad.getViewing(ifr.getItem()), count)
+                                    progressMeta,
+                                    ProgressData.fromMaidAuto(maid, (ServerLevel) level(), progressMeta.viewing(), progressMeta.merge(), count)
                             )
                     );
                 }

@@ -19,6 +19,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
+import studio.fantasyit.maid_storage_manager.data.BoxTip;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.*;
@@ -232,6 +233,16 @@ public final class BindingRender {
                             floating
                     );
             }
+        }
+
+        for (Pair<BoxTip, MutableInt> pair : InventoryListDataClient.commonTips) {
+            BoxRenderUtil.renderStorage(
+                    pair.getA().target(),
+                    pair.getA().argb(),
+                    event,
+                    pair.getA().tip().getString(),
+                    floating
+            );
         }
     }
 

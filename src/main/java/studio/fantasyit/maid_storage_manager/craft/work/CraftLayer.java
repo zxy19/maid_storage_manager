@@ -313,6 +313,9 @@ public class CraftLayer {
     public void setPlaceBefore() {
         this.placeBefore = true;
     }
+    public void clearPlaceBefore() {
+        this.placeBefore = false;
+    }
 
     public boolean shouldPlaceBefore() {
         return placeBefore;

@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -11,9 +12,12 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
+import studio.fantasyit.maid_storage_manager.data.BoxTip;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.network.ShowCommonPacket;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -175,6 +179,8 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         }
     }
 
+    private static final float[] colors_r = new float[]{0.91f, 0.12f, 0.39f, 1};
+
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
         super.stop(level, maid, p_22550_);
@@ -190,6 +196,13 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         if (fail) {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting fail");
             plan.failCurrent(maid, craftGuideStepData.getItems(), "tooltip.maid_storage_manager.request_list.fail_crafting");
+            Network.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> maid),
+                    new ShowCommonPacket(new BoxTip(
+                            craftGuideStepData.getStorage(),
+                            Component.translatable("tip.maid_storage_manager.crafting_fail"),
+                            600,
+                            colors_r
+                    )));
         } else {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             layer.nextStep();

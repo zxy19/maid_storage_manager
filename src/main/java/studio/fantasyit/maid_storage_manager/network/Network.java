@@ -146,10 +146,10 @@ public class Network {
                             StorageDefineBauble.rollMode(item, sender, msg.value > 0 ? -1 : 1);
                         } else if (item.is(ItemRegistry.LOGISTICS_GUIDE.get()) && msg.type == ClientInputPacket.Type.SCROLL) {
                             LogisticsGuide.rollMode(item, sender, msg.value > 0 ? -1 : 1);
-                        }else if (item.is(ItemRegistry.PROGRESS_PAD.get())) {
+                        } else if (item.is(ItemRegistry.PROGRESS_PAD.get())) {
                             if (msg.type == ClientInputPacket.Type.SCROLL)
-                                ProgressPad.rollViewing(item, sender, msg.value > 0 ? -1 : 1);
-                            else ProgressPad.rollStyle(item, sender, msg.value > 0 ? -1 : 1);
+                                ProgressPad.rollValue(item, sender, msg.value > 0 ? -1 : 1);
+                            else ProgressPad.rollSelecting(item, sender, msg.value > 0 ? -1 : 1);
                         }
                     });
                 }
@@ -210,12 +210,12 @@ public class Network {
                             );
                             data.maxParallel(msg.value);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
-                        } else if (msg.type == MaidDataSyncPacket.Type.SingleCrafting) {
+                        } else if (msg.type == MaidDataSyncPacket.Type.CraftingRepeatCount) {
                             StorageManagerConfigData.Data data = maid.getOrCreateData(
                                     StorageManagerConfigData.KEY,
                                     StorageManagerConfigData.Data.getDefault()
                             );
-                            data.alwaysSingleCrafting(msg.value == 1);
+                            data.maxCraftingLayerRepeatCount(msg.value);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
@@ -315,6 +315,19 @@ public class Network {
                     });
                 }
         );
+
+        Network.INSTANCE.registerMessage(14,
+                ShowCommonPacket.class,
+                ShowCommonPacket::toBytes,
+                ShowCommonPacket::new,
+                (p, c) -> {
+                    c.get().enqueueWork(() -> {
+                        ShowCommonPacket.handle(p);
+                        c.get().setPacketHandled(true);
+                    });
+                }
+        );
+
     }
 
     @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD)

@@ -33,7 +33,7 @@ public class MaidDataSyncPacket implements CustomPacketPayload {
         MemoryAssistant,
         CoWork,
         FastSort,
-        AllowSeekWorkMeal, MemorizeCraftGuide, MaxParallel, SingleCrafting, NoPlaceSort
+        AllowSeekWorkMeal, MemorizeCraftGuide, MaxParallel, CraftingRepeatCount, NoPlaceSort
     }
 
     public final Type type;

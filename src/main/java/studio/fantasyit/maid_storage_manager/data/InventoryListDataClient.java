@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @OnlyIn(Dist.CLIENT)
 public class InventoryListDataClient {
     public static List<Pair<InventoryItem, MutableInt>> showingInv = new ArrayList<>();
+    public static List<Pair<BoxTip, MutableInt>> commonTips = new ArrayList<>();
     private static InventoryListDataClient instance;
 
     public static InventoryListDataClient getInstance() {
@@ -32,8 +33,13 @@ public class InventoryListDataClient {
         showingInv.add(new Pair<>(inventoryItem, new MutableInt(i)));
     }
 
+    public static void addCommonTip(BoxTip tip) {
+        commonTips.add(new Pair<>(tip, new MutableInt(tip.maxTime())));
+    }
+
     public static void clearShowingInv() {
         showingInv.clear();
+        commonTips.clear();
     }
 
     public static void tickShowingInv() {
@@ -42,6 +48,13 @@ public class InventoryListDataClient {
             Integer value = InventoryListDataClient.showingInv.get(i).getB().getValue();
             if (value <= 0) {
                 InventoryListDataClient.showingInv.remove(i);
+            }
+        }
+        for (int i = InventoryListDataClient.commonTips.size() - 1; i >= 0; i--) {
+            InventoryListDataClient.commonTips.get(i).getB().subtract(1);
+            Integer value = InventoryListDataClient.commonTips.get(i).getB().getValue();
+            if (value <= 0) {
+                InventoryListDataClient.commonTips.remove(i);
             }
         }
     }

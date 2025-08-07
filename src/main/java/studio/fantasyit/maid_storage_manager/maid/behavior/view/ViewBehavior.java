@@ -32,6 +32,7 @@ public class ViewBehavior extends MaidCheckRateTask {
     List<ItemStack> mismatchFilter = new ArrayList<>();
     boolean shouldSeekForWorkMeal = false;
     MutableObject<ItemStack> workMeal = new MutableObject<>(null);
+    int holdStamp = -1;
 
     public ViewBehavior() {
         super(Map.of());
@@ -74,6 +75,7 @@ public class ViewBehavior extends MaidCheckRateTask {
         workMeal = new MutableObject<>(null);
         shouldSeekForWorkMeal = MemoryUtil.getMeal(maid).shouldTakeMeal(maid);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.VIEW);
+        holdStamp = level.getServer().getTickCount();
     }
 
     @Override
@@ -109,7 +111,7 @@ public class ViewBehavior extends MaidCheckRateTask {
         }
         MemoryUtil.getViewedInventory(maid).setViewing(false);
         if (target != null) {
-            WorkCardItem.syncStorageOn(maid, target);
+            WorkCardItem.syncStorageOn(maid, target, holdStamp);
             MemoryUtil.getViewedInventory(maid).clearLock();
         }
         MemoryUtil.clearTarget(maid);

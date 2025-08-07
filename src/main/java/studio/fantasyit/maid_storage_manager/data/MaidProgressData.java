@@ -4,12 +4,11 @@ import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class MaidProgressData {
-    private static final Map<UUID, ProgressData> progressData = new HashMap<>();
+    private static final Map<ProgressData.ProgressMeta, ProgressData> progressData = new HashMap<>();
 
-    public static void setByMaid(UUID uuid, ProgressData data) {
+    public static void setByMaid(ProgressData.ProgressMeta uuid, ProgressData data) {
         if (progressData.containsKey(uuid)) {
             if (progressData.get(uuid).tickCount > data.tickCount) {
                 if (progressData.get(uuid).tickCount - data.tickCount > 40)
@@ -20,7 +19,7 @@ public class MaidProgressData {
         progressData.put(uuid, data);
     }
 
-    public static ProgressData getByMaid(UUID uuid) {
+    public static ProgressData getByMaid(ProgressData.ProgressMeta uuid) {
         return progressData.get(uuid);
     }
 
