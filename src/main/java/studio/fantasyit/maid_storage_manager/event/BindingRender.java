@@ -201,7 +201,7 @@ public final class BindingRender {
     }
 
     private static void renderForInv(RenderLevelStageEvent event, Minecraft mc, Map<BlockPos, Integer> floating) {
-        if (InventoryListDataClient.showingInv.isEmpty())
+        if (InventoryListDataClient.showingInv.isEmpty() && InventoryListDataClient.commonTips.isEmpty())
             return;
         for (Pair<InventoryItem, MutableInt> pair : InventoryListDataClient.showingInv) {
             InventoryItem inv = pair.getA();

@@ -1,12 +1,13 @@
 package studio.fantasyit.maid_storage_manager.render.base;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
@@ -16,9 +17,10 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class CustomGraphics implements ICustomGraphics {
 
@@ -26,9 +28,10 @@ public class CustomGraphics implements ICustomGraphics {
     private final MultiBufferSource.BufferSource bufferSource;
     private final Minecraft minecraft;
 
-    private static final Matrix4f GUI_MAT4 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateY((-(float) Math.PI / 8F)).rotateX(2.3561945F);
-    private static final Vector3f DIFFUSE_LIGHT_0 = (new Vector3f(0.2F, 1.0F, -0.7F)).normalize();
-    private static final Vector3f DIFFUSE_LIGHT_1 = (new Vector3f(-0.2F, 1.0F, 0.7F)).normalize();
+    private record ItemStackRenderInfo(LivingEntity entity, ItemStack stack, PoseStack pose, int x, int y, int state) {
+    }
+
+    private Queue<ItemStackRenderInfo> itemStackRenderQueue = new LinkedList<>();
 
     public CustomGraphics(Minecraft mc, PoseStack p_281669_, MultiBufferSource.BufferSource p_281893_) {
         this.minecraft = mc;
@@ -42,7 +45,6 @@ public class CustomGraphics implements ICustomGraphics {
 
     public int drawString(Font p_282636_, FormattedCharSequence p_281596_, float p_281586_, float p_282816_, int p_281743_, boolean p_282394_) {
         int i = p_282636_.drawInBatch(p_281596_, p_281586_, p_282816_, p_281743_, p_282394_, this.pose.last().pose(), this.bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
-        this.flush();
         return i;
     }
 
@@ -51,7 +53,6 @@ public class CustomGraphics implements ICustomGraphics {
             return 0;
         } else {
             int i = p_283343_.drawInBatch(p_281896_, p_283569_, p_283418_, p_281560_, p_282130_, this.pose.last().pose(), this.bufferSource, Font.DisplayMode.NORMAL, 0, 15728880, p_283343_.isBidirectional());
-            this.flush();
             return i;
         }
     }
@@ -75,7 +76,6 @@ public class CustomGraphics implements ICustomGraphics {
             this.pose.scale(16.0F, -16.0F, 16.0F);
             this.pose.mulPoseMatrix(new Matrix4f().scale(1, 1, 0.01f));
             this.minecraft.getItemRenderer().render(p_281675_, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
-            this.flush();
             this.pose.popPose();
         }
     }
@@ -85,16 +85,11 @@ public class CustomGraphics implements ICustomGraphics {
     }
 
     void innerBlit(ResourceLocation p_283461_, int p_281399_, int p_283222_, int p_283615_, int p_283430_, int p_281729_, float p_283247_, float p_282598_, float p_282883_, float p_283017_) {
-        RenderSystem.setShaderTexture(0, p_283461_);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        Matrix4f matrix4f = this.pose.last().pose();
-
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferbuilder.vertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).uv(p_283247_, p_282883_).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).uv(p_283247_, p_283017_).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).uv(p_282598_, p_283017_).endVertex();
-        bufferbuilder.vertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).uv(p_282598_, p_282883_).endVertex();
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        VertexConsumer buffer = bufferSource.getBuffer(RenderType.text(p_283461_));
+        Matrix4f matrix4f = pose().last().pose();
+        buffer.vertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).color(255, 255, 255, 255).uv(p_283247_, p_282883_).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        buffer.vertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).color(255, 255, 255, 255).uv(p_283247_, p_283017_).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        buffer.vertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).color(255, 255, 255, 255).uv(p_282598_, p_283017_).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        buffer.vertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).color(255, 255, 255, 255).uv(p_282598_, p_282883_).uv2(LightTexture.FULL_BRIGHT).endVertex();
     }
 }

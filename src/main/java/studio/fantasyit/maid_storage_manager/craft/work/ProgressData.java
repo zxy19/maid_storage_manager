@@ -121,7 +121,7 @@ public class ProgressData {
         buf.writeCollection(working, (t, d) -> d.toNetwork(t));
         buf.writeComponent(maidName);
         buf.writeCollection(workGroups, FriendlyByteBuf::writeComponent);
-        buf.writeCollection(items, FriendlyByteBuf::writeItem);
+        buf.writeCollection(items, (t, i) -> t.writeNbt(i.save(new CompoundTag())));
         buf.writeInt(total);
         buf.writeInt(progress);
         buf.writeInt(tickCount);
@@ -134,7 +134,7 @@ public class ProgressData {
                 buf.readCollection(ArrayList::new, TaskProgress::fromNetwork),
                 buf.readComponent(),
                 buf.readCollection(ArrayList::new, FriendlyByteBuf::readComponent),
-                buf.readCollection(ArrayList::new, FriendlyByteBuf::readItem),
+                buf.readCollection(ArrayList::new, t -> ItemStack.of(t.readNbt())),
                 buf.readInt(),
                 buf.readInt(),
                 buf.readInt(),
@@ -188,14 +188,16 @@ public class ProgressData {
                         }
                     }
                     if (MemoryUtil.getRequestProgress(takerMaid).isReturning()) {
-                        totalSteps = processedSteps = 1;
+                        totalSteps = processedSteps = 0;
                     }
                 }
             }
 
 
             toList.add(new TaskProgress(
-                    layer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of()),
+                    layer.getCraftData().map(CraftGuideData::getOutput).map(
+                            t -> t.stream().map(ii -> ii.copyWithCount(ii.getCount() * layer.getCount())).toList()
+                    ).orElse(List.of()),
                     totalSteps,
                     processedSteps,
                     status,

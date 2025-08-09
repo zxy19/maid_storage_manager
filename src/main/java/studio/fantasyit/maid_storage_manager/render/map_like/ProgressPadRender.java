@@ -171,12 +171,15 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
                 };
                 drawCenteredString(graphics, font, display.getHoverName(), ix + 76 - 2 - nameW, iy + dNameY, 40, COLOR_TEXT_ITEM, false);
             }
-            if (style == ProgressPad.Style.NORMAL) {
+            if (style == ProgressPad.Style.NORMAL && progress.total() != 0) {
                 String progressText = String.format("%d/%d", progress.progress(), progress.total());
                 int progressW = font.width(progressText);
                 graphics.drawString(font, progressText, ix + 76 - 2 - progressW, iy + lineHeight - 11, COLOR_TEXT_PROGRESS, false);
             }
-            blit(graphics, pickProgress(progress.status()), ix + 2, iy + lineHeight - 1, 1.0f * progress.progress() / progress.total());
+            if (progress.total() == 0)
+                blit(graphics, pickProgress(progress.status()), ix + 2, iy + lineHeight - 1, 1.0f);
+            else if (progress.total() != -1)
+                blit(graphics, pickProgress(progress.status()), ix + 2, iy + lineHeight - 1, 1.0f * progress.progress() / progress.total());
 
 
             if (!progress.taker().isEmpty()) {

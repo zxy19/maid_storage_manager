@@ -8,15 +8,24 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 
 public class ViewedInventoryUtil {
     public static void ambitiousAddItemAndSync(EntityMaid maid, ServerLevel level, Target target, ItemStack itemStack) {
+        int holdStamp = level.getServer().getTickCount();
         MemoryUtil.getViewedInventory(maid).ambitiousAddItem(level, target, itemStack);
         WorkCardItem.getNearbyMaidsSameGroup(maid, false, true)
-                .forEach(maid1 -> MemoryUtil.getViewedInventory(maid1).ambitiousAddItem(level, target, itemStack));
+                .forEach(maid1 -> {
+                    MemoryUtil.getViewedInventory(maid1).ambitiousAddItem(level, target, itemStack);
+                    MemoryUtil.getViewedInventory(maid1).setHoldStamp(holdStamp);
+                });
     }
 
     public static void ambitiousRemoveItemAndSync(EntityMaid maid, ServerLevel level, Target target, ItemStack itemStack, int count) {
+        int holdStamp = level.getServer().getTickCount();
         MemoryUtil.getViewedInventory(maid).ambitiousRemoveItem(level, target, itemStack, count);
         WorkCardItem.getNearbyMaidsSameGroup(maid, false, true)
-                .forEach(maid1 -> MemoryUtil.getViewedInventory(maid1).ambitiousRemoveItem(level, target, itemStack, count));
+                .forEach(maid1 -> {
+                            MemoryUtil.getViewedInventory(maid1).ambitiousRemoveItem(level, target, itemStack, count);
+                            MemoryUtil.getViewedInventory(maid1).setHoldStamp(holdStamp);
+                        }
+                );
     }
 
     public static void syncStorageOn(EntityMaid maid, Target target, int holdStamp) {
