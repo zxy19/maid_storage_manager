@@ -203,14 +203,16 @@ public class ProgressData {
                         }
                     }
                     if (MemoryUtil.getRequestProgress(takerMaid).isReturning()) {
-                        totalSteps = processedSteps = 1;
+                        totalSteps = processedSteps = 0;
                     }
                 }
             }
 
 
             toList.add(new TaskProgress(
-                    layer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of()),
+                    layer.getCraftData().map(CraftGuideData::getOutput).map(
+                            t -> t.stream().map(ii -> ii.copyWithCount(ii.getCount() * layer.getCount())).toList()
+                    ).orElse(List.of()),
                     totalSteps,
                     processedSteps,
                     status,

@@ -46,6 +46,7 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public Set<Target> lockForChange = new HashSet<>();
     public boolean viewing;
     private final ArrayList<ItemStack> waitingAdd;
+    private int holdStamp;
 
     public ViewedInventoryMemory(TargetData targetData,
                                  Map<String, Map<String, List<ItemCount>>> viewedInventory,
@@ -334,10 +335,22 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
     public List<ItemStack> getWaitingAdd() {
         return waitingAdd;
     }
+
     public void clearWaitingAdd() {
         waitingAdd.clear();
     }
+
     public void addWaitingAdd(ItemStack itemStack) {
         waitingAdd.add(itemStack);
+    }
+
+
+    public void setHoldStamp(int holdStamp) {
+        this.holdStamp = holdStamp;
+    }
+
+    public boolean isHolding(int holdStamp) {
+        //如果一个更新任务在某次更新点之前开始，那么这个更新点无法保证被记录。应该直接放弃。
+        return holdStamp < this.holdStamp;
     }
 }

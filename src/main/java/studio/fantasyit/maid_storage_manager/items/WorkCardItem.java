@@ -254,6 +254,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                     if (!StorageAccessUtil.isValidTarget(level, toMaid, target, false)) return;
                     ViewedInventoryMemory toMem = MemoryUtil.getViewedInventory(toMaid);
                     if (toMem.isLockedAmbitious(level, target)) return;
+                    if (toMem.isHolding(holdStamp)) return;
 
                     toMem.resetViewedInvForPos(target);
                     StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
