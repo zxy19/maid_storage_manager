@@ -132,7 +132,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag tmp = list.getCompound(i);
-                ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                ItemStack item = ItemStackUtil.parseStack(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                 filteredItems.add(item);
             }
             boolean matchNbt = t.getBoolean(FilterListItem.TAG_MATCH_TAG);

@@ -34,6 +34,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketRece
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.*;
@@ -541,7 +542,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (slot instanceof NoPlaceFilterSlot) return;
         if (!slot.isActive()) return;
         slot.set(item);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, item.save(new CompoundTag())));
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, ItemStackUtil.saveStack(item)));
     }
 
     @Override

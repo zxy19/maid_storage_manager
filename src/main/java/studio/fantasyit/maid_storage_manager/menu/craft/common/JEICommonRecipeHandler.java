@@ -65,14 +65,14 @@ public class JEICommonRecipeHandler implements IUniversalRecipeTransferHandler<C
             for (int i = 0; i < step.step.actionType.inputCount(); i++) {
                 if (inputId < inputs.size()) {
                     if (doTransfer)
-                        inputTag.add(inputs.get(inputId).save(new CompoundTag()));
+                        inputTag.add(ItemStackUtil.saveStack(inputs.get(inputId)));
                     inputId++;
                 }
             }
             for (int i = 0; i < step.step.actionType.outputCount(); i++) {
                 if (outputId < outputs.size()) {
                     if (doTransfer)
-                        outputTag.add(outputs.get(outputId).save(new CompoundTag()));
+                        outputTag.add(ItemStackUtil.saveStack(outputs.get(outputId)));
                     outputId++;
                 }
             }

@@ -10,6 +10,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class SmithingCraftMenu extends AbstractCraftMenu<SmithingCraftMenu> {
                 ListTag list = data.getList("inputs", 10);
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag tag = list.getCompound(i);
-                    ItemStack stack = ItemStack.of(tag);
+                    ItemStack stack = ItemStackUtil.parseStack(tag);
                     stepDataContainer.setItemNoTrigger(i, stack);
                 }
                 for (int i = list.size(); i < stepDataContainer.getContainerSize(); i++) {
@@ -64,7 +65,7 @@ public class SmithingCraftMenu extends AbstractCraftMenu<SmithingCraftMenu> {
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(data));
                     save();
                 }
             }

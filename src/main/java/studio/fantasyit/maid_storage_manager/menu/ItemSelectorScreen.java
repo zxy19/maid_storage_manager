@@ -35,6 +35,7 @@ import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
@@ -80,7 +81,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
                     .getCompound(slot)
                     .getList(RequestListItem.TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND)
                     .stream()
-                    .map(t -> ItemStack.of((CompoundTag) t))
+                    .map(t -> ItemStackUtil.parseStack((CompoundTag) t))
                     .toList();
             if (tag.contains(RequestListItem.TAG_ITEMS_FAIL_ADDITION))
                 additionFailMessage = Component.translatable(tag.getString(RequestListItem.TAG_ITEMS_FAIL_ADDITION));

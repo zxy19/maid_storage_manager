@@ -84,4 +84,24 @@ public class ItemStackUtil {
         list.add(itemStack.copy());
         return itemStack.copy();
     }
+
+    public static ItemStack parseStack(CompoundTag tag) {
+        if (!tag.contains("__item") || !tag.contains("count"))
+            return ItemStack.of(tag);
+        int count = tag.getInt("count");
+        ItemStack item = ItemStack.of(tag.getCompound("__item"));
+        item.setCount(count);
+        return item;
+    }
+
+    public static CompoundTag saveStack(ItemStack stack) {
+        int count = stack.getCount();
+        if (count > 127) {
+            stack = stack.copyWithCount(1);
+        }
+        CompoundTag tmp = new CompoundTag();
+        tmp.put("__item", stack.save(new CompoundTag()));
+        tmp.putInt("count", count);
+        return tmp;
+    }
 }

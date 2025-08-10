@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.render.CustomItemRenderer;
 import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +92,7 @@ public class FilterListItem extends HangUpItem implements MenuProvider {
                 CompoundTag itemTag = list.getCompound(i);
                 if (!itemTag.contains(FilterListItem.TAG_ITEMS_ITEM)) continue;
 
-                ItemStack itemstack = ItemStack.of(itemTag.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                ItemStack itemstack = ItemStackUtil.parseStack(itemTag.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                 if (itemstack.isEmpty()) continue;
 
                 Component component = Component.translatable("gui.maid_storage_manager.filter_list.item",

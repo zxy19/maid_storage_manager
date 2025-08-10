@@ -120,7 +120,7 @@ public class CraftGuideData {
             ListTag list = compound.getList("items", Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 items.add(
-                        ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -149,14 +149,14 @@ public class CraftGuideData {
             ListTag inputsList = input1.getList("items", Tag.TAG_COMPOUND);
             for (int i = 0; i < inputsList.size(); i++) {
                 inputs.add(
-                        ItemStack.of(inputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(inputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(inputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
             ListTag outputsList = input2.getList("items", Tag.TAG_COMPOUND);
             for (int i = 0; i < outputsList.size(); i++) {
                 outputs.add(
-                        ItemStack.of(outputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(outputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(outputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }

@@ -86,7 +86,7 @@ public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraft
                                 sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM,
                                         1,
                                         0,
-                                        menu.displayOnlySlots.getItem(index).save(new CompoundTag())
+                                        ItemStackUtil.saveStack(menu.displayOnlySlots.getItem(index))
                                 ));
                             }
                             return new SelectButtonWidget.Option<>(

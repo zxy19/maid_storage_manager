@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +97,7 @@ public class CraftGuideStepData {
             ListTag list = tag.getList(CraftGuide.TAG_OP_INPUT, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 inputs.add(
-                        ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -106,7 +107,7 @@ public class CraftGuideStepData {
             ListTag list = tag.getList(CraftGuide.TAG_OP_OUTPUT, Tag.TAG_COMPOUND);
             for (int i = 0; i < list.size(); i++) {
                 outputs.add(
-                        ItemStack.of(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                        ItemStackUtil.parseStack(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
                                 .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
                 );
             }
@@ -127,7 +128,7 @@ public class CraftGuideStepData {
             ListTag list = new ListTag();
             for (ItemStack itemStack : input) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(new CompoundTag()));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(itemStack));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
@@ -137,7 +138,7 @@ public class CraftGuideStepData {
             ListTag list = new ListTag();
             for (ItemStack itemStack : output) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, itemStack.save(new CompoundTag()));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(itemStack));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
@@ -160,7 +161,6 @@ public class CraftGuideStepData {
     public boolean isOptional() {
         return optional;
     }
-
 
 
     public List<ItemStack> getItems() {

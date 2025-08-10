@@ -69,7 +69,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
         switch (type) {
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(data));
                     recalculateRecipe();
                     save();
                 }
@@ -78,7 +78,7 @@ public class StoneCutterCraftMenu extends AbstractCraftMenu<StoneCutterCraftMenu
                 if (data != null) {
                     ListTag list = data.getList("inputs", 10);
                     for (int i = 0; i < 2; i++) {
-                        stepDataContainer.setItem(i, ItemStack.of(list.getCompound(i)));
+                        stepDataContainer.setItem(i, ItemStackUtil.parseStack(list.getCompound(i)));
                     }
                     recalculateRecipe();
                     save();

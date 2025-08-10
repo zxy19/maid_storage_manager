@@ -20,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilter {
     public Player player;
@@ -54,7 +55,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 save();
             }
         };
-        storageHandler.setItem(0, ItemStack.of(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE)));
+        storageHandler.setItem(0, ItemStackUtil.parseStack(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE)));
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();

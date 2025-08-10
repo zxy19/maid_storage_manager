@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.Optional;
 
@@ -58,7 +59,7 @@ public class JEIRecipeHandler<C extends AbstractContainerMenu, R> implements IRe
                     .map(IRecipeSlotView::getItemStacks)
                     .map(l -> InventoryListUtil.getMatchingForPlayer(l.toList()))
                     .filter(t -> !t.isEmpty() || keepEmpty)
-                    .map(t -> t.save(new CompoundTag()))
+                    .map(ItemStackUtil::saveStack)
                     .forEach(inputs::add);
             CompoundTag data = new CompoundTag();
             data.put("inputs", inputs);

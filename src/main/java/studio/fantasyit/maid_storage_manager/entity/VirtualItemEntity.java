@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import studio.fantasyit.maid_storage_manager.registry.EntityRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 public class VirtualItemEntity extends Entity {
 
@@ -43,13 +44,13 @@ public class VirtualItemEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(CompoundTag p_20052_) {
-        this.setItem(ItemStack.of(p_20052_.getCompound("item")));
+        this.setItem(ItemStackUtil.parseStack(p_20052_.getCompound("item")));
         this.ttl = p_20052_.getInt("ttl");
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag p_20139_) {
-        p_20139_.put("Item", this.getItem().save(new CompoundTag()));
+        p_20139_.put("Item", ItemStackUtil.saveStack(this.getItem()));
         p_20139_.putInt("TTL", ttl);
     }
 

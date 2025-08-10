@@ -27,6 +27,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.common.CommonCraftAssets
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -113,7 +114,7 @@ public final class BindingRender {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) {
             if (mainStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                mainStack = ItemStack.of(mainStack.getOrCreateTag().getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
+                mainStack = ItemStackUtil.parseStack(mainStack.getOrCreateTag().getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
                 if (mainStack.isEmpty())
                     return;
             } else {

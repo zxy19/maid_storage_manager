@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,19 +38,19 @@ public class CraftGuideRenderData {
         CraftGuideData craftGuideData = CraftGuideData.fromItemStack(itemStack);
         CompoundTag data = new CompoundTag();
         ItemStack icon1 = CraftManager.getInstance().getType(craftGuideData.getType()).getIcon();
-        data.put("icon", icon1.save(new CompoundTag()));
+        data.put("icon", ItemStackUtil.saveStack(icon1));
         ListTag inputs = new ListTag();
         for (ItemStack input : craftGuideData.getInput()) {
             if (input.isEmpty())
                 continue;
-            inputs.add(input.save(new CompoundTag()));
+            inputs.add(ItemStackUtil.saveStack(input));
         }
         data.put("inputs", inputs);
         ListTag outputs = new ListTag();
         for (ItemStack output : craftGuideData.getOutput()) {
             if (output.isEmpty())
                 continue;
-            outputs.add(output.save(new CompoundTag()));
+            outputs.add(ItemStackUtil.saveStack(output));
         }
         data.put("outputs", outputs);
         ListTag stepBindings = new ListTag();
@@ -71,16 +72,16 @@ public class CraftGuideRenderData {
         }
         if (tag.contains("renderData")) {
             CompoundTag renderData = tag.getCompound("renderData");
-            ItemStack icon = ItemStack.of(renderData.getCompound("icon"));
+            ItemStack icon = ItemStackUtil.parseStack(renderData.getCompound("icon"));
             ListTag outputs = renderData.getList("outputs", Tag.TAG_COMPOUND);
             List<ItemStack> outputs1 = new ArrayList<>();
             for (int i = 0; i < outputs.size(); i++) {
-                outputs1.add(ItemStack.of(outputs.getCompound(i)));
+                outputs1.add(ItemStackUtil.parseStack(outputs.getCompound(i)));
             }
             ListTag inputs = renderData.getList("inputs", Tag.TAG_COMPOUND);
             List<ItemStack> inputs1 = new ArrayList<>();
             for (int i = 0; i < inputs.size(); i++) {
-                inputs1.add(ItemStack.of(inputs.getCompound(i)));
+                inputs1.add(ItemStackUtil.parseStack(inputs.getCompound(i)));
             }
             ListTag stepBindings = renderData.getList("stepBindings", Tag.TAG_COMPOUND);
             List<Pair<Target, ResourceLocation>> stepBindings1 = new ArrayList<>();

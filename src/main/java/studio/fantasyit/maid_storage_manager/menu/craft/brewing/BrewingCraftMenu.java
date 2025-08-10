@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.Optional;
@@ -71,14 +72,14 @@ public class BrewingCraftMenu extends AbstractCraftMenu<BrewingCraftMenu> {
                     dIndex = 2;
                 }
                 for (int i = dIndex; i < list.size(); i++) {
-                    ItemStack stack = ItemStack.of(list.getCompound(i));
+                    ItemStack stack = ItemStackUtil.parseStack(list.getCompound(i));
                     stepDataContainer.setItemNoTrigger(i + 1 - dIndex, stack);
                 }
                 save();
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(data));
                     save();
                 }
             }

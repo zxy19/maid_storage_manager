@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.INBTSerializable;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.Arrays;
 
@@ -146,7 +147,7 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
     public void deserializeNBT(ListTag nbt) {
         for (int i = 0; i < size; i++) {
             CompoundTag tmp = nbt.getCompound(i);
-            items[i] = ItemStack.of(tmp.getCompound(RequestListItem.TAG_ITEMS_ITEM));
+            items[i] = ItemStackUtil.parseStack(tmp.getCompound(RequestListItem.TAG_ITEMS_ITEM));
             count[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_REQUESTED));
             collected[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_COLLECTED));
             done[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_DONE));

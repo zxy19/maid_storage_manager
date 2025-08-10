@@ -113,7 +113,7 @@ public class RequestItemUtil {
             CompoundTag itemTag = list.getCompound(i);
             if (!itemTag.contains(RequestListItem.TAG_ITEMS_ITEM)) continue;
 
-            ItemStack itemstack = ItemStack.of(itemTag.getCompound(RequestListItem.TAG_ITEMS_ITEM));
+            ItemStack itemstack = ItemStackUtil.parseStack(itemTag.getCompound(RequestListItem.TAG_ITEMS_ITEM));
             if (itemstack.isEmpty()) continue;
 
             int collected = itemTag.getInt(RequestListItem.TAG_ITEMS_COLLECTED);
@@ -233,7 +233,7 @@ public class RequestItemUtil {
             ItemStack item = i < list.size() ? list.get(i) : ItemStack.EMPTY;
             CompoundTag tmp = new CompoundTag();
             tmp.putInt(RequestListItem.TAG_ITEMS_REQUESTED, item.getCount());
-            tmp.put(RequestListItem.TAG_ITEMS_ITEM, item.copyWithCount(1).save(new CompoundTag()));
+            tmp.put(RequestListItem.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(item.copyWithCount(1)));
             listTag.add(tmp);
         }
         tag.put(RequestListItem.TAG_ITEMS, listTag);

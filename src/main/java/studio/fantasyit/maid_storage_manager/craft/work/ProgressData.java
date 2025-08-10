@@ -78,7 +78,7 @@ public class ProgressData {
     public record TaskProgress(List<ItemStack> outputs, int total, int progress, Status status, List<Component> taker) {
         public static TaskProgress fromNetwork(FriendlyByteBuf friendlyByteBuf) {
             return new TaskProgress(
-                    friendlyByteBuf.readCollection(ArrayList::new, FriendlyByteBuf::readItem),
+                    friendlyByteBuf.readCollection(ArrayList::new, (t) -> ItemStackUtil.parseStack(t.readNbt())),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readEnum(Status.class),
@@ -87,7 +87,7 @@ public class ProgressData {
         }
 
         public void toNetwork(FriendlyByteBuf friendlyByteBuf) {
-            friendlyByteBuf.writeCollection(outputs, FriendlyByteBuf::writeItem);
+            friendlyByteBuf.writeCollection(outputs, (t, c) -> t.writeNbt(ItemStackUtil.saveStack(c)));
             friendlyByteBuf.writeInt(total);
             friendlyByteBuf.writeInt(progress);
             friendlyByteBuf.writeEnum(status);
@@ -121,7 +121,7 @@ public class ProgressData {
         buf.writeCollection(working, (t, d) -> d.toNetwork(t));
         buf.writeComponent(maidName);
         buf.writeCollection(workGroups, FriendlyByteBuf::writeComponent);
-        buf.writeCollection(items, (t, i) -> t.writeNbt(i.save(new CompoundTag())));
+        buf.writeCollection(items, (t, i) -> t.writeNbt(ItemStackUtil.saveStack(i)));
         buf.writeInt(total);
         buf.writeInt(progress);
         buf.writeInt(tickCount);
@@ -134,7 +134,7 @@ public class ProgressData {
                 buf.readCollection(ArrayList::new, TaskProgress::fromNetwork),
                 buf.readComponent(),
                 buf.readCollection(ArrayList::new, FriendlyByteBuf::readComponent),
-                buf.readCollection(ArrayList::new, t -> ItemStack.of(t.readNbt())),
+                buf.readCollection(ArrayList::new, t -> ItemStackUtil.parseStack(t.readNbt())),
                 buf.readInt(),
                 buf.readInt(),
                 buf.readInt(),
@@ -263,7 +263,7 @@ public class ProgressData {
         List<TaskProgress> progresses = list.stream()
                 .filter(t -> !((CompoundTag) t).getBoolean(RequestListItem.TAG_ITEMS_DONE))
                 .map(t -> {
-                    ItemStack item = ItemStack.of(((CompoundTag) t).getCompound(RequestListItem.TAG_ITEMS_ITEM));
+                    ItemStack item = ItemStackUtil.parseStack(((CompoundTag) t).getCompound(RequestListItem.TAG_ITEMS_ITEM));
                     if (item.isEmpty()) return null;
                     int cnt = ((CompoundTag) t).getInt(RequestListItem.TAG_ITEMS_REQUESTED);
                     int collected = ((CompoundTag) t).getInt(RequestListItem.TAG_ITEMS_COLLECTED);

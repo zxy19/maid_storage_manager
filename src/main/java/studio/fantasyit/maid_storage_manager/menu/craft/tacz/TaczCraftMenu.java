@@ -22,6 +22,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketRece
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public class TaczCraftMenu extends AbstractCraftMenu<TaczCraftMenu> {
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(data));
                     save();
                 }
             }

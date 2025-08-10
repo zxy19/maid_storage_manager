@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 
@@ -33,7 +34,7 @@ public class VirtualFrameDataProvider implements IEntityComponentProvider {
             int c = 0;
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag tmp = list.getCompound(i);
-                ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                ItemStack item = ItemStackUtil.parseStack(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                 if (item.isEmpty())
                     continue;
                 IElement tmpDisplay = elements.item(item);

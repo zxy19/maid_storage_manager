@@ -26,6 +26,7 @@ import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -110,7 +111,7 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
         CompoundTag tag = Objects.requireNonNull(itemInHand.getTag());
         if (!tag.contains(TAG_ITEM))
             return ItemStack.EMPTY;
-        return ItemStack.of(tag.getCompound(TAG_ITEM));
+        return ItemStackUtil.parseStack(tag.getCompound(TAG_ITEM));
     }
 
     public static @Nullable Target getInput(ItemStack itemInHand) {

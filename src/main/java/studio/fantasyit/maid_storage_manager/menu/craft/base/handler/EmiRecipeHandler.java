@@ -14,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class EmiRecipeHandler<C extends AbstractCraftMenu<?>, R> implements dev.
                 .map(EmiIngredient::getEmiStacks)
                 .map(l -> l.size() == 0 ? ItemStack.EMPTY : InventoryListUtil.getMatchingForPlayer(l.stream().map(EmiStack::getItemStack).toList()))
                 .filter(t -> !t.isEmpty() || keepEmpty)
-                .map(t -> t.save(new CompoundTag()))
+                .map(ItemStackUtil::saveStack)
                 .forEach(inputs::add);
         CompoundTag data = new CompoundTag();
         data.put("inputs", inputs);

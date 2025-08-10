@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
         target = player.getMainHandItem();
         CompoundTag tag = target.getOrCreateTag();
         container = new SimpleContainer(1);
-        container.setItem(0, ItemStack.of(tag.getCompound(LogisticsGuide.TAG_ITEM)));
+        container.setItem(0, ItemStackUtil.parseStack(tag.getCompound(LogisticsGuide.TAG_ITEM)));
         container.addListener((e) -> save());
         single_mode = tag.getBoolean(LogisticsGuide.TAG_SINGLE_MODE);
         addPlayerSlots();
@@ -49,7 +50,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
     public void save() {
         if (player.level().isClientSide) return;
         CompoundTag tag = target.getOrCreateTag();
-        tag.put(LogisticsGuide.TAG_ITEM, container.getItem(0).save(new CompoundTag()));
+        tag.put(LogisticsGuide.TAG_ITEM, ItemStackUtil.saveStack(container.getItem(0)));
         tag.putBoolean(LogisticsGuide.TAG_SINGLE_MODE, single_mode);
         target.setTag(tag);
     }

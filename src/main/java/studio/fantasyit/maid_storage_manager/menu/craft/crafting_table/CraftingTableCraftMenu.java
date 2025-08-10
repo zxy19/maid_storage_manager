@@ -52,7 +52,7 @@ public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraft
                 ListTag list = data.getList("inputs", 10);
                 for (int i = 0; i < list.size(); i++) {
                     CompoundTag tag = list.getCompound(i);
-                    ItemStack stack = ItemStack.of(tag);
+                    ItemStack stack = ItemStackUtil.parseStack(tag);
                     stepDataContainer.setItemNoTrigger(i, stack);
                 }
                 for(int i = list.size(); i < stepDataContainer.getContainerSize(); i++){
@@ -62,7 +62,7 @@ public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraft
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(data));
                     save();
                 }
             }

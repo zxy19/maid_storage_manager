@@ -140,7 +140,7 @@ public class StorageAccessUtil {
         }
         if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
             CompoundTag tag = maid.getMainHandItem().getOrCreateTag();
-            ItemStack stack = ItemStack.of(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
+            ItemStack stack = ItemStackUtil.parseStack(tag.getCompound(StorageDefineBauble.TAG_STORAGE_DEFINE));
             if (!stack.isEmpty()) {
                 itemStack.add(stack);
             }
@@ -334,7 +334,7 @@ public class StorageAccessUtil {
                         ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
                         for (int i = 0; i < list.size(); i++) {
                             CompoundTag tmp = list.getCompound(i);
-                            ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                            ItemStack item = ItemStackUtil.parseStack(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                             filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
                         }
                     });
@@ -345,7 +345,7 @@ public class StorageAccessUtil {
                         ListTag list = t.getList(FilterListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
                         for (int i = 0; i < list.size(); i++) {
                             CompoundTag tmp = list.getCompound(i);
-                            ItemStack item = ItemStack.of(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
+                            ItemStack item = ItemStackUtil.parseStack(tmp.getCompound(FilterListItem.TAG_ITEMS_ITEM));
                             if (isBlackMode)
                                 filtered.add(new Pair<>(item, t.getBoolean(FilterListItem.TAG_MATCH_TAG)));
                             else {

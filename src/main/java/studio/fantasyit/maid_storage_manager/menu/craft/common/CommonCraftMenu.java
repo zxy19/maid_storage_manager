@@ -283,7 +283,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             }
             case SET_ITEM -> {
                 if (data != null) {
-                    this.getSlot(key).set(ItemStack.of(data));
+                    this.getSlot(key).set(ItemStackUtil.parseStack(data));
                     save();
                 }
             }
@@ -314,7 +314,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 for (CommonStepDataContainer step : steps) {
                     for (int i = 0; i < step.step.actionType.inputCount(); i++) {
                         if (inputId < inputTag.size()) {
-                            ItemStack tmp = ItemStack.of(inputTag.getCompound(inputId));
+                            ItemStack tmp = ItemStackUtil.parseStack(inputTag.getCompound(inputId));
                             step.setItemNoTrigger(i, tmp);
                             step.setCount(i, tmp.getCount());
                             inputId++;
@@ -323,7 +323,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     for (int i = 0; i < step.step.actionType.outputCount(); i++) {
                         if (outputId < outputTag.size()) {
                             int inputOffset = step.padCount + step.inputCount;
-                            ItemStack tmp = ItemStack.of(outputTag.getCompound(outputId));
+                            ItemStack tmp = ItemStackUtil.parseStack(outputTag.getCompound(outputId));
                             step.setItemNoTrigger(inputOffset + i, tmp);
                             step.setCount(inputOffset + i, tmp.getCount());
                             outputId++;

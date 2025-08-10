@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.INBTSerializable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        itemStack = ItemStack.of(nbt.getCompound("itemStack"));
+        itemStack = ItemStackUtil.parseStack(nbt.getCompound("itemStack"));
         totalCount = nbt.getInt("totalCount");
         ListTag list = nbt.getList("posCount", 10);
         for (int i = 0; i < list.size(); i++) {

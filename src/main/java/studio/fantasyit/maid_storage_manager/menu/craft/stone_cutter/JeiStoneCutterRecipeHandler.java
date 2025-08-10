@@ -18,6 +18,7 @@ import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.Optional;
 
@@ -45,13 +46,13 @@ public class JeiStoneCutterRecipeHandler implements IRecipeTransferHandler<Stone
                     .stream()
                     .map(IRecipeSlotView::getItemStacks)
                     .map(l -> InventoryListUtil.getMatchingForPlayer(l.toList()))
-                    .map(t -> t.save(new CompoundTag()))
+                    .map(ItemStackUtil::saveStack)
                     .forEach(inputs::add);
             recipeSlots.getSlotViews(RecipeIngredientRole.OUTPUT)
                     .stream()
                     .map(IRecipeSlotView::getItemStacks)
                     .map(l -> l.findFirst().orElse(ItemStack.EMPTY))
-                    .map(t -> t.save(new CompoundTag()))
+                    .map(ItemStackUtil::saveStack)
                     .forEach(inputs::add);
             CompoundTag data = new CompoundTag();
             data.put("inputs", inputs);
