@@ -435,7 +435,7 @@
   "interaction.progress_pad.merge.none": "Merge: Never",
   "interaction.progress_pad.merge.overflow_only": "Merge: Overflow only",
   "interaction.progress_pad.merge.always": "Merge: Always",
-  "interaction.progress_pad.selecting.viewing": "Select Viewing",
+  "interaction.progress_pad.selecting.viewing": "Selecting: Viewing",
   "interaction.progress_pad.selecting.style": "Selecting: Style",
   "interaction.progress_pad.selecting.merge": "Selecting: Merge",
   "gui.maid_storage_manager.config.crafting_repeat_count": "Max Craft Layer Repeat",

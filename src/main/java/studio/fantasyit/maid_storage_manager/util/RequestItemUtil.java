@@ -175,7 +175,8 @@ public class RequestItemUtil {
         targetPlan.dispatchedDone(maid,
                 toMaid,
                 index,
-                RequestListItem.isAllSuccess(reqList)
+                RequestListItem.isAllSuccess(reqList),
+                reqList
         );
         targetPlan.showCraftingProgress(toMaid);
     }

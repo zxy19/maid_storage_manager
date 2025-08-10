@@ -428,5 +428,17 @@
   "config.maid_storage_manager.crafting.generate_nearest_only.tooltip": "只为距离女仆最近的方块生成合成指南",
   "gui.maid_storage_manager.progress_pad.no_task": "目前没有任务",
   "config.maid_storage_manager.render.using_better_light_on_items": "对物品使用更好的光照",
-  "config.maid_storage_manager.render.using_better_light_on_items.tooltip": "使用直射光照来使物品看起来更亮"
+  "config.maid_storage_manager.render.using_better_light_on_items.tooltip": "使用直射光照来使物品看起来更亮",
+  "interaction.progress_pad.viewing.working": "查看: 进行中的任务",
+  "interaction.progress_pad.viewing.done": "查看: 已完成的任务",
+  "interaction.progress_pad.viewing.waiting": "查看: 等待进行的任务",
+  "interaction.progress_pad.style.normal": "样式: 一般",
+  "interaction.progress_pad.style.small": "样式: 紧凑",
+  "interaction.progress_pad.merge.none": "合并: 从不",
+  "interaction.progress_pad.merge.overflow_only": "合并: 仅当溢出时",
+  "interaction.progress_pad.merge.always": "合并: 总是",
+  "interaction.progress_pad.selecting.viewing": "正在选择查看",
+  "interaction.progress_pad.selecting.style": "正在选择样式",
+  "interaction.progress_pad.selecting.merge": "正在选择合并",
+  "gui.maid_storage_manager.config.crafting_repeat_count": "最大合成层重复"
 }
