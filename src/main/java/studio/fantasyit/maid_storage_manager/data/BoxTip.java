@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.data;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Objects;
@@ -13,7 +14,7 @@ public record BoxTip(Target target, Component tip, int maxTime, float[] argb) {
         buf.writeFloat(argb[2]);
         buf.writeFloat(argb[3]);
         buf.writeNbt(target.toNbt());
-        buf.writeComponent(tip);
+        buf.writeJsonWithCodec(ComponentSerialization.CODEC, tip);
         buf.writeInt(maxTime);
     }
 
@@ -22,6 +23,9 @@ public record BoxTip(Target target, Component tip, int maxTime, float[] argb) {
         float r = buf.readFloat();
         float g = buf.readFloat();
         float b = buf.readFloat();
-        return new BoxTip(Target.fromNbt(Objects.requireNonNull(buf.readNbt())), buf.readComponent(), buf.readInt(), new float[]{a, r, g, b});
+        return new BoxTip(Target.fromNbt(Objects.requireNonNull(buf.readNbt())),
+                buf.readJsonWithCodec(ComponentSerialization.CODEC),
+                buf.readInt(),
+                new float[]{a, r, g, b});
     }
 }

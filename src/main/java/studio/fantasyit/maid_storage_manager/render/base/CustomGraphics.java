@@ -87,9 +87,9 @@ public class CustomGraphics implements ICustomGraphics {
     void innerBlit(ResourceLocation p_283461_, int p_281399_, int p_283222_, int p_283615_, int p_283430_, int p_281729_, float p_283247_, float p_282598_, float p_282883_, float p_283017_) {
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.text(p_283461_));
         Matrix4f matrix4f = pose().last().pose();
-        buffer.vertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).color(255, 255, 255, 255).uv(p_283247_, p_282883_).uv2(LightTexture.FULL_BRIGHT).endVertex();
-        buffer.vertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).color(255, 255, 255, 255).uv(p_283247_, p_283017_).uv2(LightTexture.FULL_BRIGHT).endVertex();
-        buffer.vertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).color(255, 255, 255, 255).uv(p_282598_, p_283017_).uv2(LightTexture.FULL_BRIGHT).endVertex();
-        buffer.vertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).color(255, 255, 255, 255).uv(p_282598_, p_282883_).uv2(LightTexture.FULL_BRIGHT).endVertex();
+        buffer.addVertex(matrix4f, (float) p_281399_, (float) p_283615_, (float) p_281729_).setColor(255, 255, 255, 255).setUv(p_283247_, p_282883_).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(matrix4f, (float) p_281399_, (float) p_283430_, (float) p_281729_).setColor(255, 255, 255, 255).setUv(p_283247_, p_283017_).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(matrix4f, (float) p_283222_, (float) p_283430_, (float) p_281729_).setColor(255, 255, 255, 255).setUv(p_282598_, p_283017_).setLight(LightTexture.FULL_BRIGHT);
+        buffer.addVertex(matrix4f, (float) p_283222_, (float) p_283615_, (float) p_281729_).setColor(255, 255, 255, 255).setUv(p_282598_, p_282883_).setLight(LightTexture.FULL_BRIGHT);
     }
 }

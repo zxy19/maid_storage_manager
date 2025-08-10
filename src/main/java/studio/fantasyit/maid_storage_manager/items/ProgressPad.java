@@ -94,18 +94,11 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     }
 
     public static Merge getMerge(ItemStack itemStack) {
-        if (!itemStack.hasTag())
-            return Merge.OVERFLOW_ONLY;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (!tag.contains("merge"))
-            return Merge.OVERFLOW_ONLY;
-        return Merge.valueOf(tag.getString("merge"));
+        return Merge.valueOf(itemStack.getOrDefault(DataComponentRegistry.PROGRESS_PAD_MERGE, Merge.NONE.name()));
     }
 
     public static void setMerge(ItemStack itemStack, Merge merge) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        tag.putString("merge", merge.name());
-        itemStack.setTag(tag);
+        itemStack.set(DataComponentRegistry.PROGRESS_PAD_MERGE, merge.name());
     }
 
     public static void rollMerge(ItemStack itemStack, ServerPlayer player, int value) {
@@ -116,18 +109,11 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
     }
 
     public static Selecting getSelecting(ItemStack itemStack) {
-        if (!itemStack.hasTag())
-            return Selecting.Viewing;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
-        if (!tag.contains("selecting"))
-            return Selecting.Viewing;
-        return Selecting.valueOf(tag.getString("selecting"));
+        return Selecting.valueOf(itemStack.getOrDefault(DataComponentRegistry.PROGRESS_PAD_SELECTING, Selecting.Viewing.name()));
     }
 
     public static void setSelecting(ItemStack itemStack, Selecting selecting) {
-        CompoundTag tag = itemStack.getOrCreateTag();
-        tag.putString("selecting", selecting.name());
-        itemStack.setTag(tag);
+        itemStack.set(DataComponentRegistry.PROGRESS_PAD_SELECTING, selecting.name());
     }
 
     public static void rollSelecting(ItemStack itemStack, ServerPlayer player, int value) {

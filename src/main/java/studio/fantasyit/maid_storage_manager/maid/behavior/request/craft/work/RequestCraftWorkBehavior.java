@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -16,7 +16,6 @@ import studio.fantasyit.maid_storage_manager.data.BoxTip;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.network.ShowCommonPacket;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -196,7 +195,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         if (fail) {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting fail");
             plan.failCurrent(maid, craftGuideStepData.getItems(), "tooltip.maid_storage_manager.request_list.fail_crafting");
-            Network.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> maid),
+            PacketDistributor.sendToPlayersTrackingEntity(maid,
                     new ShowCommonPacket(new BoxTip(
                             craftGuideStepData.getStorage(),
                             Component.translatable("tip.maid_storage_manager.crafting_fail"),

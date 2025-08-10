@@ -119,6 +119,10 @@ public class DataComponentRegistry {
             .register("progress_pad_viewing", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PROGRESS_PAD_STYLE = DATA_COMPONENTS
             .register("progress_pad_style", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PROGRESS_PAD_MERGE = DATA_COMPONENTS
+            .register("progress_pad_merge", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PROGRESS_PAD_SELECTING = DATA_COMPONENTS
+            .register("progress_pad_selecting", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
     //endregion
 
     public static void register(IEventBus bus) {

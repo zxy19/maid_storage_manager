@@ -87,7 +87,7 @@ public class ProgressData {
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readEnum(Status.class),
-                    friendlyByteBuf.readJsonWithCodec(ComponentSerialization.CODEC)
+                    friendlyByteBuf.readCollection(ArrayList::new, (t) -> t.readJsonWithCodec(ComponentSerialization.CODEC))
             );
         }
 
@@ -99,7 +99,7 @@ public class ProgressData {
             friendlyByteBuf.writeInt(total);
             friendlyByteBuf.writeInt(progress);
             friendlyByteBuf.writeEnum(status);
-            friendlyByteBuf.writeJsonWithCodec(ComponentSerialization.CODEC, taker);
+            friendlyByteBuf.writeCollection(taker, (t, c) -> t.writeJsonWithCodec(ComponentSerialization.CODEC, c));
         }
     }
 
@@ -249,7 +249,7 @@ public class ProgressData {
         );
     }
 
-    public static ProgressData fromMaidNoPlan(EntityMaid maid,int maxSz) {
+    public static ProgressData fromMaidNoPlan(EntityMaid maid, int maxSz) {
         Item icon = (switch (MemoryUtil.getCurrentlyWorking(maid)) {
             case CO_WORK -> Items.PLAYER_HEAD;
             case MEAL -> Items.COOKED_BEEF;
@@ -366,7 +366,7 @@ public class ProgressData {
                 if (task.outputs.size() != res.get(i).outputs.size()) continue;
                 boolean eq = true;
                 for (int j = 0; eq && j < task.outputs.size(); j++) {
-                    eq = eq && ItemStackUtil.isSameInCrafting(task.outputs.get(j), res.get(i).outputs.get(j));
+                    eq = ItemStackUtil.isSameInCrafting(task.outputs.get(j), res.get(i).outputs.get(j));
                 }
                 if (eq) {
                     List<ItemStack> newOutputs = new ArrayList<>();

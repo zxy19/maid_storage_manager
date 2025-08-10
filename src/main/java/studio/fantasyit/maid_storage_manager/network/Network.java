@@ -316,14 +316,12 @@ public class Network {
                 }
         );
 
-        Network.INSTANCE.registerMessage(14,
-                ShowCommonPacket.class,
-                ShowCommonPacket::toBytes,
-                ShowCommonPacket::new,
+        registrar.playToClient(
+                ShowCommonPacket.TYPE,
+                ShowCommonPacket.STREAM_CODEC,
                 (p, c) -> {
-                    c.get().enqueueWork(() -> {
+                    c.enqueueWork(() -> {
                         ShowCommonPacket.handle(p);
-                        c.get().setPacketHandled(true);
                     });
                 }
         );

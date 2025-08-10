@@ -34,12 +34,12 @@ public class ProgressPadUpdatePacket implements CustomPacketPayload {
         this.data = data;
     }
 
-    public ProgressPadUpdatePacket(FriendlyByteBuf buf) {
+    public ProgressPadUpdatePacket(RegistryFriendlyByteBuf buf) {
         this.meta = ProgressData.ProgressMeta.fromNetwork(buf);
         this.data = ProgressData.fromNetwork(buf);
     }
 
-    public void toNetwork(FriendlyByteBuf buf) {
+    public void toNetwork(RegistryFriendlyByteBuf buf) {
         meta.toNetwork(buf);
         data.toNetwork(buf);
     }

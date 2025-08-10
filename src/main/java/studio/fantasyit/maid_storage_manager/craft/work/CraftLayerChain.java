@@ -395,7 +395,7 @@ public class CraftLayerChain {
                 continue;
             if (node.index() == currentIndex)
                 continue;
-            if (node.slotConsume() > targetFreeSlot)
+            if (node.slotConsume() > targetFreeSlot - 1)
                 continue;
 
             CraftLayer layer = layers.get(i);
@@ -403,7 +403,7 @@ public class CraftLayerChain {
             invConsumeSimulator.addLayerOutput(layer);
             int totalConsume = invConsumeSimulator.getCurrentSlotConsume();
             invConsumeSimulator.restoreSnapshot();
-            if (totalConsume > freeSlots - 1) {
+            if (totalConsume > freeSlots) {
                 continue;
             }
             if (layer.getCraftData().isEmpty())
@@ -647,6 +647,7 @@ public class CraftLayerChain {
     public void setToBeFailAddition(String toBeFailAddition) {
         this.toBeFailAddition = toBeFailAddition;
     }
+
     public void dispatchedFail(String s) {
         setToBeFailAddition(s);
         clearAndStopAdding(StoppingAdding.FAIL);
