@@ -426,5 +426,17 @@
   "tooltip.maid_storage_manager.request_list.time.str": "%s日 (%s:%s)",
   "tooltip.maid_storage_manager.request_list.virtual": "「女仆事务，请勿插手 (´• ω •`)ﾉ」",
   "tooltip.maid_storage_manager.storage_define_bauble.count": "%s 个存储位置",
-  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本"
+  "tooltip.maid_storage_manager.written_request_list.desc": "记录了你的女仆所见的物品的笔记本",
+  "interaction.progress_pad.viewing.working": "查看: 进行中的任务",
+  "interaction.progress_pad.viewing.done": "查看: 已完成的任务",
+  "interaction.progress_pad.viewing.waiting": "查看: 等待进行的任务",
+  "interaction.progress_pad.style.normal": "样式: 一般",
+  "interaction.progress_pad.style.small": "样式: 紧凑",
+  "interaction.progress_pad.merge.none": "合并: 从不",
+  "interaction.progress_pad.merge.overflow_only": "合并: 仅当溢出时",
+  "interaction.progress_pad.merge.always": "合并: 总是",
+  "interaction.progress_pad.selecting.viewing": "正在选择查看",
+  "interaction.progress_pad.selecting.style": "正在选择样式",
+  "interaction.progress_pad.selecting.merge": "正在选择合并",
+  "gui.maid_storage_manager.config.crafting_repeat_count": "最大合成层重复"
 }

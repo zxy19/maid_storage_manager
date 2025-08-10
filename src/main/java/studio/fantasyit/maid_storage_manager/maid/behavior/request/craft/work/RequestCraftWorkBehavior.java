@@ -203,6 +203,10 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                             600,
                             colors_r
                     )));
+            if (!plan.isMaster() && maid.level() instanceof ServerLevel sl && sl.getEntity(plan.getMasterUUID()) instanceof EntityMaid toMaid && MemoryUtil.getCrafting(toMaid).hasPlan()) {
+                CraftLayerChain plan1 = MemoryUtil.getCrafting(toMaid).plan();
+                plan1.dispatchedFail("tooltip.maid_storage_manager.request_list.fail_crafting");
+            }
         } else {
             DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             layer.nextStep();

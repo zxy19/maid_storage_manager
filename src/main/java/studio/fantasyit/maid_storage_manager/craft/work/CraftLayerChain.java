@@ -58,7 +58,8 @@ public class CraftLayerChain {
                     ),
                     Codec.INT.fieldOf("maxParallel").forGetter(t -> t.maxParallel),
                     Codec.INT.fieldOf("currentParallel").forGetter(t -> t.currentParallel),
-                    InvConsumeSimulator.CODEC.fieldOf("invConsumeSimulator").forGetter(t -> t.invConsumeSimulator)
+                    InvConsumeSimulator.CODEC.fieldOf("invConsumeSimulator").forGetter(t -> t.invConsumeSimulator),
+                    Codec.STRING.fieldOf("toBeFailAddition").orElse("").forGetter(t -> t.toBeFailAddition)
             ).apply(instance, CraftLayerChain::new)
     );
 
@@ -123,6 +124,8 @@ public class CraftLayerChain {
      * 当前并行
      */
     private int currentParallel;
+
+    private String toBeFailAddition;
     private Component statusMessage = Component.empty();
 
 
@@ -155,7 +158,8 @@ public class CraftLayerChain {
             List<Pair<UUID, Pair<Integer, UUID>>> dispatchedTasks,
             int maxParallel,
             int currentParallel,
-            InvConsumeSimulator invConsumeSimulator
+            InvConsumeSimulator invConsumeSimulator,
+            String toBeFailAddition
     ) {
         this.layers = new ArrayList<>(layers);
         this.nodes = new ArrayList<>(nodes);
@@ -179,6 +183,7 @@ public class CraftLayerChain {
         }
         if (isMaster && Config.enableDebug)
             invConsumeSimulator.enableLog = true;
+        this.toBeFailAddition = toBeFailAddition;
     }
 
     public CraftLayerChain(EntityMaid maid) {
@@ -194,7 +199,8 @@ public class CraftLayerChain {
                 List.of(),
                 maid.getVehicle() != null ? 0 : StorageManagerConfigData.get(maid).maxParallel(),
                 0,
-                new InvConsumeSimulator()
+                new InvConsumeSimulator(),
+                ""
         );
     }
 
@@ -468,9 +474,10 @@ public class CraftLayerChain {
      * @param targetMaid
      * @param index
      * @param allSuccess
+     * @param reqList
      * @return
      */
-    public boolean dispatchedDone(EntityMaid targetMaid, EntityMaid maid, int index, boolean allSuccess) {
+    public boolean dispatchedDone(EntityMaid targetMaid, EntityMaid maid, int index, boolean allSuccess, ItemStack reqList) {
         SolvedCraftLayer node = nodes.get(index);
         CraftLayer layer = layers.get(index);
         dispatchedTaskMapping.remove(targetMaid.getUUID());
@@ -482,7 +489,8 @@ public class CraftLayerChain {
             checkIsFullInv(maid);
         } else {
             node.progress().setValue(SolvedCraftLayer.Progress.FAILED);
-            clearAndStopAdding(StoppingAdding.RESCHEDULE);
+            if (!getIsStoppingAdding())
+                clearAndStopAdding(StoppingAdding.RESCHEDULE);
             handleStopAddingEvent(maid);
         }
         targetMaid.getSchedulePos().restrictTo(targetMaid);
@@ -636,6 +644,14 @@ public class CraftLayerChain {
 
     // region 流程控制
 
+    public void setToBeFailAddition(String toBeFailAddition) {
+        this.toBeFailAddition = toBeFailAddition;
+    }
+    public void dispatchedFail(String s) {
+        setToBeFailAddition(s);
+        clearAndStopAdding(StoppingAdding.FAIL);
+    }
+
     public int getMaxParallel() {
         return maxParallel;
     }
@@ -765,6 +781,11 @@ public class CraftLayerChain {
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
                 RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount());
+            }
+            if (!toBeFailAddition.isBlank()) {
+                for (ItemStack target : targets)
+                    RequestListItem.setFailAddition(maid.getMainHandItem(), target, toBeFailAddition);
+                toBeFailAddition = "";
             }
             MemoryUtil.getRequestProgress(maid).setReturn();
         }

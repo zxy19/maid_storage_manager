@@ -110,7 +110,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         public void maxCraftingLayerRepeatCount(int maxCraftingLayerRepeatCount) {
             if (maxCraftingLayerRepeatCount < 1)
                 maxCraftingLayerRepeatCount = 1;
-            for (int i = 1; i <= 32; i *= 2) {
+            for (int i = 1; i <= 64; i *= 2) {
                 if (i == maxCraftingLayerRepeatCount)
                     this.maxCraftingLayerRepeatCount = i;
                 else if (i > maxCraftingLayerRepeatCount)

@@ -67,7 +67,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         if (plan.getIsStoppingAdding()) return;
 
         // 寻找范围内的可分发的女仆
-        getNearbyMaidsSameGroup(maid, baubleItem, true)
+        getNearbyMaidsSameGroup(maid, baubleItem, true, false)
                 .stream()
                 .sorted(Comparator.comparingDouble(toMaid -> toMaid.distanceTo(maid)))
                 .forEach(toMaid -> {
@@ -131,7 +131,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
             if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return;
             if (MemoryUtil.getRequestProgress(maid).isReturning()) return;
             if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return;
-            List<EntityMaid> nearbyMaidsSameGroup = getNearbyMaidsSameGroup(maid, baubleItem, true);
+            List<EntityMaid> nearbyMaidsSameGroup = getNearbyMaidsSameGroup(maid, baubleItem, true, false);
             if (!nearbyMaidsSameGroup.isEmpty()) {
                 EntityMaid toMaid = nearbyMaidsSameGroup.get(0);
 
@@ -150,14 +150,14 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
 
     public static boolean matches(ItemStack incoming, ItemStack source) {
         if (incoming.hasCustomHoverName()) {
-            if (source.hasCustomHoverName() && !source.getHoverName().equals(incoming.getHoverName())) {
+            if (!source.hasCustomHoverName() || !source.getHoverName().equals(incoming.getHoverName())) {
                 return false;
             }
         }
         return true;
     }
 
-    protected static boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source, boolean requireAvailable) {
+    protected static boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source, boolean requireAvailable, boolean reversed) {
         if (requireAvailable) {
             if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW)
                 return false;
@@ -171,8 +171,14 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         for (int i = 0; i < t.getSlots(); i++)
             if (t.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
                 //如果当前物品存在名字，而且目标物品也存在名字，而且不一样，那么跳过
-                if (!matches(t.getStackInSlot(i), source)) {
-                    continue;
+                if (reversed) {
+                    if (!matches(source, t.getStackInSlot(i))) {
+                        continue;
+                    }
+                } else {
+                    if (!matches(t.getStackInSlot(i), source)) {
+                        continue;
+                    }
                 }
                 return true;
             }
@@ -191,6 +197,10 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
     public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, boolean requireAvailable, boolean propagate) {
+        return getNearbyMaidsSameGroup(maid, requireAvailable, propagate, false);
+    }
+
+    public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, boolean requireAvailable, boolean propagate, boolean reversed) {
         List<EntityMaid> maids = new ArrayList<>();
         Set<Component> hasChecked = new HashSet<>();
         Queue<ItemStack> queue = new LinkedList<>();
@@ -199,15 +209,15 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
             if (inv.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
                 queue.add(inv.getStackInSlot(i));
                 // 空名字天然匹配一切，可以直接跳过
-                if (!inv.getStackInSlot(i).hasCustomHoverName())
-                    return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable);
+                if (!inv.getStackInSlot(i).hasCustomHoverName() && reversed)
+                    return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable, reversed);
                 hasChecked.add(inv.getStackInSlot(i).getHoverName());
             }
         }
         // 如果匹配到空的名字，那么可以直接退出。所有的相关的都能被匹配
         while (!queue.isEmpty()) {
             ItemStack stack = queue.poll();
-            List<EntityMaid> tmp = getNearbyMaidsSameGroup(maid, stack, requireAvailable);
+            List<EntityMaid> tmp = getNearbyMaidsSameGroup(maid, stack, requireAvailable, reversed);
             for (EntityMaid nearbyMaid : tmp) {
                 if (maids.stream().noneMatch(m -> m.getUUID().equals(nearbyMaid.getUUID()))) {
                     maids.add(nearbyMaid);
@@ -217,7 +227,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 for (int i = 0; i < tt.getSlots(); i++) {
                     if (!tt.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) continue;
                     if (!tt.getStackInSlot(i).hasCustomHoverName())
-                        return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable);
+                        return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable, reversed);
                     if (!hasChecked.contains(tt.getStackInSlot(i).getHoverName())) {
                         queue.add(tt.getStackInSlot(i));
                         hasChecked.add(tt.getStackInSlot(i).getHoverName());
@@ -228,12 +238,12 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return maids;
     }
 
-    public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, ItemStack baubleItem, boolean requireAvailable) {
+    public static List<EntityMaid> getNearbyMaidsSameGroup(EntityMaid maid, ItemStack baubleItem, boolean requireAvailable, boolean reversed) {
         Level level = maid.level();
         return level.getEntities(
                 EntityTypeTest.forClass(EntityMaid.class),
                 getMaidFindingBBox(maid),
-                t -> hasBaubleAndAvailable(t, baubleItem, requireAvailable) && !t.getUUID().equals(maid.getUUID())
+                t -> hasBaubleAndAvailable(t, baubleItem, requireAvailable, reversed) && !t.getUUID().equals(maid.getUUID())
         );
     }
 
@@ -247,7 +257,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         Target target = MemoryUtil.getViewedInventory(maid).ambitiousPos((ServerLevel) maid.level(), ambitiousTarget);
         Map<String, List<ViewedInventoryMemory.ItemCount>> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAtInternal(target);
         ServerLevel level = (ServerLevel) maid.level();
-        getNearbyMaidsSameGroup(maid, false, true)
+        getNearbyMaidsSameGroup(maid, false, true, true)
                 .forEach(toMaid -> {
                     if (!StorageAccessUtil.isValidTarget(level, toMaid, target, false)) return;
                     ViewedInventoryMemory toMem = MemoryUtil.getViewedInventory(toMaid);

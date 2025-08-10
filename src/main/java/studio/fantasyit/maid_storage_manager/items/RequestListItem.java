@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -143,6 +144,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         tag.put(RequestListItem.TAG_ITEMS, list);
         target.setTag(tag);
     }
+
     public static boolean matchNbt(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         if (!mainHandItem.hasTag()) return false;
@@ -184,6 +186,33 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         }
         tag.put(TAG_ITEMS, items);
         mainHandItem.setTag(tag);
+    }
+
+    public static void copyFailAdditionTo(ItemStack reqList, ItemStack mainHandItem,ItemStack targetItem) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()) || !reqList.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+            return;
+        if (!reqList.hasTag()) return;
+        CompoundTag fromTag = Objects.requireNonNull(reqList.getTag());
+        CompoundTag toTag = mainHandItem.getOrCreateTag();
+        if (toTag.contains(TAG_ITEMS_FAIL_ADDITION))
+            toTag.putString(TAG_ITEMS_FAIL_ADDITION, fromTag.getString(TAG_ITEMS_FAIL_ADDITION));
+        ListTag list = fromTag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        ListTag toList = toTag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag tmp = list.getCompound(i);
+            ItemStack item = ItemStack.of(tmp.getCompound(TAG_ITEMS_ITEM));
+            if (item.isEmpty()) continue;
+            if (!tmp.contains(TAG_ITEMS_FAIL_ADDITION) && !tmp.contains(TAG_ITEMS_MISSING)) continue;
+            for (int j = 0; j < toList.size(); j++) {
+                CompoundTag tmp2 = toList.getCompound(j);
+                ItemStack toItem = ItemStack.of(tmp2.getCompound(TAG_ITEMS_ITEM));
+                if (ItemStackUtil.isSame(item, toItem, true)) {
+                    tmp2.putString(TAG_ITEMS_FAIL_ADDITION, tmp.getString(TAG_ITEMS_FAIL_ADDITION));
+                    tmp2.put(TAG_ITEMS_MISSING, tmp.getList(TAG_ITEMS_MISSING, Tag.TAG_COMPOUND));
+                    toList.set(j, tmp2);
+                }
+            }
+        }
     }
 
 
