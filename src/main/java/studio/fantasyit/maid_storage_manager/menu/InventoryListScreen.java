@@ -231,7 +231,7 @@ public class InventoryListScreen extends Screen {
                                 return true;
                             if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
                                 return true;
-                            if (itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+                            if (itemStack.getTooltipLines(minecraft.player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
                                 return true;
                             }
                         }
@@ -239,7 +239,7 @@ public class InventoryListScreen extends Screen {
                             return true;
                         if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
                             return true;
-                        return itemStack.getTooltipLines(null, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
+                        return itemStack.getTooltipLines(minecraft.player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
                     }).toList();
 
         list = list.stream().filter(filterOption.predicate).sorted(sortingOption.comparator).toList();
