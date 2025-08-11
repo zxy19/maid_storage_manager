@@ -145,6 +145,8 @@ dependencies {
     compileOnly "curse.maven:touhou-little-maid-355044:6657437"
     runtimeOnly "curse.maven:touhou-little-maid-355044:6657437"
 
+    runtimeOnly "curse.maven:accelerated-rendering-1314021:6839175"
+
 
     compileOnly "org.anti_ad.mc:InventoryProfilesNext-neoforge-1.21:2.1.10"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
