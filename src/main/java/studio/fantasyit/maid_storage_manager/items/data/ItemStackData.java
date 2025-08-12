@@ -2,9 +2,9 @@ package studio.fantasyit.maid_storage_manager.items.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -16,11 +16,14 @@ public record ItemStackData(CompoundTag itemStackData) {
             CompoundTag.CODEC.fieldOf("itemStack").forGetter(ItemStackData::itemStackData)
     ).apply(instance, ItemStackData::new));
 
-    public static StreamCodec<ByteBuf, ItemStackData> STREAM_CODEC =
-            ByteBufCodecs.fromCodec(CODEC);
+    public static StreamCodec<RegistryFriendlyByteBuf, ItemStackData> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.COMPOUND_TAG,
+            ItemStackData::itemStackData,
+            ItemStackData::new
+    );
 
     public ItemStackData(HolderLookup.Provider provider, ItemStack itemStack) {
-        this(itemStack.isEmpty() ? new CompoundTag() : ItemStackUtil.saveStack(provider,itemStack));
+        this(itemStack.isEmpty() ? new CompoundTag() : ItemStackUtil.saveStack(provider, itemStack));
     }
 
     @Override

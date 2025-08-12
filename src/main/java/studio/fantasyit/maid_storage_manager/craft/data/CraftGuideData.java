@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,13 @@ public class CraftGuideData {
                             .forGetter(CraftGuideData::getType)
             ).apply(instance, CraftGuideData::new)
     );
-    public static StreamCodec<ByteBuf, CraftGuideData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+    public static StreamCodec<RegistryFriendlyByteBuf, CraftGuideData> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.collection(ArrayList::new, CraftGuideStepData.STREAM_CODEC),
+            CraftGuideData::getSteps,
+            ResourceLocation.STREAM_CODEC,
+            CraftGuideData::getType,
+            CraftGuideData::new
+    );
 
     public List<CraftGuideStepData> steps;
     public ResourceLocation type;

@@ -6,6 +6,9 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -38,6 +41,24 @@ public class CraftGuideStepData {
                     CompoundTag.CODEC.fieldOf(CraftGuide.TAG_OP_EXTRA)
                             .forGetter(CraftGuideStepData::getExtraData)
             ).apply(instance, CraftGuideStepData::new)
+    );
+    public static StreamCodec<RegistryFriendlyByteBuf, CraftGuideStepData> STREAM_CODEC = StreamCodec.of(
+            (t, c) -> {
+                Target.STREAM_CODEC.encode(t, c.storage);
+                t.writeCollection(c.input, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
+                t.writeCollection(c.output, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
+                t.writeResourceLocation(c.action);
+                t.writeBoolean(c.optional);
+                t.writeNbt(c.extraData);
+            },
+            (c) -> new CraftGuideStepData(
+                    Target.STREAM_CODEC.decode(c),
+                    c.readCollection(ArrayList::new, (StreamCodec<FriendlyByteBuf, ItemStack>) (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
+                    c.readCollection(ArrayList::new, (StreamCodec<FriendlyByteBuf, ItemStack>) (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
+                    c.readResourceLocation(),
+                    c.readBoolean(),
+                    c.readNbt()
+            )
     );
     public Target storage;
     public List<ItemStack> input;
@@ -128,7 +149,7 @@ public class CraftGuideStepData {
             ListTag list = new ListTag();
             for (ItemStack itemStack : input) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(registryAccess,itemStack));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(registryAccess, itemStack));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }
@@ -138,7 +159,7 @@ public class CraftGuideStepData {
             ListTag list = new ListTag();
             for (ItemStack itemStack : output) {
                 CompoundTag itemTag = new CompoundTag();
-                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(registryAccess,itemStack));
+                itemTag.put(CraftGuide.TAG_ITEMS_ITEM, ItemStackUtil.saveStack(registryAccess, itemStack));
                 itemTag.putInt(CraftGuide.TAG_ITEMS_COUNT, itemStack.getCount());
                 list.add(itemTag);
             }

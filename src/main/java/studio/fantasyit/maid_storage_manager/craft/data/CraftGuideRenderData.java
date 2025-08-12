@@ -2,8 +2,8 @@ package studio.fantasyit.maid_storage_manager.craft.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CraftGuideRenderData {
@@ -24,6 +25,13 @@ public class CraftGuideRenderData {
                     ResourceLocation.CODEC.fieldOf("recipe").forGetter(Pair::getB)
             ).apply(instance, Pair::new)
     );
+    static StreamCodec<RegistryFriendlyByteBuf, Pair<Target, ResourceLocation>> STEP_BINDING_STREAM_CODEC = StreamCodec.composite(
+            Target.STREAM_CODEC,
+            Pair::getA,
+            ResourceLocation.STREAM_CODEC,
+            Pair::getB,
+            Pair::new
+    );
     public static Codec<CraftGuideRenderData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     STEP_BINDING_CODEC.listOf().fieldOf("stepBindings").forGetter(t -> t.stepBindings),
@@ -32,7 +40,17 @@ public class CraftGuideRenderData {
                     ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.fieldOf("icon").forGetter(t -> t.icon)
             ).apply(instance, CraftGuideRenderData::new)
     );
-    public static StreamCodec<ByteBuf, CraftGuideRenderData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+    public static StreamCodec<RegistryFriendlyByteBuf, CraftGuideRenderData> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.collection(ArrayList::new, STEP_BINDING_STREAM_CODEC),
+            t -> t.stepBindings,
+            ByteBufCodecs.collection(ArrayList::new, ItemStackUtil.OPTIONAL_STREAM_CODEC),
+            t -> t.inputs,
+            ByteBufCodecs.collection(ArrayList::new, ItemStackUtil.OPTIONAL_STREAM_CODEC),
+            t -> t.outputs,
+            ItemStackUtil.OPTIONAL_STREAM_CODEC,
+            t -> t.icon,
+            CraftGuideRenderData::new
+    );
 
     public final List<Pair<Target, ResourceLocation>> stepBindings;
     public final List<ItemStack> outputs;
