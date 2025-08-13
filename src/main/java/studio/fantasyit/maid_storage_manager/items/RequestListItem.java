@@ -575,28 +575,28 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         return tag.getUUID(TAG_UUID);
     }
 
-    public static void setMissingItem(ItemStack itemStack, ItemStack item, List<ItemStack> missing) {
-        if (!itemStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
-        if (!itemStack.hasTag()) return;
-        CompoundTag tag = Objects.requireNonNull(itemStack.getTag());
+    public static void setMissingItem(ItemStack requestListItem, ItemStack toSetFailItem, List<ItemStack> missing) {
+        if (!requestListItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return;
+        if (!requestListItem.hasTag()) return;
+        CompoundTag tag = Objects.requireNonNull(requestListItem.getTag());
         ListTag list = tag.getList(TAG_ITEMS, ListTag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i);
-            if (ItemStack.isSameItemSameTags(ItemStackUtil.parseStack(tmp.getCompound(TAG_ITEMS_ITEM)), item)) {
+            if (ItemStack.isSameItemSameTags(ItemStackUtil.parseStack(tmp.getCompound(TAG_ITEMS_ITEM)), toSetFailItem)) {
                 ListTag missingList = tmp.getList(TAG_ITEMS_MISSING, ListTag.TAG_COMPOUND);
                 for (ItemStack ti : missing) {
                     if (ti.isEmpty()) continue;
                     if (ti.is(ItemRegistry.REQUEST_LIST_ITEM.get()))
-                        continue;//FIXME: 此处不应该出现这个内容，但是出现会导致NBT爆炸的恶性bug，暂时屏蔽。等待解决
+                        continue;//TODO: 验证问题是否任然存在
                     int idx = -1;
                     for (int j = 0; j < missingList.size(); j++) {
                         if (ItemStack.isSameItemSameTags(ItemStackUtil.parseStack(missingList.getCompound(j)), ti))
                             idx = j;
                     }
                     if (idx != -1) {
-                        ItemStack itemstack = ItemStackUtil.parseStack(missingList.getCompound(idx));
-                        itemstack.grow(ti.getCount());
-                        missingList.set(idx, ItemStackUtil.saveStack(itemStack));
+                        ItemStack toBeSaved = ItemStackUtil.parseStack(missingList.getCompound(idx));
+                        toBeSaved.grow(ti.getCount());
+                        missingList.set(idx, ItemStackUtil.saveStack(toBeSaved));
                     } else if (missingList.size() < 15)
                         missingList.add(ItemStackUtil.saveStack(ti));
                 }
@@ -607,7 +607,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             }
         }
         tag.put(TAG_ITEMS, list);
-        itemStack.setTag(tag);
+        requestListItem.setTag(tag);
     }
 
     public static boolean isAllSuccess(ItemStack stack) {
