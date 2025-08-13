@@ -192,8 +192,10 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             else if (costedInput.getCount() != 0)
                 count = Math.min(count, (availableCount - input.getCount()) / costedInput.getCount() + 1);
         }
-        List<ItemStack> toSimulate = new ArrayList<>(inputs);
+        List<ItemStack> toSimulate = new ArrayList<>(inputs.stream().map(ItemStack::copy).toList());
         List<CraftLayer> toTest = new ArrayList<>();
+
+        //这里使用一个包含了count的层来检查背包空间是否够用
         CraftLayer test = new CraftLayer(Optional.of(craftGuideData), toSimulate, 1);
         for (int i = 0; i < count; i++) {
             toTest.add(test);
@@ -205,11 +207,19 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             if (context.getSlotConsume() < InvUtil.freeSlots(maid.getAvailableInv(false))) {
                 break;
             }
+            //如果不符合，那么count-1再次尝试
             toTest.remove(0);
         }
 
+        if (count == 0)
+            return 0;
+
+        //构造新的层
         for (int i = 0; i < inputs.size(); i++)
-            toSimulate.get(i).setCount(costedInputs.get(i).getCount() * count + inputs.get(i).getCount());
+            if (count <= 1)
+                toSimulate.get(i).setCount(inputs.get(i).getCount());
+            else
+                toSimulate.get(i).setCount(costedInputs.get(i).getCount() * (count - 1) + inputs.get(i).getCount());
         layer = new CraftLayer(Optional.of(craftGuideData), toSimulate, count);
         CraftResultContext remainContext = new CraftResultContext(toTest);
         List<ItemStack> remains = new ArrayList<>();

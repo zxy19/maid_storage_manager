@@ -31,7 +31,7 @@ public class AutoGraphGenerator {
     protected final ICachableGeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
     protected final List<InventoryItem> inventory;
-    protected final MaidPathFindingBFS pathfindingBFS;
+    protected MaidPathFindingBFS pathfindingBFS;
     Map<ResourceLocation, List<BlockPos>> recognizedTypePositions;
     Set<ResourceLocation> hasDoneTypes;
     private final List<BlockPos> blockPosList;
@@ -47,11 +47,7 @@ public class AutoGraphGenerator {
         };
     }
 
-    public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList, List<CraftGuideData> hasExisted) {
-        this.maid = maid;
-        BlockPos center = maid.blockPosition();
-        if (maid.hasRestriction())
-            center = maid.getRestrictCenter();
+    protected void updatePathfinding() {
         int distance = (int) Math.ceil(maid.hasRestriction() ? maid.getRestrictRadius() : 5);
         this.pathfindingBFS = new MaidPathFindingBFS(
                 maid.getNavigation().getNodeEvaluator(),
@@ -59,6 +55,15 @@ public class AutoGraphGenerator {
                 maid,
                 distance
         );
+    }
+
+    public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList, List<CraftGuideData> hasExisted) {
+        this.maid = maid;
+        BlockPos center = maid.blockPosition();
+        if (maid.hasRestriction())
+            center = maid.getRestrictCenter();
+        int distance = (int) Math.ceil(maid.hasRestriction() ? maid.getRestrictRadius() : 5);
+        updatePathfinding();
         inventory = MemoryUtil.getViewedInventory(maid).flatten();
         iAutoCraftGuideGenerators = CraftManager.getInstance().getAutoCraftGuideGenerators();
         blockPosList = BlockPos
@@ -92,6 +97,7 @@ public class AutoGraphGenerator {
     }
 
     public boolean processBlock() {
+        updatePathfinding();
         int count = 0;
         if (craftGeneratorTypeIndex >= iAutoCraftGuideGenerators.size()) return true;
         IAutoCraftGuideGenerator generator = iAutoCraftGuideGenerators.get(craftGeneratorTypeIndex);
@@ -120,7 +126,7 @@ public class AutoGraphGenerator {
                     }
                 }
             }
-            if (count > 5)
+            if (count > 10)
                 return false;
         }
         if (minPos != null) {
