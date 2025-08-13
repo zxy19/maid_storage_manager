@@ -186,7 +186,7 @@ public class Config {
             .define("crafting.components.default", false);
     private static final ModConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
             .comment("Specific those components that are ignored from comparing.")
-            .defineListAllowEmpty("crafting.components.no_matching_path", () -> List.of("damage"), o -> o instanceof String);
+            .defineListAllowEmpty("crafting.components.no_matching_path", () -> List.of("minecraft:damage"), o -> o instanceof String);
     private static final ModConfigSpec.BooleanValue CRAFTING_GENERATE_CRAFT_GUIDE = BUILDER
             .comment("Generate craft guides for vanilla recipes.")
             .define("crafting.generate", false);
@@ -309,6 +309,11 @@ public class Config {
         noBubbleForSub = NO_BUBBLE_FOR_SUB_TASK.get();
         generateNearestOnly = CRAFTING_GENERATING_NEAREST_ONLY.get();
         usingBetterLightOnItems = USING_BETTER_LIGHT_ON_ITEM.get();
+        //为了防止已经修改的选项被破坏，这里添加一个修改
+        if (noMatchPaths.contains("damage")) {
+            noMatchPaths = noMatchPaths.stream().map(s -> s.equals("damage") ? "minecraft:damage" : s).toList();
+            NBT_NO_MATCH_PATH.set(noMatchPaths);
+        }
     }
 
     public static void save() {
