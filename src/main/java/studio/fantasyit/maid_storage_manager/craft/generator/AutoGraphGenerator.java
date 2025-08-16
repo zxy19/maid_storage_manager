@@ -53,7 +53,8 @@ public class AutoGraphGenerator {
                 maid.getNavigation().getNodeEvaluator(),
                 (ServerLevel) maid.level(),
                 maid,
-                distance
+                distance,
+                7
         );
     }
 
