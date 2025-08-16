@@ -16,14 +16,16 @@ abstract public class MaidMoveToBlockTaskWithArrivalMap extends MaidMoveToBlockT
     }
 
     private MaidPathFindingBFS pathfindingBFS;
+
     protected @NotNull MaidPathFindingBFS getOrCreateCustomArrivalMap(@NotNull ServerLevel worldIn, @NotNull EntityMaid maid) {
         if (this.pathfindingBFS == null)
             if (maid.hasRestriction())
                 this.pathfindingBFS = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), worldIn, maid, (int) maid.getRestrictRadius() + 1, (int) maid.getRestrictRadius());
             else
-                this.pathfindingBFS = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), worldIn, maid, 7);
+                this.pathfindingBFS = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), worldIn, maid, 7, 7);
         return this.pathfindingBFS;
     }
+
     @Override
     protected void stop(ServerLevel p_22540_, EntityMaid p_22541_, long p_22542_) {
         super.stop(p_22540_, p_22541_, p_22542_);

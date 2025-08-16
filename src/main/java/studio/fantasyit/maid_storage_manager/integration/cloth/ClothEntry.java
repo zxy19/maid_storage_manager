@@ -343,7 +343,7 @@ public class ClothEntry {
                         .build()
         );
         builder.add(
-                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.loop_solver_new_byproduct"), Config.craftingLoopSolverPreventIndirect)
+                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.crafting.loop_solver_new_byproduct"), Config.craftingLoopSolverPreventNewByProduct)
                         .setTooltip(Component.translatable("config.maid_storage_manager.crafting.loop_solver_new_byproduct.tooltip"))
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingLoopSolverPreventNewByProduct = t))
                         .build()
