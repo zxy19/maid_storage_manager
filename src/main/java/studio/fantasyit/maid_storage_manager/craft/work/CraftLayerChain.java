@@ -478,6 +478,8 @@ public class CraftLayerChain {
      * @return
      */
     public boolean dispatchedDone(EntityMaid targetMaid, EntityMaid maid, int index, boolean allSuccess, ItemStack reqList) {
+        if (nodes.size() <= index)
+            return false;
         SolvedCraftLayer node = nodes.get(index);
         CraftLayer layer = layers.get(index);
         dispatchedTaskMapping.remove(targetMaid.getUUID());
@@ -690,9 +692,15 @@ public class CraftLayerChain {
             return;
         if (hasCurrent()) return;
         if (!dispatchedTaskMapping.isEmpty() && isMaster) return;
-        if (isStoppingAdding == StoppingAdding.RESCHEDULE) {
+        if (!isMaster) {
+            //非主合成，这里直接标记失败，但是不要展示失败提示消息。
+            failAllItem(maid);
+            ChatTexts.removeSecondary(maid);
+        } else if (isStoppingAdding == StoppingAdding.RESCHEDULE) {
+            //主合成的缺少物品类，进行重试
             MemoryUtil.getCrafting(maid).stopAndClearPlan(maid);
         } else if (isStoppingAdding == StoppingAdding.FAIL) {
+            //主合成的合成失败，直接停止
             handleFailStop(maid);
         }
         isStoppingAdding = StoppingAdding.NONE;
@@ -761,7 +769,7 @@ public class CraftLayerChain {
     }
 
 
-    protected void handleFailStop(EntityMaid maid) {
+    protected void failAllItem(EntityMaid maid) {
         List<ItemStack> targets = null;
         //符合当前合成组的全部标记为失败
         for (int i = 0; i < layers.size(); i++) {
@@ -790,6 +798,10 @@ public class CraftLayerChain {
             }
             MemoryUtil.getRequestProgress(maid).setReturn();
         }
+    }
+
+    protected void handleFailStop(EntityMaid maid) {
+        failAllItem(maid);
 
         checkAndSwitchGroup(maid);
 

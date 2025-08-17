@@ -207,6 +207,10 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             removeInStack(node);
             return 0;
         }
+        if (results.size() >= Config.craftingMaxLayerLimit) {
+            removeInStack(node);
+            return 0;
+        }
         int restRequire = maxRequire;
         if (node.maxSuccess < restRequire)
             restRequire = node.maxSuccess;
@@ -295,7 +299,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             if (targetAvailable >= targetCount) return true;
             restoreCurrentAndStartContext(targetItem, targetCount);
         }
-        maxDepthAllow = Integer.MAX_VALUE;
+        maxDepthAllow = Config.craftingMaxLayerLimit;
         targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
         return true;
     }

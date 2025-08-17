@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.algo;
 
 import net.minecraft.core.RegistryAccess;
+import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.util.ThreadingUtil;
 
 import java.util.concurrent.Future;
@@ -35,8 +36,15 @@ public class ThreadedGeneratorGraph extends GeneratorGraph {
             if (!tickLock.writeLock().tryLock()) {
                 continue;
             }
-            boolean ret = super.process();
-            tickLock.writeLock().unlock();
+            boolean ret;
+            try {
+                ret = super.process();
+            } catch (Exception e) {
+                Logger.logger.error("In process craft guides generator", e);
+                break;
+            } finally {
+                tickLock.writeLock().unlock();
+            }
             if (ret) break;
         }
     }

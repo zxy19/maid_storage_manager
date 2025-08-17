@@ -169,6 +169,9 @@ public class Config {
                     List.of(CraftSolver.DFS_THREADED.name()),
                     o -> o instanceof List && Arrays.stream(CraftSolver.values()).map(CraftSolver::name).toList().containsAll((List<?>) o)
             );
+    private static final ForgeConfigSpec.IntValue CRAFTING_MAX_LAYER_LIMIT = BUILDER
+            .comment("Max layer count limit when calculating plan. Increasing this value may cause a large lagging in some cases.")
+            .defineInRange("crafting.max_layer_limit", 10000, 100, Integer.MAX_VALUE);
     private static final ForgeConfigSpec.BooleanValue CRAFTING_EXPERIMENTAL_OPTIMIZATION = BUILDER
             .comment("Some experimental optimization. If some crafting calculation cannot done successfully, try turn this off.")
             .define("crafting.experimental_optimization", true);
@@ -258,6 +261,7 @@ public class Config {
     public static boolean generateNearestOnly;
     public static CraftGenerator craftingGenerator;
     public static boolean noBubbleForSub;
+    public static int craftingMaxLayerLimit;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -309,6 +313,7 @@ public class Config {
         noBubbleForSub = NO_BUBBLE_FOR_SUB_TASK.get();
         generateNearestOnly = CRAFTING_GENERATING_NEAREST_ONLY.get();
         usingBetterLightOnItems = USING_BETTER_LIGHT_ON_ITEM.get();
+        craftingMaxLayerLimit = CRAFTING_MAX_LAYER_LIMIT.get();
     }
 
     public static void save() {
@@ -360,10 +365,20 @@ public class Config {
         CRAFTING_GENERATING_NEAREST_ONLY.set(generateNearestOnly);
         USING_BETTER_LIGHT_ON_ITEM.set(usingBetterLightOnItems);
         TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING.set(tryGoingWorkCenterWhenFailPathFinding);
+        CRAFTING_MAX_LAYER_LIMIT.set(craftingMaxLayerLimit);
     }
+
+    static boolean changed = false;
 
     public static void saveAfter(Runnable o) {
         o.run();
-        Config.save();
+        changed = true;
+    }
+
+    public static void saveIfChanged() {
+        if (changed) {
+            save();
+            changed = false;
+        }
     }
 }

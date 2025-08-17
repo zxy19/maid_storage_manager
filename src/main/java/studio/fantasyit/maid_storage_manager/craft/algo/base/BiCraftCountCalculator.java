@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListUtils;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
@@ -41,6 +42,9 @@ public class BiCraftCountCalculator {
         List<CraftLayer> currentResults = availableCraftGraph.getResults();
         CraftResultContext context = null;
         boolean success = false;
+        if (currentResults.size() > Config.craftingMaxLayerLimit) {
+            currentResults = null;
+        }
         if (currentResults != null && !currentResults.isEmpty()) {
             hasAnySuccessCraftingCalc = true;
             context = new CraftResultContext(currentResults);

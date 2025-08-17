@@ -150,10 +150,10 @@ public class ProgressData {
         for (int i = 0; i < plan.getLayerCount(); i++) {
             SolvedCraftLayer node = plan.getNode(i);
             CraftLayer layer = plan.getLayer(i);
+            if (node.group() != plan.getCurrentGroup()) continue;
             if (peekItem && layer.getCraftData().isEmpty()) {
                 targetItem = layer.getItems();
             }
-            if (node.group() != plan.getCurrentGroup()) continue;
             peekItem = true;
             if (!switch (node.progress().getValue()) {
                 case IDLE, WAITING -> viewing == ProgressPad.Viewing.WAITING;

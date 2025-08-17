@@ -25,6 +25,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -61,7 +62,7 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
                     .getAllRecipesFor(RecipeType.SMELTING)
                     .forEach(recipe -> {
                         ItemStack output = recipe.getResultItem(level.registryAccess());
-                        graph.addRecipe(recipe.getId(),
+                        graph.addRecipe(wrapId(recipe.getId()),
                                 recipe.getIngredients(),
                                 recipe.getIngredients().stream().map(t -> 1).toList(),
                                 output,
@@ -122,6 +123,10 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.smelter");
+    }
+
+    private ResourceLocation wrapId(ResourceLocation id) {
+        return RecipeUtil.wrapLocation(getType(), id);
     }
 
     @Override

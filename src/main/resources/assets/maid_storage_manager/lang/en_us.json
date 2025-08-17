@@ -438,5 +438,7 @@
   "interaction.progress_pad.selecting.viewing": "Selecting: Viewing",
   "interaction.progress_pad.selecting.style": "Selecting: Style",
   "interaction.progress_pad.selecting.merge": "Selecting: Merge",
-  "gui.maid_storage_manager.config.crafting_repeat_count": "Max Craft Layer Repeat"
+  "gui.maid_storage_manager.config.crafting_repeat_count": "Max Craft Layer Repeat",
+  "config.maid_storage_manager.crafting.max_layer_limit.tooltip": "Max layer count limit when calculating plan. Increasing this value may cause a large lagging in some cases.",
+  "config.maid_storage_manager.crafting.max_layer_limit": "Max Layer Limit"
 }

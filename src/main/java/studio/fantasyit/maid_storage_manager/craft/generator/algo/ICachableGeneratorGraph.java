@@ -24,6 +24,8 @@ public interface ICachableGeneratorGraph {
 
     void addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
 
+    void addRecipeWrapId(Recipe<?> recipe,ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
+
     void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
 
     void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);

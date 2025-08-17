@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.ItemNode;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -177,6 +178,22 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
         );
         pushedSteps++;
     }
+
+    public void addRecipeWrapId(Recipe<?> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        List<Integer> ingredientCounts = recipe.getIngredients()
+                .stream()
+                .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
+                .toList();
+        addRecipe(
+                RecipeUtil.wrapLocation(generator, recipe.getId()),
+                recipe.getIngredients(),
+                ingredientCounts,
+                recipe.getResultItem(registryAccess),
+                craftGuideSupplier
+        );
+        pushedSteps++;
+    }
+
 
     public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         addRecipe(id, ingredients, ingredientCounts, List.of(output), craftGuideSupplier);

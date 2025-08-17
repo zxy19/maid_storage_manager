@@ -247,31 +247,34 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                             ItemStack resultItem = recipe.getResultItem(level.registryAccess());
                             if (!posFilter.isAvailable(resultItem))
                                 return;
-                            graph.addRecipe(recipe, items -> {
-                                List<CraftGuideStepData> steps = new ArrayList<>();
-                                each3items(items, t -> steps.add(new CraftGuideStepData(
-                                        new Target(ItemHandlerStorage.TYPE, test),
-                                        t.stream().map(
-                                                i -> i.copyWithCount(i.getCount() * COUNT.getValue())
-                                        ).toList(),
-                                        List.of(),
-                                        CommonPlaceItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
-                                )));
-                                steps.add(new CraftGuideStepData(
-                                        new Target(ItemHandlerStorage.TYPE, test),
-                                        List.of(),
-                                        List.of(resultItem.copyWithCount(resultItem.getCount() * COUNT.getValue())),
-                                        CommonTakeItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
-                                ));
-                                return new CraftGuideData(
-                                        steps,
-                                        CommonType.TYPE
-                                );
-                            });
+                            graph.addRecipeWrapId(
+                                    recipe,
+                                    getType(),
+                                    items -> {
+                                        List<CraftGuideStepData> steps = new ArrayList<>();
+                                        each3items(items, t -> steps.add(new CraftGuideStepData(
+                                                new Target(ItemHandlerStorage.TYPE, test),
+                                                t.stream().map(
+                                                        i -> i.copyWithCount(i.getCount() * COUNT.getValue())
+                                                ).toList(),
+                                                List.of(),
+                                                CommonPlaceItemAction.TYPE,
+                                                false,
+                                                new CompoundTag()
+                                        )));
+                                        steps.add(new CraftGuideStepData(
+                                                new Target(ItemHandlerStorage.TYPE, test),
+                                                List.of(),
+                                                List.of(resultItem.copyWithCount(resultItem.getCount() * COUNT.getValue())),
+                                                CommonTakeItemAction.TYPE,
+                                                false,
+                                                new CompoundTag()
+                                        ));
+                                        return new CraftGuideData(
+                                                steps,
+                                                CommonType.TYPE
+                                        );
+                                    });
                         });
             }
         }

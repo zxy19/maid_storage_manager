@@ -344,6 +344,10 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             removeInStack(push.node);
             setReturnValue(0);
         }
+        if (results.size() >= Config.craftingMaxLayerLimit) {
+            removeInStack(push.node);
+            setReturnValue(0);
+        }
         if (push.node.maxSuccess < push.restRequire.getValue()) {
             push.restRequire.setValue(push.node.maxSuccess);
             push.simulateRequire.setValue(push.node.maxSuccess);

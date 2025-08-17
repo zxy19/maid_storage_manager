@@ -438,5 +438,7 @@
   "interaction.progress_pad.selecting.viewing": "正在选择查看",
   "interaction.progress_pad.selecting.style": "正在选择样式",
   "interaction.progress_pad.selecting.merge": "正在选择合并",
-  "gui.maid_storage_manager.config.crafting_repeat_count": "最大合成层重复"
+  "gui.maid_storage_manager.config.crafting_repeat_count": "最大合成层重复",
+  "config.maid_storage_manager.crafting.max_layer_limit.tooltip": "合成计算的最大层数量，设置过大的值可能导致巨大延迟",
+  "config.maid_storage_manager.crafting.max_layer_limit": "最大层限制"
 }
