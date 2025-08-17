@@ -35,6 +35,7 @@ public class ClothEntry {
     }
 
     public static void createEntry(ConfigBuilder root, ConfigEntryBuilder entryBuilder) {
+        root.setSavingRunnable(Config::saveIfChanged);
         ConfigCategory category = root.getOrCreateCategory(Component.translatable("config.maid_storage_manager.title"));
         category.addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.debug"), Config.enableDebug)
@@ -272,6 +273,12 @@ public class ClothEntry {
                                 : Optional.of(Component.translatable("config.maid_storage_manager.crafting.solver.error"))
                         )
                         .setSaveConsumer(s -> Config.saveAfter(() -> Config.craftingSolver = s.stream().map(Config.CraftSolver::valueOf).toList()))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startIntField(Component.translatable("config.maid_storage_manager.crafting.max_layer_limit"), Config.craftingMaxLayerLimit)
+                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.craftingMaxLayerLimit = t))
+                        .setTooltip(Component.translatable("config.maid_storage_manager.crafting.max_layer_limit.tooltip"))
                         .build()
         );
         builder.add(

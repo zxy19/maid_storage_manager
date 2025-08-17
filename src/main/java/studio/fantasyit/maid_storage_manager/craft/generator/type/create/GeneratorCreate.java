@@ -10,7 +10,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -26,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredi
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
@@ -46,6 +49,26 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
         OUTPUT_FLUID_IDLE,
         OUTPUT_ITEM_SELECTIVE, OUTPUT_FLUID
     }
+
+    protected static boolean isAllFluidHasBucket(List<FluidIngredient> ingredients) {
+        if (ingredients.isEmpty())
+            return true;
+        return ingredients.stream()
+                .allMatch(fluidIngredient ->
+                        fluidIngredient
+                                .getMatchingFluidStacks()
+                                .stream()
+                                .map(FluidStack::getFluid)
+                                .map(Fluid::getBucket)
+                                .findAny().isPresent());
+    }
+
+    protected static boolean isFluidHasBucket(List<FluidStack> fluidStack) {
+        if (fluidStack.isEmpty()) return true;
+        return fluidStack.stream()
+                .allMatch(fs -> fs.getFluid().getBucket() != Items.AIR);
+    }
+
 
     protected static Optional<List<Ingredient>> transformFluidIngredient(List<FluidIngredient> ingredients) {
         if (ingredients.isEmpty())
@@ -129,6 +152,11 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
                 .forEach((holder) -> {
                     T recipe = holder.value();
                     int multiplier = getMinFullBucketCount(recipe);
+
+                    if (!isAllFluidHasBucket(recipe.getFluidIngredients()) || !isFluidHasBucket(recipe.getFluidResults())) {
+                        return;
+                    }
+
                     //所有输入原材料（流体装桶）
                     List<Ingredient> itemIngredients = optionalIngredientList(recipe.getIngredients()).orElse(List.of());
                     List<Ingredient> fluidBuckets = transformFluidIngredient(recipe.getFluidIngredients()).orElse(List.of());
@@ -157,7 +185,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
 
                     S state = getState(level, pos, recipe, graph);
 
-                    graph.addRecipe(holder.id(),
+                    graph.addRecipe(wrapId(holder.getId()),
                             all,
                             counts,
                             results,
@@ -267,6 +295,10 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
                                 );
                             });
                 });
+    }
+
+    private ResourceLocation wrapId(ResourceLocation id) {
+        return RecipeUtil.wrapLocation(getType(), id);
     }
 
     public void transformAllIngredients(T recipe, List<Ingredient> all, List<Integer> counts) {

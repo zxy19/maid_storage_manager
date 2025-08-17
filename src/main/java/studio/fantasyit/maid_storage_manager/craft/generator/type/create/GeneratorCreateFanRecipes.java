@@ -18,7 +18,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -241,31 +244,34 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                             ItemStack resultItem = recipe.getResultItem(level.registryAccess());
                             if (!posFilter.isAvailable(resultItem))
                                 return;
-                            graph.addRecipe(holder, items -> {
-                                List<CraftGuideStepData> steps = new ArrayList<>();
-                                each3items(items, t -> steps.add(new CraftGuideStepData(
-                                        new Target(ItemHandlerStorage.TYPE, test),
-                                        t.stream().map(
-                                                i -> i.copyWithCount(i.getCount() * COUNT.getValue())
-                                        ).toList(),
-                                        List.of(),
-                                        CommonPlaceItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
-                                )));
-                                steps.add(new CraftGuideStepData(
-                                        new Target(ItemHandlerStorage.TYPE, test),
-                                        List.of(),
-                                        List.of(resultItem.copyWithCount(resultItem.getCount() * COUNT.getValue())),
-                                        CommonTakeItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
-                                ));
-                                return new CraftGuideData(
-                                        steps,
-                                        CommonType.TYPE
-                                );
-                            });
+                            graph.addRecipeWrapId(
+                                    recipe,
+                                    getType(),
+                                    items -> {
+                                        List<CraftGuideStepData> steps = new ArrayList<>();
+                                        each3items(items, t -> steps.add(new CraftGuideStepData(
+                                                new Target(ItemHandlerStorage.TYPE, test),
+                                                t.stream().map(
+                                                        i -> i.copyWithCount(i.getCount() * COUNT.getValue())
+                                                ).toList(),
+                                                List.of(),
+                                                CommonPlaceItemAction.TYPE,
+                                                false,
+                                                new CompoundTag()
+                                        )));
+                                        steps.add(new CraftGuideStepData(
+                                                new Target(ItemHandlerStorage.TYPE, test),
+                                                List.of(),
+                                                List.of(resultItem.copyWithCount(resultItem.getCount() * COUNT.getValue())),
+                                                CommonTakeItemAction.TYPE,
+                                                false,
+                                                new CompoundTag()
+                                        ));
+                                        return new CraftGuideData(
+                                                steps,
+                                                CommonType.TYPE
+                                        );
+                                    });
                         });
             }
         }

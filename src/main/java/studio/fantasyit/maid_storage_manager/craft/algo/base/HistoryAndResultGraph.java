@@ -26,7 +26,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
     }
 
 
-    protected record HistoryRecord(int historyStackId, Node node, int id, int value) {
+    public record HistoryRecord(int historyStackId, Node node, int id, int value) {
         public final static int RECORD_CRAFTED = 0;
         public final static int RECORD_REQUIRED = 1;
         public final static int RECORD_SCHEDULED = 2;
@@ -132,7 +132,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
             craftLayer.setUsableCraftData(node.sameData);
 
             results.add(craftLayer);
-        }
+         }
         CraftNode lastNode = (CraftNode) getNode(lastOne.index);
         results.add(new CraftLayer(Optional.empty(),
                 List.of(targetItem.copyWithCount(targetAvailable)),

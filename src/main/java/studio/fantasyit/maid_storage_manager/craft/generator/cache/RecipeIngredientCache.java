@@ -14,18 +14,22 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.Ingredien
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
 public class RecipeIngredientCache {
-    public static final HashMap<ResourceLocation, List<UUID>> CACHE = new HashMap<>();
+    public static final ConcurrentHashMap<ResourceLocation, List<UUID>> CACHE = new ConcurrentHashMap<>();
     public static final List<CachedIngredient> cachedNode = new ArrayList<>();
+    private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 
     public static void invalidateAll() {
+        LOCK.writeLock().lock();
         CACHE.clear();
         cachedNode.clear();
+        LOCK.writeLock().unlock();
     }
 
     public static boolean isCached(ResourceLocation recipeId) {
@@ -64,9 +68,16 @@ public class RecipeIngredientCache {
     }
 
     public static void addRecipeCache(ResourceLocation id, List<Ingredient> ingredients) {
+        if (CACHE.containsKey(id)) {
+            Logger.error(
+                    "Recipe %s has been added for twice",
+                    id
+            );
+        }
         List<UUID> cachedIngredientNodeUUID = new ArrayList<>();
         for (Ingredient ingredient : ingredients) {
             boolean found = false;
+            LOCK.readLock().lock();
             for (CachedIngredient ingredientNode : cachedNode) {
                 if (ingredientNode.isEqualTo(ingredient)) {
                     found = true;
@@ -74,10 +85,13 @@ public class RecipeIngredientCache {
                     break;
                 }
             }
+            LOCK.readLock().unlock();
             if (!found) {
+                LOCK.writeLock().lock();
                 UUID uuid = UUID.randomUUID();
                 cachedNode.add(new CachedIngredient(ingredient.getItems(), uuid));
                 cachedIngredientNodeUUID.add(uuid);
+                LOCK.writeLock().unlock();
             }
         }
         CACHE.put(id, cachedIngredientNodeUUID);

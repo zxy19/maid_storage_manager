@@ -14,7 +14,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -23,6 +26,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -60,7 +64,7 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
                     .forEach(holder -> {
                         SmeltingRecipe recipe = holder.value();
                         ItemStack output = recipe.getResultItem(level.registryAccess());
-                        graph.addRecipe(holder.id(),
+                        graph.addRecipe(wrapId(holder.id()),
                                 recipe.getIngredients(),
                                 recipe.getIngredients().stream().map(t -> 1).toList(),
                                 output,
@@ -121,6 +125,10 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.smelter");
+    }
+
+    private ResourceLocation wrapId(ResourceLocation id) {
+        return RecipeUtil.wrapLocation(getType(), id);
     }
 
     @Override
