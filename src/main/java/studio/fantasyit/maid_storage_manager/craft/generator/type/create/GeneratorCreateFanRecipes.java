@@ -18,10 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -245,7 +242,7 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                             if (!posFilter.isAvailable(resultItem))
                                 return;
                             graph.addRecipeWrapId(
-                                    recipe,
+                                    holder,
                                     getType(),
                                     items -> {
                                         List<CraftGuideStepData> steps = new ArrayList<>();

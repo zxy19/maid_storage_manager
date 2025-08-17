@@ -4,6 +4,6 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RecipeUtil {
     public static ResourceLocation wrapLocation(ResourceLocation generator, ResourceLocation location) {
-        return new ResourceLocation(location.getNamespace(), location.getPath() + "/" + generator.getNamespace() + "/" + generator.getPath());
+        return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), location.getPath() + "/" + generator.getNamespace() + "/" + generator.getPath());
     }
 }

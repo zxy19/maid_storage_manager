@@ -183,13 +183,14 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
         pushedSteps++;
     }
 
-    public void addRecipeWrapId(Recipe<?> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> holder, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        Recipe<?> recipe = holder.value();
         List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
                 .toList();
         addRecipe(
-                RecipeUtil.wrapLocation(generator, recipe.getId()),
+                RecipeUtil.wrapLocation(generator, holder.id()),
                 recipe.getIngredients(),
                 ingredientCounts,
                 recipe.getResultItem(registryAccess),
