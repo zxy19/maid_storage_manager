@@ -76,17 +76,10 @@ public class ResultListOptimizer {
                 for (ItemStack itemStack : nextInputs) {
                     ItemStack itemStack1 = ItemStackUtil.removeIsMatchInList(oldOutputsToDetect, itemStack.copy(), ItemStackUtil::isSameInCrafting);
                     if (itemStack1.isEmpty()) continue;
-                    if (itemStack1.getMaxStackSize() == 1) {
-                        exceed = true;
-                    } else {
-                        ItemStackUtil.addToList(tItemStack, itemStack1, ItemStackUtil::isSameInCrafting);
-                    }
+                    ItemStackUtil.addToList(tItemStack, itemStack1, ItemStackUtil::isSameInCrafting);
                 }
                 //对于下一层的输出，判断其和上一层合并是否会导致溢出
                 for (ItemStack itemStack1 : nextOutputs) {
-                    if (itemStack1.getMaxStackSize() == 1) {
-                        exceed = true;
-                    }
                     ItemStackUtil.addToList(oldOutputsToDetect, itemStack1, ItemStackUtil::isSameInCrafting);
                 }
                 if (tItemStack.stream().anyMatch(itemStack1 -> itemStack1.getCount() > itemStack1.getMaxStackSize()))
