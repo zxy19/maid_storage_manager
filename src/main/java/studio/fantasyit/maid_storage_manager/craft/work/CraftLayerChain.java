@@ -397,6 +397,8 @@ public class CraftLayerChain {
                 continue;
             if (node.slotConsume() > targetFreeSlot - 1)
                 continue;
+            if (node.progress().getValue() != SolvedCraftLayer.Progress.IDLE)
+                continue;
 
             CraftLayer layer = layers.get(i);
             invConsumeSimulator.snapshot();
@@ -409,12 +411,10 @@ public class CraftLayerChain {
             if (layer.getCraftData().isEmpty())
                 continue;
 
-            if (node.progress().getValue() == SolvedCraftLayer.Progress.IDLE) {
-                if (layer.steps.stream().anyMatch(t -> !toMaid.isWithinRestriction(t.storage.pos)))
-                    continue;
-                if (resultIndex == -1 || nodes.get(resultIndex).lastTouch().getValue() < node.lastTouch().getValue())
-                    resultIndex = i;
-            }
+            if (layer.steps.stream().anyMatch(t -> !toMaid.isWithinRestriction(t.storage.pos)))
+                continue;
+            if (resultIndex == -1 || nodes.get(resultIndex).lastTouch().getValue() < node.lastTouch().getValue())
+                resultIndex = i;
         }
 
         if (resultIndex == -1)
