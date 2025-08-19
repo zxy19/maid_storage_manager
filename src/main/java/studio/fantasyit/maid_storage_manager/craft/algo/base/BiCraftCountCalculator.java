@@ -63,13 +63,17 @@ public class BiCraftCountCalculator {
             if (!success) {
                 ResultListUtils.unsetPlaceBefore(currentResults);
                 currentResults = ResultListUtils.splitIntoSingleStep(currentResults);
-                context = new CraftResultContext(currentResults);
+                if (currentResults.size() > Config.craftingMaxLayerLimit) {
+                    context = null;
+                } else {
+                    context = new CraftResultContext(currentResults);
+                }
             }
-            if (context.getSlotConsume() <= availableSlots) {
+            if (context != null && context.getSlotConsume() <= availableSlots) {
                 success = true;
             }
             //仍然不成功，再次尝试中途进行存储
-            if (!success) {
+            if (!success && context != null) {
                 context.splitTaskWith(availableSlots);
                 if (context.getSlotConsume() <= availableSlots) {
                     success = true;
