@@ -17,6 +17,8 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     public Stack<Node> listed = new Stack<>();
     public Map<Integer, Integer> inStack = new HashMap<>();
     public int maxDepthAllow = Integer.MAX_VALUE;
+    //防止成环时进行有效性判定用的记录层级ID
+    protected int minStepRecordLevelId = 0;
 
     public int addInStack(Node node) {
         if (!inStack.containsKey(node.id)) {
@@ -85,6 +87,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
     public static class ItemNode extends Node {
         public final ItemStack itemStack;
         public int minStepRequire;
+        public int minStepRequireId;
         public int required;
         public int crafted;
         public int count;
@@ -111,6 +114,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             this.loopInputIngredientCount = 0;
             this.hasKeepIngredient = false;
             this.minStepRequire = Integer.MAX_VALUE;
+            this.minStepRequireId = 0;
             this.maxLack = 0;
             this.singleTimeCount = 1;
             this.bestRecipeStartAt = -1;
@@ -316,8 +320,12 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     @Override
     public boolean processQueues() {
-        if (!loopSolver.tick()) return false;
+        if (!processLoopSolver()) return false;
         return process();
+    }
+
+    public boolean processLoopSolver() {
+        return loopSolver.tick();
     }
 
     public abstract boolean process();
@@ -354,6 +362,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     @Override
     public void startContext(ItemStack item, int count) {
+        minStepRecordLevelId = 0;
         for (Node node : nodes) {
             if (node instanceof ItemNode itemNode) {
                 itemNode.count -= itemNode.required;

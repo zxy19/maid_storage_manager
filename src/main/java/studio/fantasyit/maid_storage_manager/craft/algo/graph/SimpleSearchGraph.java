@@ -14,6 +14,20 @@ import java.util.List;
 import java.util.Map;
 
 public class SimpleSearchGraph extends HistoryAndResultGraph {
+    int dfsDepth = 0;
+
+    boolean addDepAndCheckIsTooDeep() {
+        if (dfsDepth >= 800) {
+            return true;
+        }
+        dfsDepth++;
+        return false;
+    }
+
+    void removeDep() {
+        dfsDepth--;
+    }
+
     public SimpleSearchGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
         super(items, craftGuides);
     }
@@ -44,7 +58,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             return alignedRequire;
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
-        if (maxRequire >= node.minStepRequire) {
+        //But 如果上一个节点触发了循环物品制作，则有可能物品会忽然增加一次，这时应该先跳过这个判断。这里用recordLevelId来判断是否有效
+        if (maxRequire >= node.minStepRequire && node.minStepRequireId == minStepRecordLevelId) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             if (maxRequire > alignedRequire)
                 node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
@@ -57,7 +72,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             return alignedRequire;
         }
         //超过最大深度，直接退出
-        if (addInStack(node) > maxDepthAllow) {
+        if (addInStack(node) > maxDepthAllow || addDepAndCheckIsTooDeep()) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             if (maxRequire > alignedRequire)
                 node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
@@ -71,6 +86,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         //回溯备用数据
         int oMaxRequire = maxRequire;
         int tNodeMinRequire = node.minStepRequire;
+        int tNodeMinRequireId = node.minStepRequireId;
         boolean tKeepIngredient = node.hasKeepIngredient;
         boolean keepCurrent = false;
         if (!node.hasKeepIngredient && node.loopInputIngredientCount > 0) {
@@ -78,6 +94,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             logger.log("Add keep loop use %s : %d", node.itemStack, node.loopInputIngredientCount);
             node.hasKeepIngredient = true;
             keepCurrent = true;
+            //打断环检测，因为此时的需求量发生突变
+            minStepRecordLevelId++;
         }
         if (node.loopInputIngredientCount > 0) {
             //如果循环配方，当前步骤至少保留一次循环用量，下一步骤再进行判断。
@@ -86,6 +104,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 stepCost = 0;
         }
         node.minStepRequire = maxRequire;
+        node.minStepRequireId = minStepRecordLevelId;
 
         MutableInt remainToCraft = new MutableInt(maxRequire - stepCost);
         logger.log("Item %s use -= %d", node.itemStack, stepCost);
@@ -99,17 +118,18 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             int weight = node.edges.get(i).getB();
             CraftNode toNode = (CraftNode) getNode(to);
             int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
-            if (toNode.hasLoopIngredient) maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
+            if (toNode.hasLoopIngredient)
+                maxRequiredForCurrentCraftNode = Math.min((node.singleTimeCount + weight - 1) / weight, maxRequiredForCurrentCraftNode);
             logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
             int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, estimating);
             logger.logExitLevel("Craft Finish=%d", available);
             int collect = Math.min(available * weight, remainToCraft.getValue());
             if (available > 0) {
-                //当前层是保留物品层。需要计算保留物品。特殊情况是，如果一次就完成了，那么这里不需要减去循环物品。
-                if (keepCurrent && collect < remainToCraft.getValue()) {
-                    collect -= node.loopInputIngredientCount;
+                //当前层是保留物品层。需要计算保留物品。即保证本层扣除结束后，至少剩余LoopInput的数量
+                if (keepCurrent) {
+                    collect = Math.min(node.getCurrentRemain() - node.loopInputIngredientCount, collect);
                     if (collect < 0) collect = 0;
-                    logger.log("Item keep loop %d in %d", collect, available * weight);
+                    logger.log("Item keep loop toTake=%d in totalSuccess=%d", collect, available * weight);
                 }
                 logger.log("Item use -= available %d", collect);
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, collect);
@@ -123,6 +143,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         }
 
         node.minStepRequire = tNodeMinRequire;
+        node.minStepRequireId = tNodeMinRequireId;
         node.hasKeepIngredient = tKeepIngredient;
         node.maxLack = Math.max(node.maxLack, remainToCraft.getValue());
         int crafted = maxRequire - remainToCraft.getValue();
@@ -144,15 +165,20 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             node.clearMaxSuccessAfter = false;
         }
         removeInStack(node);
+        removeDep();
         return Math.max(oMaxRequire - remainToCraft.getValue(), 0);
     }
 
     protected int dfsCalcItemNodeStartsAt(ItemNode node, int maxRequire) {
         if (Config.craftingShortestPathEvaluator == CraftPlanEvaluator.NONE) return 0;
         if (node.bestRecipeStartAt != -1) return node.bestRecipeStartAt;
-        //循环配方，直接返回当前作为起点。寻找最短环作为目标
-        if (node.bestRecipeStartAtCalculating && node.isLoopedIngredient) return 0;
+        //估算循环，直接返回数值并清空优化缓存
+        if (node.bestRecipeStartAtCalculating) {
+            node.clearMaxSuccessAfter = true;
+            return 0;
+        }
         if (node.edges.size() <= 1) return 0;
+        if (addDepAndCheckIsTooDeep()) return 0;
         node.bestRecipeStartAtCalculating = true;
         int historyId = this.historyId.getValue();
         int resultId = results.size();
@@ -199,6 +225,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             removeListedUntil(node);
             node.clearMaxSuccessAfter = false;
         }
+        removeDep();
         return startAt;
     }
 
@@ -207,6 +234,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             removeInStack(node);
             return 0;
         }
+        if (addDepAndCheckIsTooDeep())
+            return 0;
         if (results.size() >= Config.craftingMaxLayerLimit) {
             removeInStack(node);
             return 0;
@@ -288,16 +317,19 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             }
         }
         removeInStack(node);
+        removeDep();
         return totalSuccess;
     }
 
     @Override
     public boolean process() {
         for (int i = 10; i < 61; i += 10) {
+            dfsDepth = 0;
             maxDepthAllow = i;
             targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
             if (targetAvailable >= targetCount) return true;
             restoreCurrentAndStartContext(targetItem, targetCount);
+            while (!processLoopSolver()) ;
         }
         maxDepthAllow = Config.craftingMaxLayerLimit;
         targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
