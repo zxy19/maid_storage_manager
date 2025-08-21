@@ -16,6 +16,11 @@ public class RequestListSplitter {
             else {
                 int oCount = layer.getCount();
                 boolean placeBefore = layer.shouldPlaceBefore();
+                if (layer.getItems().stream().anyMatch(t -> t.getCount() < layer.getCount())) {
+                    //不可分割的层（涉及循环物品）
+                    result.add(layer);
+                    continue;
+                }
                 for (int rest = oCount; rest > 0; rest -= maxSize) {
                     int currentSize = Math.min(rest, maxSize);
                     CraftLayer newLayer = layer.copyWithNoState();
@@ -23,7 +28,7 @@ public class RequestListSplitter {
                     newLayer.setItems(
                             newLayer.getItems()
                                     .stream()
-                                    .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() / oCount * currentSize))
+                                    .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() * currentSize / oCount))
                                     .toList()
                     );
                     if (placeBefore) {
