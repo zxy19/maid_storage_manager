@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -36,6 +37,13 @@ import java.util.List;
 import java.util.Map;
 
 public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe, SingleRecipeInput, InputRecipeCache.SingleItem<ItemStackToItemStackRecipe>> {
+    ConfigTypes.ConfigType<Boolean> FACTORY_PARALLEL = new ConfigTypes.ConfigType<>(
+            "factory_parallel",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+
     ConfigTypes.ConfigType<Boolean> REPLACE_FURNACE = new ConfigTypes.ConfigType<>(
             "replace_furnace",
             true,
@@ -130,6 +138,14 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
 
     @Override
     public List<ConfigTypes.ConfigType<?>> getConfigurations() {
-        return List.of(REPLACE_FURNACE);
+        return List.of(REPLACE_FURNACE, FACTORY_PARALLEL);
+    }
+
+    @Override
+    protected int getRecipeMultiplier(BlockEntity machine, ItemStackToItemStackRecipe recipe) {
+        if (FACTORY_PARALLEL.getValue()) {
+            return getFactoryParallel(machine);
+        }
+        return 1;
     }
 }

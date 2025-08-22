@@ -128,17 +128,18 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
         BlockEntity _be = level.getBlockEntity(pos);
         if (_be instanceof EncasedFanBlockEntity be) {
             AirCurrent airCurrent = be.getAirCurrent();
-            int dv = airCurrent.pushing ? 1 : -1;
             Direction dir = airCurrent.direction;
-            for (int i = 1; i <= airCurrent.maxDistance; i++) {
-                BlockPos test = pos.relative(dir, i * dv);
+            if (dir == null) return;
+            for (int i = 0; i < airCurrent.maxDistance; i++) {
+                int offset = airCurrent.pushing ? i : (int) (airCurrent.maxDistance - i - 1);
+                BlockPos test = pos.relative(dir, offset + 1);
                 if (level.getBlockState(test).is(AllBlocks.DEPOT.get())) {
-                    FanProcessingType typeAt = airCurrent.getTypeAt(i);
+                    FanProcessingType typeAt = airCurrent.getTypeAt(offset);
                     if (typeAt != null) {
                         generateFor(typeAt, level, test, graph, furnaceReplace);
                     }
                 } else if (level.getBlockState(test.below()).is(AllBlocks.DEPOT.get())) {
-                    FanProcessingType typeAt = airCurrent.getTypeAt(i);
+                    FanProcessingType typeAt = airCurrent.getTypeAt(offset);
                     if (typeAt != null) {
                         generateFor(typeAt, level, test.below(), graph, furnaceReplace);
                     }

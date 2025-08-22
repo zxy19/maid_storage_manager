@@ -91,6 +91,7 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                             } else if (!recipe.getTopOptional().test(topItem)) {
                                 available = false;
                             }
+                            hasPriority = true;
                             skipFirst = true;
                         } else if (recipe.getTopOptional().isEmpty()) {
                             skipFirst = true;

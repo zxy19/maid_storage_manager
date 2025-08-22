@@ -271,8 +271,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         else if (node.bestRecipeStartAtCalculating) {
             node.clearMaxSuccessAfter = true;
             setReturnValue(0);
-        }
-        else if (node.edges.size() <= 1)
+        } else if (node.edges.size() <= 1)
             setReturnValue(0);
         else {
             node.bestRecipeStartAtCalculating = true;
@@ -361,6 +360,9 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         if (push.node.maxSuccess < push.restRequire.getValue()) {
             push.restRequire.setValue(push.node.maxSuccess);
             push.simulateRequire.setValue(push.node.maxSuccess);
+            if (push.node.hasLoopIngredient) {
+                push.simulateRequire.setValue(1);
+            }
         }
         //无原料合成，直接返回全部成功
         if (push.node.edges.isEmpty()) {
@@ -423,6 +425,9 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 context.totalSuccess.add(context.simulateRequire.getValue());
                 context.restRequire.subtract(context.simulateRequire.getValue());
                 context.simulateRequire.setValue(context.restRequire.getValue());
+                if (context.node.hasLoopIngredient && context.restRequire.getValue() > 0) {
+                    context.simulateRequire.setValue(1);
+                }
             }
     }
 

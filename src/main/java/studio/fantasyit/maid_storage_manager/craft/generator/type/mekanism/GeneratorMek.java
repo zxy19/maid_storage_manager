@@ -9,6 +9,7 @@ import mekanism.common.recipe.lookup.cache.IInputRecipeCache;
 import mekanism.common.tile.base.TileEntityMekanism;
 import mekanism.common.tile.component.config.ConfigInfo;
 import mekanism.common.tile.component.config.DataType;
+import mekanism.common.tile.factory.TileEntityFactory;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -95,9 +97,17 @@ public abstract class GeneratorMek<T extends MekanismRecipe<I>, I extends Recipe
     }
 
     protected void generateForIOR(ResourceLocation id, T recipe, TileEntityConfigurableMachine machine, BlockPos pos, ICachableGeneratorGraph graph, List<Ingredient> ingredient, List<Integer> counts, List<ItemStack> outputs) {
-        graph.addRecipe(id, ingredient, counts, outputs, (items) -> {
+        List<Integer> copiedCounts = counts
+                .stream()
+                .map(count -> count * getRecipeMultiplier(machine, recipe))
+                .toList();
+        List<ItemStack> copiedOutputs = outputs
+                .stream()
+                .map(output -> output.copyWithCount(output.getCount() * getRecipeMultiplier(machine, recipe)))
+                .toList();
+        graph.addRecipe(id, ingredient, copiedCounts, copiedOutputs, (items) -> {
             List<CraftGuideStepData> step = new ArrayList<>();
-            if (addSteps(pos, machine, recipe, items, outputs, step)) {
+            if (addSteps(pos, machine, recipe, items, copiedOutputs, step)) {
                 return new CraftGuideData(step, CommonType.TYPE);
             }
             return null;
@@ -114,5 +124,16 @@ public abstract class GeneratorMek<T extends MekanismRecipe<I>, I extends Recipe
             if (!MekanismIntegration.isAccessibleByMaid(machine, maid))
                 return false;
         return IAutoCraftGuideGenerator.super.positionalAvailable(level, maid, pos, pathFinding);
+    }
+
+    protected int getRecipeMultiplier(BlockEntity machine, T recipe) {
+        return 1;
+    }
+
+    protected int getFactoryParallel(BlockEntity machine) {
+        if (machine instanceof TileEntityFactory<?> factory) {
+            return factory.tier.processes;
+        }
+        return 1;
     }
 }
