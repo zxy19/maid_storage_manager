@@ -273,6 +273,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 int currentRequire = dfsCalcItemNodeRequired(toNode,
                         simulateRequire * edge.getB(),
                         edge.getB(),
+                        currentRequireId,
                         estimating);
                 logger.log("Item Finish=%d", currentRequire);
                 currentRequire /= edge.getB();
@@ -295,6 +296,9 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 totalSuccess += simulateRequire;
                 restRequire -= simulateRequire;
                 simulateRequire = restRequire;
+                if (node.hasLoopIngredient && restRequire > 0) {
+                    simulateRequire = 1;
+                }
             }
         }
         if (totalSuccess > 0) {

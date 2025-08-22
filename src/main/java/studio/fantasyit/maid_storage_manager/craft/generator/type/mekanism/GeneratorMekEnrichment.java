@@ -17,9 +17,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
@@ -27,6 +29,20 @@ import java.util.List;
 import java.util.Map;
 
 public class GeneratorMekEnrichment extends GeneratorMek<ItemStackToItemStackRecipe, InputRecipeCache.SingleItem<ItemStackToItemStackRecipe>> {
+    ConfigTypes.ConfigType<Boolean> FACTORY_PARALLEL = new ConfigTypes.ConfigType<>(
+            "factory_parallel",
+            true,
+            Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel"),
+            ConfigTypes.ConfigTypeEnum.Boolean
+    );
+
+    @Override
+    public List<ConfigTypes.ConfigType<?>> getConfigurations() {
+        return List.of(
+                FACTORY_PARALLEL
+        );
+    }
+
     @Override
     protected MekanismRecipeType<ItemStackToItemStackRecipe, InputRecipeCache.SingleItem<ItemStackToItemStackRecipe>> getRecipeType() {
         return MekanismRecipeType.ENRICHING.get();
@@ -71,5 +87,12 @@ public class GeneratorMekEnrichment extends GeneratorMek<ItemStackToItemStackRec
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.enrichment");
+    }
+    @Override
+    protected int getRecipeMultiplier(BlockEntity machine, ItemStackToItemStackRecipe recipe) {
+        if(FACTORY_PARALLEL.getValue()){
+            return getFactoryParallel(machine);
+        }
+        return 1;
     }
 }
