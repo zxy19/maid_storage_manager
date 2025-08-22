@@ -3,10 +3,12 @@ package studio.fantasyit.maid_storage_manager.craft.algo.graph;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableObject;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.VisitRecorder;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 
@@ -28,10 +30,10 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                         MutableInt remainToCraft,
                         MutableInt oMaxRequire,
                         MutableInt tNodeMinRequire,
-                        MutableInt tNodeMinRequireId,
                         MutableBoolean tKeepIngredient,
                         MutableBoolean keepCurrently,
-                        MutableInt startAt
+                        MutableInt startAt,
+                        MutableObject<VisitRecorder> visit
     ) {
     }
 
@@ -42,7 +44,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                            MutableInt maxCollected,
                            MutableInt minScore,
                            MutableInt startAt,
-                           MutableInt maxRequiredForCurrentCraftNode
+                           MutableInt maxRequiredForCurrentCraftNode,
+                           MutableObject<VisitRecorder> visit
     ) {
     }
 
@@ -53,7 +56,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                          MutableInt i,
                          MutableInt historyId,
                          MutableInt resultId,
-                         MutableBoolean anyFail
+                         MutableBoolean anyFail,
+                         MutableObject<VisitRecorder> visit
     ) {
     }
 
@@ -102,7 +106,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             return;
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
-        if (maxRequire >= node.minStepRequire && node.minStepRequireId == minStepRecordLevelId) {
+        if (maxRequire >= context.visit().getValue().minStepRequire(node)) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
             if (maxRequire > alignedRequire)
@@ -130,7 +134,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
         //回溯备用数据
         int oMaxRequire = maxRequire;
-        int tNodeMinRequire = node.minStepRequire;
+        int tNodeMinRequire = context.visit().getValue().minStepRequire(node);
         boolean tKeepIngredient = node.hasKeepIngredient;
         boolean keepCurrently = false;
         if (!node.hasKeepIngredient && node.loopInputIngredientCount > 0) {
@@ -139,7 +143,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             logger.log("Add keep loop use %s : %d", node.itemStack, node.loopInputIngredientCount);
             keepCurrently = true;
             //打断环检测，因为此时的需求量发生突变
-            minStepRecordLevelId++;
+            context.visit().setValue(new VisitRecorder(getNodeCount()));
         }
         if (node.loopInputIngredientCount > 0) {
             //如果循环配方，当前步骤至少保留一次循环用量，下一步骤再进行判断。
@@ -147,7 +151,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             if (stepCost < 0)
                 stepCost = 0;
         }
-        node.minStepRequire = maxRequire;
+        context.visit().getValue().minStepRequire(node, maxRequire);
 
 
         context.remainToCraft.setValue(maxRequire - stepCost);
@@ -156,12 +160,11 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
         context.oMaxRequire.setValue(oMaxRequire);
         context.tNodeMinRequire.setValue(tNodeMinRequire);
-        context.tNodeMinRequireId.setValue(node.minStepRequireId);
         context.tKeepIngredient.setValue(tKeepIngredient);
         context.keepCurrently.setValue(keepCurrently);
         context.realMaxRequire.setValue(maxRequire);
 
-        dfsStartAtAdd(node, maxRequire);
+        dfsStartAtAdd(node, context.visit.getValue(), maxRequire);
     }
 
     private void dfsItemStartAtReturn(DfsLayerItem context, int startAt) {
@@ -180,7 +183,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         if (toNode.hasLoopIngredient)
             maxRequiredForCurrentCraftNode = Math.min((node.singleTimeCount + weight - 1) / weight, maxRequiredForCurrentCraftNode);
         logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
-        dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode, context.estimating);
+        dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode, context.visit.getValue(), context.estimating);
     }
 
     private void dfsItemLoopReturn(DfsLayerItem context, int available) {
@@ -207,8 +210,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         }
         //返回逻辑
         if (context.i.getValue() >= node.edges.size() || context.remainToCraft.getValue() <= 0) {
-            node.minStepRequire = context.tNodeMinRequire.getValue();
-            node.minStepRequireId = context.tNodeMinRequireId.getValue();
+            context.visit().getValue().minStepRequire(node, context.tNodeMinRequire.getValue());
             node.hasKeepIngredient = context.tKeepIngredient.getValue();
             node.maxLack = Math.max(node.maxLack, context.remainToCraft.getValue());
             int crafted = context.realMaxRequire.getValue() - context.remainToCraft.getValue();
@@ -234,7 +236,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         }
     }
 
-    public void dfsItemAdd(ItemNode node, int maxRequire, int stepCount, boolean estimating) {
+    public void dfsItemAdd(ItemNode node, int maxRequire, int stepCount, VisitRecorder visit, boolean estimating) {
         DfsLayerItem push = (DfsLayerItem) layers.push(new DfsLayerItem(node,
                 maxRequire,
                 stepCount,
@@ -244,16 +246,16 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(),
                 new MutableInt(),
                 new MutableInt(),
-                new MutableInt(),
                 new MutableBoolean(),
                 new MutableBoolean(),
-                new MutableInt(-1)
+                new MutableInt(-1),
+                new MutableObject<>(visit)
         ));
         dfsItemPre(push);
     }
 
 
-    public void dfsStartAtAdd(ItemNode node, int maxRequire) {
+    public void dfsStartAtAdd(ItemNode node, VisitRecorder visit, int maxRequire) {
         layers.add(new DfsLayerStartAt(node, maxRequire,
                 new MutableInt(0),
                 historyId.getValue(),
@@ -261,7 +263,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(0),
                 new MutableInt(Integer.MAX_VALUE),
                 new MutableInt(0),
-                new MutableInt(0)
+                new MutableInt(0),
+                new MutableObject<>(visit)
         ));
         if (Config.craftingShortestPathEvaluator == CraftPlanEvaluator.NONE)
             setReturnValue(0);
@@ -307,7 +310,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             maxRequiredForCurrentCraftNode = (context.node.singleTimeCount + weight - 1) / weight;
         logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
         context.maxRequiredForCurrentCraftNode.setValue(maxRequiredForCurrentCraftNode);
-        dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode, true);
+        dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode, context.visit().getValue(), true);
     }
 
     public void dfsStartAtRet(DfsLayerStartAt context, int available) {
@@ -336,7 +339,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         context.i.add(1);
     }
 
-    public void dfsCraftAdd(CraftNode toNode, int maxRequiredForCurrentCraftNode, boolean estimating) {
+    public void dfsCraftAdd(CraftNode toNode, int maxRequiredForCurrentCraftNode, VisitRecorder visit, boolean estimating) {
         DfsLayerCraft push = (DfsLayerCraft) layers.push(new DfsLayerCraft(
                 toNode,
                 maxRequiredForCurrentCraftNode,
@@ -347,7 +350,8 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
                 new MutableInt(toNode.edges.size()),
                 new MutableInt(),
                 new MutableInt(),
-                new MutableBoolean()
+                new MutableBoolean(),
+                new MutableObject<>(visit)
         ));
         if (addInStack(push.node) > maxDepthAllow) {
             removeInStack(push.node);
@@ -397,6 +401,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         dfsItemAdd(toNode,
                 context.simulateRequire.getValue() * edge.getB(),
                 edge.getB(),
+                context.visit.getValue(),
                 context.estimating);
     }
 
@@ -479,7 +484,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     public boolean process() {
         if (waitInit) {
             waitInit = false;
-            dfsItemAdd(getItemNodeOrCreate(targetItem), targetCount, 1, false);
+            dfsItemAdd(getItemNodeOrCreate(targetItem), targetCount, 1, new VisitRecorder(getNodeCount()), false);
         }
         int count = 0;
         while (!layers.isEmpty() && count < speed) {

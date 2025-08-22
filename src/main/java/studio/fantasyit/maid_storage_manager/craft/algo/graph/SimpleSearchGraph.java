@@ -6,6 +6,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.VisitRecorder;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 
@@ -32,7 +33,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         super(items, craftGuides);
     }
 
-    protected int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount, boolean estimating) {
+    protected int dfsCalcItemNodeRequired(ItemNode node, int maxRequire, int stepCount, VisitRecorder visit, boolean estimating) {
         if (!node.listed) {
             node.listed = true;
             listed.add(node);
@@ -58,13 +59,11 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             return alignedRequire;
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
-        //But 如果上一个节点触发了循环物品制作，则有可能物品会忽然增加一次，这时应该先跳过这个判断。这里用recordLevelId来判断是否有效
-        if (maxRequire >= node.minStepRequire && node.minStepRequireId == minStepRecordLevelId) {
+        if (maxRequire >= visit.minStepRequire(node)) {
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             if (maxRequire > alignedRequire)
                 node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
-
 
             //如果其他的有环情况断开的话，不满足成功数量单调。需要清空优化数值。
             node.clearMaxSuccessAfter = true;
@@ -85,8 +84,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
         //回溯备用数据
         int oMaxRequire = maxRequire;
-        int tNodeMinRequire = node.minStepRequire;
-        int tNodeMinRequireId = node.minStepRequireId;
+        int tNodeMinRequire = visit.minStepRequire(node);
         boolean tKeepIngredient = node.hasKeepIngredient;
         boolean keepCurrent = false;
         if (!node.hasKeepIngredient && node.loopInputIngredientCount > 0) {
@@ -94,8 +92,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             logger.log("Add keep loop use %s : %d", node.itemStack, node.loopInputIngredientCount);
             node.hasKeepIngredient = true;
             keepCurrent = true;
-            //打断环检测，因为此时的需求量发生突变
-            minStepRecordLevelId++;
+            //从这里开始计算新的子段。所以直接创建一个新的上下文用于记录
+            visit = new VisitRecorder(getNodeCount());
         }
         if (node.loopInputIngredientCount > 0) {
             //如果循环配方，当前步骤至少保留一次循环用量，下一步骤再进行判断。
@@ -103,14 +101,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             if (stepCost < 0)
                 stepCost = 0;
         }
-        node.minStepRequire = maxRequire;
-        node.minStepRequireId = minStepRecordLevelId;
+        visit.minStepRequire(node, maxRequire);
 
         MutableInt remainToCraft = new MutableInt(maxRequire - stepCost);
         logger.log("Item %s use -= %d", node.itemStack, stepCost);
         logger.logEntryNewLevel("START OF ESTIMATING FOR %s", node.itemStack);
         pushHistory(node, HistoryRecord.RECORD_REQUIRED, stepCost);
-        int startsAt = dfsCalcItemNodeStartsAt(node, remainToCraft.getValue());
+        int startsAt = dfsCalcItemNodeStartsAt(node, visit, remainToCraft.getValue());
         logger.logExitLevel("END OF ESTIMATING %s", node.itemStack);
         for (int _i = 0; _i < node.edges.size(); _i++) {
             int i = (_i + startsAt) % node.edges.size();
@@ -121,7 +118,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             if (toNode.hasLoopIngredient)
                 maxRequiredForCurrentCraftNode = Math.min((node.singleTimeCount + weight - 1) / weight, maxRequiredForCurrentCraftNode);
             logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
-            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, estimating);
+            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, visit, estimating);
             logger.logExitLevel("Craft Finish=%d", available);
             int collect = Math.min(available * weight, remainToCraft.getValue());
             if (available > 0) {
@@ -142,8 +139,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             }
         }
 
-        node.minStepRequire = tNodeMinRequire;
-        node.minStepRequireId = tNodeMinRequireId;
+        visit.minStepRequire(node, tNodeMinRequire);
         node.hasKeepIngredient = tKeepIngredient;
         node.maxLack = Math.max(node.maxLack, remainToCraft.getValue());
         int crafted = maxRequire - remainToCraft.getValue();
@@ -169,7 +165,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         return Math.max(oMaxRequire - remainToCraft.getValue(), 0);
     }
 
-    protected int dfsCalcItemNodeStartsAt(ItemNode node, int maxRequire) {
+    protected int dfsCalcItemNodeStartsAt(ItemNode node, VisitRecorder visit, int maxRequire) {
         if (Config.craftingShortestPathEvaluator == CraftPlanEvaluator.NONE) return 0;
         if (node.bestRecipeStartAt != -1) return node.bestRecipeStartAt;
         //估算循环，直接返回数值并清空优化缓存
@@ -200,7 +196,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
             if (toNode.hasLoopIngredient)
                 maxRequiredForCurrentCraftNode = (node.singleTimeCount + weight - 1) / weight;
             logger.logEntryNewLevel("Estimating Cost: Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
-            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, true);
+            int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, visit, true);
             if (toNode.hasLoopIngredient && available == maxRequiredForCurrentCraftNode) {
                 available = maxRequire;
             }
@@ -229,7 +225,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         return startAt;
     }
 
-    public int dfsCalcCraftNode(CraftNode node, int maxRequire, boolean estimating) {
+    public int dfsCalcCraftNode(CraftNode node, int maxRequire, VisitRecorder visit, boolean estimating) {
         if (addInStack(node) > maxDepthAllow) {
             removeInStack(node);
             return 0;
@@ -273,7 +269,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 int currentRequire = dfsCalcItemNodeRequired(toNode,
                         simulateRequire * edge.getB(),
                         edge.getB(),
-                        currentRequireId,
+                        visit,
                         estimating);
                 logger.log("Item Finish=%d", currentRequire);
                 currentRequire /= edge.getB();
@@ -330,13 +326,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         for (int i = 10; i < 61; i += 10) {
             dfsDepth = 0;
             maxDepthAllow = i;
-            targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
+            targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, new VisitRecorder(getNodeCount()), false);
             if (targetAvailable >= targetCount) return true;
             restoreCurrentAndStartContext(targetItem, targetCount);
             while (!processLoopSolver()) ;
         }
         maxDepthAllow = Config.craftingMaxLayerLimit;
-        targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, false);
+        targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, new VisitRecorder(getNodeCount()), false);
         return true;
     }
 }
