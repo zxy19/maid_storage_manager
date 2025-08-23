@@ -68,10 +68,12 @@ public class GeneratorMekSmelter extends GeneratorMek<ItemStackToItemStackRecipe
                     .getAllRecipesFor(RecipeType.SMELTING)
                     .forEach(holder -> {
                         SmeltingRecipe recipe = holder.value();
-                        ItemStack output = recipe.getResultItem(level.registryAccess());
+                        int count = FACTORY_PARALLEL.getValue() ? getFactoryParallel(machine) : 1;
+                        ItemStack _output = recipe.getResultItem(level.registryAccess());
+                        ItemStack output = _output.copyWithCount(_output.getCount() * count);
                         graph.addRecipe(wrapId(holder.id()),
                                 recipe.getIngredients(),
-                                recipe.getIngredients().stream().map(t -> 1).toList(),
+                                recipe.getIngredients().stream().map(t -> count).toList(),
                                 output,
                                 (items) -> {
                                     List<CraftGuideStepData> step = new ArrayList<>();
