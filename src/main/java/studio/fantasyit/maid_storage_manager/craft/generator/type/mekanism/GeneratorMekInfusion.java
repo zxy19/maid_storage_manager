@@ -9,7 +9,7 @@ import mekanism.common.recipe.MekanismRecipeType;
 import mekanism.common.recipe.lookup.cache.InputRecipeCache;
 import mekanism.common.tags.MekanismTags;
 import mekanism.common.tile.component.config.DataType;
-import mekanism.common.tile.factory.TileEntityItemStackToItemStackFactory;
+import mekanism.common.tile.factory.TileEntityItemStackChemicalToItemStackFactory;
 import mekanism.common.tile.machine.TileEntityMetallurgicInfuser;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import net.minecraft.core.BlockPos;
@@ -143,7 +143,7 @@ public class GeneratorMekInfusion extends GeneratorMek<ItemStackChemicalToItemSt
 
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof TileEntityItemStackToItemStackFactory factory && factory.getFactoryType() == FactoryType.INFUSING)
+        if (level.getBlockEntity(pos) instanceof TileEntityItemStackChemicalToItemStackFactory factory && factory.getFactoryType() == FactoryType.INFUSING)
             return true;
         return level.getBlockEntity(pos) instanceof TileEntityMetallurgicInfuser;
     }
