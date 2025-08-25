@@ -26,7 +26,6 @@ public class ContextItemHandlerStore extends AbstractFilterableBlockStorage impl
 
     @Override
     public ItemStack insert(ItemStack item) {
-        if (!this.isAvailable(item)) return item;
         if (!this.helper.isStillValid()) return item;
         ItemStack copy = item.copy();
         for (int i = 0; i < this.helper.itemHandler.getSlots(); i++) {
