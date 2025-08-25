@@ -14,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -75,6 +76,10 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             }
             @NotNull ItemStack item = inv.getStackInSlot(count);
             int oCount = item.getCount();
+            if (context instanceof IFilterable iFilterable && !iFilterable.isAvailable(item)) {
+                count++;
+                continue;
+            }
             if (context instanceof IStorageInsertableContext isic) {
                 List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
                 if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
