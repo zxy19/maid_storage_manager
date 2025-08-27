@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.DataComponentUtil;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 
 import java.util.List;
 import java.util.Objects;
@@ -69,6 +70,12 @@ public class ItemStackUtil {
         }
     };
 
+    public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag, boolean isCrafting) {
+        if (isCrafting)
+            return isSameInCrafting(stack1, stack2);
+        return isSame(stack1, stack2, matchTag);
+    }
+
     public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag) {
         if (stack1.isEmpty() && stack2.isEmpty()) return true;
         if (stack1.isEmpty() || stack2.isEmpty()) return false;
@@ -88,7 +95,8 @@ public class ItemStackUtil {
         if (stack1.is(NoMatchItems)) matchTag = false;
         if (stack1.is(MatchItems)) matchTag = true;
         if (!matchTag) return true;
-        return isSameTagInCrafting(stack1, stack2);
+        Optional<Boolean> specialPredicator = CraftManager.getInstance().predicateItemStack(stack1, stack2);
+        return specialPredicator.orElseGet(() -> isSameTagInCrafting(stack1, stack2));
     }
 
     public static boolean isSameTagInCrafting(ItemStack stack1, ItemStack stack2) {

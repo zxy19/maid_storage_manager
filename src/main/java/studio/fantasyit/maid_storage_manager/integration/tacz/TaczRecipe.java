@@ -5,7 +5,9 @@ import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.block.entity.GunSmithTableBlockEntity;
 import com.tacz.guns.config.sync.SyncConfig;
 import com.tacz.guns.crafting.GunSmithTableRecipe;
+import com.tacz.guns.init.ModItems;
 import com.tacz.guns.init.ModRecipe;
+import com.tacz.guns.item.ModernKineticGunItem;
 import com.tacz.guns.resource.filter.RecipeFilter;
 import com.tacz.guns.resource.index.CommonBlockIndex;
 import com.tacz.guns.resource.pojo.data.block.TabConfig;
@@ -37,6 +39,12 @@ public class TaczRecipe {
                 1
         );
         event.addAutoCraftGuideGenerator(new GeneratorTACZ());
+        event.addItemStackPredicate(ModItems.MODERN_KINETIC_GUN.asItem(), (stack, target) -> {
+            if (stack.getItem() instanceof ModernKineticGunItem gun) {
+                return gun.getGunId(stack).equals(gun.getGunId(target));
+            }
+            return false;
+        });
     }
 
     public static ResourceLocation getBlockId(Level level, BlockPos pos) {

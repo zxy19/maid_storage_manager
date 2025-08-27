@@ -34,6 +34,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     private Entity targetEntity;
     private boolean targetEntityReady = false;
     private VirtualItemEntity thrown;
+    boolean inCrafting = false;
 
     public RequestRetBehavior() {
         super(Map.of());
@@ -79,6 +80,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             }
         }
         currentSlot = 0;
+        inCrafting = MemoryUtil.getCrafting(maid).hasPlan();
     }
 
     protected boolean tryReadyMaid(EntityMaid m, EntityMaid maid) {
@@ -124,7 +126,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.getPosition(0));
         for (int i = 0; i < 5 && targetEntity != null && inv.getSlots() > currentSlot; i++) {
             @NotNull ItemStack item = inv.getStackInSlot(currentSlot++);
-            int restCount = RequestListItem.updateStored(maid.getMainHandItem(), item, false);
+            int restCount = RequestListItem.updateStored(maid.getMainHandItem(), item, false, inCrafting);
             ItemStack toThrowStack = item.copy();
             toThrowStack.shrink(restCount);
             if (!toThrowStack.isEmpty()) {
@@ -152,11 +154,11 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             ItemStack stack = availableInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty())
                 if (context instanceof IStorageInsertableContext isic) {
-                    int i = RequestListItem.updateStored(maid.getMainHandItem(), stack, true);
+                    int i = RequestListItem.updateStored(maid.getMainHandItem(), stack, true, inCrafting);
                     int canStoreCount = stack.getCount() - i;
                     ItemStack notInserted = isic.insert(stack.copyWithCount(canStoreCount));
                     ItemStack toStoreItemStack = stack.copyWithCount(canStoreCount - notInserted.getCount());
-                    RequestListItem.updateStored(maid.getMainHandItem(), toStoreItemStack, false);
+                    RequestListItem.updateStored(maid.getMainHandItem(), toStoreItemStack, false, inCrafting);
                     availableInv.setStackInSlot(currentSlot, stack.copyWithCount(stack.getCount() - toStoreItemStack.getCount()));
                 }
             currentSlot++;

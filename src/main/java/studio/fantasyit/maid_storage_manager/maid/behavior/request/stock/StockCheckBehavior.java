@@ -58,11 +58,11 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
         super.tick(p_22551_, maid, p_22553_);
         if (context instanceof IStorageInteractContext isic) {
             isic.tick(itemStack -> {
-                ItemStack rest = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack.copy(), itemStack.getCount());
+                ItemStack rest = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack.copy(), itemStack.getCount(), false);
                 if (rest.getCount() != itemStack.getCount()) {
                     RequestListItem.updateStored(maid.getMainHandItem(),
                             itemStack.copyWithCount(itemStack.getCount() - rest.getCount()),
-                            false);
+                            false, false);
                 }
                 return itemStack;
             });

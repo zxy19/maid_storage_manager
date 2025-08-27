@@ -96,7 +96,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
             if (maxStore > 0) {
                 ItemStack copy = itemStack.copy();
-                ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore);
+                ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore,false);
                 copy.shrink(tmp.getCount());
                 ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, level, target, itemStack, copy.getCount());
                 InvUtil.tryPlace(maid.getAvailableInv(false), copy);

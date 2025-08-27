@@ -354,7 +354,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
      * @param stack
      * @param collected
      */
-    public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect) {
+    public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect, boolean isInCrafting) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStack.EMPTY;
         RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return ItemStack.EMPTY;
@@ -370,7 +370,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (tmp.done) continue;
             //获取每一组被需求的物品
             ItemStack requested = tmp.getItem();
-            if (ItemStackUtil.isSame(collected, requested, request.matchTag)) {
+            if (ItemStackUtil.isSame(collected, requested, request.matchTag, isInCrafting)) {
                 //如果黑名单，那么匹配的物品是不用收集的
                 if (request.blackList) return collected;
                 int requestedCount = tmp.requested;
@@ -406,7 +406,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         return collected.copyWithCount(nonCalc + rest);
     }
 
-    public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate) {
+    public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate, boolean isInCrafting) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return toStore.getCount();
         RequestItemStackList request = getMutableRequestData(stack);
         if (request == null) return toStore.getCount();
@@ -422,7 +422,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int collected = tmp.collected;
             int stored = tmp.stored;
             if (stored >= collected) continue;
-            if (ItemStackUtil.isSame(toStore, target, request.matchTag)) {
+            if (ItemStackUtil.isSame(toStore, target, request.matchTag, isInCrafting)) {
                 //黑名单物品不进行存储
                 if (request.blackList) return rest;
                 int maxToStore = collected - stored;

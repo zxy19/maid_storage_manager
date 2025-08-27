@@ -79,7 +79,8 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                 if (itemStack.isEmpty()) continue;
                 RequestListItem.updateCollectedItem(maid.getMainHandItem(),
                         itemStack,
-                        itemStack.getCount()
+                        itemStack.getCount(),
+                        true
                 );
             }
             MemoryUtil.getCrafting(maid).lastSuccess();
