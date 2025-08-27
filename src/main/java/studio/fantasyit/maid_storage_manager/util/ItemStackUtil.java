@@ -77,16 +77,16 @@ public class ItemStackUtil {
         return ItemStack.isSameItem(stack1, stack2);
     }
 
-    public static TagKey<Item> MatchItem = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_components"));
-    public static TagKey<Item> NoMatchItem = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_components"));
+    public static TagKey<Item> NoMatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_components"));
+    public static TagKey<Item> MatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_components"));
 
 
     public static boolean isSameInCrafting(ItemStack stack1, ItemStack stack2) {
         if (stack1.getItem() != stack2.getItem()) return false;
         if (stack1.isEmpty() || stack2.isEmpty()) return true;
         boolean matchTag = Config.craftingMatchTag;
-        if (stack1.is(MatchItem)) matchTag = false;
-        if (stack1.is(NoMatchItem)) matchTag = true;
+        if (stack1.is(NoMatchItems)) matchTag = false;
+        if (stack1.is(MatchItems)) matchTag = true;
         if (!matchTag) return true;
         return isSameTagInCrafting(stack1, stack2);
     }
