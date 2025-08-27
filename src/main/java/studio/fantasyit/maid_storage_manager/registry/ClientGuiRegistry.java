@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingT
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutterCraftScreen;
+import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftScreen;
 //import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftScreen;
 
 @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -35,6 +36,6 @@ public class ClientGuiRegistry {
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get(), AnvilCraftScreen::new);
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get(), BrewingCraftScreen::new);
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), StoneCutterCraftScreen::new);
-//        event.register(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), TaczCraftScreen::new);
+        event.register(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), TaczCraftScreen::new);
     }
 }

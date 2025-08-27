@@ -160,8 +160,7 @@ dependencies {
     compileOnly "com.tterrag.registrate:Registrate:MC1.21-1.3.0+62"
     compileOnly "net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:1.0.60"
     compileOnly "curse.maven:refined-storage-243076:6798977"
-    //TACZ has not support 1.21.1
-//    compileOnly "curse.maven:timeless-and-classics-zero-1028108:6632240"
+    compileOnly "libs:tacz-neoforge-1.21.1:1.1.6-hotfix-r5"
     compileOnly("me.shedaniel.cloth:cloth-config-neoforge:15.0.140")
     compileOnly "mekanism:Mekanism:${mekanism_version}"// Mekanism
     compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
@@ -174,7 +173,7 @@ dependencies {
 
 
 //    runtimeOnly "curse.maven:botania-225643:5594997"
-//    runtimeOnly "curse.maven:timeless-and-classics-zero-1028108:6632240"
+    runtimeOnly "libs:tacz-neoforge-1.21.1:1.1.6-hotfix-r5"
     runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     runtimeOnly "curse.maven:applied-energistics-2-223794:6763533"
     runtimeOnly "com.tterrag.registrate:Registrate:MC1.21-1.3.0+62"

@@ -33,6 +33,7 @@ import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.KJSEventPort;
+import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -256,9 +257,9 @@ public class CraftManager {
                     1
             );
         }
-//        if (Integrations.taczRecipe()) {
-//            TaczRecipe.addType(event);
-//        }
+        if (Integrations.taczRecipe()) {
+            TaczRecipe.addType(event);
+        }
         if (Integrations.create()) {
             event.addAutoCraftGuideGenerator(new GeneratorCreatePress());
             event.addAutoCraftGuideGenerator(new GeneratorCreateCompact());

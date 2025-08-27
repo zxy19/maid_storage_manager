@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingT
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutterCraftMenu;
+import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftMenu;
 //import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftMenu;
 
 public class GuiRegistry {
@@ -48,8 +49,8 @@ public class GuiRegistry {
             () -> IMenuTypeExtension.create((windowId, inv, data) -> new StoneCutterCraftMenu(windowId, inv.player)));
 
 
-//    public static final DeferredHolder<MenuType<?>, MenuType<TaczCraftMenu>> CRAFT_GUIDE_MENU_TACZ = MENU_TYPES.register("craft_guide_menu_tacz",
-//            () -> IMenuTypeExtension.create((windowId, inv, data) -> new TaczCraftMenu(windowId, inv.player)));
+    public static final DeferredHolder<MenuType<?>, MenuType<TaczCraftMenu>> CRAFT_GUIDE_MENU_TACZ = MENU_TYPES.register("craft_guide_menu_tacz",
+            () -> IMenuTypeExtension.create((windowId, inv, data) -> new TaczCraftMenu(windowId, inv.player)));
 
 
     public static final DeferredHolder<MenuType<?>, MenuType<StorageManagerMaidConfigGui.Container>> STORAGE_MANAGER_MAID_CONFIG_GUI = MENU_TYPES.register("storage_manager_maid_config_gui",

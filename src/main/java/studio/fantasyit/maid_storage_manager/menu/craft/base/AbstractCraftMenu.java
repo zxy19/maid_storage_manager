@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.base;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -189,7 +189,7 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
 
     abstract public void recalculateRecipe();
 
-    public HolderLookup.Provider registryAccess() {
+    public RegistryAccess registryAccess() {
         return player.registryAccess();
     }
 }

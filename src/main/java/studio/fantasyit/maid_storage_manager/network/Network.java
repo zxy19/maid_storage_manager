@@ -221,7 +221,7 @@ public class Network {
                     }
                 }
         );
-        registrar.playToServer(
+        registrar.playBidirectional(
                 CraftGuideGuiPacket.TYPE,
                 CraftGuideGuiPacket.STREAM_CODEC,
                 (msg, context) -> {
