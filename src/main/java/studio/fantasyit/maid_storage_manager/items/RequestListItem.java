@@ -426,7 +426,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
      * @param stack
      * @param collected
      */
-    public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect) {
+    public static ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect, boolean isInCrafting) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStack.EMPTY;
         if (!stack.hasTag()) return ItemStack.EMPTY;
         CompoundTag tag = Objects.requireNonNull(stack.getTag());
@@ -442,7 +442,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (tmp.getBoolean(TAG_ITEMS_DONE)) continue;
             //获取每一组被需求的物品
             ItemStack requested = ItemStackUtil.parseStack(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (ItemStackUtil.isSame(collected, requested, tag.getBoolean(TAG_MATCH_TAG))) {
+            if (ItemStackUtil.isSame(collected, requested, tag.getBoolean(TAG_MATCH_TAG), isInCrafting)) {
                 //如果黑名单，那么匹配的物品是不用收集的
                 if (tag.getBoolean(TAG_BLACKMODE)) return collected;
                 int requestedCount = tmp.getInt(TAG_ITEMS_REQUESTED);
@@ -479,7 +479,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         return collected.copyWithCount(nonCalc + rest);
     }
 
-    public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate) {
+    public static int updateStored(ItemStack stack, ItemStack toStore, boolean simulate, boolean isInCrafting) {
         if (!stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return toStore.getCount();
         if (!stack.hasTag()) return toStore.getCount();
 
@@ -494,7 +494,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
             int stored = tmp.getInt(TAG_ITEMS_STORED);
             if (stored >= collected) continue;
-            if (ItemStackUtil.isSame(toStore, target, tag.getBoolean(TAG_MATCH_TAG))) {
+            if (ItemStackUtil.isSame(toStore, target, tag.getBoolean(TAG_MATCH_TAG), isInCrafting)) {
                 //黑名单物品不进行存储
                 if (tag.getBoolean(TAG_BLACKMODE)) return rest;
                 int maxToStore = collected - stored;

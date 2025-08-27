@@ -789,7 +789,7 @@ public class CraftLayerChain {
             CombinedInvWrapper inv = maid.getAvailableInv(true);
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
-                RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount());
+                RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount(),true);
             }
             if (!toBeFailAddition.isBlank()) {
                 for (ItemStack target : targets)

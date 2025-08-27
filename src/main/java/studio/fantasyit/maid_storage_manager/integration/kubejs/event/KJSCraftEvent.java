@@ -2,6 +2,8 @@ package studio.fantasyit.maid_storage_manager.integration.kubejs.event;
 
 import dev.latvian.mods.kubejs.event.EventJS;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.CollectCraftEvent;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
@@ -12,6 +14,8 @@ import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.co
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.contextSupplier.IKJSCraftContextSupplier;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.generator.IKJSAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.type.IKJSCraftType;
+
+import java.util.function.BiPredicate;
 
 public class KJSCraftEvent extends EventJS {
 
@@ -56,6 +60,7 @@ public class KJSCraftEvent extends EventJS {
                 input,
                 output);
     }
+
     public void addActionSimpleNoOccupation(ResourceLocation type, IKJSCraftContextSupplier craftActionProvider, boolean isCommon, int input, int output) {
         event.addAction(type,
                 (a, b, c, d) -> new KJSWrapCraftContext(a, b, c, d, craftActionProvider.get()),
@@ -89,6 +94,7 @@ public class KJSCraftEvent extends EventJS {
                 hasInput,
                 hasOutput);
     }
+
     public void addActionVirtual(ResourceLocation type, int hasInput, int hasOutput) {
         event.addAction(type,
                 VirtualAction::new,
@@ -98,5 +104,13 @@ public class KJSCraftEvent extends EventJS {
                 true,
                 hasInput,
                 hasOutput);
+    }
+
+    public void addItemStackPredicateRaw(ResourceLocation type, BiPredicate<ItemStack, ItemStack> predicate) {
+        event.addItemStackPredicate(type, predicate);
+    }
+
+    public void addItemStackPredicate(Item type, BiPredicate<ItemStack, ItemStack> predicate) {
+        event.addItemStackPredicate(type, predicate);
     }
 }

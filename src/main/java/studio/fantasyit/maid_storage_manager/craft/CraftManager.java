@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.MinecraftForge;
@@ -36,10 +37,8 @@ import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.KJSEventPort;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiPredicate;
 
 public class CraftManager {
 
@@ -54,12 +53,14 @@ public class CraftManager {
     protected List<CraftAction> actions;
     protected Map<ResourceLocation, CraftAction> actionsMap;
     protected List<IAutoCraftGuideGenerator> autoCraftGuideGenerators;
+    protected Map<ResourceLocation, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates;
 
     public void collect() {
         ArrayList<ICraftType> list = new ArrayList<>();
         ArrayList<CraftAction> actions = new ArrayList<>();
         ArrayList<IAutoCraftGuideGenerator> autoCraftGuideGenerators = new ArrayList<>();
-        CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators);
+        Map<ResourceLocation, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates = new HashMap<>();
+        CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators, itemStackPredicates);
         fireInternal(event);
         MinecraftForge.EVENT_BUS.post(event);
         if (Integrations.kjs())
@@ -77,6 +78,7 @@ public class CraftManager {
             this.actionsMap.put(action.type(), action);
         }
         this.autoCraftGuideGenerators = autoCraftGuideGenerators;
+        this.itemStackPredicates = itemStackPredicates;
         GeneratingConfig.load();
     }
 
@@ -94,7 +96,7 @@ public class CraftManager {
                 CommonPlaceItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true,false,
+                true, false,
                 3,
                 0
         );
@@ -103,7 +105,7 @@ public class CraftManager {
                 CommonSplitItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true,false,
+                true, false,
                 3,
                 0
         );
@@ -112,7 +114,7 @@ public class CraftManager {
                 CommonTakeItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true,false,
+                true, false,
                 0,
                 3
         );
@@ -121,7 +123,7 @@ public class CraftManager {
                 CommonThrowItemAction::new,
                 PathTargetLocator::throwItemPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,false,
+                true, false,
                 3,
                 0
         );
@@ -130,7 +132,7 @@ public class CraftManager {
                 CommonPickupItemAction::new,
                 PathTargetLocator::besidePosOrExactlyPos,
                 CraftAction.PathEnoughLevel.VERY_CLOSE.value,
-                true,false,
+                true, false,
                 0,
                 3
         );
@@ -139,7 +141,7 @@ public class CraftManager {
                 CommonUseAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,false,
+                true, false,
                 1,
                 1
         );
@@ -148,7 +150,7 @@ public class CraftManager {
                 CommonAttackAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,false,
+                true, false,
                 1,
                 1
         );
@@ -157,7 +159,7 @@ public class CraftManager {
                 CommonIdleAction::new,
                 PathTargetLocator::nearByNoLimitation,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true,false,
+                true, false,
                 0,
                 3
         );
@@ -166,7 +168,7 @@ public class CraftManager {
                 CraftingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,true,
+                false, true,
                 9,
                 10
         );
@@ -175,7 +177,7 @@ public class CraftManager {
                 AltarRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,false,
+                false, false,
                 6,
                 1
         );
@@ -184,7 +186,7 @@ public class CraftManager {
                 VirtualAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,false,
+                false, false,
                 2,
                 1
         );
@@ -193,7 +195,7 @@ public class CraftManager {
                 VirtualAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,false,
+                false, false,
                 3,
                 1
         );
@@ -202,7 +204,7 @@ public class CraftManager {
                 SmithingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,true,
+                false, true,
                 3,
                 1
         );
@@ -211,7 +213,7 @@ public class CraftManager {
                 AnvilRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,false,
+                false, false,
                 2,
                 1
         );
@@ -220,7 +222,7 @@ public class CraftManager {
                 StoneCuttingRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,true,
+                false, true,
                 1,
                 1
         );
@@ -241,7 +243,7 @@ public class CraftManager {
                     AeCraftingAction::new,
                     PathTargetLocator::commonNearestAvailablePos,
                     CraftAction.PathEnoughLevel.NORMAL.value,
-                    false,true,
+                    false, true,
                     0,
                     1
             );
@@ -253,7 +255,7 @@ public class CraftManager {
                     RsCraftingAction::new,
                     PathTargetLocator::commonNearestAvailablePos,
                     CraftAction.PathEnoughLevel.NORMAL.value,
-                    false,true,
+                    false, true,
                     0,
                     1
             );
@@ -363,5 +365,14 @@ public class CraftManager {
 
     public List<ICraftType> getTypes() {
         return this.types;
+    }
+
+    public Optional<Boolean> predicateItemStack(ItemStack stack, ItemStack target) {
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (!this.itemStackPredicates.containsKey(key)) return Optional.empty();
+        for (BiPredicate<ItemStack, ItemStack> predicate : this.itemStackPredicates.get(key)) {
+            if (!predicate.test(stack, target)) return Optional.of(false);
+        }
+        return Optional.of(true);
     }
 }

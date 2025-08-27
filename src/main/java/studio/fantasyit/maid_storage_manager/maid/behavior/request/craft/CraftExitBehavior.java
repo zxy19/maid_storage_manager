@@ -22,6 +22,7 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(p_22539_) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (!Conditions.takingRequestList(p_22539_)) return false;
         if (!MemoryUtil.getRequestProgress(p_22539_).isTryCrafting()) return false;
+        if (MemoryUtil.getRequestProgress(p_22539_).isReturning()) return false;
         if (!MemoryUtil.getCrafting(p_22539_).hasPlan()) return false;
         return MemoryUtil.getCrafting(p_22539_).plan().isDone();
     }
