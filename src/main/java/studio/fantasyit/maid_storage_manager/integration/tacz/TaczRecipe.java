@@ -38,7 +38,7 @@ public class TaczRecipe {
                 1
         );
         event.addAutoCraftGuideGenerator(new GeneratorTACZ());
-        event.addItemStackPredicate(ModItems.MODERN_KINETIC_GUN.asItem(), (stack, target) -> {
+        event.addItemStackPredicate(ModItems.MODERN_KINETIC_GUN.get(), (stack, target) -> {
             if (stack.getItem() instanceof ModernKineticGunItem gun) {
                 return gun.getGunId(stack).equals(gun.getGunId(target));
             }

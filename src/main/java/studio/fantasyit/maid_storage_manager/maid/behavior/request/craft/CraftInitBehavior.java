@@ -33,6 +33,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getRequestProgress(p_22539_).isReturning()) return false;
         if (!MemoryUtil.getRequestProgress(p_22539_).isTryCrafting()) return false;
         if (MemoryUtil.getCrafting(p_22539_).isGoPlacingBeforeCraft()) return false;
+        if (RequestListItem.getItemStacksNotDone(p_22539_.getMainHandItem()).isEmpty()) return false;
         //女仆当前没有生成合成任务，应该立刻计算所有合成
         return !MemoryUtil.getCrafting(p_22539_).hasPlan();
     }
@@ -81,6 +82,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         } else {
             MemoryUtil.getCrafting(maid).setPlan(planner.getPlan());
             MemoryUtil.getCrafting(maid).addIgnoreTargetFromRequest(maid, p_22548_);
+            ChatTexts.remove(maid);
         }
         CraftBlockOccupyDataProvider.get(p_22548_).removeAllOccupiesFor(maid);
         MemoryUtil.getCrafting(maid).resetAndMarkVis(p_22548_, maid);
