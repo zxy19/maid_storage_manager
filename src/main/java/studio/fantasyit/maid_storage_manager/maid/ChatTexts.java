@@ -72,6 +72,13 @@ public class ChatTexts {
             chatTextsSecondary.remove(maid.getUUID());
         }
     }
+    public static void remove(EntityMaid maid) {
+        if (chatTexts.containsKey(maid.getUUID())) {
+            if (maid.getChatBubbleManager().getChatBubble(chatTexts.get(maid.getUUID())) != null)
+                maid.getChatBubbleManager().removeChatBubble(chatTexts.get(maid.getUUID()));
+            chatTexts.remove(maid.getUUID());
+        }
+    }
 
     public static final String CHAT_CHEST_FULL = "chat_bubbles.maid_storage_manager.chest_full";
     public static final String CHAT_MISSING = "chat_bubbles.maid_storage_manager.missing";

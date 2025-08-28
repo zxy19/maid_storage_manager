@@ -82,6 +82,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         } else {
             MemoryUtil.getCrafting(maid).setPlan(planner.getPlan());
             MemoryUtil.getCrafting(maid).addIgnoreTargetFromRequest(maid, p_22548_);
+            ChatTexts.remove(maid);
         }
         CraftBlockOccupy.get(p_22548_).removeAllOccupiesFor(maid);
         MemoryUtil.getCrafting(maid).resetAndMarkVis(p_22548_, maid);
