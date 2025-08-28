@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -36,8 +37,6 @@ public class CraftGuideStepData {
                             .forGetter(CraftGuideStepData::getOutput),
                     ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_OP_ACTION)
                             .forGetter(CraftGuideStepData::getActionType),
-                    Codec.BOOL.optionalFieldOf(CraftGuide.TAG_OP_OPTIONAL, false)
-                            .forGetter(CraftGuideStepData::isOptional),
                     CompoundTag.CODEC.fieldOf(CraftGuide.TAG_OP_EXTRA)
                             .forGetter(CraftGuideStepData::getExtraData)
             ).apply(instance, CraftGuideStepData::new)
@@ -65,18 +64,15 @@ public class CraftGuideStepData {
     public List<ItemStack> output;
     public ResourceLocation action;
     public CraftAction actionType;
-    public boolean optional;
     public CompoundTag extraData;
 
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
                               ResourceLocation action,
-                              boolean optional,
                               CompoundTag extraData) {
         this.storage = storage;
         this.action = action;
-        this.optional = optional;
         this.actionType = CraftManager.getInstance().getAction(action);
         if (this.actionType == null) {
             this.actionType = CraftManager.getInstance().getDefaultAction();
@@ -103,13 +99,12 @@ public class CraftGuideStepData {
         List<ItemStack> outputs = new ArrayList<>();
         for (int i = 0; i < action1.outputCount(); i++)
             outputs.add(ItemStack.EMPTY);
-        return new CraftGuideStepData(storage, inputs, outputs, action, false, new CompoundTag());
+        return new CraftGuideStepData(storage, inputs, outputs, action, new CompoundTag());
     }
 
     public static CraftGuideStepData fromCompound(RegistryAccess registryAccess, CompoundTag tag) {
         Target storage = null;
         ResourceLocation action = null;
-        boolean optional = false;
         CompoundTag extraData = new CompoundTag();
         if (tag.contains(CraftGuide.TAG_OP_STORAGE))
             storage = Target.fromNbt(tag.getCompound(CraftGuide.TAG_OP_STORAGE));
@@ -135,11 +130,14 @@ public class CraftGuideStepData {
         }
         if (tag.contains(CraftGuide.TAG_OP_ACTION))
             action = ResourceLocation.tryParse(tag.getString(CraftGuide.TAG_OP_ACTION));
-        if (tag.contains(CraftGuide.TAG_OP_OPTIONAL))
-            optional = tag.getBoolean(CraftGuide.TAG_OP_OPTIONAL);
         if (tag.contains(CraftGuide.TAG_OP_EXTRA))
             extraData = tag.getCompound(CraftGuide.TAG_OP_EXTRA);
-        return new CraftGuideStepData(storage, inputs, outputs, action, optional, extraData);
+        if (tag.contains(CraftGuide.TAG_OP_OPTIONAL)) {
+            extraData.put(ActionOption.OPTIONAL.id().toString(), new CompoundTag());
+            extraData.getCompound(ActionOption.OPTIONAL.id().toString()).putInt(ActionOption.OPTIONAL.id().toString(), tag.getBoolean(CraftGuide.TAG_OP_OPTIONAL) ? 1 : 0);
+            extraData.getCompound(ActionOption.OPTIONAL.id().toString()).putString(ActionOption.OPTIONAL.id().toString(), "type");
+        }
+        return new CraftGuideStepData(storage, inputs, outputs, action, extraData);
     }
 
     public CompoundTag toCompound(RegistryAccess registryAccess) {
@@ -166,7 +164,6 @@ public class CraftGuideStepData {
             tag.put(CraftGuide.TAG_OP_OUTPUT, list);
         }
         tag.putString(CraftGuide.TAG_OP_ACTION, action.toString());
-        tag.putBoolean(CraftGuide.TAG_OP_OPTIONAL, optional);
         tag.put(CraftGuide.TAG_OP_EXTRA, extraData);
         return tag;
     }
@@ -180,7 +177,7 @@ public class CraftGuideStepData {
     }
 
     public boolean isOptional() {
-        return optional;
+        return this.actionType.getOptionSelection(ActionOption.OPTIONAL, this).orElse(false);
     }
 
 
