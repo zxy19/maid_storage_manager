@@ -11,6 +11,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -99,7 +100,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 true, false,
                 3,
-                0
+                0,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonSplitItemAction.TYPE,
@@ -108,7 +110,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 true, false,
                 3,
-                0
+                0,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonTakeItemAction.TYPE,
@@ -117,7 +120,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 true, false,
                 0,
-                3
+                3,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonThrowItemAction.TYPE,
@@ -126,7 +130,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true, false,
                 3,
-                0
+                0,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonPickupItemAction.TYPE,
@@ -135,7 +140,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.VERY_CLOSE.value,
                 true, false,
                 0,
-                3
+                3,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonUseAction.TYPE,
@@ -144,7 +150,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true, false,
                 1,
-                1
+                1,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonAttackAction.TYPE,
@@ -153,7 +160,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true, false,
                 1,
-                1
+                1,
+                List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
                 CommonIdleAction.TYPE,
@@ -162,7 +170,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true, false,
                 0,
-                3
+                3,
+                List.of()
         );
         event.addAction(
                 CraftingRecipeAction.TYPE,
@@ -171,7 +180,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, true,
                 9,
-                10
+                10,
+                List.of()
         );
         event.addAction(
                 AltarType.TYPE,
@@ -180,7 +190,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, false,
                 6,
-                1
+                1,
+                List.of()
         );
         event.addAction(
                 FurnaceType.TYPE,
@@ -189,7 +200,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, false,
                 2,
-                1
+                1,
+                List.of()
         );
         event.addAction(
                 BrewingType.TYPE,
@@ -198,7 +210,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, false,
                 3,
-                1
+                1,
+                List.of()
         );
         event.addAction(
                 SmithingType.TYPE,
@@ -207,7 +220,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, true,
                 3,
-                1
+                1,
+                List.of()
         );
         event.addAction(
                 AnvilType.TYPE,
@@ -216,7 +230,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, false,
                 2,
-                1
+                1,
+                List.of()
         );
         event.addAction(
                 StoneCuttingType.TYPE,
@@ -225,7 +240,8 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, true,
                 1,
-                1
+                1,
+                List.of()
         );
 
         event.addAutoCraftGuideGenerator(new GeneratorCraftingTable());
@@ -246,7 +262,8 @@ public class CraftManager {
                     CraftAction.PathEnoughLevel.NORMAL.value,
                     false, true,
                     0,
-                    1
+                    1,
+                    List.of()
             );
         }
         if (ModList.get().isLoaded("refinedstorage") && Config.enableRsSup) {
@@ -258,7 +275,8 @@ public class CraftManager {
                     CraftAction.PathEnoughLevel.NORMAL.value,
                     false, true,
                     0,
-                    1
+                    1,
+                    List.of()
             );
         }
         if (Integrations.taczRecipe()) {

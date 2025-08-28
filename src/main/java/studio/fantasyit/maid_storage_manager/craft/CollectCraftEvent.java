@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.Event;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
@@ -58,8 +59,10 @@ public class CollectCraftEvent extends Event {
                           boolean isCommon,
                           boolean noOccupation,
                           int hasInput,
-                          int hasOutput) {
-        this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, noOccupation, hasInput, hasOutput));
+                          int hasOutput,
+                          List<ActionOption<?>> options
+    ) {
+        this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, noOccupation, hasInput, hasOutput, options));
     }
 
     /**
