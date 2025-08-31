@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -9,6 +10,7 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -23,6 +25,26 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.List;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
+    public static final ActionOption<Boolean> OPTION_SPLIT = new ActionOption<>(
+            new ResourceLocation(MaidStorageManager.MODID, "split"),
+            new Component[]{
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.no_split"),
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.split")
+            },
+            new ResourceLocation[]{
+                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/no_split.png"),
+                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/split.png")
+            },
+            "",
+            new ActionOption.BiConverter<Integer, Boolean>(
+                    i -> i != 0, b -> b ? 1 : 0
+            ),
+            ActionOption.ValuePredicatorOrGetter.getter(t ->
+                    t ?
+                            Component.translatable("gui.maid_storage_manager.craft_guide.common.split") :
+                            Component.translatable("gui.maid_storage_manager.craft_guide.common.no_split")
+            )
+    );
     public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "insert");
     protected IStorageContext storageContext;
     int slot = 0;

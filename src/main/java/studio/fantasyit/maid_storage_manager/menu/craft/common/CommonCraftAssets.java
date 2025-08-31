@@ -9,117 +9,89 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommonCraftAssets {
-    public static ImageAsset SLOT_L = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 32, 18, 18
+    public static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
+
+
+    public static ImageAsset ROW_HIGHLIGHT = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 0, 249, 17
     );
-    public static ImageAsset SLOT_M = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            194, 32, 18, 18
+    public static ImageAsset ROW = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 18, 247, 33
     );
-    public static ImageAsset SLOT_R = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            212, 32, 18, 18
+    public static ImageAsset ROW_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 34, 247, 49
+    );
+    public static ImageAsset SLOT_NORMAL = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 50, 193, 67
+    );
+    public static ImageAsset SLOT_HAND = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 86, 193, 103
+    );
+    public static ImageAsset DELETE_GRAY = ImageAsset.from4Point(
+            BACKGROUND,
+            219, 50, 221, 52
+    );
+    public static ImageAsset DELETE = ImageAsset.from4Point(
+            BACKGROUND,
+            219, 53, 221, 55
     );
 
-    public static ImageAsset BUTTON_UP = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            179, 51, 10, 6
+    public static ImageAsset BTN_DOWN = ImageAsset.from4Point(
+            BACKGROUND,
+            209, 60, 216, 64
     );
-    public static ImageAsset BUTTON_REMOVE = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            179, 60, 10, 10
+    public static ImageAsset BTN_UP = ImageAsset.from4Point(
+            BACKGROUND,
+            209, 65, 216, 69
     );
-    public static ImageAsset BUTTON_DOWN = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            179, 73, 10, 6
+    public static ImageAsset BTN_ACTION = ImageAsset.from4Point(
+            BACKGROUND,
+            194, 50, 208, 64
     );
-    public static ImageAsset BUTTON_UP_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            195, 51, 10, 6
+    public static ImageAsset BTN_ACTION_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            194, 65, 208, 79
     );
-    public static ImageAsset BUTTON_REMOVE_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            195, 60, 10, 10
+    public static ImageAsset BTN_OPTION = ImageAsset.from4Point(
+            BACKGROUND,
+            194, 80, 204, 90
     );
-    public static ImageAsset BUTTON_DOWN_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            195, 73, 10, 6
+    public static ImageAsset BTN_OPTION_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            194, 91, 204, 101
     );
-
-    public static ImageAsset BUTTON_NBT_POSI = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 0, 16, 16
+    public static ImageAsset OPTION_UNDERLINE = ImageAsset.from4Point(
+            BACKGROUND,
+            205, 80, 225, 80
     );
-    public static ImageAsset BUTTON_NBT_POSI_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 16, 16, 16
+    public static ImageAsset ARROW_DOWN = ImageAsset.from4Point(
+            BACKGROUND,
+            209, 70, 213, 75
     );
-    public static ImageAsset BUTTON_NBT_NEGI = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            192, 0, 16, 16
+    public static ImageAsset ARROW_UP = ImageAsset.from4Point(
+            BACKGROUND,
+            214, 70, 218, 75
     );
-    public static ImageAsset BUTTON_NBT_NEGI_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            192, 16, 16, 16
+    public static ImageAsset SCROLL_BASE = ImageAsset.from4Point(
+            BACKGROUND,
+            209, 50, 213, 54
     );
-    public static ImageAsset BUTTON_OPTIONAL_POSI = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            208, 0, 16, 16
+    public static ImageAsset SCROLL_DECO = ImageAsset.from4Point(
+            BACKGROUND,
+            209, 55, 213, 59
     );
-    public static ImageAsset BUTTON_OPTIONAL_POSI_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            208, 16, 16, 16
+    public static ImageAsset SCROLL_BASE_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            214, 50, 218, 54
     );
-    public static ImageAsset BUTTON_OPTIONAL_NEGI = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            224, 0, 16, 16
-    );
-    public static ImageAsset BUTTON_OPTIONAL_NEGI_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            224, 16, 16, 16
-    );
-
-    public static ImageAsset BUTTON_ACTION = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 81, 15, 15
-    );
-    public static ImageAsset BUTTON_ACTION_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 97, 15, 15
-    );
-
-    public static ImageAsset BUTTON_PREV_PAGE = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 112, 16, 8
-    );
-    public static ImageAsset BUTTON_NEXT_PAGE = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            198, 112, 16, 8
-    );
-    public static ImageAsset BUTTON_PREV_PAGE_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            176, 122, 16, 8
-    );
-    public static ImageAsset BUTTON_NEXT_PAGE_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            198, 122, 16, 8
-    );
-    public static ImageAsset SEPARATOR = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            1, 246, 129, 2
-    );
-    public static ImageAsset SMALL_BUTTON = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            192, 89, 10, 10
-    );
-    public static ImageAsset SMALL_BUTTON_HOVER = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            192, 102, 10, 10
-    );
-    public static ImageAsset ARROW = new ImageAsset(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png"),
-            208, 50, 10, 7
+    public static ImageAsset SCROLL_DECO_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            214, 55, 218, 59
     );
 
     public static Map<ResourceLocation, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();

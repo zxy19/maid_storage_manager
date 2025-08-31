@@ -2,8 +2,11 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.StringUtils;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -12,6 +15,22 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import java.util.Objects;
 
 public class CommonIdleAction extends AbstractCraftActionContext {
+    public static final ActionOption<Boolean> OPTION_WAIT = new ActionOption<>(
+            new ResourceLocation(MaidStorageManager.MODID, "wait"),
+            new Component[]{
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_second"),
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_tick")
+            },
+            new ResourceLocation[]{
+                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/wait_second.png"),
+                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/wait_tick.png")
+            },
+            "",
+            new ActionOption.BiConverter<>(
+                    i -> i != 0, b -> b ? 1 : 0
+            ),
+            ActionOption.ValuePredicatorOrGetter.predicator(t -> (t.isBlank() || (StringUtils.isNumeric(t) && Integer.parseInt(t) <= 999)))
+    );
     public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "idle");
 
     public CommonIdleAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
@@ -36,10 +55,12 @@ public class CommonIdleAction extends AbstractCraftActionContext {
 
     @Override
     public Result start() {
-        CompoundTag extraData = craftGuideStepData.getExtraData();
-        int time = extraData.getInt("time");
-        int u = extraData.getInt("u");
-        int v = time * (u == 0 ? 1 : 20);
+        boolean u = craftGuideStepData.actionType.getOptionSelection(OPTION_WAIT, craftGuideStepData).orElse(false);
+        String timeStr = craftGuideStepData.actionType.getOptionValue(OPTION_WAIT, craftGuideStepData);
+        if (timeStr.isBlank())
+            timeStr = "0";
+        int time = Integer.parseInt(timeStr);
+        int v = time * (u ? 1 : 20);
         if (endTick == 0)
             endTick = Objects.requireNonNull(maid.level().getServer()).getTickCount() + v;
         return Result.CONTINUE;

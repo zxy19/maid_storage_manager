@@ -1,70 +1,86 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterContainer;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 
-public class CommonStepDataContainer extends FilterContainer implements ISaveFilter {
-    public final CraftGuideStepData step;
-    CraftAction actionType;
-    public boolean optional;
-    public boolean matchTag;
-    public int inputCount = 0;
-    public int padCount = 0;
-    public int outputCount = 0;
+import java.util.List;
 
-    public CommonStepDataContainer(CraftGuideStepData step, AbstractContainerMenu menu) {
-        super(3, menu);
+public class CommonStepDataContainer extends FilterContainer implements ISaveFilter {
+    public CraftGuideStepData step;
+    CraftAction actionType;
+    public int inputCount = 0;
+    public int padCount = 4;
+    public int outputCount = 0;
+    public List<ActionOption<?>> options = List.of();
+
+    public CommonStepDataContainer(AbstractContainerMenu menu) {
+        super(4, menu);
+    }
+
+
+    public void setStep(CraftGuideStepData step) {
         this.step = step;
         actionType = step.actionType;
-        inputCount = step.actionType.inputCount();
-        outputCount = step.actionType.outputCount();
-        if (inputCount + outputCount < 3)
-            padCount = 3 - inputCount - outputCount;
-        else padCount = 0;
-        if (inputCount + outputCount > 3)
-            outputCount = 3 - inputCount;
-        if (outputCount < 0) {
-            outputCount = 0;
-            inputCount = 3;
-        }
-        for (int i = 0; i < inputCount; i++) {
+        recalculateSlots();
+        for (int i = 0; i < Math.min(inputCount, actionType.inputCount()); i++) {
             setItemNoTrigger(i, step.getInput().get(i));
             setCount(i, step.getInput().get(i).getCount());
         }
         int inputOffset = inputCount == 0 ? 0 : Math.max(inputCount, 2);
-        for (int i = 0; i < outputCount; i++) {
+        for (int i = 0; i < Math.min(outputCount, actionType.outputCount()); i++) {
             setItemNoTrigger(inputOffset + i, step.getOutput().get(i));
             setCount(inputOffset + i, step.getOutput().get(i).getCount());
         }
-        optional = step.isOptional();
+        options = actionType.options();
     }
+
+    public void clearStep() {
+        step = null;
+        inputCount = 0;
+        padCount = 4;
+        outputCount = 0;
+        for (int i = 0; i < 4; i++) {
+            setItemNoTrigger(i, ItemStack.EMPTY);
+            setCount(i, 0);
+        }
+        options = List.of();
+    }
+
+    private void recalculateSlots() {
+        inputCount = step.actionType.inputCount();
+        outputCount = step.actionType.outputCount();
+        if (inputCount + outputCount < 4)
+            padCount = 4 - inputCount - outputCount;
+        else padCount = 0;
+        if (inputCount + outputCount > 4)
+            outputCount = 4 - inputCount;
+        if (outputCount < 0) {
+            outputCount = 0;
+            inputCount = 4;
+        }
+    }
+
 
     @Override
     public int getContainerSize() {
-        return actionType.inputCount() + actionType.outputCount() + padCount;
+        return 4;
     }
 
     public void setAction(ResourceLocation action) {
-        int currentInputs = inputCount;
-        int currentOutputs = outputCount;
+        if (step == null)
+            return;
         step.setAction(action);
-
         actionType = step.actionType;
-        inputCount = step.actionType.inputCount();
-        outputCount = step.actionType.outputCount();
-        if (inputCount + outputCount < 3)
-            padCount = 3 - inputCount - outputCount;
-        else padCount = 0;
-        if (inputCount + outputCount > 3)
-            outputCount = 3 - inputCount;
-        if (outputCount < 0) {
-            outputCount = 0;
-            inputCount = 3;
-        }
+        options = actionType.options();
+        recalculateSlots();
+        step.setExtraData(new CompoundTag());
     }
 
     @Override
@@ -85,7 +101,11 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
             }
         else
             step.clearOutput();
-        step.optional = optional;
+    }
+
+    public void setOption(int index, int selection, String value) {
+        actionType.setOptionSelectionId(options.get(index), step, selection);
+        actionType.setOptionValue(options.get(index), step, value);
     }
 
 }

@@ -19,6 +19,10 @@ public class ImageAsset {
         this.ih = ih;
     }
 
+    public static ImageAsset from4Point(ResourceLocation location, int u, int v, int u1, int v1) {
+        return new ImageAsset(location, u, v, u1 - u + 1, v1 - v + 1);
+    }
+
     public ImageAsset(ResourceLocation location, int u, int v, int w, int h) {
         this(location, u, v, w, h, 256, 256);
     }

@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -13,14 +14,14 @@ public record ActionOption<T>(
         Component[] tooltip,
         ResourceLocation[] icon,
         String defaultValue,
-        @NotNull Function<Integer, T> converter,
+        @NotNull BiConverter<Integer, T> converter,
         @NotNull ValuePredicatorOrGetter<T> valuePredicatorOrGetter
 ) {
     public static class ValuePredicatorOrGetter<T> {
         public final @Nullable Predicate<String> predicate;
         public final @Nullable Function<T, Component> valueGetter;
 
-        public static ValuePredicatorOrGetter<?> predicator(Predicate<String> predicate) {
+        public static <T> ValuePredicatorOrGetter<T> predicator(Predicate<String> predicate) {
             return new ValuePredicatorOrGetter<>(predicate, null);
         }
 
@@ -33,6 +34,40 @@ public record ActionOption<T>(
                 throw new IllegalArgumentException("predicate or valueGetter must not be null");
             this.predicate = predicate;
             this.valueGetter = valueGetter;
+        }
+
+        public boolean predicate(String value) {
+            if (predicate == null)
+                return false;
+            return predicate.test(value);
+        }
+
+        public Optional<Component> getValue(T value) {
+            if (valueGetter == null)
+                return Optional.empty();
+            return Optional.of(valueGetter.apply(value));
+        }
+
+        public boolean hasPredicator() {
+            return predicate != null;
+        }
+    }
+
+    public static class BiConverter<T, R> {
+        public final @NotNull Function<T, R> from;
+        public final @NotNull Function<R, T> to;
+
+        public BiConverter(@NotNull Function<T, R> from, @NotNull Function<R, T> to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public R ab(T value) {
+            return from.apply(value);
+        }
+
+        public T ba(R value) {
+            return to.apply(value);
         }
     }
 
@@ -47,7 +82,7 @@ public record ActionOption<T>(
                     new ResourceLocation("maid_storage_manager:textures/gui/craft/option/optional.png")
             },
             "",
-            value -> value == 1,
+            new BiConverter<>(value -> value == 1, value -> value ? 1 : 0),
             ValuePredicatorOrGetter.getter(
                     value -> value ?
                             Component.translatable("gui.maid_storage_manager.craft_guide.common.optional") :

@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -89,6 +90,31 @@ public class CraftGuideStepData {
         this.input = input;
         this.output = output;
         this.extraData = extraData;
+    }
+
+    public CraftGuideStepData(Target storage,
+                              List<ItemStack> input,
+                              List<ItemStack> output,
+                              ResourceLocation action,
+                              ActionOptionSet options
+    ) {
+        this(storage, input, output, action, new CompoundTag());
+        options.applyTo(this);
+    }
+
+    @Deprecated
+    public CraftGuideStepData(Target storage,
+                              List<ItemStack> input,
+                              List<ItemStack> output,
+                              ResourceLocation action,
+                              boolean optional,
+                              CompoundTag extraData) {
+        //TODO remove
+        this(storage, input, output, action, extraData);
+        if (actionType != null && actionType.hasOption(ActionOption.OPTIONAL) && optional) {
+            this.extraData = this.extraData.copy();
+            actionType.setOptionSelectionId(ActionOption.OPTIONAL, this, 1);
+        }
     }
 
     public static CraftGuideStepData createFromTypeStorage(Target storage, ResourceLocation action) {
@@ -177,7 +203,7 @@ public class CraftGuideStepData {
     }
 
     public boolean isOptional() {
-        return this.actionType.getOptionSelection(ActionOption.OPTIONAL, this).orElse(false);
+        return this.actionType.hasOption(ActionOption.OPTIONAL) && this.actionType.getOptionSelection(ActionOption.OPTIONAL, this).orElse(false);
     }
 
 

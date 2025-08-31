@@ -9,7 +9,6 @@ import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 public class StepDataContainer extends FilterContainer implements ISaveFilter {
     public final CraftGuideStepData step;
     CraftAction actionType;
-    public boolean optional;
     public int inputCount = 0;
     public int outputCount = 0;
 
@@ -44,6 +43,5 @@ public class StepDataContainer extends FilterContainer implements ISaveFilter {
             int count = this.count[inputCount + i].getValue();
             step.setOutput(i, getItem(inputCount + i).copyWithCount(count));
         }
-        step.optional = optional;
     }
 }

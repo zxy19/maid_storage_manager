@@ -35,16 +35,18 @@ public class CraftGuideGuiPacket implements CustomPacketPayload {
     public enum Type {
         COUNT,
         SET_MODE,
+        SYNC,
         UP,
         DOWN,
         REMOVE,
         SET_ITEM,
         SET_ALL_INPUT,
         MATCH_TAG,
-        PAGE_DOWN,
-        PAGE_UP,
-        OPTIONAL,
+        SELECT,
+        OPTION,
         EXTRA,
+        PAGE_UP,
+        PAGE_DOWN,
         SIDE
     }
 

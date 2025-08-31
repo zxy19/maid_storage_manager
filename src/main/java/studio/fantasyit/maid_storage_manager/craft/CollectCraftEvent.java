@@ -57,12 +57,37 @@ public class CollectCraftEvent extends Event {
                           CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
                           double closeEnoughThreshold,
                           boolean isCommon,
-                          boolean noOccupation,
                           int hasInput,
                           int hasOutput,
                           List<ActionOption<?>> options
     ) {
-        this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, noOccupation, hasInput, hasOutput, options));
+        addAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, false, hasInput, hasOutput, options);
+    }
+
+    public void addAction(ResourceLocation type,
+                          CraftAction.CraftActionProvider craftActionProvider,
+                          CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
+                          double closeEnoughThreshold,
+                          boolean isCommon,
+                          long marks,
+                          int hasInput,
+                          int hasOutput,
+                          List<ActionOption<?>> options
+    ) {
+        this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, marks, hasInput, hasOutput, options));
+    }
+
+    public void addAction(ResourceLocation type,
+                          CraftAction.CraftActionProvider craftActionProvider,
+                          CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
+                          double closeEnoughThreshold,
+                          boolean isCommon,
+                          boolean noOccupy,
+                          int hasInput,
+                          int hasOutput,
+                          List<ActionOption<?>> options
+    ) {
+        addAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, noOccupy ? CraftAction.NO_OCCUPATION : CraftAction.NO_MARKS, hasInput, hasOutput, options);
     }
 
     /**

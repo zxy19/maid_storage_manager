@@ -97,29 +97,19 @@ public class CraftManager {
                 CommonPlaceItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true, false,
-                3,
+                true,
+                4,
                 0,
-                List.of(ActionOption.OPTIONAL)
-        );
-        event.addAction(
-                CommonSplitItemAction.TYPE,
-                CommonSplitItemAction::new,
-                PathTargetLocator::commonNearestAvailablePos,
-                CraftAction.PathEnoughLevel.NORMAL.value,
-                true, false,
-                3,
-                0,
-                List.of(ActionOption.OPTIONAL)
+                List.of(ActionOption.OPTIONAL, CommonPlaceItemAction.OPTION_SPLIT)
         );
         event.addAction(
                 CommonTakeItemAction.TYPE,
                 CommonTakeItemAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                true, false,
+                true,
                 0,
-                3,
+                4,
                 List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
@@ -127,8 +117,8 @@ public class CraftManager {
                 CommonThrowItemAction::new,
                 PathTargetLocator::throwItemPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true, false,
-                3,
+                true,
+                4,
                 0,
                 List.of(ActionOption.OPTIONAL)
         );
@@ -137,7 +127,7 @@ public class CraftManager {
                 CommonPickupItemAction::new,
                 PathTargetLocator::besidePosOrExactlyPos,
                 CraftAction.PathEnoughLevel.VERY_CLOSE.value,
-                true, false,
+                true,
                 0,
                 3,
                 List.of(ActionOption.OPTIONAL)
@@ -147,9 +137,9 @@ public class CraftManager {
                 CommonUseAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true, false,
-                1,
-                1,
+                true,
+                2,
+                2,
                 List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
@@ -157,9 +147,9 @@ public class CraftManager {
                 CommonAttackAction::new,
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true, false,
-                1,
-                1,
+                true,
+                2,
+                2,
                 List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
@@ -167,10 +157,10 @@ public class CraftManager {
                 CommonIdleAction::new,
                 PathTargetLocator::nearByNoLimitation,
                 CraftAction.PathEnoughLevel.CLOSER.value,
-                true, false,
+                true,
                 0,
                 3,
-                List.of()
+                List.of(CommonIdleAction.OPTION_WAIT)
         );
         event.addAction(
                 CraftingRecipeAction.TYPE,

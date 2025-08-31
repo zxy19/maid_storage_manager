@@ -56,15 +56,15 @@ public class EmiCommonRecipeHandler implements EmiRecipeHandler<CommonCraftMenu>
         CompoundTag data = new CompoundTag();
         ListTag inputTag = new ListTag();
         ListTag outputTag = new ListTag();
-        for (CommonStepDataContainer step : container.steps) {
-            for (int i = 0; i < step.step.actionType.inputCount(); i++) {
+        for (CraftGuideStepData step : container.craftGuideData.steps) {
+            for (int i = 0; i < step.actionType.inputCount(); i++) {
                 if (inputId < inputs.size()) {
                     if (doTransfer)
                         inputTag.add(ItemStackUtil.saveStack(context.getScreenHandler().player.registryAccess(), inputs.get(inputId)));
                     inputId++;
                 }
             }
-            for (int i = 0; i < step.step.actionType.outputCount(); i++) {
+            for (int i = 0; i < step.actionType.outputCount(); i++) {
                 if (outputId < outputs.size()) {
                     if (doTransfer)
                         outputTag.add(ItemStackUtil.saveStack(context.getScreenHandler().player.registryAccess(), outputs.get(outputId)));

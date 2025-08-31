@@ -24,10 +24,10 @@ import java.util.function.Function;
 
 public class CommonActionSelectionWidget extends AbstractWidget {
     private final static ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
-    private final static ImageAsset BUTTON_NORMAL = new ImageAsset(background, 176, 214, 56, 15);
-    private final static ImageAsset BUTTON_HOVER = new ImageAsset(background, 176, 229, 56, 15);
-    private final static ImageAsset ARROW = new ImageAsset(background, 219, 120, 11, 9);
-    private final static ImageAsset BACK = new ImageAsset(background, 176, 131, 70, 83);
+    private final static ImageAsset BUTTON_NORMAL = ImageAsset.from4Point(background, 176, 187, 231, 201);
+    private final static ImageAsset BUTTON_HOVER = ImageAsset.from4Point(background, 176, 202, 231, 216);
+    private final static ImageAsset ARROW = ImageAsset.from4Point(background, 205, 81, 215, 89);
+    private final static ImageAsset BACK = ImageAsset.from4Point(background, 176, 104, 241, 186);
 
     private final static int GAP_SIZE = 1;
     private final static int DIFF_X = 6;
@@ -81,12 +81,16 @@ public class CommonActionSelectionWidget extends AbstractWidget {
     }
 
     public void expandFrom(AbstractWidget widget) {
+        expandFrom(widget.getX(), widget.getY());
+    }
+
+    public void expandFrom(int x, int y) {
         for (int i = 0; i < buttons.size(); i++) {
-            buttons.get(i).setX(widget.getX() - screen.getGuiLeft());
-            buttons.get(i).setY(widget.getY() - screen.getGuiTop() + (BUTTON_NORMAL.h + GAP_SIZE) * i);
+            buttons.get(i).setX(x - screen.getGuiLeft());
+            buttons.get(i).setY(y - screen.getGuiTop() + (BUTTON_NORMAL.h + GAP_SIZE) * i);
         }
-        this.setX(widget.getX() - DIFF_X);
-        this.setY(widget.getY() - DIFF_Y);
+        this.setX(x - DIFF_X);
+        this.setY(y - DIFF_Y);
         this.visible = true;
         this.active = true;
     }
