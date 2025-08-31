@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.co
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.generator.IKJSAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.type.IKJSCraftType;
 
+import java.util.List;
 import java.util.function.BiPredicate;
 
 public class KJSCraftEvent extends EventJS {
@@ -58,7 +59,9 @@ public class KJSCraftEvent extends EventJS {
                 isCommon,
                 false,
                 input,
-                output);
+                output,
+                List.of()
+        );
     }
 
     public void addActionSimpleNoOccupation(ResourceLocation type, IKJSCraftContextSupplier craftActionProvider, boolean isCommon, int input, int output) {
@@ -69,7 +72,9 @@ public class KJSCraftEvent extends EventJS {
                 isCommon,
                 true,
                 input,
-                output);
+                output,
+                List.of()
+        );
     }
 
     public void addAction(ResourceLocation type, IKJSCraftContextSupplier craftActionProvider, CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider, double closeEnoughThreshold, boolean isCommon, int hasInput, int hasOutput) {
@@ -80,7 +85,9 @@ public class KJSCraftEvent extends EventJS {
                 isCommon,
                 false,
                 hasInput,
-                hasOutput);
+                hasOutput,
+                List.of()
+        );
     }
 
 
@@ -92,7 +99,9 @@ public class KJSCraftEvent extends EventJS {
                 isCommon,
                 true,
                 hasInput,
-                hasOutput);
+                hasOutput,
+                List.of()
+        );
     }
 
     public void addActionVirtual(ResourceLocation type, int hasInput, int hasOutput) {
@@ -103,7 +112,9 @@ public class KJSCraftEvent extends EventJS {
                 false,
                 true,
                 hasInput,
-                hasOutput);
+                hasOutput,
+                List.of()
+        );
     }
 
     public void addItemStackPredicateRaw(ResourceLocation type, BiPredicate<ItemStack, ItemStack> predicate) {

@@ -3,28 +3,27 @@ package studio.fantasyit.maid_storage_manager.menu.craft.common;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
-import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
@@ -37,32 +36,17 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @MouseTweaksDisableWheelTweak
 @IPNIgnore
 public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> implements ICraftGuiPacketReceiver {
-    protected enum BUTTON_TYPE_COMMON {
-        ACTION,
-        SORT_UP,
-        SORT_REMOVE,
-        SORT_DOWN,
-        OPTIONAL,
-        TIME
-    }
-
-    protected enum BUTTON_TYPE_SPECIAL {BLOCK}
-
-    private final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
-
-    public final List<HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>>> buttonsByRow = new ArrayList<>();
-    public final List<EditBox> editBoxes = new ArrayList<>();
-    public final List<HashMap<BUTTON_TYPE_SPECIAL, AbstractButton>> otherButton = new ArrayList<>();
-    public final List<List<Integer>> buttonYOffset = new ArrayList<>();
-    SelectButtonWidget<?> pageUpBtn;
-    SelectButtonWidget<?> pageDownBtn;
     CommonActionSelectionWidget actionSelector;
+    SelectButtonWidget<CraftAction> actionSelectorButton;
+    SelectButtonWidget<?> sortButtonUp, sortButtonDown;
+    List<Pair<SelectButtonWidget<Integer>, EditBox>> options = new ArrayList<>();
 
     public CommonCraftScreen(CommonCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
@@ -75,214 +59,142 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     @Override
     protected void init() {
         super.init();
-        this.addButtons();
-    }
-
-    private static final int[] SLOT_Y = new int[]{28, 71, 114};
-
-    private void addButtons() {
-        buttonsByRow.clear();
-        buttonYOffset.clear();
-        otherButton.clear();
-        editBoxes.clear();
-
-        for (int i = 0; i < this.menu.steps.size(); i++) {
-            HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> objects = new HashMap<>();
-            ArrayList<Integer> yOffsets = new ArrayList<>();
-            addActionButton(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
-            addSortButtons(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
-            addOptionButtons(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
-            addTimeButton(objects, yOffsets, SLOT_Y[i % 3] - 5, i);
-            HashMap<BUTTON_TYPE_SPECIAL, AbstractButton> objectsSpecial = new HashMap<>();
-            addBlockButton(objectsSpecial, yOffsets, SLOT_Y[i % 3] - 5, i);
-            otherButton.add(objectsSpecial);
-            buttonsByRow.add(objects);
-            buttonYOffset.add(yOffsets);
-        }
-        addPageButton();
+        addOptionButtons();
+        addSortButtons();
+        addActionButtons();
+        actionSelector = new CommonActionSelectionWidget(0, 0, this);
         updateButtons();
     }
 
-    private void addBlockButton(HashMap<BUTTON_TYPE_SPECIAL, AbstractButton> objects, ArrayList<Integer> yOffsets, int sy, int i) {
-        yOffsets.add(1);
-        objects.put(BUTTON_TYPE_SPECIAL.BLOCK, addRenderableWidget(new AbstractButton(
-                this.leftPos + menu.targetBlockSlots.get(i).x + 1,
-                this.topPos + menu.targetBlockSlots.get(i).y - 3,
-                20,
-                20,
-                Component.literal("")
-        ) {
-            @Override
-            protected void updateWidgetNarration(NarrationElementOutput p_259858_) {
-                if (menu.targetBlockSlots.size() > i && menu.steps.size() > i) {
-                    p_259858_.add(NarratedElementType.HINT, menu.targetBlockSlots.get(i).getItem().getDisplayName());
-                    p_259858_.add(NarratedElementType.HINT, getStorageSideTranslate(menu.steps.get(i).step.storage));
-                }
-            }
-
-            @Override
-            protected void renderWidget(GuiGraphics graphics, int x, int y, float p_282542_) {
-                if (isMouseOver(x, y)) {
-                    graphics.pose().pushPose();
-                    graphics.pose().translate(0, 0, 200);
-                    graphics.fill(getX(), getY(), getX() + width, getY() + font.lineHeight, 0x80000000);
-                    graphics.drawString(font, getStorageSideTranslate(menu.steps.get(i).step.storage), getX(), getY(), 0xFFFFFFFF);
-                    graphics.pose().popPose();
-                }
-            }
-
-            @Override
-            public void onPress() {
-                Optional<Direction> currentSide = menu.steps.get(i).step.storage.getSide();
-                int nextOri;
-                if (currentSide.isEmpty())
-                    nextOri = 0;
-                else if (currentSide.get().ordinal() + 1 == Direction.values().length)
-                    nextOri = -1;
-                else
-                    nextOri = currentSide.get().ordinal() + 1;
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SIDE, i, nextOri));
-            }
-        }));
+    private void syncOption(int idx, Integer nv, String value) {
+        CompoundTag tag = new CompoundTag();
+        if (value == null)
+            value = options.get(idx).getB().getValue();
+        if (nv == null)
+            nv = options.get(idx).getA().getData();
+        tag.putString("value", value);
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.OPTION, idx, nv));
     }
 
-    private void addTimeButton(HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> objects, ArrayList<Integer> yOffsets, int sy, int i1) {
-        int dy = 24;
-        yOffsets.add(dy);
-        objects.put(BUTTON_TYPE_COMMON.TIME, addRenderableWidget(new SelectButtonWidget<Integer>(121, sy + dy - 1, (value) -> {
-            int v;
-            CompoundTag extraData = menu.steps.get(i1).step.getExtraData();
-            if (menu.steps.get(i1).actionType.type().equals(CommonIdleAction.TYPE)) {
-                if (extraData.contains("u"))
-                    v = extraData.getInt("u");
-                else
-                    v = 0;
-            } else
-                v = 0;
+    //region buttons
+    private void addOptionButtons() {
+        final int sx = 113;
+        int sy = 96;
+        for (int i = 0; i < 2; i++) {
+            final int optionIdx = i;
+            SelectButtonWidget<Integer> btn = addRenderableWidget(new SelectButtonWidget<>(
+                    sx, sy + i * 12,
+                    (value) -> {
+                        if (menu.currentEditingItems.options.isEmpty()) {
+                            return new SelectButtonWidget.Option<>(
+                                    0,
+                                    CommonCraftAssets.BTN_OPTION,
+                                    CommonCraftAssets.BTN_OPTION_HOVER,
+                                    Component.empty()
+                            );
+                        }
+                        ActionOption<?> opt = menu.currentEditingItems.options.get(optionIdx);
+                        int nv = (value == null ? menu.currentEditingItems.actionType.getOptionSelectionId(opt, menu.currentEditingItems.step).orElse(0) : value + 1);
+                        nv %= opt.tooltip().length;
+                        if (value != null) {
+                            syncOption(optionIdx, nv, null);
+                        }
+                        return new SelectButtonWidget.Option<>(
+                                nv,
+                                CommonCraftAssets.BTN_OPTION,
+                                CommonCraftAssets.BTN_OPTION_HOVER,
+                                opt.tooltip()[nv]
+                        );
+                    },
+                    this
+            ));
+
+            EditBox editBox = addRenderableWidget(new EditBox(font,
+                    getGuiLeft() + sx + 14,
+                    getGuiTop() + sy + i * 12,
+                    21,
+                    9,
+                    Component.literal("")));
+            editBox.setValue("");
+            editBox.setBordered(false);
+            editBox.setFilter(s -> {
+                if (menu.currentEditingItems.options.isEmpty()) return false;
+                ActionOption<?> opt = menu.currentEditingItems.options.get(optionIdx);
+                return opt.valuePredicatorOrGetter().predicate(s);
+            });
+            editBox.setResponder(t -> {
+                ActionOption<?> opt = menu.currentEditingItems.options.get(optionIdx);
+                if (opt.valuePredicatorOrGetter().hasPredicator()) {
+                    syncOption(optionIdx, null, t);
+                }
+            });
+            options.add(new Pair<>(btn, editBox));
+        }
+    }
+
+    private void addSortButtons() {
+        sortButtonUp = addRenderableWidget(new SelectButtonWidget<Integer>(91, 129, (value) -> {
             if (value != null) {
-                v = (value == 0 ? 1 : 0);
-                editBoxes.get(i1).setFocused(true);
-                int finalV = v;
-                sendExtra(i1, t -> t.putInt("u", finalV));
-            }
-
-
-            return new SelectButtonWidget.Option<>(
-                    v,
-                    CommonCraftAssets.SMALL_BUTTON,
-                    CommonCraftAssets.SMALL_BUTTON_HOVER,
-                    v == 0 ? Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_tick") : Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_second")
-            );
-        }, this)));
-
-
-        EditBox editBox = addRenderableWidget(new EditBox(font,
-                getGuiLeft() + 90,
-                getGuiTop() + sy + dy,
-                30,
-                8,
-                Component.literal("")));
-        editBox.setValue("0");
-        editBox.setBordered(false);
-        editBox.setMaxLength(3);
-        editBox.setFilter(s -> StringUtils.isNumeric(s) && Integer.parseInt(s) <= 999);
-        editBox.setResponder(t -> sendExtra(i1, c -> c.putInt("time", Integer.parseInt(t))));
-        editBoxes.add(editBox);
-    }
-
-    private void addActionButton(Map<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons, List<Integer> yOffsets, int sy, int i) {
-        actionSelector = new CommonActionSelectionWidget(0, 0, this);
-        addWidget(actionSelector);
-        buttons.put(BUTTON_TYPE_COMMON.ACTION, addRenderableWidget(new SelectButtonWidget<CraftAction>(94, SLOT_Y[i % 3], (value) -> {
-            if (value == null) value = menu.craftGuideData.steps.get(i).actionType;
-            else {
-                startSelectActionFor(i);
+                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.UP, 0));
             }
             return new SelectButtonWidget.Option<>(
-                    value,
-                    CommonCraftAssets.BUTTON_ACTION,
-                    CommonCraftAssets.BUTTON_ACTION_HOVER,
-                    CommonCraftAssets.translationForAction(value.type())
+                    0,
+                    CommonCraftAssets.BTN_UP,
+                    CommonCraftAssets.BTN_UP,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.up")
             );
-        }, this)));
-        yOffsets.add(0);
-    }
-
-    private void addOptionButtons(Map<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons, List<Integer> yOffsets, int sy, int i) {
-        yOffsets.add(5);
-        buttons.put(BUTTON_TYPE_COMMON.OPTIONAL, addRenderableWidget(new SelectButtonWidget<Boolean>(137, sy + 5, (value) -> {
-            if (value == null)
-                value = !menu.steps.get(i).optional;
-            else {
-                value = !value;
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.OPTIONAL, i, value ? 1 : 0));
-            }
-            return new SelectButtonWidget.Option<>(
-                    value,
-                    value ? CommonCraftAssets.BUTTON_OPTIONAL_POSI : CommonCraftAssets.BUTTON_OPTIONAL_NEGI,
-                    value ? CommonCraftAssets.BUTTON_OPTIONAL_POSI_HOVER : CommonCraftAssets.BUTTON_OPTIONAL_NEGI_HOVER,
-                    value ? Component.translatable("gui.maid_storage_manager.craft_guide.common.required") : Component.translatable("gui.maid_storage_manager.craft_guide.common.optional")
-            );
-
-        }, this)));
-    }
-
-    private void addSortButtons(Map<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons, List<Integer> yOffsets, int sy, int i) {
-        buttons.put(BUTTON_TYPE_COMMON.SORT_UP, addRenderableWidget(new SelectButtonWidget<Integer>(23, sy, (value) -> {
-            if (value != null)
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.UP, i));
-            return new SelectButtonWidget.Option<>(
-                    1,
-                    CommonCraftAssets.BUTTON_UP,
-                    CommonCraftAssets.BUTTON_UP_HOVER,
-                    Component.translatable("gui.maid_storage_manager.craft_guide.common.up"));
-        }, this)));
-        yOffsets.add(-5);
-        buttons.put(BUTTON_TYPE_COMMON.SORT_REMOVE, addRenderableWidget(new SelectButtonWidget<Integer>(23, sy + 10, (value) -> {
-            if (value != null)
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.REMOVE, i));
-            return new SelectButtonWidget.Option<>(
-                    1,
-                    CommonCraftAssets.BUTTON_REMOVE,
-                    CommonCraftAssets.BUTTON_REMOVE_HOVER,
-                    Component.translatable("gui.maid_storage_manager.craft_guide.common.remove"));
-        }, this)));
-        yOffsets.add(5);
-
-        buttons.put(BUTTON_TYPE_COMMON.SORT_DOWN, addRenderableWidget(new SelectButtonWidget<Integer>(23, sy + 23, (value) -> {
-            if (value != null)
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.DOWN, i));
-
-            return new SelectButtonWidget.Option<>(
-                    1,
-                    CommonCraftAssets.BUTTON_DOWN,
-                    CommonCraftAssets.BUTTON_DOWN_HOVER,
-                    Component.translatable("gui.maid_storage_manager.craft_guide.common.down"));
-        }, this)));
-        yOffsets.add(15);
-    }
-
-    private void addPageButton() {
-        pageUpBtn = addRenderableWidget(new SelectButtonWidget<Integer>(122, 151, (value) -> {
-            if (value != null)
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_UP, value));
-            return new SelectButtonWidget.Option<>(
-                    1,
-                    CommonCraftAssets.BUTTON_PREV_PAGE,
-                    CommonCraftAssets.BUTTON_PREV_PAGE_HOVER,
-                    Component.translatable("gui.maid_storage_manager.craft_guide.common.page_up"));
         }, this));
-
-        pageDownBtn = addRenderableWidget(new SelectButtonWidget<Integer>(140, 151, (value) -> {
-            if (value != null)
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_DOWN, value));
+        sortButtonDown = addRenderableWidget(new SelectButtonWidget<Integer>(91, 136, (value) -> {
+            if (value != null) {
+                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.DOWN, 0));
+            }
             return new SelectButtonWidget.Option<>(
-                    1,
-                    CommonCraftAssets.BUTTON_NEXT_PAGE,
-                    CommonCraftAssets.BUTTON_NEXT_PAGE_HOVER,
-                    Component.translatable("gui.maid_storage_manager.craft_guide.common.page_down"));
+                    0,
+                    CommonCraftAssets.BTN_DOWN,
+                    CommonCraftAssets.BTN_DOWN,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.down")
+            );
         }, this));
     }
+
+    private void addActionButtons() {
+        actionSelectorButton = addRenderableWidget(new SelectButtonWidget<>(
+                112, 73,
+                (value) -> {
+                    if (value == null) {
+                        CraftAction action = menu.currentEditingItems.step != null ? menu.currentEditingItems.actionType : CraftManager.getInstance().getDefaultAction();
+                        return new SelectButtonWidget.Option<>(
+                                action,
+                                CommonCraftAssets.BTN_ACTION,
+                                CommonCraftAssets.BTN_ACTION_HOVER,
+                                CommonCraftAssets.translationForAction(action.type())
+                        );
+                    }
+                    actionSelector.setCallback(t -> {
+                        actionSelectorButton.setOption(new SelectButtonWidget.Option<>(
+                                t,
+                                CommonCraftAssets.BTN_ACTION,
+                                CommonCraftAssets.BTN_ACTION_HOVER,
+                                CommonCraftAssets.translationForAction(t.type())
+                        ));
+                        CompoundTag tag = new CompoundTag();
+                        tag.putString("ns", t.type().getNamespace());
+                        tag.putString("id", t.type().getPath());
+                        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_MODE, 0, tag));
+                    });
+                    actionSelector.expandFrom(actionSelectorButton);
+                    return new SelectButtonWidget.Option<>(
+                            value,
+                            CommonCraftAssets.BTN_ACTION,
+                            CommonCraftAssets.BTN_ACTION_HOVER,
+                            CommonCraftAssets.translationForAction(value.type())
+                    );
+                },
+                this
+        ));
+    }
+
+    //endregion
 
     private void sendAndTriggerLocalPacket(CraftGuideGuiPacket packet) {
         Network.INSTANCE.send(
@@ -298,7 +210,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
-        guiGraphics.blit(background,
+        guiGraphics.blit(CommonCraftAssets.BACKGROUND,
                 relX,
                 relY,
                 0,
@@ -309,27 +221,23 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 256,
                 256);
 
-        for (Slot slot : this.getMenu().slots) {
-            if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof CommonStepDataContainer container && filterSlot.isActive()) {
-                ImageAsset back = switch (filterSlot.getContainerSlot()) {
-                    case 0 -> CommonCraftAssets.SLOT_L;
-                    case 1 -> container.getContainerSize() == 2 ? CommonCraftAssets.SLOT_M : CommonCraftAssets.SLOT_R;
-                    case 2 -> CommonCraftAssets.SLOT_R;
-                    default -> null;
-                };
-                if (back != null)
-                    back.blit(guiGraphics, relX + slot.x - 1, relY + slot.y - 1);
+        int c = 0;
+        for (int x = 0; x < 2; x++) {
+            for (int y = 0; y < 2; y++) {
+                if (menu.filterSlots[c].isActive()) {
+                    ImageAsset imageAsset = (menu.isHandRelated && c == 1) ? CommonCraftAssets.SLOT_HAND : CommonCraftAssets.SLOT_NORMAL;
+                    imageAsset.blit(guiGraphics, relX + menu.filterSlots[c].x - 1, relY + menu.filterSlots[c].y - 1);
+                }
+                c++;
             }
         }
-
-        renderSeparator(guiGraphics);
     }
 
     @Override
     protected void renderTooltip(@NotNull GuiGraphics graphics, int x, int y) {
         if (actionSelector.visible) return;
         graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 400);
+        graphics.pose().translate(0, 0, 200);
         RenderSystem.enableDepthTest();
         if (this.menu.getCarried().isEmpty()) {
             int inGuiX = x - this.getGuiLeft();
@@ -366,42 +274,60 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     @Override
     public void render(GuiGraphics graphics, int p_283661_, int p_281248_, float p_281886_) {
-        RenderSystem.disableDepthTest();
-        renderUnderLine(graphics);
-        RenderSystem.disableDepthTest();
-        renderBlockIndicator(graphics);
-        RenderSystem.disableDepthTest();
         super.render(graphics, p_283661_, p_281248_, p_281886_);
-        RenderSystem.disableDepthTest();
+        renderOptionEditorOrTip(graphics);
+        renderBlockIndicator(graphics);
         renderNumberLabel(graphics);
-        RenderSystem.disableDepthTest();
         renderButtonIcon(graphics);
-        RenderSystem.disableDepthTest();
         renderArrow(graphics);
-        RenderSystem.disableDepthTest();
-        renderTooltip(graphics, p_283661_, p_281248_);
-        RenderSystem.disableDepthTest();
+        renderScrollList(graphics, p_283661_, p_281248_);
+        renderScrollBar(graphics, p_283661_, p_281248_);
+        renderMiniBarInfo(graphics);
         actionSelector.render(graphics, p_283661_, p_281248_, p_281886_);
-        RenderSystem.enableDepthTest();
+        renderTooltip(graphics, p_283661_, p_281248_);
     }
 
-    private void renderUnderLine(@NotNull GuiGraphics graphics) {
-        for (EditBox editBox : editBoxes) {
-            if (editBox.isVisible())
-                graphics.blit(background, editBox.getX(), editBox.getY() + editBox.getHeight(), 197, 100, editBox.getWidth() + 1, 1);
+
+    private void renderOptionEditorOrTip(@NotNull GuiGraphics graphics) {
+        for (int i = 0; i < options.size(); i++) {
+            if (menu.currentEditingItems.options.size() <= i) continue;
+            ActionOption opt = menu.currentEditingItems.options.get(i);
+            Pair<SelectButtonWidget<Integer>, EditBox> editBox = options.get(i);
+            if (editBox.getB().isVisible())
+                CommonCraftAssets.OPTION_UNDERLINE.blit(graphics, editBox.getB().getX(), editBox.getB().getY() + editBox.getB().getHeight());
+            else if (editBox.getA().isVisible() && !opt.valuePredicatorOrGetter().hasPredicator()) {
+                Object ab = opt.converter().ab(editBox.getA().getData());
+                graphics.pose().pushPose();
+                graphics.pose().translate(editBox.getB().getX(), editBox.getB().getY() + 2, 0);
+                drawCenteredString(
+                        graphics,
+                        font,
+                        (Component) opt.valuePredicatorOrGetter().getValue(ab).orElse(Component.empty()),
+                        0,
+                        0,
+                        23,
+                        0xFFFFFFFF,
+                        true
+                );
+                graphics.pose().popPose();
+            }
+
+            if (editBox.getA().isVisible()) {
+                ResourceLocation asset = opt.icon()[editBox.getA().getData()];
+                graphics.blit(asset, editBox.getA().getX(), editBox.getA().getY(), 0, 0, 11, 11, 11, 11);
+            }
         }
-        graphics.flush();
     }
 
     private void renderArrow(@NotNull GuiGraphics graphics) {
-        for (int i = 0; i < menu.steps.size(); i++) {
-            if (menu.isIdCurrentPage(i)) {
-                if (menu.steps.get(i).inputCount > 0 && menu.steps.get(i).outputCount > 0) {
-                    CommonCraftAssets.ARROW.blit(graphics, getGuiLeft() + 59, getGuiTop() + SLOT_Y[i % 3] + 5);
-                }
-            }
+        int relX = (this.width - this.imageWidth) / 2;
+        int relY = (this.height - this.imageHeight) / 2;
+        if (menu.currentEditingItems.inputCount > 0) {
+            CommonCraftAssets.ARROW_DOWN.blit(graphics, relX + 118, relY + 60);
         }
-        graphics.flush();
+        if (menu.currentEditingItems.outputCount > 0) {
+            CommonCraftAssets.ARROW_UP.blit(graphics, relX + 138, relY + 60);
+        }
     }
 
     private void renderNumberLabel(@NotNull GuiGraphics graphics) {
@@ -430,32 +356,13 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.flush();
     }
 
-    @SuppressWarnings("unchecked")
     private void renderButtonIcon(@NotNull GuiGraphics graphics) {
-        for (int i = 0; i < buttonsByRow.size(); i++) {
-            if (menu.isIdCurrentPage(i)) {
-                SelectButtonWidget<CraftAction> cab = (SelectButtonWidget<CraftAction>) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.ACTION);
-                CommonCraftAssets
-                        .imageForAction(cab.getData().type())
-                        .blit(graphics,
-                                cab.getX() + 2,
-                                cab.getY() + 2
-                        );
-
-                SelectButtonWidget<Integer> timeBtn = (SelectButtonWidget<Integer>) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.TIME);
-                if (timeBtn.isVisible()) {
-                    graphics.pose().pushPose();
-                    graphics.pose().translate(timeBtn.getX() + 3, timeBtn.getY() + 3, 0);
-                    graphics.pose().scale(0.7f, 0.7f, 1);
-                    graphics.drawString(this.font,
-                            timeBtn.getData() == 0 ? "T" : "S",
-                            0,
-                            0,
-                            0xFFFFFF);
-                    RenderSystem.disableDepthTest();
-                    graphics.pose().popPose();
-                }
-            }
+        if (actionSelectorButton.isVisible()) {
+            CommonCraftAssets.imageForAction(actionSelectorButton.getData().type())
+                    .blit(graphics,
+                            actionSelectorButton.getX() + 2,
+                            actionSelectorButton.getY() + 2
+                    );
         }
         graphics.flush();
     }
@@ -464,34 +371,66 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.pose().pushPose();
         float scale = 1.3f;
         graphics.pose().scale(scale, scale, 1);
-        for (int i = 0; i < menu.targetBlockSlots.size(); i++) {
-            if (menu.isIdCurrentPage(i)) {
-                RenderSystem.disableDepthTest();
-                graphics.renderItem(
-                        menu.targetBlockSlots.get(i).getItem(),
-                        (int) ((this.leftPos + menu.targetBlockSlots.get(i).x + 1) / scale),
-                        (int) ((this.topPos + menu.targetBlockSlots.get(i).y - (scale - 1) * 18 / 2) / scale)
-                );
-            }
-        }
-        graphics.flush();
+        graphics.renderItem(
+                menu.blockIndicator.getItem(),
+                (int) ((this.leftPos + menu.blockIndicator.x - 1) / scale),
+                (int) ((this.topPos + menu.blockIndicator.y + 1) / scale)
+        );
         graphics.pose().popPose();
     }
 
-    private void renderSeparator(GuiGraphics graphics) {
-        int relX = (this.width - this.imageWidth) / 2;
-        int relY = (this.height - this.imageHeight) / 2;
-        int lineCount = menu.steps.size() - menu.page * 3;
-        for (int i = 0; i < lineCount && i < 2; i++) {
-            CommonCraftAssets.SEPARATOR.blit(
-                    graphics,
-                    relX + 24,
-                    relY + SLOT_Y[i] + 28
-            );
+    private void renderMiniBarInfo(@NotNull GuiGraphics graphics) {
+        if (menu.currentEditingItems.step == null) {
+            graphics.pose().pushPose();
+            graphics.pose().translate(getGuiLeft() + 36, getGuiTop() + 131, 0);
+            graphics.pose().scale(0.6f, 0.6f, 1);
+            graphics.drawString(font,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.no_step_selected"),
+                    0,
+                    0,
+                    0xffffffff);
+            graphics.pose().popPose();
+            return;
         }
+        NoPlaceFilterSlot bi = menu.blockIndicatorForSteps.get(menu.selectedIndex);
+        graphics.pose().pushPose();
+        graphics.pose().translate(getGuiLeft() + 28, getGuiTop() + 128, 0);
+        graphics.pose().scale(0.7f, 0.7f, 1);
+        graphics.renderItem(bi.getItem(), 0, 0);
+        graphics.pose().popPose();
 
-        graphics.flush();
+        graphics.pose().pushPose();
+        graphics.pose().translate(getGuiLeft() + 41, getGuiTop() + 128, 0);
+        graphics.pose().scale(0.55f, 0.55f, 1);
+        graphics.drawString(font,
+                Component.translatable("gui.maid_storage_manager.craft_guide.common.step_index", menu.selectedIndex + 1),
+                0,
+                0,
+                0xffffffff
+        );
+        graphics.pose().popPose();
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(getGuiLeft() + 41, getGuiTop() + 134, 0);
+        graphics.pose().scale(0.65f, 0.65f, 1);
+        graphics.drawString(font,
+                Component.translatable(
+                        "gui.maid_storage_manager.craft_guide.common.step_pos",
+                        menu.currentEditingItems.step.storage.pos.getX(),
+                        menu.currentEditingItems.step.storage.pos.getY(),
+                        menu.currentEditingItems.step.storage.pos.getZ(),
+                        Component.translatable(
+                                "gui.maid_storage_manager.craft_guide.common.side_" +
+                                        menu.currentEditingItems.step.storage.getSide().map(t -> t.name().toLowerCase()).orElse("none")
+                        )
+                ),
+                0,
+                0,
+                0xffffffff
+        );
+        graphics.pose().popPose();
     }
+
 
     @Override
     public boolean mouseScrolled(double x, double y, double p_94688_) {
@@ -526,13 +465,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             eb.setValue(String.valueOf(ov + dv));
             return true;
         }
-        if (x - getGuiLeft() > 14 && y - getGuiTop() > 18 && x - getGuiLeft() < 158 && y - getGuiTop() < 145) {
-            if (p_94688_ < 0 && menu.page < (menu.steps.size() + 2) / 3 - 1) {
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_DOWN, 0));
-            }
-            if (p_94688_ > 0 && menu.page > 0) {
-                sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.PAGE_UP, 0));
-            }
+        if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
+            scroll((float) -p_94688_);
         }
         return super.mouseScrolled(x, y, p_94688_);
     }
@@ -555,65 +489,34 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
-        switch (type) {
-            case REMOVE -> {
-                buttonsByRow.get(buttonsByRow.size() - 1).values().forEach(button -> button.setVisible(false));
-                otherButton.get(otherButton.size() - 1).values().forEach(button -> button.active = false);
-                buttonsByRow.remove(buttonsByRow.size() - 1);
-            }
+        if (type == CraftGuideGuiPacket.Type.SELECT || type == CraftGuideGuiPacket.Type.SET_MODE) {
+            updateButtons();
         }
-        updateButtons();
+        if (type == CraftGuideGuiPacket.Type.SELECT) {
+            actionSelectorButton.setOption(null);
+        }
     }
 
     private void updateButtons() {
-        for (HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons : buttonsByRow) {
-            buttons.get(BUTTON_TYPE_COMMON.ACTION).setOption(null);
-            buttons.get(BUTTON_TYPE_COMMON.OPTIONAL).setOption(null);
-        }
-        for (int i = 0; i < menu.steps.size(); i++) {
-            HashMap<BUTTON_TYPE_COMMON, SelectButtonWidget<?>> buttons = buttonsByRow.get(i);
-            int finalI = i;
-            buttons.values().forEach(button -> button.setVisible(menu.isIdCurrentPage(finalI)));
-            otherButton.get(i).values().forEach(button -> button.active = menu.isIdCurrentPage(finalI));
-            if (menu.steps.get(i).actionType.type() == CommonIdleAction.TYPE) {
-                buttons.get(BUTTON_TYPE_COMMON.TIME).setVisible(menu.isIdCurrentPage(i));
-                buttons.get(BUTTON_TYPE_COMMON.TIME).setOption(null);
-                String newTime = String.valueOf(menu.steps.get(i).step.extraData.getInt("time"));
-                if (!newTime.equals(editBoxes.get(i).getValue()))
-                    editBoxes.get(i).setValue(newTime);
-                editBoxes.get(i).visible = menu.isIdCurrentPage(i);
-                editBoxes.get(i).active = menu.isIdCurrentPage(i);
+        List<ActionOption<?>> actionOptions = menu.currentEditingItems.options;
+        for (int i = 0; i < options.size(); i++) {
+            boolean show = i < actionOptions.size();
+            options.get(i).getA().setVisible(show);
+            if (show && actionOptions.get(i).valuePredicatorOrGetter().hasPredicator()) {
+                options.get(i).getB().setVisible(true);
+                options.get(i).getB().setFilter(actionOptions.get(i).valuePredicatorOrGetter()::predicate);
+                options.get(i).getB().setValue(actionOptions.get(i).defaultValue());
             } else {
-                buttons.get(BUTTON_TYPE_COMMON.TIME).setVisible(false);
-                editBoxes.get(i).visible = false;
-                editBoxes.get(i).active = false;
+                options.get(i).getB().setVisible(false);
+            }
+            if (show) {
+                options.get(i).getA().setOption(null);
             }
         }
-        pageUpBtn.setVisible(menu.page > 0);
-        pageDownBtn.setVisible(menu.page < (menu.steps.size() + 2) / 3 - 1);
-    }
-
-    @Override
-    protected void containerTick() {
-        super.containerTick();
-        for (EditBox eb : editBoxes) {
-            String value = eb.getValue();
-            if (value.length() < 3) value += "_";
-            int width1 = Math.max(Math.min(font.width(value), 30), 8);
-            eb.setWidth(width1);
-            eb.setX(getGuiLeft() + 90 + 30 - width1);
-        }
-    }
-
-    private void sendExtra(int i, @Nullable Consumer<CompoundTag> transformer) {
-        CompoundTag tag = new CompoundTag();
-        if (menu.steps.get(i).actionType.type().equals(CommonIdleAction.TYPE)) {
-            tag.putInt("time", Integer.parseInt(editBoxes.get(i).getValue()));
-            tag.putInt("u", (int) buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.TIME).getData());
-        }
-        if (transformer != null)
-            transformer.accept(tag);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.EXTRA, i, 0, tag));
+        boolean hasStepSelected = (menu.currentEditingItems.step != null);
+        actionSelectorButton.setVisible(hasStepSelected);
+        sortButtonDown.setVisible(hasStepSelected);
+        sortButtonUp.setVisible(hasStepSelected);
     }
 
     private Component getStorageSideTranslate(Target target) {
@@ -625,27 +528,198 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         );
     }
 
+    @Override
+    public boolean mouseClicked(double x, double y, int p_97750_) {
+        if (actionSelector.visible) {
+            if (!actionSelector.isMouseOver(x, y)) {
+                actionSelector.hide();
+            } else return actionSelector.mouseClicked(x, y, p_97750_);
+        }
+        if (isInScrollBlockArea(x, y)) {
+            mouseDraggingScrollingBar = y;
+            mouseStartDraggingOffset = (double) scrollOffsetTop;
+        }
 
-    private void startSelectActionFor(int i) {
-        SelectButtonWidget<?> btn = buttonsByRow.get(i).get(BUTTON_TYPE_COMMON.ACTION);
-        actionSelector.setSelectedAction((CraftAction) btn.getData());
-        actionSelector.setCallback(value -> {
-            CompoundTag data = new CompoundTag();
-            data.putString("ns", value.type().getNamespace());
-            data.putString("id", value.type().getPath());
-            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_MODE, i, data));
-            btn.setOption(null);
-        });
-        actionSelector.expandFrom(btn);
+        if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
+            clickInScrollList(x, y);
+        }
+        return super.mouseClicked(x, y, p_97750_);
+    }
+
+
+    //region scrolling control
+    private static final int SCROLL_AREA_TOTAL_HEIGHT = 93;
+    private float scrollOffsetTop = 0;
+    private Double mouseDraggingScrollingBar = null;
+    private Double mouseStartDraggingOffset = null;
+
+    private float getScrollBlockHeight() {
+        return 2 * SCROLL_AREA_TOTAL_HEIGHT - menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1);
+    }
+
+    private void makeScreenScissor(GuiGraphics graphics) {
+        graphics.enableScissor(getGuiLeft() + 26, getGuiTop() + 26, getGuiLeft() + 100, getGuiTop() + 119);
+    }
+
+    private void releaseScreenScissor(GuiGraphics graphics) {
+        graphics.disableScissor();
+    }
+
+    private void scroll(float delta) {
+        scrollOffsetTop += delta;
+        if (scrollOffsetTop < 0)
+            scrollOffsetTop = 0;
+        if (scrollOffsetTop > SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight())
+            scrollOffsetTop = SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight();
+    }
+
+    private int getSelectedStep(double x, double y) {
+        int rh = CommonCraftAssets.ROW.h - 1;
+
+        if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
+            int offsetY = (int) (y - getGuiTop() - 26);
+            return (int) ((offsetY + scrollOffsetTop) / rh);
+        }
+        return -1;
+    }
+
+    private void renderScrollList(GuiGraphics graphics, int x, int y) {
+        makeScreenScissor(graphics);
+        int relX = (this.width - this.imageWidth) / 2 + 27;
+        int relY = (this.height - this.imageHeight) / 2 + 27;
+        int selected = getSelectedStep(x, y);
+        graphics.pose().pushPose();
+        graphics.pose().translate(relX, relY - scrollOffsetTop, 0);
+        graphics.pose().pushPose();
+        for (int i = 0; i < menu.craftGuideData.steps.size(); i++) {
+            CommonCraftAssets.ROW.blit(graphics, 0, 0);
+            graphics.pose().translate(0, CommonCraftAssets.ROW.h - 1, 0);
+        }
+        graphics.pose().popPose();
+        graphics.pose().pushPose();
+        for (int i = 0; i < menu.craftGuideData.steps.size(); i++) {
+            if (i == selected) {
+                CommonCraftAssets.ROW_HOVER.blit(graphics, 0, 0);
+            }
+            graphics.pose().translate(0, CommonCraftAssets.ROW.h - 1, 0);
+        }
+        graphics.pose().popPose();
+
+        for (int i = 0; i < menu.craftGuideData.steps.size(); i++) {
+            CraftGuideStepData step = menu.craftGuideData.steps.get(i);
+            if (i == menu.selectedIndex) {
+                CommonCraftAssets.ROW_HIGHLIGHT.blit(graphics, -1, -1);
+                if (i == selected) {
+                    CommonCraftAssets.ROW_HOVER.blit(graphics, 0, 0);
+                } else {
+                    CommonCraftAssets.ROW.blit(graphics, 0, 0);
+                }
+            }
+            renderScrollListRow(graphics, step, menu.blockIndicatorForSteps.get(i).getItem());
+            graphics.pose().translate(0, CommonCraftAssets.ROW.h - 1, 0);
+        }
+        graphics.pose().popPose();
+        graphics.flush();
+        releaseScreenScissor(graphics);
+    }
+
+    private void renderScrollListRow(GuiGraphics graphics, CraftGuideStepData step, ItemStack blockIndicator) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(47, 4, 0);
+        graphics.pose().scale(0.7f, 0.7f, 1f);
+        CommonCraftAssets.imageForAction(step.action).blit(graphics, 0, 0);
+        graphics.pose().popPose();
+        graphics.pose().pushPose();
+        graphics.pose().translate(2, 4, 0);
+        graphics.pose().scale(0.6f, 0.6f, 1f);
+        boolean hasInput = false;
+        for (ItemStack itemStack : step.getNonEmptyInput()) {
+            graphics.renderItem(itemStack, 0, 0);
+            graphics.pose().translate(16, 0, 0);
+            hasInput = true;
+        }
+        if (hasInput) {
+            graphics.pose().translate(16, 0, 0);
+        }
+        for (ItemStack itemStack : step.getNonEmptyOutput()) {
+            graphics.renderItem(itemStack, 0, 0);
+            graphics.pose().translate(16, 0, 0);
+        }
+        graphics.pose().popPose();
+        graphics.pose().pushPose();
+        graphics.pose().translate(58, 2, 0);
+        graphics.pose().scale(0.7f, 0.7f, 1f);
+        graphics.renderItem(blockIndicator, 0, 0);
+        graphics.pose().popPose();
+    }
+
+    private void renderScrollBar(GuiGraphics graphics, int x, int y) {
+        boolean active = mouseDraggingScrollingBar != null;
+        ImageAsset base = active ? CommonCraftAssets.SCROLL_BASE_HOVER : CommonCraftAssets.SCROLL_BASE;
+        graphics.blitNineSliced(
+                CommonCraftAssets.BACKGROUND,
+                getGuiLeft() + 100,
+                getGuiTop() + 23 + (int) scrollOffsetTop,
+                base.w,
+                (int) getScrollBlockHeight(),
+                1,
+                base.w,
+                base.h,
+                base.u,
+                base.v
+        );
+        ImageAsset deco = active ? CommonCraftAssets.SCROLL_DECO_HOVER : CommonCraftAssets.SCROLL_DECO;
+        deco.blit(
+                graphics,
+                getGuiLeft() + 100,
+                getGuiTop() + 23 + (int) scrollOffsetTop + (int) (getScrollBlockHeight() / 2 - (float) deco.h / 2)
+        );
+    }
+
+
+    private void clickInScrollList(double x, double y) {
+        int id = getSelectedStep(x, y);
+        if (id == -1 || id >= menu.craftGuideData.steps.size()) return;
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SELECT, id));
+    }
+
+    private boolean isInScrollBlockArea(double x, double y) {
+        double rx = x - getGuiLeft();
+        double ry = y - getGuiTop() - 23;
+        if (rx > 104 || rx < 100) return false;
+        if (ry < scrollOffsetTop) return false;
+        if (ry > scrollOffsetTop + getScrollBlockHeight()) return false;
+        return true;
     }
 
     @Override
-    public boolean mouseClicked(double p_97748_, double p_97749_, int p_97750_) {
-        if (actionSelector.visible) {
-            if (!actionSelector.isMouseOver(p_97748_, p_97749_)) {
-                actionSelector.hide();
-            } else return actionSelector.mouseClicked(p_97748_, p_97749_, p_97750_);
+    public boolean mouseDragged(double x, double y, int p_97754_, double p_97755_, double p_97756_) {
+        if (mouseDraggingScrollingBar != null && mouseStartDraggingOffset != null) {
+            scrollOffsetTop = (float) (mouseStartDraggingOffset + (y - mouseDraggingScrollingBar));
+            scroll(0);
         }
-        return super.mouseClicked(p_97748_, p_97749_, p_97750_);
+        return super.mouseDragged(x, y, p_97754_, p_97755_, p_97756_);
+    }
+
+    @Override
+    public boolean mouseReleased(double p_97812_, double p_97813_, int p_97814_) {
+        if (mouseDraggingScrollingBar != null || mouseStartDraggingOffset != null) {
+            mouseDraggingScrollingBar = null;
+            mouseStartDraggingOffset = null;
+        }
+        return super.mouseReleased(p_97812_, p_97813_, p_97814_);
+    }
+
+
+    public void drawCenteredString(GuiGraphics graphics, Font pFont, Component pText, int pX, int pY, int maxWidth, int pColor, boolean shadow) {
+        FormattedCharSequence formattedcharsequence = pText.getVisualOrderText();
+        int textWidth = pFont.width(formattedcharsequence);
+        int drawWidth = Math.max(textWidth, maxWidth);
+        int alignWidth = Math.min(maxWidth, textWidth);
+        float scale = (float) maxWidth / drawWidth;
+        graphics.pose().pushPose();
+        graphics.pose().scale(scale, scale, scale);
+        graphics.drawString(pFont, formattedcharsequence, pX / scale, (pY - 3 + (14 - 8 * scale) / 2) / scale, pColor, shadow);
+        graphics.pose().popPose();
     }
 }

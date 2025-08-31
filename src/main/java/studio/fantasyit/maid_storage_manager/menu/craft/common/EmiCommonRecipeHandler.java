@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
@@ -56,15 +57,15 @@ public class EmiCommonRecipeHandler implements EmiRecipeHandler<CommonCraftMenu>
         CompoundTag data = new CompoundTag();
         ListTag inputTag = new ListTag();
         ListTag outputTag = new ListTag();
-        for (CommonStepDataContainer step : container.steps) {
-            for (int i = 0; i < step.step.actionType.inputCount(); i++) {
+        for (CraftGuideStepData step : container.craftGuideData.steps) {
+            for (int i = 0; i < step.actionType.inputCount(); i++) {
                 if (inputId < inputs.size()) {
                     if (doTransfer)
                         inputTag.add(ItemStackUtil.saveStack(inputs.get(inputId)));
                     inputId++;
                 }
             }
-            for (int i = 0; i < step.step.actionType.outputCount(); i++) {
+            for (int i = 0; i < step.actionType.outputCount(); i++) {
                 if (outputId < outputs.size()) {
                     if (doTransfer)
                         outputTag.add(ItemStackUtil.saveStack(outputs.get(outputId)));

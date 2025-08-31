@@ -33,9 +33,11 @@ public class TaczRecipe {
                 TaczRecipeAction::new,
                 PathTargetLocator::commonNearestAvailablePos,
                 CraftAction.PathEnoughLevel.NORMAL.value,
-                false,true,
+                false,
+                true,
                 10,
-                1
+                1,
+                List.of()
         );
         event.addAutoCraftGuideGenerator(new GeneratorTACZ());
         event.addItemStackPredicate(ModItems.MODERN_KINETIC_GUN.get(), (stack, target) -> {

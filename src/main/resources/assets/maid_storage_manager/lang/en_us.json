@@ -441,5 +441,9 @@
   "gui.maid_storage_manager.config.crafting_repeat_count": "Max Craft Layer Repeat",
   "config.maid_storage_manager.crafting.max_layer_limit.tooltip": "Max layer count limit when calculating plan. Increasing this value may cause a large lagging in some cases.",
   "config.maid_storage_manager.crafting.max_layer_limit": "Max Layer Limit",
-  "config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel": "Use Factory Parallel"
+  "config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel": "Use Factory Parallel",
+  "gui.maid_storage_manager.craft_guide.common.merge": "Merge",
+  "gui.maid_storage_manager.craft_guide.common.no_step_selected": "No Step Selected",
+  "gui.maid_storage_manager.craft_guide.common.step_index": "Step #%s",
+  "gui.maid_storage_manager.craft_guide.common.step_pos": "[%s,%s,%s],%s"
 }

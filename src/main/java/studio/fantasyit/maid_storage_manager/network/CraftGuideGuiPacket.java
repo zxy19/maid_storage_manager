@@ -9,16 +9,18 @@ public class CraftGuideGuiPacket {
     public enum Type {
         COUNT,
         SET_MODE,
+        SYNC,
         UP,
         DOWN,
         REMOVE,
         SET_ITEM,
         SET_ALL_INPUT,
         MATCH_TAG,
-        PAGE_DOWN,
-        PAGE_UP,
-        OPTIONAL,
+        SELECT,
+        OPTION,
         EXTRA,
+        PAGE_UP,
+        PAGE_DOWN,
         SIDE
     }
 
@@ -30,6 +32,7 @@ public class CraftGuideGuiPacket {
     public CraftGuideGuiPacket(Type type, int i) {
         this(type, i, 0, new CompoundTag());
     }
+
     public CraftGuideGuiPacket(Type type, int key, CompoundTag data) {
         this(type, key, 0, data);
     }
