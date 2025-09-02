@@ -10,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;

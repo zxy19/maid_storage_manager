@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.Event;
+import net.neoforged.fml.event.IModBusEvent;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;

@@ -16,14 +16,14 @@ import java.util.Objects;
 
 public class CommonIdleAction extends AbstractCraftActionContext {
     public static final ActionOption<Boolean> OPTION_WAIT = new ActionOption<>(
-            new ResourceLocation(MaidStorageManager.MODID, "wait"),
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "wait"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_second"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_tick")
             },
             new ResourceLocation[]{
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/wait_second.png"),
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/wait_tick.png")
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_second.png"),
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_tick.png")
             },
             "",
             new ActionOption.BiConverter<>(

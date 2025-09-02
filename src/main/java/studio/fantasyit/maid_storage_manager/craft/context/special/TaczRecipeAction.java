@@ -9,6 +9,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -22,12 +24,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaczRecipeAction extends AbstractCraftActionContext {
-    public static final ActionOption<Boolean> OPTION_TACZ_RECIPE_ID = new ActionOption<>(
-            new ResourceLocation(MaidStorageManager.MODID, "recipe_id"), "", new ActionOption.BiConverter<>(i -> i != 0, t -> t ? 1 : 0), ActionOption.ValuePredicatorOrGetter.predicator(ResourceLocation::isValidResourceLocation)
+    public static final ActionOption<Boolean> OPTION_TACZ_RECIPE_ID = ActionOption.valueOnly(
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "recipe_id"), ""
     );
 
-    public static final ActionOption<Boolean> OPTION_TACZ_BLOCK_ID = new ActionOption<>(
-            new ResourceLocation(MaidStorageManager.MODID, "block_id"), "", new ActionOption.BiConverter<>(i -> i != 0, t -> t ? 1 : 0), ActionOption.ValuePredicatorOrGetter.predicator(ResourceLocation::isValidResourceLocation)
+    public static final ActionOption<Boolean> OPTION_TACZ_BLOCK_ID = ActionOption.valueOnly(
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "block_id"), ""
     );
 
     public TaczRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {

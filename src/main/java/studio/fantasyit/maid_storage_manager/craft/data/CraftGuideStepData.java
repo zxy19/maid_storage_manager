@@ -38,6 +38,8 @@ public class CraftGuideStepData {
                             .forGetter(CraftGuideStepData::getOutput),
                     ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_OP_ACTION)
                             .forGetter(CraftGuideStepData::getActionType),
+                    Codec.BOOL.optionalFieldOf(CraftGuide.TAG_OP_OPTIONAL)
+                            .forGetter(t -> Optional.empty()),
                     CompoundTag.CODEC.fieldOf(CraftGuide.TAG_OP_EXTRA)
                             .forGetter(CraftGuideStepData::getExtraData)
             ).apply(instance, CraftGuideStepData::new)
@@ -48,7 +50,6 @@ public class CraftGuideStepData {
                 t.writeCollection(c.input, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
                 t.writeCollection(c.output, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
                 t.writeResourceLocation(c.action);
-                t.writeBoolean(c.optional);
                 t.writeNbt(c.extraData);
             },
             (c) -> new CraftGuideStepData(
@@ -56,7 +57,6 @@ public class CraftGuideStepData {
                     c.readCollection(ArrayList::new, (StreamCodec<FriendlyByteBuf, ItemStack>) (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
                     c.readCollection(ArrayList::new, (StreamCodec<FriendlyByteBuf, ItemStack>) (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
                     c.readResourceLocation(),
-                    c.readBoolean(),
                     c.readNbt()
             )
     );
@@ -66,6 +66,21 @@ public class CraftGuideStepData {
     public ResourceLocation action;
     public CraftAction actionType;
     public CompoundTag extraData;
+
+
+    public CraftGuideStepData(Target storage,
+                              List<ItemStack> input,
+                              List<ItemStack> output,
+                              ResourceLocation action,
+                              Optional<Boolean> optional,
+                              CompoundTag extraData) {
+        this(storage, input, output, action, extraData);
+        optional.ifPresent(t -> {
+            if (t && actionType.hasOption(ActionOption.OPTIONAL)) {
+                ActionOption.OPTIONAL.setOptionSelection(this, true);
+            }
+        });
+    }
 
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
@@ -90,6 +105,7 @@ public class CraftGuideStepData {
         this.input = input;
         this.output = output;
         this.extraData = extraData;
+
     }
 
 
@@ -339,7 +355,6 @@ public class CraftGuideStepData {
                 input.stream().map(ItemStack::copy).toList(),
                 output.stream().map(ItemStack::copy).toList(),
                 action,
-                optional,
                 extraData.copy()
         );
     }

@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
@@ -211,7 +211,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
         if (currentEditingItems.step != null && selectedIndex != -1 && player instanceof ServerPlayer sp) {
             currentEditingItems.save();
             PacketDistributor.sendToPlayer(sp,
-                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, selectedIndex, 0, currentEditingItems.step.toCompound())
+                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, selectedIndex, 0, currentEditingItems.step.toCompound(player.registryAccess()))
             );
         }
         target.set(DataComponentRegistry.CRAFT_GUIDE_DATA, craftGuideData);
@@ -310,7 +310,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     for (int i = 0; i < step.step.actionType.outputCount(); i++) {
                         if (outputId < outputTag.size()) {
                             int inputOffset = step.padCount + step.inputCount;
-                            ItemStack tmp = ItemStackUtil.parseStack(player.registryAccess(),outputTag.getCompound(outputId));
+                            ItemStack tmp = ItemStackUtil.parseStack(player.registryAccess(), outputTag.getCompound(outputId));
                             step.setItemNoTrigger(inputOffset + i, tmp);
                             step.setCount(inputOffset + i, tmp.getCount());
                             outputId++;
@@ -321,7 +321,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             }
             case SYNC -> {
                 if (data != null)
-                    craftGuideData.steps.set(key, CraftGuideStepData.fromCompound(data));
+                    craftGuideData.steps.set(key, CraftGuideStepData.fromCompound(player.registryAccess(), data));
             }
         }
     }

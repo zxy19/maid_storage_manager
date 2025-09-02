@@ -4,10 +4,7 @@ import dev.latvian.mods.kubejs.event.EventGroupRegistry;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
 import dev.latvian.mods.kubejs.script.BindingRegistry;
 import dev.latvian.mods.kubejs.script.TypeWrapperRegistry;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMBinding;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMCompacted;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMTypeCasting;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMUtilities;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.*;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.base.BaseSupplierWrapper;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.base.BaseWrappedWrapper;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.context.IKJSCraftContext;
@@ -47,13 +44,13 @@ public class KJSPlugin implements KubeJSPlugin {
         bindings.add("MaidStorageManagerUtil", kjsmsmUtilities);
         bindings.add("MSMU", kjsmsmUtilities);
         KJSMSMTypeCasting kjsmsmTypeCasting = new KJSMSMTypeCasting();
-        event.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
-        event.add("MSMTC", kjsmsmTypeCasting);
+        bindings.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
+        bindings.add("MSMTC", kjsmsmTypeCasting);
         KJSMSMMemories kjsmsmMemories = new KJSMSMMemories();
-        event.add("MaidStorageManagerMemories", kjsmsmMemories);
-        event.add("MSMM", kjsmsmMemories);
+        bindings.add("MaidStorageManagerMemories", kjsmsmMemories);
+        bindings.add("MSMM", kjsmsmMemories);
         KJSMSMCompacted kjsmsmCompacted = new KJSMSMCompacted(kjsmsmBinding, kjsmsmUtilities, kjsmsmTypeCasting, kjsmsmMemories);
-        event.add("MaidStorageManager", kjsmsmCompacted);
-        event.add("MSM", kjsmsmCompacted);
+        bindings.add("MaidStorageManager", kjsmsmCompacted);
+        bindings.add("MSM", kjsmsmCompacted);
     }
 }

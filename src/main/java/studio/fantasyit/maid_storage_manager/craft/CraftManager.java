@@ -8,7 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.fml.ModLoader;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
@@ -63,7 +64,7 @@ public class CraftManager {
         Map<ResourceLocation, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates = new HashMap<>();
         CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators, itemStackPredicates);
         fireInternal(event);
-        ModLoader.get().postEvent(event);
+        ModLoader.postEvent(event);
         if (Integrations.kjs())
             KJSEventPort.postCraftCollect(event);
 

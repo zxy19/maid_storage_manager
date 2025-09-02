@@ -5,7 +5,6 @@ import com.tacz.guns.init.ModRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.handler.EmiCraftContext;
 import dev.emi.emi.jemi.JemiRecipe;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -66,7 +65,7 @@ public class EMITaczRecipeTransfer extends EmiRecipeHandler<TaczCraftMenu, GunSm
                 CraftGuideGuiPacket.Type.OPTION,
                 CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
                 0,
-                CraftGuideGuiPacket.singleValue(gstr.getId().toString())
+                CraftGuideGuiPacket.singleValue(holder.id().toString())
         ));
         PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                 CraftGuideGuiPacket.Type.OPTION,

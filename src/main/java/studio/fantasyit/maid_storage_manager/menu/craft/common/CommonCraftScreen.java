@@ -650,6 +650,14 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         boolean hasInput = false;
         for (ItemStack itemStack : step.getNonEmptyInput()) {
             graphics.renderItem(itemStack, 0, 0);
+            String text = String.valueOf(itemStack.getCount());
+            graphics.pose().translate(0, 0, 400);
+            graphics.drawString(this.font,
+                    text,
+                    16 - this.font.width(text),
+                    (int) (16 - this.font.lineHeight),
+                    0xffffffff);
+            graphics.pose().translate(0, 0, -400);
             graphics.pose().translate(16, 0, 0);
             hasInput = true;
         }
@@ -666,6 +674,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     (int) (16 - this.font.lineHeight),
                     0xffffffff);
             graphics.pose().translate(0, 0, -400);
+            graphics.pose().translate(16, 0, 0);
         }
         graphics.pose().popPose();
         graphics.pose().pushPose();
@@ -694,7 +703,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private void renderScrollBar(GuiGraphics graphics, int x, int y) {
         boolean active = mouseDraggingScrollingBar != null;
         ImageAsset base = active ? CommonCraftAssets.SCROLL_BASE_HOVER : CommonCraftAssets.SCROLL_BASE;
-        graphics.blitNineSliced(
+        graphics.blit(
                 CommonCraftAssets.BACKGROUND,
                 getGuiLeft() + 100,
                 getGuiTop() + 23 + (int) scrollOffsetTop,

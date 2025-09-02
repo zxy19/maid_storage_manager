@@ -47,14 +47,14 @@ public class CommonAttackAction extends AbstractCraftActionContext {
     }
 
     public static final ActionOption<USE_TYPE> OPTION_USE_METHOD = new ActionOption<>(
-            new ResourceLocation(MaidStorageManager.MODID, "attack_mode"),
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "attack_mode"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_destroy"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_single")
             },
             new ResourceLocation[]{
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/use_long.png"),
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/use_single.png")
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_long.png"),
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_single.png")
             },
             "",
             new ActionOption.BiConverter<>(
@@ -207,12 +207,10 @@ public class CommonAttackAction extends AbstractCraftActionContext {
                 craftGuideStepData.getStorage().side,
                 ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
         );
-
-        if (event.getUseBlock() != TriState.FALSE) {
-            if (event.getUseBlock() != DENY) {
+        if (craftGuideStepData.getOptionSelection(OPTION_USE_METHOD).orElse(USE_TYPE.SINGLE) == USE_TYPE.LONG)
+            if (event.getUseBlock() != TriState.FALSE) {
                 onStartDestroyBlock(level, target);
             }
-        }
         Inventory inventory = fakePlayer.getInventory();
         List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < inventory.getContainerSize(); i++) {

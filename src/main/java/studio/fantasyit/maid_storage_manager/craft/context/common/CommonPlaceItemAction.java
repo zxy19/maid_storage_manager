@@ -26,14 +26,14 @@ import java.util.List;
 
 public class CommonPlaceItemAction extends AbstractCraftActionContext {
     public static final ActionOption<Boolean> OPTION_SPLIT = new ActionOption<>(
-            new ResourceLocation(MaidStorageManager.MODID, "split"),
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "split"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.no_split"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.split")
             },
             new ResourceLocation[]{
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/no_split.png"),
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/split.png")
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/no_split.png"),
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/split.png")
             },
             "",
             new ActionOption.BiConverter<Integer, Boolean>(

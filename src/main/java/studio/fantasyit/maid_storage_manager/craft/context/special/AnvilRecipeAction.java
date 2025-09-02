@@ -12,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -25,7 +27,7 @@ import java.util.function.BiFunction;
 
 public class AnvilRecipeAction extends AbstractCraftActionContext {
     public static final ActionOption<Boolean> OPTION_ANVIL_NAME = ActionOption.valueOnly(
-            new ResourceLocation(MaidStorageManager.MODID, "anvil_name"), ""
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "anvil_name"), ""
     );
 
     protected static class Access implements ContainerLevelAccess {

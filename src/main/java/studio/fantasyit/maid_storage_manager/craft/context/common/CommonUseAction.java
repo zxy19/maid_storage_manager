@@ -22,6 +22,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
@@ -43,14 +44,14 @@ public class CommonUseAction extends AbstractCraftActionContext {
     }
 
     public static final ActionOption<USE_TYPE> OPTION_USE_METHOD = new ActionOption<>(
-            new ResourceLocation(MaidStorageManager.MODID, "use_mode"),
+            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_mode"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.use_single"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.use_long")
             },
             new ResourceLocation[]{
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/use_single.png"),
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/use_long.png")
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_single.png"),
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_long.png")
             },
             "",
             new ActionOption.BiConverter<>(
@@ -151,7 +152,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
                 List<ItemStack> inventoryReturn = getAndClearFakePlayerInventory();
                 return checkAndGetResult(inventoryReturn);
             }
-            if(fakePlayer.getUseItemRemainingTicks() < 0){
+            if (fakePlayer.getUseItemRemainingTicks() < 0) {
                 fakePlayer.releaseUsingItem();
             }
             return Result.CONTINUE;

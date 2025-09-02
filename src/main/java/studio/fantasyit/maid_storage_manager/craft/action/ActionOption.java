@@ -82,14 +82,14 @@ public record ActionOption<T>(
     }
 
     public static final ActionOption<Boolean> OPTIONAL = new ActionOption<>(
-            new ResourceLocation("maid_storage_manager", "optional"),
+            ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "optional"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.required"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.optional")
             },
             new ResourceLocation[]{
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/required.png"),
-                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/optional.png")
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/required.png"),
+                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/optional.png")
             },
             "",
             new BiConverter<>(value -> value == 1, value -> value ? 1 : 0),

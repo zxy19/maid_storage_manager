@@ -53,7 +53,7 @@ public class JEITaczRecipeTransfer implements IUniversalRecipeTransferHandler<Ta
                 PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                         CraftGuideGuiPacket.Type.EXTRA,
                         0,
-                        CraftGuideGuiPacket.singleValue(recipe.getId().toString())
+                        CraftGuideGuiPacket.singleValue(holder.id().toString())
                 ));
                 PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                         CraftGuideGuiPacket.Type.OPTION,
