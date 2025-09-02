@@ -2,6 +2,8 @@ package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Divisor;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -471,7 +474,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (slot instanceof NoPlaceFilterSlot) return;
         if (!slot.isActive()) return;
         slot.set(item);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, ItemStackUtil.saveStack(menu.player.registryAccess(),item)));
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_ITEM, slot.index, 0, ItemStackUtil.saveStack(menu.player.registryAccess(), item)));
     }
 
     @Override
@@ -703,7 +706,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private void renderScrollBar(GuiGraphics graphics, int x, int y) {
         boolean active = mouseDraggingScrollingBar != null;
         ImageAsset base = active ? CommonCraftAssets.SCROLL_BASE_HOVER : CommonCraftAssets.SCROLL_BASE;
-        graphics.blit(
+        blitNineSliced(
+                graphics,
                 CommonCraftAssets.BACKGROUND,
                 getGuiLeft() + 100,
                 getGuiTop() + 23 + (int) scrollOffsetTop,
@@ -772,5 +776,62 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.pose().scale(scale, scale, scale);
         graphics.drawString(pFont, formattedcharsequence, pX / scale, (pY - 3 + (14 - 8 * scale) / 2) / scale, pColor, shadow);
         graphics.pose().popPose();
+    }
+
+    public void blitNineSliced(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pSliceSize, int pUOffset, int pVOffset, int pTextureWidth, int pTextureHeight) {
+        this.blitNineSliced(graphics, pAtlasLocation, pX, pY, pWidth, pHeight, pSliceSize, pSliceSize, pSliceSize, pSliceSize, pUOffset, pVOffset, pTextureWidth, pTextureHeight);
+    }
+    public void blitNineSliced(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pLeftSliceWidth, int pTopSliceHeight, int pRightSliceWidth, int pBottomSliceHeight, int pUWidth, int pVHeight, int pTextureX, int pTextureY) {
+        pLeftSliceWidth = Math.min(pLeftSliceWidth, pWidth / 2);
+        pRightSliceWidth = Math.min(pRightSliceWidth, pWidth / 2);
+        pTopSliceHeight = Math.min(pTopSliceHeight, pHeight / 2);
+        pBottomSliceHeight = Math.min(pBottomSliceHeight, pHeight / 2);
+        if (pWidth == pUWidth && pHeight == pVHeight) {
+            graphics.blit(pAtlasLocation, pX, pY, pTextureX, pTextureY, pWidth, pHeight);
+        } else if (pHeight == pVHeight) {
+            graphics.blit(pAtlasLocation, pX, pY, pTextureX, pTextureY, pLeftSliceWidth, pHeight);
+            blitRepeating(graphics, pAtlasLocation, pX + pLeftSliceWidth, pY, pWidth - pRightSliceWidth - pLeftSliceWidth, pHeight, pTextureX + pLeftSliceWidth, pTextureY, pUWidth - pRightSliceWidth - pLeftSliceWidth, pVHeight);
+            graphics.blit(pAtlasLocation, pX + pWidth - pRightSliceWidth, pY, pTextureX + pUWidth - pRightSliceWidth, pTextureY, pRightSliceWidth, pHeight);
+        } else if (pWidth == pUWidth) {
+            graphics.blit(pAtlasLocation, pX, pY, pTextureX, pTextureY, pWidth, pTopSliceHeight);
+            blitRepeating(graphics, pAtlasLocation, pX, pY + pTopSliceHeight, pWidth, pHeight - pBottomSliceHeight - pTopSliceHeight, pTextureX, pTextureY + pTopSliceHeight, pUWidth, pVHeight - pBottomSliceHeight - pTopSliceHeight);
+            graphics.blit(pAtlasLocation, pX, pY + pHeight - pBottomSliceHeight, pTextureX, pTextureY + pVHeight - pBottomSliceHeight, pWidth, pBottomSliceHeight);
+        } else {
+            graphics.blit(pAtlasLocation, pX, pY, pTextureX, pTextureY, pLeftSliceWidth, pTopSliceHeight);
+            blitRepeating(graphics, pAtlasLocation, pX + pLeftSliceWidth, pY, pWidth - pRightSliceWidth - pLeftSliceWidth, pTopSliceHeight, pTextureX + pLeftSliceWidth, pTextureY, pUWidth - pRightSliceWidth - pLeftSliceWidth, pTopSliceHeight);
+            graphics.blit(pAtlasLocation, pX + pWidth - pRightSliceWidth, pY, pTextureX + pUWidth - pRightSliceWidth, pTextureY, pRightSliceWidth, pTopSliceHeight);
+            graphics.blit(pAtlasLocation, pX, pY + pHeight - pBottomSliceHeight, pTextureX, pTextureY + pVHeight - pBottomSliceHeight, pLeftSliceWidth, pBottomSliceHeight);
+            blitRepeating(graphics, pAtlasLocation, pX + pLeftSliceWidth, pY + pHeight - pBottomSliceHeight, pWidth - pRightSliceWidth - pLeftSliceWidth, pBottomSliceHeight, pTextureX + pLeftSliceWidth, pTextureY + pVHeight - pBottomSliceHeight, pUWidth - pRightSliceWidth - pLeftSliceWidth, pBottomSliceHeight);
+            graphics.blit(pAtlasLocation, pX + pWidth - pRightSliceWidth, pY + pHeight - pBottomSliceHeight, pTextureX + pUWidth - pRightSliceWidth, pTextureY + pVHeight - pBottomSliceHeight, pRightSliceWidth, pBottomSliceHeight);
+            blitRepeating(graphics, pAtlasLocation, pX, pY + pTopSliceHeight, pLeftSliceWidth, pHeight - pBottomSliceHeight - pTopSliceHeight, pTextureX, pTextureY + pTopSliceHeight, pLeftSliceWidth, pVHeight - pBottomSliceHeight - pTopSliceHeight);
+            blitRepeating(graphics, pAtlasLocation, pX + pLeftSliceWidth, pY + pTopSliceHeight, pWidth - pRightSliceWidth - pLeftSliceWidth, pHeight - pBottomSliceHeight - pTopSliceHeight, pTextureX + pLeftSliceWidth, pTextureY + pTopSliceHeight, pUWidth - pRightSliceWidth - pLeftSliceWidth, pVHeight - pBottomSliceHeight - pTopSliceHeight);
+            blitRepeating(graphics, pAtlasLocation, pX + pWidth - pRightSliceWidth, pY + pTopSliceHeight, pLeftSliceWidth, pHeight - pBottomSliceHeight - pTopSliceHeight, pTextureX + pUWidth - pRightSliceWidth, pTextureY + pTopSliceHeight, pRightSliceWidth, pVHeight - pBottomSliceHeight - pTopSliceHeight);
+        }
+    }
+    public void blitRepeating(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pUOffset, int pVOffset, int pSourceWidth, int pSourceHeight) {
+        blitRepeating(graphics, pAtlasLocation, pX, pY, pWidth, pHeight, pUOffset, pVOffset, pSourceWidth, pSourceHeight, 256, 256);
+    }
+
+    public void blitRepeating(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pUOffset, int pVOffset, int pSourceWidth, int pSourceHeight, int textureWidth, int textureHeight) {
+        int i = pX;
+
+        int j;
+        for (IntIterator intiterator = slices(pWidth, pSourceWidth); intiterator.hasNext(); i += j) {
+            j = intiterator.nextInt();
+            int k = (pSourceWidth - j) / 2;
+            int l = pY;
+
+            int i1;
+            for (IntIterator intiterator1 = slices(pHeight, pSourceHeight); intiterator1.hasNext(); l += i1) {
+                i1 = intiterator1.nextInt();
+                int j1 = (pSourceHeight - i1) / 2;
+                graphics.blit(pAtlasLocation, i, l, pUOffset + k, pVOffset + j1, j, i1, textureWidth, textureHeight);
+            }
+        }
+
+    }
+    private static IntIterator slices(int pTarget, int pTotal) {
+        int i = Mth.positiveCeilDiv(pTarget, pTotal);
+        return new Divisor(pTarget, i);
     }
 }
