@@ -17,6 +17,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.mutable.MutableInt;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
@@ -198,9 +200,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                                         new Target(ItemHandlerStorage.TYPE, pos),
                                                                         spItems,
                                                                         List.of(),
-                                                                        CommonPlaceItemAction.TYPE,
-                                                                        false,
-                                                                        new CompoundTag()
+                                                                        CommonPlaceItemAction.TYPE
                                                                 )
                                                         ))
                                         );
@@ -213,9 +213,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                                         new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                                         List.of(bucket),
                                                                         List.of(Items.BUCKET.getDefaultInstance().copyWithCount(bucket.getCount())),
-                                                                        CommonUseAction.TYPE,
-                                                                        false,
-                                                                        new CompoundTag()
+                                                                        CommonUseAction.TYPE
                                                                 )
                                                         )
                                                 )
@@ -234,9 +232,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                     new Target(ItemHandlerStorage.TYPE, pos),
                                                     List.of(),
                                                     itemStacks,
-                                                    CommonTakeItemAction.TYPE,
-                                                    false,
-                                                    new CompoundTag()
+                                                    CommonTakeItemAction.TYPE
                                             ));
                                         });
                                 transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_ITEM);
@@ -254,8 +250,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                     List.of(),
                                                     itemStacks,
                                                     CommonTakeItemAction.TYPE,
-                                                    true,
-                                                    new CompoundTag()
+                                                    ActionOptionSet.with(ActionOption.OPTIONAL,true)
                                             ));
                                         });
                                 transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_ITEM_SELECTIVE);
@@ -281,9 +276,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                         new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                         List.of(Items.BUCKET.getDefaultInstance()),
                                                         List.of(output),
-                                                        CommonUseAction.TYPE,
-                                                        false,
-                                                        new CompoundTag()
+                                                        CommonUseAction.TYPE
                                                 ));
                                             });
                                         });

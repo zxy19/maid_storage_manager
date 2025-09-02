@@ -37,7 +37,7 @@ public class TaczRecipe {
                 true,
                 10,
                 1,
-                List.of()
+                List.of(TaczRecipeAction.OPTION_TACZ_RECIPE_ID, TaczRecipeAction.OPTION_TACZ_BLOCK_ID)
         );
         event.addAutoCraftGuideGenerator(new GeneratorTACZ());
         event.addItemStackPredicate(ModItems.MODERN_KINETIC_GUN.get(), (stack, target) -> {

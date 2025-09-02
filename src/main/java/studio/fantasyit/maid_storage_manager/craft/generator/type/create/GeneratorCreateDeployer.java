@@ -6,7 +6,6 @@ import com.simibubi.create.AllTags;
 import com.simibubi.create.content.equipment.sandPaper.SandPaperPolishingRecipe;
 import com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +15,8 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -90,35 +91,27 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
                     new Target(ItemHandlerStorage.TYPE, pos.above().above()),
                     List.of(outputs.get(1)),
                     List.of(),
-                    CommonPlaceItemAction.TYPE,
-                    false,
-                    new CompoundTag()
+                    CommonPlaceItemAction.TYPE
             ));
             craftGuideData.add(new CraftGuideStepData(
                     new Target(ItemHandlerStorage.TYPE, pos),
                     List.of(outputs.get(0)),
                     List.of(),
-                    CommonPlaceItemAction.TYPE,
-                    false,
-                    new CompoundTag()
+                    CommonPlaceItemAction.TYPE
             ));
 
             craftGuideData.add(new CraftGuideStepData(
                     new Target(ItemHandlerStorage.TYPE, pos),
                     List.of(),
                     List.of(resultItem.copyWithCount(outputs.get(0).getCount())),
-                    CommonTakeItemAction.TYPE,
-                    false,
-                    new CompoundTag()
+                    CommonTakeItemAction.TYPE
             ));
             if (recipe instanceof ItemApplicationRecipe iar && iar.shouldKeepHeldItem())
                 craftGuideData.add(new CraftGuideStepData(
                         new Target(ItemHandlerStorage.TYPE, pos.above().above()),
                         List.of(),
                         List.of(outputs.get(1)),
-                        CommonTakeItemAction.TYPE,
-                        false,
-                        new CompoundTag()
+                        CommonTakeItemAction.TYPE
                 ));
             if (recipe instanceof SandPaperPolishingRecipe)
                 craftGuideData.add(new CraftGuideStepData(
@@ -126,8 +119,7 @@ public class GeneratorCreateDeployer implements IAutoCraftGuideGenerator {
                         List.of(),
                         List.of(outputs.get(1)),
                         CommonTakeItemAction.TYPE,
-                        true,
-                        new CompoundTag()
+                        ActionOptionSet.with(ActionOption.OPTIONAL,true)
                 ));
             return new CraftGuideData(
                     craftGuideData,

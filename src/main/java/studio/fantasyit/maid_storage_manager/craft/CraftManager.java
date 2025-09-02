@@ -7,8 +7,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoader;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
@@ -64,7 +65,7 @@ public class CraftManager {
         Map<ResourceLocation, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates = new HashMap<>();
         CollectCraftEvent event = new CollectCraftEvent(list, actions, autoCraftGuideGenerators, itemStackPredicates);
         fireInternal(event);
-        MinecraftForge.EVENT_BUS.post(event);
+        ModLoader.get().postEvent(event);
         if (Integrations.kjs())
             KJSEventPort.postCraftCollect(event);
 
@@ -130,7 +131,7 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.VERY_CLOSE.value,
                 true,
                 0,
-                3,
+                4,
                 List.of(ActionOption.OPTIONAL)
         );
         event.addAction(
@@ -139,9 +140,10 @@ public class CraftManager {
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true,
+                CraftAction.MARK_HAND_RELATED,
                 2,
                 2,
-                List.of(ActionOption.OPTIONAL)
+                List.of(ActionOption.OPTIONAL, CommonUseAction.OPTION_USE_METHOD)
         );
         event.addAction(
                 CommonAttackAction.TYPE,
@@ -149,9 +151,10 @@ public class CraftManager {
                 PathTargetLocator::touchPos,
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true,
+                CraftAction.MARK_HAND_RELATED,
                 2,
                 2,
-                List.of(ActionOption.OPTIONAL)
+                List.of(ActionOption.OPTIONAL, CommonAttackAction.OPTION_USE_METHOD)
         );
         event.addAction(
                 CommonIdleAction.TYPE,
@@ -160,7 +163,7 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.CLOSER.value,
                 true,
                 0,
-                3,
+                4,
                 List.of(CommonIdleAction.OPTION_WAIT)
         );
         event.addAction(
@@ -338,8 +341,8 @@ public class CraftManager {
         return this.actions.stream().filter(CraftAction::canBeCommon).toList();
     }
 
-    public @Nullable CraftAction getAction(ResourceLocation type) {
-        return this.actionsMap.get(type);
+    public @NotNull CraftAction getAction(ResourceLocation type) {
+        return Objects.requireNonNull(this.actionsMap.get(type));
     }
 
     public @Nullable ResourceLocation getTargetType(ServerLevel level, BlockPos pos, Direction direction) {

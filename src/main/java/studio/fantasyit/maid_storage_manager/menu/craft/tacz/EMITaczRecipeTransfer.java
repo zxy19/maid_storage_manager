@@ -3,9 +3,11 @@ package studio.fantasyit.maid_storage_manager.menu.craft.tacz;
 import com.tacz.guns.crafting.GunSmithTableRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.handler.EmiCraftContext;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.type.TaczType;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.handler.EmiRecipeHandler;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
@@ -42,14 +44,17 @@ public class EMITaczRecipeTransfer extends EmiRecipeHandler<TaczCraftMenu, GunSm
             return false;
         if (allRecipes.stream().noneMatch(r -> r.getB().equals(gstr.getId().toString())))
             return false;
-        CompoundTag data = new CompoundTag();
-        data.putString("recipe_id", gstr.getId().toString());
-        data.putString("block_id", context.getScreenHandler().getBlockId().toString());
         Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
-                CraftGuideGuiPacket.Type.EXTRA,
+                CraftGuideGuiPacket.Type.OPTION,
+                CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
                 0,
+                CraftGuideGuiPacket.singleValue(gstr.getId().toString())
+        ));
+        Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+                CraftGuideGuiPacket.Type.OPTION,
+                CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
                 0,
-                data
+                CraftGuideGuiPacket.singleValue( context.getScreenHandler().getBlockId().toString())
         ));
         return true;
     }

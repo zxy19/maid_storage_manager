@@ -41,6 +41,16 @@ public class CraftGuideGuiPacket {
         this(type, key, value, new CompoundTag());
     }
 
+    public static CompoundTag singleValue(String value) {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("value", value);
+        return tag;
+    }
+
+    public static String getStringFrom(CompoundTag tag) {
+        return tag.getString("value");
+    }
+
     public CraftGuideGuiPacket(Type type, int key, int value, CompoundTag data) {
         this.type = type;
         this.key = key;

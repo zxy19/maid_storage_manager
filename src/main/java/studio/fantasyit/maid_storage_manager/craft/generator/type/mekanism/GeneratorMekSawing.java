@@ -69,17 +69,13 @@ public class GeneratorMekSawing extends GeneratorMek<SawmillRecipe, InputRecipeC
                 new Target(ItemHandlerStorage.TYPE, pos, inputSide),
                 inputs,
                 List.of(),
-                CommonPlaceItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonPlaceItemAction.TYPE
         ));
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
                 recipe.getMainOutputDefinition(),
-                CommonTakeItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonTakeItemAction.TYPE
         ));
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),

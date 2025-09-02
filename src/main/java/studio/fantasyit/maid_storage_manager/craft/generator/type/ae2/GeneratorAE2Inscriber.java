@@ -8,7 +8,6 @@ import appeng.recipes.handlers.InscriberProcessType;
 import appeng.recipes.handlers.InscriberRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -132,34 +131,26 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                                                     new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                     List.of(items.get(id++)),
                                                     List.of(),
-                                                    CommonPlaceItemAction.TYPE,
-                                                    false,
-                                                    new CompoundTag()
+                                                    CommonPlaceItemAction.TYPE
                                             ));
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, pos, Direction.WEST),
                                                 List.of(items.get(id++)),
                                                 List.of(),
-                                                CommonPlaceItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonPlaceItemAction.TYPE
                                         ));
                                         if (id < items.size())
                                             steps.add(new CraftGuideStepData(
                                                     new Target(ItemHandlerStorage.TYPE, pos, Direction.DOWN),
                                                     List.of(items.get(id++)),
                                                     List.of(),
-                                                    CommonPlaceItemAction.TYPE,
-                                                    false,
-                                                    new CompoundTag()
+                                                    CommonPlaceItemAction.TYPE
                                             ));
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, pos),
                                                 List.of(),
                                                 List.of(result),
-                                                CommonTakeItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonTakeItemAction.TYPE
                                         ));
                                         //如果输入物品保留第一个而且需要取回
                                         if (!skipFirst && recipe.getProcessType() == InscriberProcessType.INSCRIBE)
@@ -167,9 +158,7 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                                                     new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                     List.of(),
                                                     List.of(items.get(0)),
-                                                    CommonTakeItemAction.TYPE,
-                                                    false,
-                                                    new CompoundTag()
+                                                    CommonTakeItemAction.TYPE
                                             ));
 
 

@@ -8,7 +8,6 @@ import com.refinedmods.refinedstorage.api.storage.cache.IStorageCache;
 import com.refinedmods.refinedstorage.api.util.IStackList;
 import com.refinedmods.refinedstorage.api.util.StackListEntry;
 import com.refinedmods.refinedstorage.apiimpl.API;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.context.special.RsCraftingAction;
@@ -91,9 +90,7 @@ abstract public class AbstractRSContext extends AbstractFilterableBlockStorage i
                             target,
                             List.of(),
                             List.of(key.getStack()),
-                            RsCraftingAction.TYPE,
-                            false,
-                            new CompoundTag()
+                            RsCraftingAction.TYPE
                     ));
                     return new CraftGuideData(
                             steps,

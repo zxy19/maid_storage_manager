@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -74,9 +73,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                                 Target.virtual(pos, null),
                                 items,
                                 List.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER)),
-                                CommonUseAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonUseAction.TYPE
                         );
                         return new CraftGuideData(
                                 List.of(step),
@@ -95,9 +92,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                                 Target.virtual(pos, null),
                                 items,
                                 List.of(new ItemStack(Items.WATER_BUCKET)),
-                                CommonUseAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonUseAction.TYPE
                         );
                         return new CraftGuideData(
                                 List.of(step),

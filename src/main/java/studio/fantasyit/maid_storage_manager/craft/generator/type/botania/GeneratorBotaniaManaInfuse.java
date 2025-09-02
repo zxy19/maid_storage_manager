@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -97,17 +96,13 @@ public class GeneratorBotaniaManaInfuse implements IAutoCraftGuideGenerator {
                                 Target.virtual(pos, Direction.UP),
                                 items,
                                 List.of(),
-                                CommonThrowItemAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonThrowItemAction.TYPE
                         ));
                         steps.add(new CraftGuideStepData(
                                 Target.virtual(pos, Direction.UP),
                                 List.of(),
                                 List.of(output),
-                                CommonPickupItemAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonPickupItemAction.TYPE
                         ));
                         return new CraftGuideData(steps, CommonType.TYPE);
                     });

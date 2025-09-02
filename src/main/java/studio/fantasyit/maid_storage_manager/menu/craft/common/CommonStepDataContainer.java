@@ -29,14 +29,13 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         this.step = step;
         actionType = step.actionType;
         recalculateSlots();
-        for (int i = 0; i < Math.min(inputCount, actionType.inputCount()); i++) {
+        for (int i = 0; i < inputCount; i++) {
             setItemNoTrigger(i, step.getInput().get(i));
             setCount(i, step.getInput().get(i).getCount());
         }
-        int inputOffset = inputCount == 0 ? 0 : Math.max(inputCount, 2);
-        for (int i = 0; i < Math.min(outputCount, actionType.outputCount()); i++) {
-            setItemNoTrigger(inputOffset + i, step.getOutput().get(i));
-            setCount(inputOffset + i, step.getOutput().get(i).getCount());
+        for (int i = 0; i < outputCount; i++) {
+            setItemNoTrigger(inputCount + padCount + i, step.getOutput().get(i));
+            setCount(inputCount + padCount + i, step.getOutput().get(i).getCount());
         }
         options = actionType.options();
     }
@@ -104,8 +103,8 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
     }
 
     public void setOption(int index, int selection, String value) {
-        actionType.setOptionSelectionId(options.get(index), step, selection);
-        actionType.setOptionValue(options.get(index), step, value);
+        options.get(index).setOptionSelectionId(step, selection);
+        options.get(index).setOptionValue(step, value);
     }
 
 }

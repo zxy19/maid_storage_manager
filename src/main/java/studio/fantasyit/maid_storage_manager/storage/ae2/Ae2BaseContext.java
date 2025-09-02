@@ -11,7 +11,6 @@ import appeng.blockentity.networking.CableBusBlockEntity;
 import appeng.parts.reporting.AbstractTerminalPart;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import studio.fantasyit.maid_storage_manager.craft.context.special.AeCraftingAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -92,9 +91,7 @@ public abstract class Ae2BaseContext extends AbstractFilterableBlockStorage impl
                             target,
                             List.of(),
                             List.of(((AEItemKey) key).getReadOnlyStack().copyWithCount(1)),
-                            AeCraftingAction.TYPE,
-                            false,
-                            new CompoundTag()
+                            AeCraftingAction.TYPE
                     ));
                     return new CraftGuideData(
                             steps,

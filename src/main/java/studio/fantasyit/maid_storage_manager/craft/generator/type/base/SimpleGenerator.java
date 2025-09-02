@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.base;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -103,9 +102,7 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends Container> 
                                 new Target(CraftingType.TYPE, pos),
                                 wrapInputs(recipe, items),
                                 wrapOutputs(recipe, items, container, result),
-                                getCraftType(),
-                                false,
-                                new CompoundTag()
+                                getCraftType()
                         );
                         return new CraftGuideData(
                                 List.of(step),

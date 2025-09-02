@@ -94,9 +94,7 @@ public class GeneratorBotaniaRunicAltar implements IAutoCraftGuideGenerator {
                                             Target.virtual(pos, Direction.UP),
                                             List.of(t),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                 }
 
@@ -116,27 +114,21 @@ public class GeneratorBotaniaRunicAltar implements IAutoCraftGuideGenerator {
                                         Target.virtual(pos, Direction.UP),
                                         List.of(react),
                                         List.of(),
-                                        CommonUseAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonUseAction.TYPE
                                 ));
                                 ItemStack wand = items.get(items.size() - 1);
                                 steps.add(new CraftGuideStepData(
                                         Target.virtual(pos, Direction.UP),
                                         List.of(wand),
                                         List.of(wand),
-                                        CommonUseAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonUseAction.TYPE
                                 ));
 
                                 steps.add(new CraftGuideStepData(
                                         Target.virtual(pos, Direction.UP),
                                         List.of(),
                                         List.of(output),
-                                        CommonPickupItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonPickupItemAction.TYPE
                                 ));
 
 

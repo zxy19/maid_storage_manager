@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.craft.type;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -68,25 +69,20 @@ public class FurnaceType implements ICraftType {
                 target.sameType(craftGuideStepData.getStorage().getPos(), Direction.UP),
                 List.of(craftGuideStepData.getInput().get(0)),
                 List.of(),
-                CommonPlaceItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonPlaceItemAction.TYPE
         ));
         ret.add(new CraftGuideStepData(
                 target.sameType(craftGuideStepData.getStorage().getPos(), Direction.EAST),
                 List.of(craftGuideStepData.getInput().get(1)),
                 List.of(),
                 CommonPlaceItemAction.TYPE,
-                true,
-                new CompoundTag()
+                ActionOptionSet.with(ActionOption.OPTIONAL,true)
         ));
         ret.add(new CraftGuideStepData(
                 target.sameType(craftGuideStepData.getStorage().getPos(), Direction.DOWN),
                 List.of(),
                 List.of(craftGuideStepData.getOutput().get(0)),
-                CommonTakeItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonTakeItemAction.TYPE
         ));
         return ret;
     }

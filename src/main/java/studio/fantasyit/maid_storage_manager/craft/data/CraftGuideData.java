@@ -9,6 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
@@ -129,15 +131,13 @@ public class CraftGuideData {
                         new ArrayList<>(),
                         items,
                         type,
-                        optional,
-                        new CompoundTag()));
+                        ActionOptionSet.with(ActionOption.OPTIONAL,optional)));
             else
                 craftGuideData.steps.add(new CraftGuideStepData(target,
                         items,
                         new ArrayList<>(),
                         type,
-                        optional,
-                        new CompoundTag()));
+                        ActionOptionSet.with(ActionOption.OPTIONAL,optional)));
         }
     }
 
@@ -164,9 +164,7 @@ public class CraftGuideData {
             craftGuideData.steps.add(new CraftGuideStepData(target,
                     inputs,
                     outputs,
-                    CraftingType.TYPE,
-                    false,
-                    new CompoundTag()));
+                    CraftingType.TYPE));
         }
     }
 

@@ -4,12 +4,14 @@ import com.tacz.guns.crafting.GunSmithTableRecipe;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.type.TaczType;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
@@ -37,14 +39,17 @@ public class JEITaczRecipeTransfer implements IUniversalRecipeTransferHandler<Ta
             if (allRecipes.stream().noneMatch(r -> r.getB().equals(recipe.getId().toString())))
                 return new IncompatibleError();
             if (doTransfer) {
-                CompoundTag data = new CompoundTag();
-                data.putString("recipe_id", recipe.getId().toString());
-                data.putString("block_id", container.getBlockId().toString());
                 Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
-                        CraftGuideGuiPacket.Type.EXTRA,
+                        CraftGuideGuiPacket.Type.OPTION,
+                        CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
                         0,
+                        CraftGuideGuiPacket.singleValue(recipe.getId().toString())
+                ));
+                Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+                        CraftGuideGuiPacket.Type.OPTION,
+                        CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
                         0,
-                        data
+                        CraftGuideGuiPacket.singleValue(container.getBlockId().toString())
                 ));
             }
             return null;

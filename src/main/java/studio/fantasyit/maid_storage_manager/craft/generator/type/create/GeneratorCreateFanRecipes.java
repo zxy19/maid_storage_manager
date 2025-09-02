@@ -12,7 +12,6 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -259,17 +258,13 @@ public class GeneratorCreateFanRecipes extends GeneratorCreate<ProcessingRecipe<
                                                         i -> i.copyWithCount(i.getCount() * COUNT.getValue())
                                                 ).toList(),
                                                 List.of(),
-                                                CommonPlaceItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonPlaceItemAction.TYPE
                                         )));
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, test),
                                                 List.of(),
                                                 List.of(resultItem.copyWithCount(resultItem.getCount() * COUNT.getValue())),
-                                                CommonTakeItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonTakeItemAction.TYPE
                                         ));
                                         return new CraftGuideData(
                                                 steps,

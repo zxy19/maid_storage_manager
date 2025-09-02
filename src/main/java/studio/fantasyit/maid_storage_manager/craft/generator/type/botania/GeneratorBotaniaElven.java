@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.botania;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -59,17 +58,13 @@ public class GeneratorBotaniaElven implements IAutoCraftGuideGenerator {
                                         Target.virtual(pos, Direction.UP),
                                         t,
                                         List.of(),
-                                        CommonThrowItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonThrowItemAction.TYPE
                                 )));
                                 GenerateIngredientUtil.each3items(recipe.getOutputs(), t -> steps.add(new CraftGuideStepData(
                                         Target.virtual(pos, Direction.UP),
                                         List.of(),
                                         recipe.getOutputs(),
-                                        CommonPickupItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonPickupItemAction.TYPE
                                 )));
                                 return new CraftGuideData(steps, CommonType.TYPE);
                             });

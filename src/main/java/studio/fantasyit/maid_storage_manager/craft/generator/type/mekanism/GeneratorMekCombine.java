@@ -10,7 +10,6 @@ import mekanism.common.tile.machine.TileEntityCombiner;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -67,25 +66,19 @@ public class GeneratorMekCombine extends GeneratorMek<CombinerRecipe, InputRecip
                 new Target(ItemHandlerStorage.TYPE, pos, inputSide),
                 List.of(inputs.get(0)),
                 List.of(),
-                CommonPlaceItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonPlaceItemAction.TYPE
         ));
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, extraSide),
                 List.of(inputs.get(1)),
                 List.of(),
-                CommonPlaceItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonPlaceItemAction.TYPE
         ));
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
                 outputs,
-                CommonTakeItemAction.TYPE,
-                false,
-                new CompoundTag()
+                CommonTakeItemAction.TYPE
         ));
         return true;
     }

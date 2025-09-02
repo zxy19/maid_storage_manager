@@ -5,7 +5,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBF
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -14,6 +13,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonAttackAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
@@ -96,21 +96,15 @@ public class GeneratorBotaniaDaisy implements IAutoCraftGuideGenerator {
                                             Target.virtual(pos.offset(offset).below(), Direction.UP),
                                             List.of(items.get(0).copyWithCount(1)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                 }
-                                CompoundTag compoundTag = new CompoundTag();
-                                compoundTag.putInt("time", recipe.getTime() * 8);
-                                compoundTag.putInt("u", 0);
                                 steps.add(new CraftGuideStepData(
                                         Target.virtual(pos.above(), null),
                                         List.of(),
                                         List.of(),
                                         CommonIdleAction.TYPE,
-                                        false,
-                                        compoundTag
+                                        ActionOptionSet.with(CommonIdleAction.OPTION_WAIT, false, String.valueOf(recipe.getTime() * 8))
                                 ));
                                 int i = 0;
                                 for (Vec3i offset : offsets) {
@@ -118,18 +112,14 @@ public class GeneratorBotaniaDaisy implements IAutoCraftGuideGenerator {
                                             Target.virtual(pos.offset(offset), null),
                                             List.of(items.get(1).copyWithCount(1)),
                                             List.of(output),
-                                            CommonAttackAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonAttackAction.TYPE
                                     ));
                                     if ((++i) % 2 == 0)
                                         steps.add(new CraftGuideStepData(
                                                 Target.virtual(pos.offset(offset).below(), Direction.UP),
                                                 List.of(),
                                                 List.of(items.get(1).copyWithCount(2)),
-                                                CommonIdleAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonIdleAction.TYPE
                                         ));
                                 }
                                 return new CraftGuideData(steps, CommonType.TYPE);

@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.botania;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -77,25 +76,19 @@ public class GeneratorBotaniaMythicalFlower implements IAutoCraftGuideGenerator 
                                 Target.virtual(pos, Direction.UP),
                                 List.of(items.get(0)),
                                 List.of(),
-                                CommonUseAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonUseAction.TYPE
                         ));
                         steps.add(new CraftGuideStepData(
                                 Target.virtual(pos.above(), null),
                                 List.of(items.get(1)),
                                 List.of(),
-                                CommonUseAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonUseAction.TYPE
                         ));
                         steps.add(new CraftGuideStepData(
                                 Target.virtual(pos.above(), null),
                                 List.of(),
                                 List.of(output),
-                                CommonAttackAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonAttackAction.TYPE
                         ));
                         return new CraftGuideData(steps, CommonType.TYPE);
                     }

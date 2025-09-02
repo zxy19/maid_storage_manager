@@ -5,7 +5,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.tileentity.TileEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.util.PosListData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -47,18 +46,14 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
                         Target.virtual(data.get(i), null),
                         List.of(inputs.get(i)),
                         List.of(ItemStack.EMPTY),
-                        CommonUseAction.TYPE,
-                        false,
-                        new CompoundTag()
+                        CommonUseAction.TYPE
                 ));
             }
             addStep(new CraftGuideStepData(
                     Target.virtual(getCenterPos(data), null),
                     List.of(),
                     List.of(craftGuideStepData.getNonEmptyOutput().get(0)),
-                    CommonPickupItemAction.TYPE,
-                    false,
-                    new CompoundTag()
+                    CommonPickupItemAction.TYPE
             ));
         }
         return Result.SUCCESS;

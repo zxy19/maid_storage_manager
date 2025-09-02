@@ -110,6 +110,8 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
         }
         if (!breath.breathTick(maid)) return;
         AbstractCraftActionContext.Result tick = context.tick();
+        if(context.skipNextBreath())
+            breath.reset();
         switch (tick) {
             case SUCCESS -> {
                 fail = false;

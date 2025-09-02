@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -21,8 +23,19 @@ import java.util.function.Function;
 public class CraftGuideOperator extends TargetOperator {
     public static CraftGuideOperator INSTANCE = new CraftGuideOperator();
 
+    public <T> ActionOptionSet makeActionOptionSet(ActionOption<T> option, T selection) {
+        return ActionOptionSet.with(option, selection);
+    }
 
+    public <T> ActionOptionSet makeActionOptionSetWithValue(ActionOption<T> option, T selection, String value) {
+        return ActionOptionSet.with(option, selection, value);
+    }
 
+    public ActionOptionSet makeActionOptionSetOptional(boolean optional){
+        return makeActionOptionSet(ActionOption.OPTIONAL, optional);
+    }
+
+    @Deprecated
     public CraftGuideStepData makeCraftGuideStepData(
             Target target,
             ItemStack[] input,
@@ -33,6 +46,7 @@ public class CraftGuideOperator extends TargetOperator {
         return makeCraftGuideStepDataWithExtra(target, input, output, action, optional, new CompoundTag());
     }
 
+    @Deprecated
     public CraftGuideStepData makeCraftGuideStepDataWithExtra(
             Target target,
             ItemStack[] input,
@@ -42,6 +56,10 @@ public class CraftGuideOperator extends TargetOperator {
             CompoundTag extra
     ) {
         return new CraftGuideStepData(target, List.of(input), List.of(output), action, optional, extra);
+    }
+
+    public CraftGuideStepData makeCraftGuideStepDataWithOptions(Target target, ItemStack[] input, ItemStack[] output, ResourceLocation action, ActionOptionSet options) {
+        return new CraftGuideStepData(target, List.of(input), List.of(output), action, options);
     }
 
     public CraftGuideData makeCraftGuideData(CraftGuideStepData[] steps, ResourceLocation id) {
@@ -55,16 +73,12 @@ public class CraftGuideOperator extends TargetOperator {
                                 new Target(ItemHandlerStorage.TYPE, pos),
                                 List.of(input),
                                 List.of(),
-                                CommonPlaceItemAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonPlaceItemAction.TYPE
                         ), new CraftGuideStepData(
                                 new Target(ItemHandlerStorage.TYPE, pos),
                                 List.of(),
                                 List.of(output),
-                                CommonTakeItemAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonTakeItemAction.TYPE
                         )
                 ),
                 CommonType.TYPE);

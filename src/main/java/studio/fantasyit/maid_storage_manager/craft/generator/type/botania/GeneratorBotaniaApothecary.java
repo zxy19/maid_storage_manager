@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.botania;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -56,27 +55,21 @@ public class GeneratorBotaniaApothecary implements IAutoCraftGuideGenerator {
                                 Target.virtual(pos, Direction.UP),
                                 List.of(items.get(0)),
                                 List.of(),
-                                CommonUseAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonUseAction.TYPE
                         ));
                         GenerateIngredientUtil.each3items(items.subList(1, items.size()), subItemList -> {
                             steps.add(new CraftGuideStepData(
                                     Target.virtual(pos, Direction.UP),
                                     subItemList,
                                     List.of(),
-                                    CommonThrowItemAction.TYPE,
-                                    false,
-                                    new CompoundTag()
+                                    CommonThrowItemAction.TYPE
                             ));
                         });
                         steps.add(new CraftGuideStepData(
                                 Target.virtual(pos, Direction.UP),
                                 List.of(),
                                 List.of(output),
-                                CommonPickupItemAction.TYPE,
-                                false,
-                                new CompoundTag()
+                                CommonPickupItemAction.TYPE
                         ));
                         return new CraftGuideData(steps, CommonType.TYPE);
                     });

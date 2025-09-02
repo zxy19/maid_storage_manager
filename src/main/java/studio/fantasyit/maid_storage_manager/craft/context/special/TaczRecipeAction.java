@@ -4,9 +4,12 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.tacz.guns.crafting.GunSmithTableIngredient;
 import com.tacz.guns.crafting.GunSmithTableRecipe;
 import com.tacz.guns.init.ModRecipe;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -20,6 +23,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class TaczRecipeAction extends AbstractCraftActionContext {
+    public static final ActionOption<Boolean> OPTION_TACZ_RECIPE_ID = new ActionOption<>(
+            new ResourceLocation(MaidStorageManager.MODID, "recipe_id"), "", new ActionOption.BiConverter<>(i -> i != 0, t -> t ? 1 : 0), ActionOption.ValuePredicatorOrGetter.predicator(ResourceLocation::isValidResourceLocation)
+    );
+
+    public static final ActionOption<Boolean> OPTION_TACZ_BLOCK_ID = new ActionOption<>(
+            new ResourceLocation(MaidStorageManager.MODID, "block_id"), "", new ActionOption.BiConverter<>(i -> i != 0, t -> t ? 1 : 0), ActionOption.ValuePredicatorOrGetter.predicator(ResourceLocation::isValidResourceLocation)
+    );
+
     public TaczRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
     }
@@ -34,8 +45,8 @@ public class TaczRecipeAction extends AbstractCraftActionContext {
     @Override
     public Result tick() {
         Level level = maid.level();
-        String wantedBlockId = craftGuideStepData.getExtraData().getString("block_id");
-        String recipeId = craftGuideStepData.getExtraData().getString("recipe_id");
+        String wantedBlockId = craftGuideStepData.getOptionValue(OPTION_TACZ_BLOCK_ID);
+        String recipeId = craftGuideStepData.getOptionValue(OPTION_TACZ_RECIPE_ID);
         if (!TaczRecipe.getBlockId(level, craftGuideStepData.storage.pos).toString().equals(wantedBlockId))
             return Result.NOT_DONE;
         Optional<GunSmithTableRecipe> recipe = level

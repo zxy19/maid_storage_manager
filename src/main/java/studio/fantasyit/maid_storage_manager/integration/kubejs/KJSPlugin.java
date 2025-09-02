@@ -4,10 +4,7 @@ import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.script.BindingsEvent;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.rhino.util.wrap.TypeWrappers;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMBinding;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMCompacted;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMTypeCasting;
-import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.KJSMSMUtilities;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.binding.*;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.base.BaseSupplierWrapper;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.base.BaseWrappedWrapper;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.context.IKJSCraftContext;
@@ -49,7 +46,10 @@ public class KJSPlugin extends KubeJSPlugin {
         KJSMSMTypeCasting kjsmsmTypeCasting = new KJSMSMTypeCasting();
         event.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
         event.add("MSMTC", kjsmsmTypeCasting);
-        KJSMSMCompacted kjsmsmCompacted = new KJSMSMCompacted(kjsmsmBinding, kjsmsmUtilities, kjsmsmTypeCasting);
+        KJSMSMMemories kjsmsmMemories = new KJSMSMMemories();
+        event.add("MaidStorageManagerMemories", kjsmsmMemories);
+        event.add("MSMM", kjsmsmMemories);
+        KJSMSMCompacted kjsmsmCompacted = new KJSMSMCompacted(kjsmsmBinding, kjsmsmUtilities, kjsmsmTypeCasting, kjsmsmMemories);
         event.add("MaidStorageManager", kjsmsmCompacted);
         event.add("MSM", kjsmsmCompacted);
     }

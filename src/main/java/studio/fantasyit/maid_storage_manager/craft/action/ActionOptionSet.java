@@ -38,9 +38,9 @@ public class ActionOptionSet {
 
     public void applyTo(CraftGuideStepData data) {
         for (ActionOptionSetItem<?> option : options) {
-            data.actionType.setOptionSelection((ActionOption) option.option, data, option.selection);
+            data.setOptionSelection((ActionOption) option.option, option.selection);
             if (option.value != null) {
-                data.actionType.setOptionValue(option.option, data, option.value);
+                data.setOptionValue(option.option, option.value);
             }
         }
     }

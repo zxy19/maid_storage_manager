@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -48,7 +49,6 @@ public class WrappedMaidFakePlayer extends FakePlayer {
         public float getDestroySpeed(BlockState p_36021_) {
             return maid.getMainHandItem().getDestroySpeed(p_36021_);
         }
-
     }
 
     private static ConcurrentHashMap<UUID, WrappedMaidFakePlayer> cache = new ConcurrentHashMap<>();
@@ -329,5 +329,12 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     public double getEyeY() {
         if (maid == null) return super.getEyeY();
         return maid.getEyeY();
+    }
+
+    @Override
+    public ItemEntity drop(ItemStack p_9085_, boolean p_9086_, boolean p_9087_) {
+        ItemStack stack = p_9085_.copy();
+        this.inventory.placeItemBackInInventory(stack, false);
+        return super.drop(stack, p_9086_, p_9087_);
     }
 }

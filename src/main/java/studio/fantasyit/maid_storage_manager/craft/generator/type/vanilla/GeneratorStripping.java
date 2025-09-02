@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -84,34 +83,26 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(items.get(0)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above(), Direction.UP),
                                             List.of(items.get(1)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above()),
                                             List.of(items.get(1)),
                                             List.of(strippedItem),
-                                            CommonAttackAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonAttackAction.TYPE
                                     ));
 
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(),
                                             List.of(items.get(1), items.get(1)),
-                                            CommonIdleAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonIdleAction.TYPE
                                     ));
                                     return new CraftGuideData(
                                             craftGuideData,

@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.special;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.inventory.AnvilMenu;
@@ -11,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -23,6 +26,10 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 
 public class AnvilRecipeAction extends AbstractCraftActionContext {
+    public static final ActionOption<Boolean> OPTION_ANVIL_NAME = ActionOption.valueOnly(
+            new ResourceLocation(MaidStorageManager.MODID, "anvil_name"), ""
+    );
+
     protected static class Access implements ContainerLevelAccess {
         private final BlockPos pos;
         private final Level level;
