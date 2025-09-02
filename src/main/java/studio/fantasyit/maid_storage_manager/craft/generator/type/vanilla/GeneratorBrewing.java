@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -84,9 +83,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                                 new Target(CraftingType.TYPE, pos),
                                 items,
                                 List.of(data.output),
-                                BrewingType.TYPE,
-                                false,
-                                new CompoundTag()
+                                BrewingType.TYPE
                         );
                         return new CraftGuideData(
                                 List.of(step),

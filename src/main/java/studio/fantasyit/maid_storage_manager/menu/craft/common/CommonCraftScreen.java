@@ -66,13 +66,11 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void syncOption(int idx, Integer nv, String value) {
-        CompoundTag tag = new CompoundTag();
         if (value == null)
             value = options.get(idx).getB().getValue();
         if (nv == null)
             nv = options.get(idx).getA().getData();
-        tag.putString("value", value);
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.OPTION, idx, nv));
+        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.OPTION, idx, nv, CraftGuideGuiPacket.singleValue(value)));
     }
 
     //region buttons
@@ -93,7 +91,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                             );
                         }
                         ActionOption<?> opt = menu.currentEditingItems.options.get(optionIdx);
-                        int nv = (value == null ? menu.currentEditingItems.actionType.getOptionSelectionId(opt, menu.currentEditingItems.step).orElse(0) : value + 1);
+                        int nv = (value == null ? menu.currentEditingItems.step.getOptionSelectionId(opt).orElse(0) : value + 1);
                         nv %= opt.tooltip().length;
                         if (value != null) {
                             syncOption(optionIdx, nv, null);
@@ -463,7 +461,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             return true;
         }
         if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
-            scroll((float) -p_94688_);
+            scroll((float) -p_94688_ * 3);
         }
         return super.mouseScrolled(x, y, dx, p_94688_);
     }
@@ -499,15 +497,15 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         for (int i = 0; i < options.size(); i++) {
             boolean show = i < actionOptions.size();
             options.get(i).getA().setVisible(show);
+            if (show) {
+                options.get(i).getA().setOption(null);
+            }
             if (show && actionOptions.get(i).valuePredicatorOrGetter().hasPredicator()) {
                 options.get(i).getB().setVisible(true);
                 options.get(i).getB().setFilter(actionOptions.get(i).valuePredicatorOrGetter()::predicate);
-                options.get(i).getB().setValue(actionOptions.get(i).defaultValue());
+                options.get(i).getB().setValue(actionOptions.get(i).getOptionValue(menu.currentEditingItems.step));
             } else {
                 options.get(i).getB().setVisible(false);
-            }
-            if (show) {
-                options.get(i).getA().setOption(null);
             }
         }
         boolean hasStepSelected = (menu.currentEditingItems.step != null);
@@ -551,7 +549,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private Double mouseStartDraggingOffset = null;
 
     private float getScrollBlockHeight() {
-        return 2 * SCROLL_AREA_TOTAL_HEIGHT - menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1);
+        return Math.min(2 * SCROLL_AREA_TOTAL_HEIGHT - menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1), SCROLL_AREA_TOTAL_HEIGHT + 6);
     }
 
     private void makeScreenScissor(GuiGraphics graphics) {
@@ -564,10 +562,12 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     private void scroll(float delta) {
         scrollOffsetTop += delta;
-        if (scrollOffsetTop < 0)
-            scrollOffsetTop = 0;
-        if (scrollOffsetTop > SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight())
+        if (scrollOffsetTop > SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight()) {
             scrollOffsetTop = SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight();
+        }
+        if (scrollOffsetTop < 0) {
+            scrollOffsetTop = 0;
+        }
     }
 
     private int getSelectedStep(double x, double y) {
@@ -578,6 +578,17 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             return (int) ((offsetY + scrollOffsetTop) / rh);
         }
         return -1;
+    }
+
+    boolean isClickedOnDeleteBtn(double x, double y, int seleted) {
+        int rh = CommonCraftAssets.ROW.h - 1;
+        if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
+            double lDist = x - getGuiLeft() - 26;
+            double tDist = (y - getGuiTop() - 26 + scrollOffsetTop - seleted * rh);
+            if (lDist > CommonCraftAssets.ROW.w - 5 && tDist < 5)
+                return true;
+        }
+        return false;
     }
 
     private void renderScrollList(GuiGraphics graphics, int x, int y) {
@@ -612,7 +623,14 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     CommonCraftAssets.ROW.blit(graphics, 0, 0);
                 }
             }
-            renderScrollListRow(graphics, step, menu.blockIndicatorForSteps.get(i).getItem());
+            renderScrollListRow(graphics,
+                    step,
+                    menu.blockIndicatorForSteps.get(i).getItem(),
+                    selected == i,
+                    i == menu.selectedIndex,
+                    x - relX,
+                    (int) (y - relY + scrollOffsetTop - i * (CommonCraftAssets.ROW.h - 1))
+            );
             graphics.pose().translate(0, CommonCraftAssets.ROW.h - 1, 0);
         }
         graphics.pose().popPose();
@@ -620,7 +638,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         releaseScreenScissor(graphics);
     }
 
-    private void renderScrollListRow(GuiGraphics graphics, CraftGuideStepData step, ItemStack blockIndicator) {
+    private void renderScrollListRow(GuiGraphics graphics, CraftGuideStepData step, ItemStack blockIndicator, boolean hover, boolean selected, int x, int y) {
         graphics.pose().pushPose();
         graphics.pose().translate(47, 4, 0);
         graphics.pose().scale(0.7f, 0.7f, 1f);
@@ -636,11 +654,18 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             hasInput = true;
         }
         if (hasInput) {
-            graphics.pose().translate(16, 0, 0);
+            graphics.pose().translate(4, 0, 0);
         }
         for (ItemStack itemStack : step.getNonEmptyOutput()) {
             graphics.renderItem(itemStack, 0, 0);
-            graphics.pose().translate(16, 0, 0);
+            String text = String.valueOf(itemStack.getCount());
+            graphics.pose().translate(0, 0, 400);
+            graphics.drawString(this.font,
+                    text,
+                    16 - this.font.width(text),
+                    (int) (16 - this.font.lineHeight),
+                    0xffffffff);
+            graphics.pose().translate(0, 0, -400);
         }
         graphics.pose().popPose();
         graphics.pose().pushPose();
@@ -648,6 +673,22 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.pose().scale(0.7f, 0.7f, 1f);
         graphics.renderItem(blockIndicator, 0, 0);
         graphics.pose().popPose();
+
+        if (hover && selected) {
+            graphics.pose().pushPose();
+            graphics.pose().translate(0, 0, 600);
+            CommonCraftAssets.DELETE_GRAY.blit(graphics,
+                    CommonCraftAssets.ROW.w - 5,
+                    2
+            );
+            if (x >= CommonCraftAssets.ROW.w - 5 && y < 5) {
+                CommonCraftAssets.DELETE.blit(graphics,
+                        CommonCraftAssets.ROW.w - 5,
+                        2
+                );
+            }
+            graphics.pose().popPose();
+        }
     }
 
     private void renderScrollBar(GuiGraphics graphics, int x, int y) {
@@ -677,7 +718,11 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private void clickInScrollList(double x, double y) {
         int id = getSelectedStep(x, y);
         if (id == -1 || id >= menu.craftGuideData.steps.size()) return;
-        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SELECT, id));
+        if (isClickedOnDeleteBtn(x, y, id)) {
+            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.REMOVE, id));
+        } else {
+            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SELECT, id));
+        }
     }
 
     private boolean isInScrollBlockArea(double x, double y) {

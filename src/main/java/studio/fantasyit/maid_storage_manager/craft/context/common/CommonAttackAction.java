@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +28,7 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -39,12 +41,41 @@ import java.util.List;
 
 
 public class CommonAttackAction extends AbstractCraftActionContext {
+    public enum USE_TYPE {
+        LONG,
+        SINGLE
+    }
+
+    public static final ActionOption<USE_TYPE> OPTION_USE_METHOD = new ActionOption<>(
+            new ResourceLocation(MaidStorageManager.MODID, "attack_mode"),
+            new Component[]{
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_destroy"),
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_single")
+            },
+            new ResourceLocation[]{
+                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/use_long.png"),
+                    new ResourceLocation("maid_storage_manager:textures/gui/craft/option/use_single.png")
+            },
+            "",
+            new ActionOption.BiConverter<>(
+                    i -> USE_TYPE.values()[i], Enum::ordinal
+            ),
+            ActionOption.ValuePredicatorOrGetter.getter(t ->
+                    switch (t) {
+                        case LONG ->
+                                Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_destroy");
+                        case SINGLE ->
+                                Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_single");
+                    }
+            )
+    );
     public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "destroy");
     FakePlayer fakePlayer;
     boolean startDestroyBlock = false;
     float progress = 0.0f;
     int tickLast = 0;
-    int storedSlot = -1;
+    int storedSlotMainHand = -1;
+    int storedSlotOffHand = -1;
 
     public CommonAttackAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -56,17 +87,29 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         maid.getNavigation().stop();
 
         ItemStack targetItem = craftGuideStepData.getInput().get(0);
+        ItemStack targetItem2 = craftGuideStepData.getInput().get(1);
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
-        storedSlot = InvUtil.getTargetIndexInCrafting(maid, targetItem);
-        if (storedSlot == -1) return Result.FAIL;
-        InvUtil.swapHandAndSlot(maid, storedSlot);
+        if (!targetItem.isEmpty()) {
+            storedSlotMainHand = InvUtil.getTargetIndexInCrafting(maid, targetItem);
+            if (storedSlotMainHand == -1)
+                return Result.FAIL;
+        }
+        if (!targetItem2.isEmpty()) {
+            storedSlotOffHand = InvUtil.getTargetIndexInCrafting(maid, targetItem2);
+            if (storedSlotOffHand == -1)
+                return Result.FAIL;
+        }
+        if (storedSlotOffHand != -1)
+            InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
+        if (storedSlotMainHand != -1)
+            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
 
         return Result.CONTINUE;
     }
 
     @Override
     public Result tick() {
-         if (startDestroyBlock) {
+        if (startDestroyBlock) {
             return tickDestroyBlock();
         }
         //破坏任务中不用关心面，只需离开目标所在pos
@@ -166,7 +209,9 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         );
 
         if (event.getUseBlock() != TriState.FALSE) {
-            onStartDestroyBlock(level, target);
+            if (event.getUseBlock() != DENY) {
+                onStartDestroyBlock(level, target);
+            }
         }
         Inventory inventory = fakePlayer.getInventory();
         List<ItemStack> items = new ArrayList<>();
@@ -211,9 +256,15 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
     @Override
     public void stop() {
-        if (storedSlot != -1) {
-            InvUtil.swapHandAndSlot(maid, storedSlot);
-        }
+        if (storedSlotMainHand != -1)
+            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
+        if (storedSlotOffHand != -1)
+            InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(false);
+    }
+
+    @Override
+    public boolean skipNextBreath() {
+        return startDestroyBlock;
     }
 }

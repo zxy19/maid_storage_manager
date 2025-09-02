@@ -88,9 +88,7 @@ abstract public class AbstractRSContext extends AbstractFilterableBlockStorage i
                             target,
                             List.of(),
                             List.of(key.toItemStack()),
-                            RsCraftingAction.TYPE,
-                            false,
-                            new CompoundTag()
+                            RsCraftingAction.TYPE
                     ));
                     return new CraftGuideData(
                             steps,

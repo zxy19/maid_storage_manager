@@ -7,7 +7,6 @@ import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.RecipeRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -88,9 +87,7 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
                                                 new Target(ItemHandlerStorage.TYPE, blockPos.get(i)),
                                                 List.of(items.get(i)),
                                                 List.of(),
-                                                CommonPlaceItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonPlaceItemAction.TYPE
                                         ));
                                     }
                                     for (int i = slots; i < items.size(); i++) {
@@ -98,27 +95,21 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
                                                 new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                                 List.of(items.get(i)),
                                                 List.of(),
-                                                CommonPlaceItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonPlaceItemAction.TYPE
                                         ));
                                     }
                                     steps.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.DOWN),
                                             List.of(),
                                             List.of(recipe.output),
-                                            CommonTakeItemAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonTakeItemAction.TYPE
                                     ));
                                     for (int i = 0; i < slots; i++) {
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, blockPos.get(i)),
                                                 List.of(),
                                                 List.of(items.get(i)),
-                                                CommonTakeItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonTakeItemAction.TYPE
                                         ));
                                     }
                                     return new CraftGuideData(
@@ -145,18 +136,14 @@ public class GeneratorArsNouveauImbuement implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(items.get(i)),
                                             List.of(),
-                                            CommonPlaceItemAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonPlaceItemAction.TYPE
                                     ));
                                 }
                                 steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, pos, Direction.DOWN),
                                         List.of(),
                                         List.of(recipe.output),
-                                        CommonTakeItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonTakeItemAction.TYPE
                                 ));
                                 return new CraftGuideData(
                                         steps,

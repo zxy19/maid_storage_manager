@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.type.TaczType;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.RollingTextWidget;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
@@ -90,10 +93,18 @@ public class TaczCraftScreen extends AbstractCraftScreen<TaczCraftMenu> {
                         if (value != null) {
                             toValue = !toValue;
                             selected = toValue ? finalI : -1;
-                            CompoundTag tag = new CompoundTag();
-                            tag.putString("block_id", this.blockId.toString());
-                            tag.putString("recipe_id", toValue ? taczRecipe.getB() : "");
-                            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.EXTRA, 0, 0, tag));
+                            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(
+                                    CraftGuideGuiPacket.Type.OPTION,
+                                    CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
+                                    0,
+                                    CraftGuideGuiPacket.singleValue(this.blockId.toString())
+                            ));
+                            sendAndTriggerLocalPacket(new CraftGuideGuiPacket(
+                                    CraftGuideGuiPacket.Type.OPTION,
+                                    CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
+                                    0,
+                                    CraftGuideGuiPacket.singleValue(toValue ? taczRecipe.getB() : "")
+                            ));
                             updateButtons();
                         }
                         return new SelectButtonWidget.Option<>(
@@ -246,7 +257,7 @@ public class TaczCraftScreen extends AbstractCraftScreen<TaczCraftMenu> {
 
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
-        if (type == CraftGuideGuiPacket.Type.EXTRA) {
+        if (type == CraftGuideGuiPacket.Type.OPTION) {
             String recipeId = menu.getRecipeId();
             for (int i = 0; i < taczRecipes.size(); i++) {
                 if (taczRecipes.get(i).getB().equals(recipeId)) {

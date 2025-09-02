@@ -4,7 +4,6 @@ import appeng.core.definitions.AEBlocks;
 import appeng.recipes.AERecipeTypes;
 import appeng.recipes.handlers.ChargerRecipe;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -57,17 +56,13 @@ public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
                                         new Target(ItemHandlerStorage.TYPE, pos),
                                         items,
                                         List.of(),
-                                        CommonPlaceItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonPlaceItemAction.TYPE
                                 ));
                                 steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, pos),
                                         List.of(),
                                         List.of(recipe.getResultItem()),
-                                        CommonTakeItemAction.TYPE,
-                                        false,
-                                        new CompoundTag()
+                                        CommonTakeItemAction.TYPE
                                 ));
                                 return new CraftGuideData(
                                         steps,

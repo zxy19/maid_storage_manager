@@ -91,35 +91,27 @@ public class GeneratorCreateUse implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(items.get(0)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above(), Direction.UP),
                                             List.of(items.get(1)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
 
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above()),
                                             items.size() > 2 ? List.of(items.get(2)) : List.of(),
                                             List.of(resultItem),
-                                            CommonAttackAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonAttackAction.TYPE
                                     ));
                                     if (items.size() > 2)
                                         craftGuideData.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, pos.above()),
                                                 List.of(),
                                                 List.of(items.get(2)),
-                                                CommonIdleAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonIdleAction.TYPE
                                         ));
                                     return new CraftGuideData(
                                             craftGuideData,

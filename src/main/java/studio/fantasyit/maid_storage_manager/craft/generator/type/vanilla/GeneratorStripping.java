@@ -84,34 +84,26 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(items.get(0)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above(), Direction.UP),
                                             List.of(items.get(1)),
                                             List.of(),
-                                            CommonUseAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonUseAction.TYPE
                                     ));
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos.above()),
                                             List.of(items.get(1)),
                                             List.of(strippedItem),
-                                            CommonAttackAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonAttackAction.TYPE
                                     ));
 
                                     craftGuideData.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
                                             List.of(),
                                             List.of(items.get(1), items.get(1)),
-                                            CommonIdleAction.TYPE,
-                                            false,
-                                            new CompoundTag()
+                                            CommonIdleAction.TYPE
                                     ));
                                     return new CraftGuideData(
                                             craftGuideData,

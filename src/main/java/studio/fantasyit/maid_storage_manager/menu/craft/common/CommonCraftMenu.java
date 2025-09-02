@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -109,6 +110,10 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     () -> currentEditingItems.getCount(finalI)
             ));
         }
+        addDataSlot(new SimpleSlot(
+                t -> isHandRelated = t == 1,
+                () -> isHandRelated ? 1 : 0
+        ));
     }
 
     @Override
@@ -241,6 +246,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 selectedIndex = key;
                 currentEditingItems.setStep(craftGuideData.getSteps().get(key));
                 blockIndicator.set(player.level().getBlockState(craftGuideData.getSteps().get(key).storage.pos).getBlock().asItem().getDefaultInstance());
+                isHandRelated = craftGuideData.getSteps().get(key).actionType.hasMark(CraftAction.MARK_HAND_RELATED);
                 recalcSlots();
             }
             case DOWN -> {

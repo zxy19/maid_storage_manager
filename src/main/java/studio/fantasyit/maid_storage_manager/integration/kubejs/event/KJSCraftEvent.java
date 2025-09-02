@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.CollectCraftEvent;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.VirtualAction;
@@ -15,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.co
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.generator.IKJSAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.wrapped.craft.type.IKJSCraftType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
 
@@ -114,6 +116,19 @@ public class KJSCraftEvent implements KubeEvent {
                 hasInput,
                 hasOutput,
                 List.of()
+        );
+    }
+
+    public void addActionFull(ResourceLocation type, IKJSCraftContextSupplier craftActionProvider, CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider, double closeEnoughThreshold, boolean isCommon, int hasInput, int hasOutput, long marks, ActionOption<?>[] options) {
+        event.addAction(type,
+                (a, b, c, d) -> new KJSWrapCraftContext(a, b, c, d, craftActionProvider.get()),
+                craftActionPathFindingTargetProvider,
+                closeEnoughThreshold,
+                isCommon,
+                marks,
+                hasInput,
+                hasOutput,
+                Arrays.asList(options)
         );
     }
 

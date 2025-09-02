@@ -6,7 +6,6 @@ import com.tacz.guns.init.ModRecipe;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
 import studio.fantasyit.maid_storage_manager.integration.tacz.TaczRecipe;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
@@ -76,11 +76,10 @@ public class TaczCraftMenu extends AbstractCraftMenu<TaczCraftMenu> {
     @Override
     public void handleGuiPacket(CraftGuideGuiPacket.Type type, int key, int value, @Nullable CompoundTag data) {
         switch (type) {
-            case EXTRA -> {
+            case OPTION -> {
                 if (data != null) {
-                    stepDataContainer.step.setExtraData(data);
-                    if (screenListener != null)
-                        screenListener.handleGuiPacket(type, key, value, data);
+                    String sv = CraftGuideGuiPacket.getStringFrom(data);
+                    stepDataContainer.step.setOptionValue(stepDataContainer.step.actionType.options().get(key), sv);
                     save();
                 }
             }
@@ -94,13 +93,8 @@ public class TaczCraftMenu extends AbstractCraftMenu<TaczCraftMenu> {
     }
 
     public void recalculateRecipe() {
-        CompoundTag data = stepDataContainer.step.getExtraData();
-        if (data == null) {
-            stepDataContainer.step.setExtraData(new CompoundTag());
-            data = stepDataContainer.step.getExtraData();
-        }
-        String blockId = data.getString("block_id");
-        String recipeId = data.getString("recipe_id");
+        String blockId = stepDataContainer.step.getOptionValue(TaczRecipeAction.OPTION_TACZ_BLOCK_ID);
+        String recipeId = stepDataContainer.step.getOptionValue(TaczRecipeAction.OPTION_TACZ_RECIPE_ID);
 
 
         Level level = player.level();
@@ -137,15 +131,6 @@ public class TaczCraftMenu extends AbstractCraftMenu<TaczCraftMenu> {
             stepDataContainer.setItemNoTrigger(stepDataContainer.inputCount, ItemStack.EMPTY);
             stepDataContainer.setCount(stepDataContainer.inputCount, 1);
         }
-
-        if (player instanceof ServerPlayer sp)
-            PacketDistributor.sendToPlayer(sp,
-                    new CraftGuideGuiPacket(
-                            CraftGuideGuiPacket.Type.EXTRA,
-                            0,
-                            0,
-                            stepDataContainer.step.extraData
-                    ));
     }
 
     public ResourceLocation getBlockId() {
@@ -153,9 +138,7 @@ public class TaczCraftMenu extends AbstractCraftMenu<TaczCraftMenu> {
     }
 
     public String getRecipeId() {
-        if (stepDataContainer.step.getExtraData() == null)
-            return "";
-        return stepDataContainer.step.getExtraData().getString("recipe_id");
+        return stepDataContainer.step.getOptionValue(TaczRecipeAction.OPTION_TACZ_RECIPE_ID);
     }
 
     public void getAllRecipes(List<Pair<ItemStack, String>> taczRecipes) {

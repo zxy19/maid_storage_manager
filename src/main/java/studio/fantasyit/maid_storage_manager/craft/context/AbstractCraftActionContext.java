@@ -43,4 +43,8 @@ public abstract class AbstractCraftActionContext {
     public CompoundTag saveEnv(CompoundTag env) {
         return env == null ? new CompoundTag() : env.copy();
     }
+
+    public boolean skipNextBreath() {
+        return false;
+    }
 }

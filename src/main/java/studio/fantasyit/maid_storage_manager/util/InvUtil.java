@@ -198,11 +198,11 @@ public class InvUtil {
         return -1;
     }
 
-    public static void swapHandAndSlot(EntityMaid maid, int slot) {
+    public static void swapHandAndSlot(EntityMaid maid,InteractionHand hand, int slot) {
         CombinedInvWrapper inv = maid.getAvailableInv(true);
-        ItemStack hand = maid.getMainHandItem();
-        maid.setItemInHand(InteractionHand.MAIN_HAND, inv.getStackInSlot(slot));
-        inv.setStackInSlot(slot, hand);
+        ItemStack handItem = maid.getItemInHand(hand);
+        maid.setItemInHand(hand, inv.getStackInSlot(slot));
+        inv.setStackInSlot(slot, handItem);
     }
 
     public static void mergeSameStack(IItemHandler inv) {

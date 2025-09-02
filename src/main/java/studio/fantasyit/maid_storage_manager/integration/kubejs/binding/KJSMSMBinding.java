@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.integration.kubejs.binding;
 
 import net.minecraft.resources.ResourceLocation;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.common.*;
@@ -47,6 +48,15 @@ public class KJSMSMBinding {
     public final ResourceLocation CRAFT_ACTION_RS;
     public final ResourceLocation CRAFT_ACTION_SMITHING = SmithingType.TYPE;
     public final ResourceLocation CRAFT_ACTION_STONECUTTING = StoneCuttingType.TYPE;
+
+    public final ActionOption<Boolean> ACTION_OPTION_OPTIONAL = ActionOption.OPTIONAL;
+    public final ActionOption<Boolean> ACTION_OPTION_WAIT = CommonIdleAction.OPTION_WAIT;
+    public final ActionOption<CommonUseAction.USE_TYPE> ACTION_OPTION_USE_METHOD = CommonUseAction.OPTION_USE_METHOD;
+    public final ActionOption<CommonAttackAction.USE_TYPE> ACTION_OPTION_ATTACK_METHOD = CommonAttackAction.OPTION_USE_METHOD;
+
+    public final long ACTION_MARK_HAND_RELATED = CraftAction.MARK_HAND_RELATED;
+    public final long ACTION_MARK_NO_OCCUPATION = CraftAction.MARK_NO_OCCUPATION;
+    public final long ACTION_MARK_NO_MARKS = CraftAction.MARK_NO_MARKS;
 
     public final ResourceLocation STORAGE_ITEM_HANDLER = ItemHandlerStorage.TYPE;
     public final ResourceLocation STORAGE_AE2;

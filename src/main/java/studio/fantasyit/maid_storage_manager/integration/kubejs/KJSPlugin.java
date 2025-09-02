@@ -47,10 +47,13 @@ public class KJSPlugin implements KubeJSPlugin {
         bindings.add("MaidStorageManagerUtil", kjsmsmUtilities);
         bindings.add("MSMU", kjsmsmUtilities);
         KJSMSMTypeCasting kjsmsmTypeCasting = new KJSMSMTypeCasting();
-        bindings.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
-        bindings.add("MSMTC", kjsmsmTypeCasting);
-        KJSMSMCompacted kjsmsmCompacted = new KJSMSMCompacted(kjsmsmBinding, kjsmsmUtilities, kjsmsmTypeCasting);
-        bindings.add("MaidStorageManager", kjsmsmCompacted);
-        bindings.add("MSM", kjsmsmCompacted);
+        event.add("MaidStorageManagerTypeCasting", kjsmsmTypeCasting);
+        event.add("MSMTC", kjsmsmTypeCasting);
+        KJSMSMMemories kjsmsmMemories = new KJSMSMMemories();
+        event.add("MaidStorageManagerMemories", kjsmsmMemories);
+        event.add("MSMM", kjsmsmMemories);
+        KJSMSMCompacted kjsmsmCompacted = new KJSMSMCompacted(kjsmsmBinding, kjsmsmUtilities, kjsmsmTypeCasting, kjsmsmMemories);
+        event.add("MaidStorageManager", kjsmsmCompacted);
+        event.add("MSM", kjsmsmCompacted);
     }
 }

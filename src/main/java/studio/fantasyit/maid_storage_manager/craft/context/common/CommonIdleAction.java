@@ -55,8 +55,8 @@ public class CommonIdleAction extends AbstractCraftActionContext {
 
     @Override
     public Result start() {
-        boolean u = craftGuideStepData.actionType.getOptionSelection(OPTION_WAIT, craftGuideStepData).orElse(false);
-        String timeStr = craftGuideStepData.actionType.getOptionValue(OPTION_WAIT, craftGuideStepData);
+        boolean u = craftGuideStepData.getOptionSelection(OPTION_WAIT).orElse(false);
+        String timeStr = craftGuideStepData.getOptionValue(OPTION_WAIT);
         if (timeStr.isBlank())
             timeStr = "0";
         int time = Integer.parseInt(timeStr);

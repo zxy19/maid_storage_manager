@@ -1,9 +1,11 @@
 package studio.fantasyit.maid_storage_manager.craft.action;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -71,6 +73,14 @@ public record ActionOption<T>(
         }
     }
 
+    public ActionOption(ResourceLocation id, String defaultValue, @NotNull BiConverter<Integer, T> converter, @NotNull ValuePredicatorOrGetter<T> valuePredicatorOrGetter) {
+        this(id, new Component[0], new ResourceLocation[0], defaultValue, converter, valuePredicatorOrGetter);
+    }
+
+    public static ActionOption<Boolean> valueOnly(ResourceLocation id, String defaultValue) {
+        return new ActionOption<>(id, defaultValue, new BiConverter<>(value -> true, value -> 0), ValuePredicatorOrGetter.predicator(value -> true));
+    }
+
     public static final ActionOption<Boolean> OPTIONAL = new ActionOption<>(
             new ResourceLocation("maid_storage_manager", "optional"),
             new Component[]{
@@ -89,4 +99,60 @@ public record ActionOption<T>(
                             Component.translatable("gui.maid_storage_manager.craft_guide.common.required")
             )
     );
+
+    private void assertValid(CraftGuideStepData craftGuideStepData) {
+        if (craftGuideStepData.actionType.options().stream().noneMatch(o -> o.id().equals(id)))
+            throw new IllegalArgumentException("Option " + id + " not found on action " + craftGuideStepData.action);
+    }
+
+    public Optional<T> getOptionSelection(CraftGuideStepData craftGuideStepData) {
+        assertValid(craftGuideStepData);
+        CompoundTag extraData = craftGuideStepData.getExtraData();
+        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).contains("selection")) {
+            return Optional.of(converter.ab(extraData.getCompound(id.toString()).getInt("selection")));
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Integer> getOptionSelectionId(CraftGuideStepData craftGuideStepData) {
+        assertValid(craftGuideStepData);
+        CompoundTag extraData = craftGuideStepData.getExtraData();
+        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).contains("selection")) {
+            return Optional.of(extraData.getCompound(id.toString()).getInt("selection"));
+        }
+        return Optional.empty();
+    }
+
+    public String getOptionValue(CraftGuideStepData craftGuideStepData) {
+        assertValid(craftGuideStepData);
+        CompoundTag extraData = craftGuideStepData.getExtraData();
+        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).contains("value")) {
+            return extraData.getCompound(id.toString()).getString("value");
+        }
+        return defaultValue();
+    }
+
+    public void setOptionSelection(CraftGuideStepData craftGuideStepData, T selection) {
+        assertValid(craftGuideStepData);
+        setOptionSelectionId(craftGuideStepData, converter.ba(selection));
+    }
+
+    public void setOptionSelectionId(CraftGuideStepData craftGuideStepData, int selection) {
+        assertValid(craftGuideStepData);
+        CompoundTag extraData = craftGuideStepData.getExtraData();
+        if (!extraData.contains(id.toString()))
+            extraData.put(id.toString(), new CompoundTag());
+        extraData.getCompound(id.toString()).putInt("selection", selection);
+        craftGuideStepData.setExtraData(extraData);
+    }
+
+    public void setOptionValue(CraftGuideStepData craftGuideStepData, String value) {
+        assertValid(craftGuideStepData);
+        CompoundTag extraData = craftGuideStepData.getExtraData();
+        if (!extraData.contains(id.toString()))
+            extraData.put(id.toString(), new CompoundTag());
+        extraData.getCompound(id.toString()).putString("value", value);
+        craftGuideStepData.setExtraData(extraData);
+    }
+
 }

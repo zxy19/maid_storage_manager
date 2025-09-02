@@ -6,7 +6,6 @@ import com.hollingsworth.arsnouveau.common.crafting.recipes.EnchantingApparatusR
 import com.hollingsworth.arsnouveau.setup.registry.BlockRegistry;
 import com.hollingsworth.arsnouveau.setup.registry.RecipeRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -67,26 +66,20 @@ public abstract class GeneratorArsNouveauEnchantApp<T extends EnchantingApparatu
                                                     new Target(ItemHandlerStorage.TYPE, blockPos.get(i)),
                                                     List.of(items.get(i)),
                                                     List.of(),
-                                                    CommonPlaceItemAction.TYPE,
-                                                    false,
-                                                    new CompoundTag()
+                                                    CommonPlaceItemAction.TYPE
                                             ));
                                         }
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, pos),
                                                 List.of(items.get(items.size() - 1)),
                                                 List.of(),
-                                                CommonPlaceItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonPlaceItemAction.TYPE
                                         ));
                                         steps.add(new CraftGuideStepData(
                                                 new Target(ItemHandlerStorage.TYPE, pos),
                                                 List.of(),
                                                 List.of(recipe.result()),
-                                                CommonTakeItemAction.TYPE,
-                                                false,
-                                                new CompoundTag()
+                                                CommonTakeItemAction.TYPE
                                         ));
                                         return new CraftGuideData(
                                                 steps,

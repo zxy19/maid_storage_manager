@@ -5,7 +5,6 @@ import com.tacz.guns.init.ModRecipe;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -13,6 +12,9 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.type.TaczType;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 
@@ -48,14 +50,16 @@ public class JEITaczRecipeTransfer implements IUniversalRecipeTransferHandler<Ta
             if (allRecipes.stream().noneMatch(r -> r.getB().equals(holder.id().toString())))
                 return new IncompatibleError();
             if (doTransfer) {
-                CompoundTag data = new CompoundTag();
-                data.putString("recipe_id", holder.id().toString());
-                data.putString("block_id", container.getBlockId().toString());
                 PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                         CraftGuideGuiPacket.Type.EXTRA,
                         0,
+                        CraftGuideGuiPacket.singleValue(recipe.getId().toString())
+                ));
+                PacketDistributor.sendToServer(new CraftGuideGuiPacket(
+                        CraftGuideGuiPacket.Type.OPTION,
+                        CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
                         0,
-                        data
+                        CraftGuideGuiPacket.singleValue(container.getBlockId().toString())
                 ));
             }
             return null;

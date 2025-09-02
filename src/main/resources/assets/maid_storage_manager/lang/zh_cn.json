@@ -250,7 +250,7 @@
   "gui.maid_storage_manager.craft_guide.common.down": "向下",
   "gui.maid_storage_manager.craft_guide.common.idle_second": "等待时间：秒",
   "gui.maid_storage_manager.craft_guide.common.idle_tick": "等待时间：刻",
-  "gui.maid_storage_manager.craft_guide.common.no_split": "Merge Stacks",
+  "gui.maid_storage_manager.craft_guide.common.no_split": "分离",
   "gui.maid_storage_manager.craft_guide.common.optional": "可选步骤",
   "gui.maid_storage_manager.craft_guide.common.page_down": "下一页",
   "gui.maid_storage_manager.craft_guide.common.page_up": "上一页",
@@ -443,5 +443,13 @@
   "gui.maid_storage_manager.config.crafting_repeat_count": "最大合成层重复",
   "config.maid_storage_manager.crafting.max_layer_limit.tooltip": "合成计算的最大层数量，设置过大的值可能导致巨大延迟",
   "config.maid_storage_manager.crafting.max_layer_limit": "最大层限制",
-  "config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel": "使用工厂并行"
+  "config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel": "使用工厂并行",
+  "gui.maid_storage_manager.craft_guide.common.merge": "堆叠",
+  "gui.maid_storage_manager.craft_guide.common.no_step_selected": "未选择步骤",
+  "gui.maid_storage_manager.craft_guide.common.step_index": "步骤 #%s",
+  "gui.maid_storage_manager.craft_guide.common.step_pos": "[%s,%s,%s],%s",
+  "gui.maid_storage_manager.craft_guide.common.use_single": "单击",
+  "gui.maid_storage_manager.craft_guide.common.use_long": "长按",
+  "gui.maid_storage_manager.craft_guide.common.attack_destroy": "破坏方块",
+  "gui.maid_storage_manager.craft_guide.common.attack_single": "单次攻击"
 }

@@ -10,6 +10,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.network.PacketDistributor;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.craft.CraftManager;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.type.TaczType;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.handler.EmiRecipeHandler;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 
@@ -59,14 +62,17 @@ public class EMITaczRecipeTransfer extends EmiRecipeHandler<TaczCraftMenu, GunSm
             return false;
         if (allRecipes.stream().noneMatch(r -> r.getB().equals(holder.id().toString())))
             return false;
-        CompoundTag data = new CompoundTag();
-        data.putString("recipe_id", holder.id().toString());
-        data.putString("block_id", context.getScreenHandler().getBlockId().toString());
         PacketDistributor.sendToServer(new CraftGuideGuiPacket(
-                CraftGuideGuiPacket.Type.EXTRA,
+                CraftGuideGuiPacket.Type.OPTION,
+                CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
                 0,
+                CraftGuideGuiPacket.singleValue(gstr.getId().toString())
+        ));
+        PacketDistributor.sendToServer(new CraftGuideGuiPacket(
+                CraftGuideGuiPacket.Type.OPTION,
+                CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
                 0,
-                data
+                CraftGuideGuiPacket.singleValue( context.getScreenHandler().getBlockId().toString())
         ));
         return true;
     }

@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.ActionOptionOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.CraftGuideOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.GeneratorConfigOperator;
 import studio.fantasyit.maid_storage_manager.integration.kubejs.helper.TargetOperator;
@@ -22,6 +23,7 @@ public class KJSMSMUtilities {
     public TargetOperator TARGETS = TargetOperator.INSTANCE;
     public CraftGuideOperator CRAFT_GUIDES = CraftGuideOperator.INSTANCE;
     public GeneratorConfigOperator GENERATOR_CONFIGS = GeneratorConfigOperator.INSTANCE;
+    public ActionOptionOperator ACTION_OPTIONS = ActionOptionOperator.INSTANCE;
 
     public ViewedInventoryMemory getViewed(EntityMaid maid) {
         return MemoryUtil.getViewedInventory(maid);

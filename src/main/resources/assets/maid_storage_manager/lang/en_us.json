@@ -254,7 +254,7 @@
   "gui.maid_storage_manager.craft_guide.common.down": "Down",
   "gui.maid_storage_manager.craft_guide.common.idle_second": "Idle time: Seconds",
   "gui.maid_storage_manager.craft_guide.common.idle_tick": "Idle time: Ticks",
-  "gui.maid_storage_manager.craft_guide.common.no_split": "Merge Stacks",
+  "gui.maid_storage_manager.craft_guide.common.no_split": "Stack",
   "gui.maid_storage_manager.craft_guide.common.optional": "Optional Step",
   "gui.maid_storage_manager.craft_guide.common.page_down": "Page Down",
   "gui.maid_storage_manager.craft_guide.common.page_up": "Page Up",
@@ -268,7 +268,7 @@
   "gui.maid_storage_manager.craft_guide.common.side_south": "South",
   "gui.maid_storage_manager.craft_guide.common.side_up": "Up",
   "gui.maid_storage_manager.craft_guide.common.side_west": "West",
-  "gui.maid_storage_manager.craft_guide.common.split": "Split Stacks",
+  "gui.maid_storage_manager.craft_guide.common.split": "Split",
   "gui.maid_storage_manager.craft_guide.common.up": "Up",
   "gui.maid_storage_manager.craft_guide.tacz.amount": "Amt. %s",
   "gui.maid_storage_manager.create_stock_button": "Create Stock Manager GUI",
@@ -444,8 +444,12 @@
   "config.maid_storage_manager.crafting.max_layer_limit.tooltip": "Max layer count limit when calculating plan. Increasing this value may cause a large lagging in some cases.",
   "config.maid_storage_manager.crafting.max_layer_limit": "Max Layer Limit",
   "config.maid_storage_manager.crafting.generating.mekanism.general.use_factory_parallel": "Use Factory Parallel",
-  "gui.maid_storage_manager.craft_guide.common.merge": "Merge",
+  "gui.maid_storage_manager.craft_guide.common.merge": "Stack",
   "gui.maid_storage_manager.craft_guide.common.no_step_selected": "No Step Selected",
   "gui.maid_storage_manager.craft_guide.common.step_index": "Step #%s",
-  "gui.maid_storage_manager.craft_guide.common.step_pos": "[%s,%s,%s],%s"
+  "gui.maid_storage_manager.craft_guide.common.step_pos": "[%s,%s,%s],%s",
+  "gui.maid_storage_manager.craft_guide.common.use_single": "Single Click",
+  "gui.maid_storage_manager.craft_guide.common.use_long": "Long Press",
+  "gui.maid_storage_manager.craft_guide.common.attack_destroy": "Destroy",
+  "gui.maid_storage_manager.craft_guide.common.attack_single": "Single Attack"
 }
