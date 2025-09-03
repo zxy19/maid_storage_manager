@@ -152,4 +152,9 @@ public class FilterContainer implements Container {
             collected[i].setValue(tmp.collected());
         }
     }
+
+    @Override
+    public boolean canTakeItem(Container p_273520_, int p_272681_, ItemStack p_273702_) {
+        return false;
+    }
 }
