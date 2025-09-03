@@ -42,7 +42,13 @@ public class CraftNode extends Node {
             }
         }
     }
+
     public void addCraftGuideSupplier(Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         this.craftGuideSupplier.add(craftGuideSupplier);
+    }
+
+    @Override
+    public String toString() {
+        return "CraftNode#" + id + "[" + recipeId + "]";
     }
 }

@@ -1,5 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
+
 /**
  * 记录每个节点在当前子段的上次访问次数，用于阻断正权环
  */
@@ -14,11 +16,11 @@ public class VisitRecorder {
     }
 
 
-    public void minStepRequire(AbstractBiCraftGraph.Node index, int value) {
+    public void minStepRequire(Node index, int value) {
         minStepRequire(index.id, value);
     }
 
-    public int minStepRequire(AbstractBiCraftGraph.Node index) {
+    public int minStepRequire(Node index) {
         return minStepRequire(index.id);
     }
 

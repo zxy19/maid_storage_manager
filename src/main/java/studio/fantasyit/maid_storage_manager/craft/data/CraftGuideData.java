@@ -195,6 +195,17 @@ public class CraftGuideData {
         return false;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CraftGuideData{");
+        getInput().forEach(itemStack -> builder.append(itemStack.getItem()).append(","));
+        builder.append("->");
+        getOutput().forEach(itemStack -> builder.append(itemStack.getItem()).append(","));
+        builder.append("}");
+        return builder.toString();
+    }
+
     public CraftGuideData copy() {
         return new CraftGuideData(
                 steps.stream().map(CraftGuideStepData::copy).toList(),

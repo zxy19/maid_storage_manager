@@ -12,4 +12,9 @@ public class ItemNode extends Node {
         this.itemStack = itemStack;
         this.isAvailable = available;
     }
+
+    @Override
+    public String toString() {
+        return "ItemNode#" + id + "[" + itemStack.getItem() + "]";
+    }
 }

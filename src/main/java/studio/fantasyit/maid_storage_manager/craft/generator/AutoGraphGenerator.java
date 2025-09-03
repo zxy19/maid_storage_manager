@@ -14,6 +14,8 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ThreadedGeneratorGraph;
@@ -25,7 +27,7 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.*;
 
-public class AutoGraphGenerator {
+public class AutoGraphGenerator implements IDebugContextSetter {
     private static final ResourceLocation INTERNAL_TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "_maid_storage_internal_existed");
     private final EntityMaid maid;
     protected final ICachableGeneratorGraph graph;
@@ -39,6 +41,7 @@ public class AutoGraphGenerator {
     protected int craftGeneratorTypeIndex = 0;
     protected double currentMinDistance = Double.MAX_VALUE;
     protected BlockPos minPos;
+    private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
     protected ICachableGeneratorGraph getGraph(RegistryAccess registryAccess) {
         return switch (Config.craftingGenerator) {
@@ -86,6 +89,7 @@ public class AutoGraphGenerator {
         }
         graph.setItems(inventory.stream().map(i -> i.itemStack).toList(), itemList);
         graph.setCurrentGeneratorType(INTERNAL_TYPE, true);
+        if (graph instanceof IDebugContextSetter i) i.setDebugContext(debugContext);
         hasExisted.forEach(craftGuideData -> {
             graph.addRecipe(
                     ResourceLocation.fromNamespaceAndPath("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
@@ -116,6 +120,7 @@ public class AutoGraphGenerator {
                 if (generator.allowMultiPosition() || !Config.generateNearestOnly) {
                     count++;
                     graph.setCurrentGeneratorType(generator);
+                    debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR, "%s type generating at %s", generator, next);
                     generator.generate(inventory, maid.level(), next, graph, recognizedTypePositions);
                     recognizedTypePositions.get(generator.getType()).add(next);
                 } else {
@@ -132,6 +137,7 @@ public class AutoGraphGenerator {
         }
         if (minPos != null) {
             graph.setCurrentGeneratorType(generator);
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR, "%s type generating at %s", generator, minPos);
             generator.generate(inventory, maid.level(), minPos, graph, recognizedTypePositions);
             recognizedTypePositions.get(generator.getType()).add(minPos);
         }
@@ -181,5 +187,11 @@ public class AutoGraphGenerator {
 
     public void cache() {
         GraphCache.putCache(maid, recognizedTypePositions, graph);
+    }
+
+    @Override
+    public void setDebugContext(CraftingDebugContext context) {
+        this.debugContext = context;
+        context.convey(graph);
     }
 }

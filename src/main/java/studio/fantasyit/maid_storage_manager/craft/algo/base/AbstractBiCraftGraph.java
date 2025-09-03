@@ -6,17 +6,24 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.SimCraftNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.PrefilterByChunk;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.*;
 
-public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
+public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugContextSetter {
     public Stack<Node> listed = new Stack<>();
     public Map<Integer, Integer> inStack = new HashMap<>();
     public int maxDepthAllow = Integer.MAX_VALUE;
+    protected CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
     public int addInStack(Node node) {
         if (!inStack.containsKey(node.id)) {
@@ -46,104 +53,6 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
             pop.clearMaxSuccessAfter = false;
             if (pop.id == node.id)
                 break;
-        }
-    }
-
-    public static class Node {
-        //不降序列优化
-        public int maxSuccess;
-        public boolean listed;
-        public boolean clearMaxSuccessAfter;
-        public int maxSuccessCount;
-        public int lastMaxSuccess;
-        //一般
-        public int id;
-        public boolean related;
-        public final List<Pair<Integer, Integer>> edges;
-        public final List<Pair<Integer, Integer>> revEdges;
-        //强连通分量ID
-        public int sccId;
-
-        public Node(int id, boolean related) {
-            this.id = id;
-            this.related = related;
-            this.edges = new ArrayList<>();
-            this.revEdges = new ArrayList<>();
-            maxSuccess = Integer.MAX_VALUE;
-            lastMaxSuccess = maxSuccess;
-            maxSuccessCount = 0;
-            clearMaxSuccessAfter = false;
-            listed = false;
-        }
-
-        public void addEdge(Node to, int weight) {
-            this.edges.add(new Pair<>(to.id, weight));
-            to.revEdges.add(new Pair<>(this.id, weight));
-        }
-    }
-
-    public static class ItemNode extends Node {
-        public final ItemStack itemStack;
-        public int required;
-        public int crafted;
-        public int count;
-        public boolean isLoopedIngredient;
-        public int loopInputIngredientCount;
-        public int singleTimeCount;
-        public boolean hasKeepIngredient;
-        public int maxLack;
-
-        public int bestRecipeStartAt;
-        public boolean bestRecipeStartAtCalculating;
-
-        public ItemNode(int id, boolean related, ItemStack itemStack) {
-            super(id, related);
-            this.itemStack = itemStack;
-            this.count = 0;
-            reinit();
-        }
-
-        public void reinit() {
-            this.crafted = 0;
-            this.required = 0;
-            this.isLoopedIngredient = false;
-            this.loopInputIngredientCount = 0;
-            this.hasKeepIngredient = false;
-            this.maxLack = 0;
-            this.singleTimeCount = 1;
-            this.bestRecipeStartAt = -1;
-            this.bestRecipeStartAtCalculating = false;
-        }
-
-        public void addCount(int count) {
-            this.count += count;
-        }
-
-        public int getCurrentRemain() {
-            return this.crafted + this.count - this.required;
-        }
-    }
-
-    public static class CraftNode extends Node {
-        public final CraftGuideData craftGuideData;
-        public final List<CraftGuideData> sameData;
-        public int scheduled;
-        public boolean hasLoopIngredient;
-
-        public CraftNode(int id, boolean related, CraftGuideData craftGuideData) {
-            super(id, related);
-            this.craftGuideData = craftGuideData;
-            this.sameData = new ArrayList<>(List.of(craftGuideData));
-            this.scheduled = 0;
-            this.hasLoopIngredient = false;
-        }
-
-        public void addScheduled(int count) {
-            this.scheduled += count;
-        }
-
-        public void addSame(CraftGuideData data) {
-            this.sameData.add(data);
         }
     }
 
@@ -196,9 +105,13 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
         return nodes.get(a);
     }
 
-    public AbstractBiCraftGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
+    public AbstractBiCraftGraph() {
         this.nodes = new ArrayList<>();
         this.itemNodeMap = new HashMap<>();
+    }
+
+    public AbstractBiCraftGraph(List<Pair<ItemStack, Integer>> items, List<CraftGuideData> craftGuides) {
+        this();
         for (Pair<ItemStack, Integer> item : items) {
             ItemNode itemNode = getItemNodeOrCreate(item.getA());
             itemNode.addCount(item.getB());
@@ -302,6 +215,9 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
                 for (int i = 0; i < outputNodes.size(); i++) {
                     outputNodes.get(i).addEdge(craftNode, outputCounts.get(i));
                 }
+            } else if (node instanceof SimCraftNode scn) {
+                scn.fromId.forEach(p -> getNode(p.getA()).addEdge(scn, p.getB()));
+                scn.toId.forEach(p -> scn.addEdge(getNode(p.getA()), p.getB()));
             }
         }
         if (buildGraphIndex >= nodes.size()) {
@@ -385,5 +301,10 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike {
 
     public int getNodeCount() {
         return nodes.size();
+    }
+
+    @Override
+    public void setDebugContext(CraftingDebugContext context) {
+        debugContext = context;
     }
 }

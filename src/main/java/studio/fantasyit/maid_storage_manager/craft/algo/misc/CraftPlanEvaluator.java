@@ -3,6 +3,8 @@ package studio.fantasyit.maid_storage_manager.craft.algo.misc;
 
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNodeBasic;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNodeBasic;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,7 @@ public enum CraftPlanEvaluator {
             return results
                     .stream()
                     .map(t -> graph.getNode(t.index))
-                    .filter(t -> t instanceof AbstractBiCraftGraph.CraftNode)
+                    .filter(t -> t instanceof CraftNodeBasic)
                     .map(t -> t.id)
                     .collect(Collectors.toSet())
                     .size();
@@ -34,7 +36,7 @@ public enum CraftPlanEvaluator {
             return results
                     .stream()
                     .map(t -> graph.getNode(t.index))
-                    .filter(t -> t instanceof AbstractBiCraftGraph.ItemNode)
+                    .filter(t -> t instanceof ItemNodeBasic)
                     .map(t -> t.id)
                     .collect(Collectors.toSet())
                     .size();
@@ -46,7 +48,7 @@ public enum CraftPlanEvaluator {
             return results
                     .stream()
                     .map(t -> graph.getNode(t.index))
-                    .filter(t -> t instanceof AbstractBiCraftGraph.ItemNode)
+                    .filter(t -> t instanceof ItemNodeBasic)
                     .map(t -> t.id)
                     .filter(t -> changeMap.get(t) < 0)
                     .collect(Collectors.toSet())

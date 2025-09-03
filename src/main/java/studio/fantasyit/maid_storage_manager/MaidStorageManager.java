@@ -18,6 +18,7 @@ public class MaidStorageManager {
         CreativeTabRegistry.register(modEventBus);
         RecipesRegistry.register(modEventBus);
         EntityRegistry.init(modEventBus);
+        ArgumentRegistry.init(modEventBus);
         SoundEventRegistry.register(modEventBus);
         DataComponentRegistry.register(modEventBus);
         DataAttachmentRegistry.register(modEventBus);

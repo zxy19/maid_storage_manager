@@ -32,4 +32,21 @@ public class IngredientNode extends Node {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("IngredientNode#").append(id).append("[");
+        for (int i = 0; i < possibleItems.size(); i++) {
+            sb.append(possibleItems.get(i));
+            if (i >= 3) {
+                sb.append(",...");
+                break;
+            } else {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
 }

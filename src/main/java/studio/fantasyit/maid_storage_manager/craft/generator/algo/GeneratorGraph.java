@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.CraftNode;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.IngredientNode;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.ItemNode;
@@ -25,7 +27,10 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.*;
 import java.util.function.Function;
 
-public class GeneratorGraph implements ICachableGeneratorGraph {
+public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSetter {
+
+
+    private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
     protected record AddRecipeData(ResourceLocation id,
                                    List<Ingredient> ingredients,
@@ -42,6 +47,10 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
     public int pushedSteps = 0;
     public int processedSteps = 0;
 
+    @Override
+    public void setDebugContext(CraftingDebugContext context) {
+        debugContext = context;
+    }
 
     List<Node> nodes;
     HashMap<ResourceLocation, List<ItemNode>> itemNodeMap = new HashMap<>();
@@ -259,8 +268,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
                              ResourceLocation type,
                              boolean isOneTime
     ) {
-        if (notToAddRecipe.contains(id) || notToAddType.contains(type))
+        if (notToAddRecipe.contains(id) || notToAddType.contains(type)) {
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR_RECIPE, "recipe blocked %s", id);
             return 1;
+        }
+        debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR_RECIPE, "recipe add %s", id);
         processedSteps++;
         int affectFactor = ingredients.size() + 1;
         if (RecipeIngredientCache.isCached(id)) {
@@ -390,6 +402,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
                 return false;
             Node node = reversedQueue.poll();
             node.related = true;
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR, "%s marked related", node);
             processedSteps++;
             node.forEachRev((toId, weight) -> {
                 Node to = getNode(toId);
@@ -412,6 +425,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph {
     }
 
     public void addNewCraft(CraftNode craftNode) {
+        debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR, "%s generated", craftNode);
         ArrayList<Integer> selections = new ArrayList<>();
         for (int i = 0; i < craftNode.independentIngredients.size(); i++)
             selections.add(0);

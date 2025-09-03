@@ -9,8 +9,12 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.VisitRecorder;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNodeBasic;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNodeBasic;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +28,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     private int speed = 90;
     private boolean waitInit = false;
 
-    record DfsLayerItem(ItemNode node, int maxRequire, int stepCount, boolean estimating,
+    record DfsLayerItem(ItemNodeBasic node, int maxRequire, int stepCount, boolean estimating,
                         MutableInt i,
                         MutableInt realMaxRequire,
                         MutableInt remainToCraft,
@@ -37,7 +41,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     ) {
     }
 
-    record DfsLayerStartAt(ItemNode node, int maxRequire,
+    record DfsLayerStartAt(ItemNodeBasic node, int maxRequire,
                            MutableInt i,
                            Integer historyId,
                            int resultId,
@@ -49,7 +53,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     ) {
     }
 
-    record DfsLayerCraft(CraftNode node, int maxRequire, boolean estimating,
+    record DfsLayerCraft(CraftNodeBasic node, int maxRequire, boolean estimating,
                          MutableInt simulateRequire,
                          MutableInt totalSuccess,
                          MutableInt restRequire,
@@ -75,14 +79,15 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
 
     private void dfsItemPre(DfsLayerItem context) {
-        ItemNode node = context.node;
+        ItemNodeBasic node = context.node;
         if (!node.listed) {
             node.listed = true;
             listed.add(node);
         }
         int maxRequire = context.maxRequire;
         int stepCount = context.stepCount;
-        logger.log("Item use available: %d", node.getCurrentRemain());
+        debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Start Prepare ItemNode %s", node);
+        debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item use available: %d", node.getCurrentRemain());
         //CASE:物品数量够用：直接返回不需要计算方案
         if (node.getCurrentRemain() >= maxRequire) {
             if (!node.isLoopedIngredient || node.hasKeepIngredient || node.loopInputIngredientCount == 0) {
@@ -140,7 +145,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         if (!node.hasKeepIngredient && node.loopInputIngredientCount > 0) {
             maxRequire += node.loopInputIngredientCount;
             node.hasKeepIngredient = true;
-            logger.log("Add keep loop use %s : %d", node.itemStack, node.loopInputIngredientCount);
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Add keep loop use %s : %d", node, node.loopInputIngredientCount);
             keepCurrently = true;
             //打断环检测，因为此时的需求量发生突变
             context.visit().setValue(new VisitRecorder(getNodeCount()));
@@ -155,7 +160,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
 
         context.remainToCraft.setValue(maxRequire - stepCost);
-        logger.log("Item %s use -= %d", node.itemStack, stepCost);
+        debugContext.log(CraftingDebugContext.TYPE.CRAFT, "%s use -= %d", node, stepCost);
         pushHistory(node, HistoryRecord.RECORD_REQUIRED, stepCost);
 
         context.oMaxRequire.setValue(oMaxRequire);
@@ -173,33 +178,33 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
     private void dfsItemLoopCall(DfsLayerItem context) {
         int i = context.i.getValue();
-        ItemNode node = context.node;
+        ItemNodeBasic node = context.node;
         MutableInt remainToCraft = context.remainToCraft;
 
         int to = node.edges.get(i).getA();
         int weight = node.edges.get(i).getB();
-        CraftNode toNode = (CraftNode) getNode(to);
+        CraftNodeBasic toNode = (CraftNodeBasic) getNode(to);
         int maxRequiredForCurrentCraftNode = (remainToCraft.getValue() + weight - 1) / weight;
         if (toNode.hasLoopIngredient)
             maxRequiredForCurrentCraftNode = Math.min((node.singleTimeCount + weight - 1) / weight, maxRequiredForCurrentCraftNode);
-        logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
+        debugContext.logEntryNewLevel(CraftingDebugContext.TYPE.CRAFT, "%s * %d", toNode, maxRequiredForCurrentCraftNode);
         dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode, context.visit.getValue(), context.estimating);
     }
 
     private void dfsItemLoopReturn(DfsLayerItem context, int available) {
-        ItemNode node = context.node;
+        ItemNodeBasic node = context.node;
         int i = (context.i.getValue() + context.startAt.getValue()) % node.edges.size();
         int weight = node.edges.get(i).getB();
-        logger.logExitLevel("Craft Finish=%d", available);
+        debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Craft Finish=%d", available);
         int collect = Math.min(available * weight, context.remainToCraft.getValue());
         if (available > 0) {
             //当前层是保留物品层。需要计算保留物品。即保证本层扣除结束后，至少剩余LoopInput的数量
             if (context.keepCurrently.getValue()) {
                 collect = Math.min(node.getCurrentRemain() - node.loopInputIngredientCount, collect);
                 if (collect < 0) collect = 0;
-                logger.log("Item keep loop toTake=%d in totalSuccess=%d", collect, available * weight);
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item keep loop toTake=%d in totalSuccess=%d", collect, available * weight);
             }
-            logger.log("Item use -= %d", collect);
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item use -= %d", collect);
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, collect);
         } else {
             context.i.add(1);
@@ -215,7 +220,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             node.maxLack = Math.max(node.maxLack, context.remainToCraft.getValue());
             int crafted = context.realMaxRequire.getValue() - context.remainToCraft.getValue();
             if (context.keepCurrently.getValue() && crafted > context.oMaxRequire.getValue()) {
-                logger.log("Item exceed += %d", crafted - context.oMaxRequire.getValue());
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item exceed += %d", crafted - context.oMaxRequire.getValue());
                 pushHistory(node, HistoryRecord.RECORD_CRAFTED, crafted - context.oMaxRequire.getValue());
             }
             if (context.remainToCraft.getValue() > 0) {
@@ -236,7 +241,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         }
     }
 
-    public void dfsItemAdd(ItemNode node, int maxRequire, int stepCount, VisitRecorder visit, boolean estimating) {
+    private void dfsItemAdd(ItemNodeBasic node, int maxRequire, int stepCount, VisitRecorder visit, boolean estimating) {
         DfsLayerItem push = (DfsLayerItem) layers.push(new DfsLayerItem(node,
                 maxRequire,
                 stepCount,
@@ -255,7 +260,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     }
 
 
-    public void dfsStartAtAdd(ItemNode node, VisitRecorder visit, int maxRequire) {
+    private void dfsStartAtAdd(ItemNodeBasic node, VisitRecorder visit, int maxRequire) {
         layers.add(new DfsLayerStartAt(node, maxRequire,
                 new MutableInt(0),
                 historyId.getValue(),
@@ -286,7 +291,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         }
     }
 
-    public void dfsStartAtCall(DfsLayerStartAt context) {
+    private void dfsStartAtCall(DfsLayerStartAt context) {
         while (context.i.getValue() < context.node.edges.size())
             if (context.node.bestRecipeStartAt != -1 && context.i.getValue() != context.node.bestRecipeStartAt)
                 context.i.add(1);
@@ -304,18 +309,18 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
         int to = context.node.edges.get(context.i.getValue()).getA();
         int weight = context.node.edges.get(context.i.getValue()).getB();
-        CraftNode toNode = (CraftNode) getNode(to);
+        CraftNodeBasic toNode = (CraftNodeBasic) getNode(to);
         int maxRequiredForCurrentCraftNode = (context.maxRequire + weight - 1) / weight;
         if (toNode.hasLoopIngredient)
             maxRequiredForCurrentCraftNode = (context.node.singleTimeCount + weight - 1) / weight;
-        logger.logEntryNewLevel("Craft[%d] * %d", toNode.id, maxRequiredForCurrentCraftNode);
+        debugContext.logEntryNewLevel(CraftingDebugContext.TYPE.CRAFT, "%s * %d", toNode, maxRequiredForCurrentCraftNode);
         context.maxRequiredForCurrentCraftNode.setValue(maxRequiredForCurrentCraftNode);
         dfsCraftAdd(toNode, maxRequiredForCurrentCraftNode, context.visit().getValue(), true);
     }
 
-    public void dfsStartAtRet(DfsLayerStartAt context, int available) {
+    private void dfsStartAtRet(DfsLayerStartAt context, int available) {
         int weight = context.node.edges.get(context.i.getValue()).getB();
-        logger.logExitLevel("Craft Finish=%d", available);
+        debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Craft Finish=%d", available);
         if (context.node.isLoopedIngredient && available == context.maxRequiredForCurrentCraftNode.getValue())
             available = context.maxRequiredForCurrentCraftNode.getValue();
         int collect = Math.min(available * weight, context.maxRequire);
@@ -339,7 +344,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
         context.i.add(1);
     }
 
-    public void dfsCraftAdd(CraftNode toNode, int maxRequiredForCurrentCraftNode, VisitRecorder visit, boolean estimating) {
+    public void dfsCraftAdd(CraftNodeBasic toNode, int maxRequiredForCurrentCraftNode, VisitRecorder visit, boolean estimating) {
         DfsLayerCraft push = (DfsLayerCraft) layers.push(new DfsLayerCraft(
                 toNode,
                 maxRequiredForCurrentCraftNode,
@@ -395,9 +400,9 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
             context.i.setValue(0);
         }
         Pair<Integer, Integer> edge = context.node.edges.get(context.i.getValue());
-        ItemNode toNode = (ItemNode) getNode(edge.getA());
+        ItemNodeBasic toNode = (ItemNodeBasic) getNode(edge.getA());
 
-        logger.logEntryNewLevel("Item %s * %d", toNode.itemStack, context.simulateRequire.getValue() * edge.getB());
+        debugContext.logEntryNewLevel(CraftingDebugContext.TYPE.CRAFT, "Try crafting %s * %d", toNode, context.simulateRequire.getValue() * edge.getB());
         dfsItemAdd(toNode,
                 context.simulateRequire.getValue() * edge.getB(),
                 edge.getB(),
@@ -407,9 +412,9 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
     public void dfsCraftRet(DfsLayerCraft context, int currentRequire) {
         Pair<Integer, Integer> edge = context.node.edges.get(context.i.getValue());
-        logger.log("Item Finish=%d", currentRequire);
+        debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item Finish=%d", currentRequire);
         currentRequire /= edge.getB();
-        logger.logExitLevel("Co Craft Finish=%d", currentRequire);
+        debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Co Craft Finish=%d", currentRequire);
         //如果当前物品获取数量小于模拟数量，说明模拟数量不能顺利完成。此时可以直接回溯
         if (currentRequire < context.simulateRequire.getValue()) {
             //至少对于当前物品，这个数量是可以获取到的
@@ -426,7 +431,7 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
 
         if (context.i.getValue() >= context.node.edges.size())
             if (!context.anyFail.getValue()) {
-                logger.log("Craft add %d", context.simulateRequire.getValue());
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Craft add %d", context.simulateRequire.getValue());
                 context.totalSuccess.add(context.simulateRequire.getValue());
                 context.restRequire.subtract(context.simulateRequire.getValue());
                 context.simulateRequire.setValue(context.restRequire.getValue());
@@ -439,11 +444,11 @@ public class FlattenSearchGraph extends HistoryAndResultGraph {
     public void dfsCraftSetReturn(DfsLayerCraft context) {
         Integer totalSuccess = context.totalSuccess.getValue();
         if (totalSuccess > 0) {
-            logger.log("Craft finally success %d", totalSuccess);
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Craft finally success %d", totalSuccess);
             results.addLast(new CraftResultNode(context.node.id, totalSuccess, true));
             for (Pair<Integer, Integer> to : context.node.revEdges) {
-                ItemNode cn = (ItemNode) getNode(to.getA());
-                logger.log("Item %s crafted += %d", cn.itemStack, to.getB() * totalSuccess);
+                ItemNodeBasic cn = (ItemNodeBasic) getNode(to.getA());
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item %s crafted += %d", cn, to.getB() * totalSuccess);
                 pushHistory(cn, HistoryRecord.RECORD_CRAFTED, to.getB() * totalSuccess);
             }
         }
