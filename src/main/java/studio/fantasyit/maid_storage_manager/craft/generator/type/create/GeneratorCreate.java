@@ -5,7 +5,6 @@ import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -250,21 +249,17 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                                                     List.of(),
                                                     itemStacks,
                                                     CommonTakeItemAction.TYPE,
-                                                    ActionOptionSet.with(ActionOption.OPTIONAL,true)
+                                                    ActionOptionSet.with(ActionOption.OPTIONAL, true)
                                             ));
                                         });
                                 transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_ITEM_SELECTIVE);
                                 if (recipe.getRollableResults().isEmpty()) {
-                                    CompoundTag compoundTag = new CompoundTag();
-                                    compoundTag.putInt("time", 100 * multiplier);
-                                    compoundTag.putInt("u", 0);
                                     step.add(new CraftGuideStepData(
                                             new Target(ItemHandlerStorage.TYPE, pos),
                                             List.of(),
                                             List.of(),
                                             CommonIdleAction.TYPE,
-                                            false,
-                                            compoundTag
+                                            ActionOptionSet.with(CommonIdleAction.OPTION_WAIT, true, String.valueOf(100 * multiplier))
                                     ));
                                     transformSteps(recipe, items, state, step, StepGenerateStep.OUTPUT_FLUID_IDLE);
                                 }

@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +12,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonIdleAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPickupItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseAction;
@@ -98,16 +98,12 @@ public class GeneratorBotaniaRunicAltar implements IAutoCraftGuideGenerator {
                                     ));
                                 }
 
-                                CompoundTag compoundTag = new CompoundTag();
-                                compoundTag.putInt("time", (int) ((double) recipe.getManaUsage() / speed * WAIT_TIME_SCALE.getValue()));
-                                compoundTag.putInt("u", 0);
                                 steps.add(new CraftGuideStepData(
                                         Target.virtual(pos, Direction.UP),
                                         List.of(),
                                         List.of(),
                                         CommonIdleAction.TYPE,
-                                        false,
-                                        compoundTag
+                                        ActionOptionSet.with(CommonIdleAction.OPTION_WAIT, true, String.valueOf((int) ((double) recipe.getManaUsage() / speed * WAIT_TIME_SCALE.getValue())))
                                 ));
                                 ItemStack react = items.get(items.size() - 2);
                                 steps.add(new CraftGuideStepData(

@@ -11,7 +11,6 @@ import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +18,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonPlaceItemAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.CommonTakeItemAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -77,13 +78,13 @@ public class GeneratorMekSawing extends GeneratorMek<SawmillRecipe, InputRecipeC
                 recipe.getMainOutputDefinition(),
                 CommonTakeItemAction.TYPE
         ));
+
         steps.add(new CraftGuideStepData(
                 new Target(ItemHandlerStorage.TYPE, pos, outputSide),
                 List.of(),
                 recipe.getSecondaryOutputDefinition(),
                 CommonTakeItemAction.TYPE,
-                recipe.getSecondaryChance() < 1,
-                new CompoundTag()
+                ActionOptionSet.with(ActionOption.OPTIONAL, recipe.getSecondaryChance() < 1)
         ));
         return true;
     }
@@ -99,9 +100,10 @@ public class GeneratorMekSawing extends GeneratorMek<SawmillRecipe, InputRecipeC
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.mekanism.precision");
     }
+
     @Override
     protected int getRecipeMultiplier(BlockEntity machine, SawmillRecipe recipe) {
-        if(FACTORY_PARALLEL.getValue()){
+        if (FACTORY_PARALLEL.getValue()) {
             return getFactoryParallel(machine);
         }
         return 1;
