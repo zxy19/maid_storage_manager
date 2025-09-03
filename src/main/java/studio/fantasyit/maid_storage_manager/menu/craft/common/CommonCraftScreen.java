@@ -223,7 +223,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         for (int x = 0; x < 2; x++) {
             for (int y = 0; y < 2; y++) {
                 if (menu.filterSlots[c].isActive()) {
-                    ImageAsset imageAsset = (menu.isHandRelated && c == 1) ? CommonCraftAssets.SLOT_HAND : CommonCraftAssets.SLOT_NORMAL;
+                    ImageAsset imageAsset = (menu.isHandRelated && c == 1 && menu.filterSlots[c].getItem().isEmpty()) ? CommonCraftAssets.SLOT_HAND : CommonCraftAssets.SLOT_NORMAL;
                     imageAsset.blit(guiGraphics, relX + menu.filterSlots[c].x - 1, relY + menu.filterSlots[c].y - 1);
                 }
                 c++;
@@ -653,6 +653,14 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         boolean hasInput = false;
         for (ItemStack itemStack : step.getNonEmptyInput()) {
             graphics.renderItem(itemStack, 0, 0);
+            String text = String.valueOf(itemStack.getCount());
+            graphics.pose().translate(0, 0, 400);
+            graphics.drawString(this.font,
+                    text,
+                    16 - this.font.width(text),
+                    (int) (16 - this.font.lineHeight),
+                    0xffffffff);
+            graphics.pose().translate(0, 0, -400);
             graphics.pose().translate(16, 0, 0);
             hasInput = true;
         }
@@ -669,6 +677,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     (int) (16 - this.font.lineHeight),
                     0xffffffff);
             graphics.pose().translate(0, 0, -400);
+            graphics.pose().translate(16, 0, 0);
         }
         graphics.pose().popPose();
         graphics.pose().pushPose();
@@ -721,7 +730,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private void clickInScrollList(double x, double y) {
         int id = getSelectedStep(x, y);
         if (id == -1 || id >= menu.craftGuideData.steps.size()) return;
-        if (isClickedOnDeleteBtn(x, y, id)) {
+        if (isClickedOnDeleteBtn(x, y, id) && menu.selectedIndex == id) {
             sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.REMOVE, id));
         } else {
             sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SELECT, id));
