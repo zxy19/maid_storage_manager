@@ -128,6 +128,10 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
         return tmp;
     }
 
+    public void addNode(Node node) {
+        nodes.add(node);
+    }
+
     public ItemNode getItemNode(ItemStack itemStack) {
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (!itemNodeMap.containsKey(itemId)) return null;
@@ -168,8 +172,8 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
     int buildGraphIndex;
     HashMap<ItemSetPair, Integer> existCrafting = new HashMap<>();
 
-    public void rebuildGraph() {
-        buildGraphIndex = 0;
+    public void buildGraphInstantly() {
+        while (!buildGraph()) ;
     }
 
     public boolean buildGraph() {
@@ -246,6 +250,11 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
         startContext(item, count);
     }
 
+    public void restoreCurrentAndStartContext(int itemNodeId, int count) {
+        restoreCurrent();
+        startContext(itemNodeId, count);
+    }
+
     @Override
     public void restoreCurrent() {
         listed.clear();
@@ -271,6 +280,10 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
 
     @Override
     public void startContext(ItemStack item, int count) {
+        startContext(getItemNodeOrCreate(item).id, count);
+    }
+
+    public void startContext(int itemNodeId, int count) {
         for (Node node : nodes) {
             if (node instanceof ItemNode itemNode) {
                 itemNode.count -= itemNode.required;
@@ -282,7 +295,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
                 craftNode.scheduled = 0;
             }
         }
-        loopSolver = new LoopSolver(this, getItemNodeOrCreate(item).id);
+        loopSolver = new LoopSolver(this, itemNodeId);
     }
 
     @Override

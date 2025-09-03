@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.BiCraftCountCalculator;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.FlattenSearchGraph;
@@ -232,6 +233,8 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         }
         //当前任务初始化
         if (biCalc == null) {
+            if (currentAvailableGraph instanceof AbstractBiCraftGraph abstractGraph)
+                debugContext.saveGraph(abstractGraph, currentWork.getA(), currentWork.getB());
             biCalc = new BiCraftCountCalculator(
                     currentAvailableGraph,
                     currentWork.getA(),

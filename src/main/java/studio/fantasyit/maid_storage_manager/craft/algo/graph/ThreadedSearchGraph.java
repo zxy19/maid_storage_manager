@@ -22,6 +22,11 @@ public class ThreadedSearchGraph extends SimpleSearchGraph {
     }
 
     @Override
+    public void buildGraphInstantly() {
+        while (!super.buildGraph()) ;
+    }
+
+    @Override
     public boolean processQueues() {
         if (running != null)
             return running.isDone();

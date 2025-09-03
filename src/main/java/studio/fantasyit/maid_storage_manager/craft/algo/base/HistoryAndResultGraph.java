@@ -19,6 +19,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
     public MutableInt historyId = new MutableInt();
     protected Deque<CraftResultNode> results = new LinkedList<>();
     protected ItemStack targetItem;
+    protected int targetItemNodeId;
     protected int targetCount;
     protected int targetAvailable = -1;
 
@@ -97,6 +98,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
         history.clear();
         historyId.setValue(0);
         targetItem = item;
+        targetItemNodeId = getItemNode(item).id;
         targetCount = count;
         results.clear();
         targetAvailable = -1;
@@ -133,7 +135,7 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
             craftLayer.setUsableCraftData(node.sameData);
 
             results.add(craftLayer);
-         }
+        }
         CraftNode lastNode = (CraftNode) getNode(lastOne.index);
         results.add(new CraftLayer(Optional.empty(),
                 List.of(targetItem.copyWithCount(targetAvailable)),
