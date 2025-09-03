@@ -5,13 +5,14 @@ import com.tacz.guns.crafting.GunSmithTableIngredient;
 import com.tacz.guns.crafting.GunSmithTableRecipe;
 import com.tacz.guns.init.ModRecipe;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
+import studio.fantasyit.maid_storage_manager.craft.context.special.TaczRecipeAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
@@ -51,9 +52,6 @@ public class GeneratorTACZ implements IAutoCraftGuideGenerator {
         List<RecipeHolder<GunSmithTableRecipe>> allRecipesForBlockId = TaczRecipe.getAllRecipesForBlockId(level, blockId);
         allRecipesForBlockId.forEach(holder -> {
             GunSmithTableRecipe recipe = holder.value();
-            CompoundTag compoundTag = new CompoundTag();
-            compoundTag.putString("block_id", blockId.toString());
-            compoundTag.putString("recipe_id", holder.id().toString());
             List<GunSmithTableIngredient> ingredients = recipe.getInputs();
             if (!posFilter.isAvailable(recipe.getOutput()))
                 return;
@@ -67,8 +65,8 @@ public class GeneratorTACZ implements IAutoCraftGuideGenerator {
                                 items,
                                 List.of(recipe.getOutput()),
                                 TaczType.TYPE,
-                                false,
-                                compoundTag
+                                ActionOptionSet.with(TaczRecipeAction.OPTION_TACZ_RECIPE_ID, true, recipe.getId().toString())
+                                        .add(TaczRecipeAction.OPTION_TACZ_BLOCK_ID, true, blockId.toString())
                         );
                         return new CraftGuideData(
                                 List.of(step),
