@@ -8,6 +8,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.HistoryAndResultGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.VisitRecorder;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNodeBasic;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNodeBasic;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
@@ -327,12 +328,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
     @Override
     public boolean process() {
+        ItemNode itemNode = (ItemNode) getNode(targetItemNodeId);
         for (int i = 10; i < 61; i += 10) {
             dfsDepth = 0;
             maxDepthAllow = i;
-            targetAvailable = dfsCalcItemNodeRequired(getItemNode(targetItem), targetCount, targetCount, new VisitRecorder(getNodeCount()), false);
+            targetAvailable = dfsCalcItemNodeRequired(itemNode, targetCount, targetCount, new VisitRecorder(getNodeCount()), false);
             if (targetAvailable >= targetCount) return true;
-            restoreCurrentAndStartContext(targetItem, targetCount);
+            restoreCurrentAndStartContext(itemNode.id, targetCount);
             while (!processLoopSolver()) ;
         }
         maxDepthAllow = Config.craftingMaxLayerLimit;

@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.debug;
 
 
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.core.appender.rolling.TriggeringPolicy;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 
 import java.util.Arrays;
 
@@ -174,5 +176,14 @@ public class CraftingDebugContext {
 
     public void stop() {
         config.stop();
+    }
+
+    int graphIndex = 0;
+
+    public void saveGraph(AbstractBiCraftGraph graph, ItemStack target, int count) {
+        if (isDummy()) return;
+        String path = FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/" + id + "_crafting_data_" + target.getItem() + "_" + (graphIndex++) + ".json";
+        Tester.exportTo(graph, target, count, path);
+        graph.restoreCurrent();
     }
 }
