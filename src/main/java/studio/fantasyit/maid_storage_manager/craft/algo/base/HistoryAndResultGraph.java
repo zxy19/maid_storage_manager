@@ -4,8 +4,10 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
-import studio.fantasyit.maid_storage_manager.craft.algo.misc.LevelBasedLogger;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
@@ -16,7 +18,6 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
 
     public MutableInt historyId = new MutableInt();
     protected Deque<CraftResultNode> results = new LinkedList<>();
-    protected LevelBasedLogger logger = new LevelBasedLogger();
     protected ItemStack targetItem;
     protected int targetCount;
     protected int targetAvailable = -1;

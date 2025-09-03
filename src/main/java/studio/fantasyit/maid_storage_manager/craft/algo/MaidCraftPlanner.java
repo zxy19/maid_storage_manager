@@ -16,10 +16,11 @@ import studio.fantasyit.maid_storage_manager.craft.algo.misc.ItemListStepSum;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.RequestListSplitter;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimizer;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.generator.AutoGraphGenerator;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
-import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -37,7 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class MaidCraftPlanner {
+public class MaidCraftPlanner implements IDebugContextSetter {
     private final CraftMemory craftingMemory;
     ICraftGraphLike currentAvailableGraph;
 
@@ -52,6 +53,7 @@ public class MaidCraftPlanner {
     ItemListStepSum futureSteps;
     AutoGraphGenerator autoGraphGenerator;
     private List<CraftGuideData> craftGuides;
+    private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
     CraftLayerChain plan;
 
@@ -78,22 +80,22 @@ public class MaidCraftPlanner {
                     notDone.stream().map(itemStack -> itemStack.getA()).toList(),
                     craftGuides
             );
+            autoGraphGenerator.setDebugContext(debugContext);
         } else {
             initItems();
         }
-
         plan = new CraftLayerChain(maid);
     }
 
     protected boolean precheck() {
         if (PortableCraftCalculatorBauble.getCalculator(maid).isEmpty()) {
             if (!Config.craftingNoCalculator) {
-                DebugData.sendDebug("[REQUEST_CRAFT]No Calculator found");
+                debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "No Calculator found");
                 return false;
             }
         }
         if (RequestListItem.isBlackMode(maid.getMainHandItem())) {
-            DebugData.sendDebug("[REQUEST_CRAFT]Black list, no crafting");
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "Black list, no crafting");
             return false;
         }
         return true;
@@ -111,7 +113,7 @@ public class MaidCraftPlanner {
     }
 
     protected boolean initItems() {
-        DebugData.sendDebug("[REQUEST_CRAFT]Start. Calculate tree");
+        debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "[REQUEST_CRAFT]Start. Calculate tree");
         if (notDone.isEmpty()) {
             return false;
         }
@@ -138,6 +140,7 @@ public class MaidCraftPlanner {
                                 itemStack.getFirst(),
                                 itemStack.getSecond()
                         ));
+                        debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "Adding Stock ItemStack %s * %s;", itemStack.getFirst(), itemStack.getSecond());
                     }
                 });
 
@@ -146,7 +149,11 @@ public class MaidCraftPlanner {
         currentAvailableGraph = craftJobs
                 .peek()
                 .getB().init(items, craftGuides);
+        debugContext.convey(currentAvailableGraph);
         notDone.forEach(itemStack -> currentAvailableGraph.setItemCount(itemStack.getA(), 0));
+        notDone.forEach(itemStack -> {
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "Adding Craft ItemStack %s * %s;", itemStack.getA(), itemStack.getB());
+        });
         return true;
     }
 
@@ -168,23 +175,27 @@ public class MaidCraftPlanner {
                 //去除和用户添加的有重叠的部分（第一输出相同）
                 craftGuideData = craftGuideData
                         .stream().
-                        filter(c ->
-                                !
-                                        c.getOutput()
-                                                .stream()
-                                                .findFirst()
-                                                .map(i1 ->
-                                                        craftGuides
-                                                                .stream()
-                                                                .anyMatch(c2 -> c2
-                                                                        .getOutput()
-                                                                        .stream()
-                                                                        .findFirst()
-                                                                        .map(i -> ItemStackUtil.isSameInCrafting(i, i1))
-                                                                        .orElse(false)
-                                                                )
-                                                )
-                                                .orElse(false)
+                        filter(c -> {
+                                    if (!c.getOutput()
+                                            .stream()
+                                            .findFirst()
+                                            .map(i1 ->
+                                                    craftGuides
+                                                            .stream()
+                                                            .anyMatch(c2 -> c2
+                                                                    .getOutput()
+                                                                    .stream()
+                                                                    .findFirst()
+                                                                    .map(i -> ItemStackUtil.isSameInCrafting(i, i1))
+                                                                    .orElse(false)
+                                                            )
+                                            )
+                                            .orElse(false)) {
+                                        return true;
+                                    }
+                                    debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "Craft Guide %s is overlapped with user added craft guide", c);
+                                    return false;
+                                }
                         )
                         .toList();
                 craftGuides.addAll(craftGuideData);
@@ -206,6 +217,7 @@ public class MaidCraftPlanner {
             if (!craftJobs.isEmpty()) {
                 while (!tmpNextJob.isEmpty()) craftJobs.peek().getA().add(tmpNextJob.poll());
                 currentAvailableGraph = currentAvailableGraph.createGraphWithItem(craftJobs.peek().getB());
+                debugContext.convey(currentAvailableGraph);
             }
             count = 0;
             return;
@@ -226,6 +238,7 @@ public class MaidCraftPlanner {
                     currentWork.getB(),
                     InvUtil.freeSlots(maid.getAvailableInv(true))
             );
+            debugContext.convey(biCalc);
         }
         //进行一个计算的尝试
         boolean finish = false;
@@ -244,7 +257,7 @@ public class MaidCraftPlanner {
         List<CraftLayer> results = biCalc.getResults();
 
         if (results.isEmpty()) {
-            DebugData.sendDebug(
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER,
                     "[REQUEST_CRAFT] Failed to find recipe for %s",
                     currentWork.getA().getHoverName().getString()
             );
@@ -259,11 +272,13 @@ public class MaidCraftPlanner {
             optimize = RequestListSplitter.splitLayerMax(optimize, StorageManagerConfigData.get(maid).maxCraftingLayerRepeatCount());
             optimize.forEach(craftLayer -> plan.addLayer(craftLayer));
 
-            DebugData.sendDebug(
+            debugContext.logEntryNewLevel(CraftingDebugContext.TYPE.PLANNER,
                     "[REQUEST_CRAFT] %s tree with %d layers",
                     currentWork.getA().getHoverName().getString(),
                     results.size()
             );
+            optimize.forEach(t -> debugContext.log(CraftingDebugContext.TYPE.PLANNER, "Layer g:%s * %s", t.getCraftData(), t.getCount()));
+            debugContext.exitLogLevel(CraftingDebugContext.TYPE.PLANNER, "[REQUEST_CRAFT] layers");
             success += 1;
         }
         List<Pair<ItemStack, Integer>> fails = biCalc.getFails();
@@ -308,5 +323,12 @@ public class MaidCraftPlanner {
 
     public CraftLayerChain getPlan() {
         return plan;
+    }
+
+    @Override
+    public void setDebugContext(CraftingDebugContext context) {
+        this.debugContext = context;
+        context.convey(currentAvailableGraph);
+        context.convey(autoGraphGenerator);
     }
 }

@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -25,6 +27,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
     }
 
     MaidCraftPlanner planner;
+    CraftingDebugContext debugContext;
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel p_22538_, EntityMaid p_22539_) {
@@ -61,6 +64,12 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             });
         }
         planner = new MaidCraftPlanner(level, maid);
+        CraftingDebugManager.getDebugContext(maid.getOwnerUUID())
+                .ifPresentOrElse(c -> {
+                    c.convey(planner);
+                    debugContext = c;
+                    debugContext.logNoLevel(CraftingDebugContext.TYPE.COMMON, "Starting craft calculator");
+                }, () -> debugContext = null);
     }
 
     @Override
@@ -87,6 +96,8 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         CraftBlockOccupyDataProvider.get(p_22548_).removeAllOccupiesFor(maid);
         MemoryUtil.getCrafting(maid).resetAndMarkVis(p_22548_, maid);
         MemoryUtil.clearTarget(maid);
+        if (debugContext != null)
+            debugContext.stop();
     }
 
     @Override

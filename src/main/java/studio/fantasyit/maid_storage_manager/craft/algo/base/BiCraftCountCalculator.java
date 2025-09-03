@@ -5,6 +5,8 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListUtils;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
@@ -13,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BiCraftCountCalculator {
+public class BiCraftCountCalculator implements IDebugContextSetter {
     private final ICraftGraphLike availableCraftGraph;
     private final int availableSlots;
     private List<Pair<ItemStack, Integer>> fails = new ArrayList<>();
@@ -25,6 +27,7 @@ public class BiCraftCountCalculator {
     List<CraftLayer> results = new ArrayList<>();
 
     boolean hasAnySuccessCraftingCalc = false;
+    private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
     public BiCraftCountCalculator(ICraftGraphLike availableCraftGraph, ItemStack item, int requireCount, int availableSlots) {
         this.availableCraftGraph = availableCraftGraph;
@@ -39,10 +42,12 @@ public class BiCraftCountCalculator {
     public boolean tick() {
         if (!availableCraftGraph.buildGraph()) return true;
         if (!availableCraftGraph.processQueues()) return true;
+        debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Crafting Inv Simulator Start");
         List<CraftLayer> currentResults = availableCraftGraph.getResults();
         CraftResultContext context = null;
         boolean success = false;
         if (currentResults.size() > Config.craftingMaxLayerLimit) {
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Crafting Inv Simulator Failed Due to too large layer list");
             currentResults = null;
         }
         if (currentResults != null && !currentResults.isEmpty()) {
@@ -50,32 +55,38 @@ public class BiCraftCountCalculator {
             context = new CraftResultContext(currentResults);
             //正常情况下的合成占用
             if (context.getSlotConsume() <= availableSlots) {
+                debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Inv OK");
                 success = true;
             }
             //尝试中途进行一个存储
             if (!success) {
                 context.splitTaskWith(availableSlots);
                 if (context.getSlotConsume() <= availableSlots) {
+                    debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Inv OK (Store steps)");
                     success = true;
                 }
             }
             //如果仍然不成功，尝试分离到单步，然后进行合成
             if (!success) {
+                debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Splitting steps");
                 ResultListUtils.unsetPlaceBefore(currentResults);
                 currentResults = ResultListUtils.splitIntoSingleStep(currentResults);
                 if (currentResults.size() > Config.craftingMaxLayerLimit) {
+                    debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Crafting Inv Simulator Failed Due to too large layer list");
                     context = null;
                 } else {
                     context = new CraftResultContext(currentResults);
                 }
             }
             if (context != null && context.getSlotConsume() <= availableSlots) {
+                debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Inv OK");
                 success = true;
             }
             //仍然不成功，再次尝试中途进行存储
             if (!success && context != null) {
                 context.splitTaskWith(availableSlots);
                 if (context.getSlotConsume() <= availableSlots) {
+                    debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Inv OK (Store steps)");
                     success = true;
                 }
             }
@@ -91,6 +102,7 @@ public class BiCraftCountCalculator {
                 return true;
             }
 
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Step done * %s", currentRequire);
             //当前数量可以进行合成。那么先记录结果层。
             results.addAll(currentResults);
             maxRequire -= currentRequire;
@@ -110,6 +122,7 @@ public class BiCraftCountCalculator {
             fullGroupFails = List.of();
         } else {
             if (maxRequire == currentRequire) fullGroupFails = availableCraftGraph.getFails();
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.SIMULATOR, "Step fail with %d", currentRequire);
             //当前数量不能完成合成
             currentRequire /= 2;
             //算法提供了最大可行计数
@@ -149,5 +162,10 @@ public class BiCraftCountCalculator {
 
     public int getNotCraftedCount() {
         return maxRequire;
+    }
+
+    @Override
+    public void setDebugContext(CraftingDebugContext context) {
+        this.debugContext = context;
     }
 }
