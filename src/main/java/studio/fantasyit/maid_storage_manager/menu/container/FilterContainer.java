@@ -153,4 +153,9 @@ public class FilterContainer implements Container, INBTSerializable<ListTag> {
             done[i].setValue(tmp.getInt(RequestListItem.TAG_ITEMS_DONE));
         }
     }
+
+    @Override
+    public boolean canTakeItem(Container p_273520_, int p_272681_, ItemStack p_273702_) {
+        return false;
+    }
 }

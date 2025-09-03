@@ -95,13 +95,13 @@ public class TaczCraftScreen extends AbstractCraftScreen<TaczCraftMenu> {
                             selected = toValue ? finalI : -1;
                             sendAndTriggerLocalPacket(new CraftGuideGuiPacket(
                                     CraftGuideGuiPacket.Type.OPTION,
-                                    CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
+                                    CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
                                     0,
                                     CraftGuideGuiPacket.singleValue(this.blockId.toString())
                             ));
                             sendAndTriggerLocalPacket(new CraftGuideGuiPacket(
                                     CraftGuideGuiPacket.Type.OPTION,
-                                    CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_BLOCK_ID),
+                                    CraftManager.getInstance().getAction(TaczType.TYPE).getOptionIndex(TaczRecipeAction.OPTION_TACZ_RECIPE_ID),
                                     0,
                                     CraftGuideGuiPacket.singleValue(toValue ? taczRecipe.getB() : "")
                             ));
