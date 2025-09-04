@@ -8,7 +8,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
@@ -53,7 +52,7 @@ public class MaidStorage {
         list.add(new ItemHandlerStorage());
 
         CollectStorageEvent event = new CollectStorageEvent(list);
-        NeoForge.EVENT_BUS.post(event);
+        ModLoader.postEvent(event);
         this.storages = event.getStorages();
     }
 

@@ -374,4 +374,13 @@ public class CraftGuideStepData {
         hash += tHash % 9473;
         return hash % 10000831;
     }
+
+    public int getExtraSlotConsume() {
+        int c = 0;
+        if (actionType.hasMark(CraftAction.MARK_HAND_RELATED)) {
+            int count = Math.toIntExact(this.getInput().stream().filter(itemStack -> !itemStack.isEmpty()).count());
+            c = Math.max(2 - count, 0);
+        }
+        return c;
+    }
 }

@@ -40,6 +40,7 @@ public record CraftAction(ResourceLocation type, CraftActionProvider provider,
         throw new IllegalArgumentException("Option " + option.id() + " not found on action " + type);
     }
 
+
     @FunctionalInterface
     public interface CraftActionProvider {
         AbstractCraftActionContext create(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer);

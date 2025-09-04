@@ -451,5 +451,9 @@
   "gui.maid_storage_manager.craft_guide.common.use_single": "Single Click",
   "gui.maid_storage_manager.craft_guide.common.use_long": "Long Press",
   "gui.maid_storage_manager.craft_guide.common.attack_destroy": "Destroy",
-  "gui.maid_storage_manager.craft_guide.common.attack_single": "Single Attack"
+  "gui.maid_storage_manager.craft_guide.common.attack_single": "Single Attack",
+  "gui.maid_storage_manager.craft_guide.global.mergeable": "Mergeable Craft Guide",
+  "gui.maid_storage_manager.craft_guide.global.not_mergeable": "Not Mergeable Craft Guide",
+  "gui.maid_storage_manager.craft_guide.global.occupy": "Occupy",
+  "gui.maid_storage_manager.craft_guide.global.no_occupy": "No Occupy"
 }

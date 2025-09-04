@@ -41,7 +41,7 @@ public class CraftGuideGuiPacket implements CustomPacketPayload {
         REMOVE,
         SET_ITEM,
         SET_ALL_INPUT,
-        MATCH_TAG,
+        GLOBAL,
         SELECT,
         OPTION,
         EXTRA,

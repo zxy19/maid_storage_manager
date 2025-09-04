@@ -188,17 +188,26 @@ public class InvUtil {
         return -1;
     }
 
-    public static int getTargetIndexInCrafting(EntityMaid maid, ItemStack itemStack) {
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
+    public static int getTargetIndexInCraftingWithoutHand(EntityMaid maid, ItemStack itemStack) {
+        return getTargetIndexInCraftingWithoutHand(maid, itemStack, -1);
+    }
+
+    public static int getTargetIndexInCraftingWithoutHand(EntityMaid maid, ItemStack itemStack, int except) {
+        RangedWrapper inv = maid.getAvailableBackpackInv();
         for (int i = 0; i < inv.getSlots(); i++) {
-            if (ItemStackUtil.isSameInCrafting(inv.getStackInSlot(i), itemStack)) {
+            if (i == except)
+                continue;
+            if (itemStack.isEmpty() && inv.getStackInSlot(i).isEmpty()) {
+                return i;
+            }
+            if (!itemStack.isEmpty() && ItemStackUtil.isSameInCrafting(inv.getStackInSlot(i), itemStack)) {
                 return i;
             }
         }
         return -1;
     }
 
-    public static void swapHandAndSlot(EntityMaid maid,InteractionHand hand, int slot) {
+    public static void swapHandAndSlot(EntityMaid maid, InteractionHand hand, int slot) {
         CombinedInvWrapper inv = maid.getAvailableInv(true);
         ItemStack handItem = maid.getItemInHand(hand);
         maid.setItemInHand(hand, inv.getStackInSlot(slot));

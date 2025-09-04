@@ -37,7 +37,7 @@ public class CraftResultContext {
             layer.getItems().forEach(i -> consumer.addConsumeCount(i, i.getCount()));
             craftData.get().getAllOutputItemsWithOptional().forEach(i -> consumer.addConsumeCount(i, i.getCount() * layer.getCount()));
             //记录最大背包占用
-            int currentMaxConsume = Math.max(this.slotConsume, consumer.getCurrentSlotConsume());
+            int currentMaxConsume = Math.max(this.slotConsume, consumer.getCurrentSlotConsume() + craftData.get().getExtraSlotConsume());
             //移除配方开销(必选的输入）
             craftData.get().getAllInputItems().forEach(i -> consumer.removeConsumeCount(i, i.getCount() * layer.getCount()));
             //二输入是可选的，所以存在二输入没有成功的可能性，故不需要从中排除

@@ -56,6 +56,8 @@ public class CraftGuide extends Item implements MenuProvider {
     public static final String TAG_OP_OUTPUT = "output";
     public static final String TAG_OP_EXTRA = "extra";
     public static final String TAG_SPECIAL_OP = "special";
+    public static final String TAG_MARK_MERGEABLE = "mergeable";
+    public static final String TAG_MARK_NO_OCCUPY = "no_occupy";
 
     public static Component getStatusMessage(ItemStack stack) {
         int selectId = getSelectId(stack);
