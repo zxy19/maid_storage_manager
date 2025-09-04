@@ -1,8 +1,11 @@
 package studio.fantasyit.maid_storage_manager.craft.debug;
 
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -217,8 +220,13 @@ public class CraftingDebugContext {
 
     public void saveGraph(AbstractBiCraftGraph graph, ItemStack target, int count) {
         if (isDummy()) return;
-        String path = FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/" + id + "_crafting_data_" + target.getItem() + "_" + (graphIndex++) + ".json";
+        String path = FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/" + id + "_crafting_data_" + in(target.getItem()) + "_" + (graphIndex++) + ".json";
         Tester.exportTo(graph, target, count, path);
         graph.restoreCurrent();
+    }
+
+    private static String in(Item item) {
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+        return key.getPath() + "_" + key.getNamespace();
     }
 }
