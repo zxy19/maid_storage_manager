@@ -266,7 +266,7 @@ public class Config {
     public static int craftingMaxLayerLimit;
 
     public static void testLoad(CommentedConfig config) {
-        BUILDER.build().acceptConfig(config);
+        BUILDER.build().correct(config);
         onLoad();
     }
 

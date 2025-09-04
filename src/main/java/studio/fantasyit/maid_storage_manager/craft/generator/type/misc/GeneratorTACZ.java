@@ -65,7 +65,7 @@ public class GeneratorTACZ implements IAutoCraftGuideGenerator {
                                 items,
                                 List.of(recipe.getOutput()),
                                 TaczType.TYPE,
-                                ActionOptionSet.with(TaczRecipeAction.OPTION_TACZ_RECIPE_ID, true, recipe.getId().toString())
+                                ActionOptionSet.with(TaczRecipeAction.OPTION_TACZ_RECIPE_ID, true, holder.id().toString())
                                         .add(TaczRecipeAction.OPTION_TACZ_BLOCK_ID, true, blockId.toString())
                         );
                         return new CraftGuideData(
