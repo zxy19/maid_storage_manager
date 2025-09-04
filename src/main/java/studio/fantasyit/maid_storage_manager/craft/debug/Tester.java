@@ -1,12 +1,16 @@
 package studio.fantasyit.maid_storage_manager.craft.debug;
 
+import com.electronwill.nightconfig.toml.TomlParser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.CraftResultNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.*;
 import studio.fantasyit.maid_storage_manager.craft.algo.graph.SimpleSearchGraph;
 
@@ -18,11 +22,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tester {
+    public static void main(String[] args) throws IOException {
+        startTestFrom(args[0]);
+    }
+
     public static void startTestFrom(String path) throws FileNotFoundException {
+        Config.testLoad(new TomlParser().parse(new FileReader("./config/maid_storage_manager-common.toml")));
+        Logger.info("Starting test from " + path);
+        CraftingDebugContext context = new CraftingDebugContext(false, "./logs/msm_crafting/");
+        Logger.info("Debug log saved to: runs/logs/msm_crafting/" + context.id);
         Gson gson = new GsonBuilder().create();
         JsonObject data = gson.fromJson(new FileReader(path), JsonObject.class);
         JsonArray jsonElements = data.get("nodes").getAsJsonArray();
         SimpleSearchGraph graph = new SimpleSearchGraph(List.of(), List.of());
+        context.convey(graph);
         for (int i = 0; i < jsonElements.size(); i++) {
             JsonObject jsonObject = jsonElements.get(i).getAsJsonObject();
             if (jsonObject.get("type").getAsString().equals("item")) {
@@ -50,9 +63,14 @@ public class Tester {
                 graph.addNode(craftNode);
             }
         }
-        graph.startContext(data.get("targetItemId").getAsInt(), data.get("targetItemCount").getAsInt());
+        graph.restoreCurrentAndStartContext(data.get("targetItemId").getAsInt(), data.get("targetItemCount").getAsInt());
         graph.buildGraphInstantly();
-        graph.process();
+        while (!graph.process()) ;
+        List<CraftResultNode> results = graph.getRawResults();
+        Logger.info("Found %d results", results.size());
+        for (CraftResultNode craftLayer : results) {
+            Logger.info(" + > " + graph.getNode(craftLayer.index));
+        }
     }
 
     public static void exportTo(AbstractBiCraftGraph graph, ItemStack targetItem, int count, String path) {
@@ -101,9 +119,9 @@ public class Tester {
         jsonObject.addProperty("targetItemId", graph.getItemNode(targetItem).id);
         jsonObject.addProperty("targetItemCount", count);
         jsonObject.add("nodes", jsonArray);
-        try {
+        try (FileWriter fileWriter = new FileWriter(path)) {
             Gson gson = new GsonBuilder().create();
-            gson.toJson(jsonObject, new FileWriter(path));
+            gson.toJson(jsonObject, fileWriter);
         } catch (IOException ignored) {
         }
     }

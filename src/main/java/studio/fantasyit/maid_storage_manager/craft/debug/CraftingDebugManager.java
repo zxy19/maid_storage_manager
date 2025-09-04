@@ -11,7 +11,7 @@ public class CraftingDebugManager {
     public static CraftingDebugContext prepareForPlayer(UUID uuid, String control) {
         CraftingDebugContext context = new CraftingDebugContext(false);
         if (!control.isBlank()) {
-            String[] split = control.split("/,/");
+            String[] split = control.split(",");
             for (String s : split) {
                 char ctr = s.charAt(0);
                 if (ctr == '+')

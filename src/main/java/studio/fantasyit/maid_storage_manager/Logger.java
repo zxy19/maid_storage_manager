@@ -8,7 +8,7 @@ public class Logger {
     public static org.slf4j.Logger logger = LogUtils.getLogger();
 
     public static void info(String message, Object... a) {
-        logger.info(message, a);
+        logger.info(String.format(message, a));
     }
 
     public static void warn(String message, Object... a) {

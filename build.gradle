@@ -84,6 +84,12 @@ neoForge {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+
+        testCrafting{
+            main 'studio.fantasyit.maid_storage_manager.craft.debug.Tester'
+            workingDirectory project.file('run')
+            arg "test.json"
+        }
     }
 }
 
