@@ -405,7 +405,7 @@ public class CraftLayerChain {
             invConsumeSimulator.addLayerOutput(layer);
             int totalConsume = invConsumeSimulator.getCurrentSlotConsume();
             invConsumeSimulator.restoreSnapshot();
-            if (totalConsume > freeSlots) {
+            if (totalConsume + layer.getExtraSlotConsume() > freeSlots) {
                 continue;
             }
             if (layer.getCraftData().isEmpty())
@@ -789,7 +789,7 @@ public class CraftLayerChain {
             CombinedInvWrapper inv = maid.getAvailableInv(true);
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
-                RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount(),true);
+                RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount(), true);
             }
             if (!toBeFailAddition.isBlank()) {
                 for (ItemStack target : targets)
@@ -1017,7 +1017,7 @@ public class CraftLayerChain {
         int totalSlots = invConsumeSimulator.getCurrentSlotConsume();
         invConsumeSimulator.restoreSnapshot();
 
-        if (totalSlots > freeSlots) {
+        if (totalSlots + layer.getExtraSlotConsume() > freeSlots) {
             return false;
         }
         invConsumeSimulator.removeLayerInput(layer);
@@ -1162,6 +1162,7 @@ public class CraftLayerChain {
         Optional<CraftGuideData> craftDataO = getCurrentLayer().getCraftData();
         if (!craftDataO.isPresent()) return;
         CraftGuideData craftData = craftDataO.get();
+        if (craftData.isNoOccupy()) return;
         int currentIndex = getCurrentNode().index();
         for (CraftGuideStepData stepData : craftData.getSteps()) {
             if (stepData.actionType.noOccupation()) continue;

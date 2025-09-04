@@ -8,10 +8,12 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ResultListOptimizer {
     public static List<CraftLayer> optimize(List<CraftLayer> layers) {
         layers = mergeSame(layers);
+        layers = mergeMergeable(layers);
         return layers;
     }
 
@@ -106,5 +108,41 @@ public class ResultListOptimizer {
         if (tmp != null)
             result.add(tmp);
         return result;
+    }
+
+    public static List<CraftLayer> mergeMergeable(List<CraftLayer> layers) {
+        return layers.stream()
+                .map(layer -> layer.getCraftData()
+                        .map(craftGuideData -> {
+                            if (!craftGuideData.isMergeable()) {
+                                return layer;
+                            }
+                            int count = layer.getCount();
+                            return new CraftLayer(
+                                    Optional.of(multipleCGD(craftGuideData, count)),
+                                    layer.getUsableCraftData().stream().map(cc -> multipleCGD(cc, count)).toList(),
+                                    layer.getItems(),
+                                    1
+                            );
+                        })
+                        .orElse(layer))
+                .toList();
+    }
+
+    private static CraftGuideData multipleCGD(CraftGuideData data, int count) {
+        List<CraftGuideStepData> newSteps = data.getSteps().stream()
+                .map(craftGuideStepData -> new CraftGuideStepData(
+                        craftGuideStepData.getStorage(),
+                        craftGuideStepData.getInput().stream()
+                                .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() * count))
+                                .toList(),
+                        craftGuideStepData.getOutput().stream()
+                                .map(itemStack -> itemStack.copyWithCount(itemStack.getCount() * count))
+                                .toList(),
+                        craftGuideStepData.getActionType(),
+                        craftGuideStepData.getExtraData()
+                ))
+                .toList();
+        return new CraftGuideData(newSteps, data.getType(), data.isMergeable(), data.isNoOccupy());
     }
 }

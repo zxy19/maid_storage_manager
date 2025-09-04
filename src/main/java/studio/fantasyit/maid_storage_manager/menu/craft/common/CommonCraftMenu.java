@@ -113,6 +113,14 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 t -> isHandRelated = t == 1,
                 () -> isHandRelated ? 1 : 0
         ));
+        addDataSlot(new SimpleSlot(
+                t -> craftGuideData.isNoOccupy(t != 0),
+                () -> craftGuideData.isNoOccupy() ? 1 : 0
+        ));
+        addDataSlot(new SimpleSlot(
+                t -> craftGuideData.isMergeable(t != 0),
+                () -> craftGuideData.isMergeable() ? 1 : 0
+        ));
     }
 
     @Override

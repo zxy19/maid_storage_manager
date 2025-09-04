@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
@@ -53,7 +53,7 @@ public class MaidStorage {
         list.add(new ItemHandlerStorage());
 
         CollectStorageEvent event = new CollectStorageEvent(list);
-        MinecraftForge.EVENT_BUS.post(event);
+        ModLoader.get().postEvent(event);
         this.storages = event.getStorages();
     }
 

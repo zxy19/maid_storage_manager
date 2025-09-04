@@ -128,6 +128,47 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             });
             options.add(new Pair<>(btn, editBox));
         }
+
+        addRenderableWidget(new SelectButtonWidget<Boolean>(
+                114, 126,
+                (value) -> {
+                    if (value == null) {
+                        value = menu.craftGuideData.isMergeable();
+                    } else {
+                        value = !value;
+                        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GLOBAL, 0, value ? 1 : 0));
+                    }
+                    return new SelectButtonWidget.Option<>(
+                            value,
+                            value ? CommonCraftAssets.BTN_MERGEABLE : CommonCraftAssets.BTN_NOT_MERGEABLE,
+                            value ? CommonCraftAssets.BTN_MERGEABLE_HOVER : CommonCraftAssets.BTN_NOT_MERGEABLE_HOVER,
+                            value ?
+                                    Component.translatable("gui.maid_storage_manager.craft_guide.global.mergeable") :
+                                    Component.translatable("gui.maid_storage_manager.craft_guide.global.not_mergeable")
+                    );
+                },
+                this
+        ));
+        addRenderableWidget(new SelectButtonWidget<Boolean>(
+                132, 126,
+                (value) -> {
+                    if (value == null) {
+                        value = menu.craftGuideData.isNoOccupy();
+                    } else {
+                        value = !value;
+                        sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GLOBAL, 1, value ? 1 : 0));
+                    }
+                    return new SelectButtonWidget.Option<>(
+                            value,
+                            value ? CommonCraftAssets.BTN_NO_OCCUPY : CommonCraftAssets.BTN_OCCUPY,
+                            value ? CommonCraftAssets.BTN_NO_OCCUPY_HOVER : CommonCraftAssets.BTN_OCCUPY_HOVER,
+                            value ?
+                                    Component.translatable("gui.maid_storage_manager.craft_guide.global.no_occupy") :
+                                    Component.translatable("gui.maid_storage_manager.craft_guide.global.occupy")
+                    );
+                },
+                this
+        ));
     }
 
     private void addSortButtons() {

@@ -11,6 +11,8 @@ import java.util.Map;
 public class CommonCraftAssets {
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
 
+    public static final ResourceLocation BACKGROUND_OPT = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common_opt.png");
+
 
     public static ImageAsset ROW_HIGHLIGHT = ImageAsset.from4Point(
             BACKGROUND,
@@ -92,6 +94,40 @@ public class CommonCraftAssets {
     public static ImageAsset SCROLL_DECO_HOVER = ImageAsset.from4Point(
             BACKGROUND,
             214, 55, 218, 59
+    );
+
+    public static ImageAsset BTN_NO_OCCUPY = new ImageAsset(
+            BACKGROUND_OPT,
+            0, 0, 15, 15
+    );
+    public static ImageAsset BTN_NOT_MERGEABLE = new ImageAsset(
+            BACKGROUND_OPT,
+            15, 0, 15, 15
+    );
+    public static ImageAsset BTN_OCCUPY = new ImageAsset(
+            BACKGROUND_OPT,
+            30, 0, 15, 15
+    );
+    public static ImageAsset BTN_MERGEABLE = new ImageAsset(
+            BACKGROUND_OPT,
+            45, 0, 15, 15
+    );
+
+    public static ImageAsset BTN_NO_OCCUPY_HOVER = new ImageAsset(
+            BACKGROUND_OPT,
+            0, 15, 15, 15
+    );
+    public static ImageAsset BTN_NOT_MERGEABLE_HOVER = new ImageAsset(
+            BACKGROUND_OPT,
+            15, 15, 15, 15
+    );
+    public static ImageAsset BTN_OCCUPY_HOVER = new ImageAsset(
+            BACKGROUND_OPT,
+            30, 15, 15, 15
+    );
+    public static ImageAsset BTN_MERGEABLE_HOVER = new ImageAsset(
+            BACKGROUND_OPT,
+            45, 15, 15, 15
     );
 
     public static Map<ResourceLocation, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();

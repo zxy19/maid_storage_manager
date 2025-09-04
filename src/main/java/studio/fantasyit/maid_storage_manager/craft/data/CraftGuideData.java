@@ -29,7 +29,11 @@ public class CraftGuideData {
                     CraftGuideStepData.CODEC.listOf().fieldOf(CraftGuide.TAG_STEPS)
                             .forGetter(CraftGuideData::getSteps),
                     ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_TYPE)
-                            .forGetter(CraftGuideData::getType)
+                            .forGetter(CraftGuideData::getType),
+                    Codec.BOOL.fieldOf(CraftGuide.TAG_MARK_MERGEABLE)
+                            .forGetter(CraftGuideData::isMergeable),
+                    Codec.BOOL.fieldOf(CraftGuide.TAG_MARK_NO_OCCUPY)
+                            .forGetter(CraftGuideData::isNoOccupy)
             ).apply(instance, CraftGuideData::new)
     );
 
@@ -44,9 +48,20 @@ public class CraftGuideData {
     public List<ItemStack> outputsNoCircular;
     public Integer selecting;
 
+    boolean mergeable;
+    boolean noOccupy;
+
+    public int extraSlotConsume = 0;
+
     public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type) {
+        this(steps, type, false, false);
+    }
+
+    public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type, boolean mergeable, boolean noOccupy) {
         this.steps = steps;
         this.type = type;
+        this.mergeable = mergeable;
+        this.noOccupy = noOccupy;
         this.buildInputAndOutputs();
     }
 
@@ -58,6 +73,7 @@ public class CraftGuideData {
         outputs = new ArrayList<>();
         inputsWithOptional = new ArrayList<>();
         outputsWithOptional = new ArrayList<>();
+        extraSlotConsume = 0;
         for (CraftGuideStepData step : getTransformedSteps()) {
             List<ItemStack> input = step.getInput();
             for (ItemStack _item : input) {
@@ -80,6 +96,8 @@ public class CraftGuideData {
                     ItemStackUtil.addToList(outputs, item.copy(), ItemStackUtil::isSameInCrafting);
                 ItemStackUtil.addToList(outputsWithOptional, item.copy(), ItemStackUtil::isSameInCrafting);
             }
+            if (step.getExtraSlotConsume() > extraSlotConsume)
+                extraSlotConsume = step.getExtraSlotConsume();
         }
     }
 
@@ -106,7 +124,13 @@ public class CraftGuideData {
         } else {
             type = CommonType.TYPE;
         }
-        CraftGuideData craftGuideData = new CraftGuideData(step, type);
+        boolean mergeable = false;
+        if (tag.contains(CraftGuide.TAG_MARK_MERGEABLE))
+            mergeable = tag.getBoolean(CraftGuide.TAG_MARK_MERGEABLE);
+        boolean noOccupy = false;
+        if (tag.contains(CraftGuide.TAG_MARK_NO_OCCUPY))
+            noOccupy = tag.getBoolean(CraftGuide.TAG_MARK_NO_OCCUPY);
+        CraftGuideData craftGuideData = new CraftGuideData(step, type, mergeable, noOccupy);
         craftGuideData.selecting = 0;
         if (tag.contains(CraftGuide.TAG_SELECTING))
             craftGuideData.selecting = tag.getInt(CraftGuide.TAG_SELECTING);
@@ -204,6 +228,8 @@ public class CraftGuideData {
         tag.putString(CraftGuide.TAG_TYPE, type.toString());
         if (selecting != null)
             tag.putInt(CraftGuide.TAG_SELECTING, selecting);
+        tag.putBoolean(CraftGuide.TAG_MARK_MERGEABLE, mergeable);
+        tag.putBoolean(CraftGuide.TAG_MARK_NO_OCCUPY, noOccupy);
         itemStack.setTag(tag);
     }
 
@@ -215,6 +241,26 @@ public class CraftGuideData {
         ICraftType type1 = CraftManager.getInstance().getType(type);
         if (type1 == null) return steps;
         return type1.transformSteps(steps);
+    }
+
+    public boolean isMergeable() {
+        return mergeable;
+    }
+
+    public void isMergeable(boolean b) {
+        mergeable = b;
+    }
+
+    public boolean isNoOccupy() {
+        return noOccupy;
+    }
+
+    public void isNoOccupy(boolean b) {
+        noOccupy = b;
+    }
+
+    public int getExtraSlotConsume() {
+        return extraSlotConsume;
     }
 
     public List<ItemStack> getInput() {
@@ -330,4 +376,5 @@ public class CraftGuideData {
         builder.append("}");
         return builder.toString();
     }
+
 }

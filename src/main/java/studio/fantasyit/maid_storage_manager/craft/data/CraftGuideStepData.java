@@ -311,4 +311,13 @@ public class CraftGuideStepData {
     public Optional<Integer> getOptionSelectionId(ActionOption<?> option) {
         return option.getOptionSelectionId(this);
     }
+
+    public int getExtraSlotConsume() {
+        int c = 0;
+        if (actionType.hasMark(CraftAction.MARK_HAND_RELATED)) {
+            int count = Math.toIntExact(this.getInput().stream().filter(itemStack -> !itemStack.isEmpty()).count());
+            c = Math.max(2 - count, 0);
+        }
+        return c;
+    }
 }
