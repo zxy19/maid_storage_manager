@@ -31,7 +31,7 @@ public class CraftGuideOperator extends TargetOperator {
         return ActionOptionSet.with(option, selection, value);
     }
 
-    public ActionOptionSet makeActionOptionSetOptional(boolean optional){
+    public ActionOptionSet makeActionOptionSetOptional(boolean optional) {
         return makeActionOptionSet(ActionOption.OPTIONAL, optional);
     }
 
@@ -64,6 +64,10 @@ public class CraftGuideOperator extends TargetOperator {
 
     public CraftGuideData makeCraftGuideData(CraftGuideStepData[] steps, ResourceLocation id) {
         return new CraftGuideData(List.of(steps), id);
+    }
+
+    public CraftGuideData makeCraftGuideDataFull(CraftGuideStepData[] steps, ResourceLocation id, boolean isMergeable, boolean isNoOccupy) {
+        return new CraftGuideData(List.of(steps), id, isMergeable, isNoOccupy);
     }
 
     public CraftGuideData simpleCommonItemHandlerIO(BlockPos pos, ItemStack[] input, ItemStack[] output) {

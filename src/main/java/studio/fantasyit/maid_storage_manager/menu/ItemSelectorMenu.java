@@ -27,7 +27,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     ItemStack target;
     public FilterContainer filteredItems;
     public SimpleContainer storageHandler;
-    public boolean matchTag = false;
+    public ItemStackUtil.MATCH_TYPE matching = ItemStackUtil.MATCH_TYPE.AUTO;
     public boolean blackmode = false;
     public boolean stockMode = false;
     public boolean shouldClear = false;
@@ -41,7 +41,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         CompoundTag tag = target.getOrCreateTag();
         filteredItems = new FilterContainer(10, this);
         filteredItems.deserializeNBT(tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND));
-        matchTag = tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
+        matching = RequestListItem.getMatchType(target);
         repeat = tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL);
         blackmode = tag.getBoolean(RequestListItem.TAG_BLACKMODE);
         stockMode = tag.getBoolean(RequestListItem.TAG_STOCK_MODE);
@@ -82,7 +82,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
             list.set(i, tmp);
         }
         tag.put(RequestListItem.TAG_ITEMS, list);
-        tag.putBoolean(RequestListItem.TAG_MATCH_TAG, matchTag);
+        tag.putInt(RequestListItem.TAG_MATCH, matching.ordinal());
         if (unitSecond)
             tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, repeat * 20);
         else
@@ -179,12 +179,12 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         addDataSlot(new DataSlot() {
             @Override
             public int get() {
-                return matchTag ? 1 : 0;
+                return matching.ordinal();
             }
 
             @Override
             public void set(int p_40208_) {
-                matchTag = p_40208_ == 1;
+                matching = ItemStackUtil.MATCH_TYPE.values()[p_40208_];
                 save();
             }
         });
@@ -276,7 +276,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 save();
                 break;
             case MATCH_TAG:
-                matchTag = value == 1;
+                matching = ItemStackUtil.MATCH_TYPE.values()[value];
                 save();
                 break;
             case CLEAR:

@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.function.Function;
@@ -31,11 +32,11 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
     }
 
     List<ItemStack> itemList = null;
-    boolean matchNbt = false;
+    ItemStackUtil.MATCH_TYPE matchNbt = ItemStackUtil.MATCH_TYPE.AUTO;
     boolean lastDone = false;
 
     @Override
-    public void setExtract(List<ItemStack> itemList, boolean matchNbt) {
+    public void setExtract(List<ItemStack> itemList, ItemStackUtil.MATCH_TYPE matchNbt) {
         this.itemList = itemList;
         this.matchNbt = matchNbt;
         this.current = 0;
@@ -50,9 +51,9 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
                     keys.stream()
                             .map(AEItemKey::getReadOnlyStack)
                             .filter(predicate)
-                            .toList(), true);
+                            .toList(), ItemStackUtil.MATCH_TYPE.MATCHING);
         else
-            setExtract(List.of(), true);
+            setExtract(List.of(), ItemStackUtil.MATCH_TYPE.MATCHING);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class Ae2CollectContext extends Ae2BaseContext implements IStorageExtract
             if (item.isEmpty()) continue;
             AEItemKey keyTmp = AEItemKey.of(item);
             List<AEItemKey> filteredKey = keyTmp == null ? List.of() : List.of(keyTmp);
-            if (!matchNbt) {
+            if (matchNbt != ItemStackUtil.MATCH_TYPE.MATCHING) {
                 filteredKey = keys.stream()
                         .filter(aeItemKey -> aeItemKey.getItem() == item.getItem())
                         .toList();

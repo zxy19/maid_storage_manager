@@ -53,7 +53,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
     protected List<ItemStack> itemList;
     protected List<ItemStack> sentRequests = new ArrayList<>();
     protected List<ItemStack> costedSlots = new ArrayList<>();
-    protected boolean matchNbt;
+    protected ItemStackUtil.MATCH_TYPE matchNbt;
     int waitCircle = 0;
     int timeoutAt = Integer.MAX_VALUE;
     boolean reversed = false;
@@ -331,7 +331,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
 
 
     @Override
-    public void setExtract(List<ItemStack> itemList, boolean matchNbt) {
+    public void setExtract(List<ItemStack> itemList, ItemStackUtil.MATCH_TYPE matchNbt) {
         this.itemList = new ArrayList<>(itemList.stream().map(ItemStack::copy).toList());
         this.matchNbt = matchNbt;
         this.current = 0;
@@ -344,9 +344,9 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
                     stacks.stream()
                             .map(s -> s.stack)
                             .filter(predicate)
-                            .toList(), true);
+                            .toList(), ItemStackUtil.MATCH_TYPE.MATCHING);
         else
-            setExtract(List.of(), true);
+            setExtract(List.of(), ItemStackUtil.MATCH_TYPE.MATCHING);
     }
 
     private Pair<Double, Double> getDistanceToBeConnectionAndPosition(BlockPos pos, BlockPos connection, Vec3 origin) {

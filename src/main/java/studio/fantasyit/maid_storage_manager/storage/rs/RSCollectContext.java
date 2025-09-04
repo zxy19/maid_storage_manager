@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 public class RSCollectContext extends AbstractRSContext implements IStorageExtractableContext {
     int current = 0;
     List<ItemStack> task = null;
-    boolean matchNbt = false;
+    ItemStackUtil.MATCH_TYPE matchNbt = ItemStackUtil.MATCH_TYPE.AUTO;
 
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
@@ -44,7 +44,7 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
         if (network == null || task == null || current >= task.size()) return;
         List<ItemStack> itemStack = List.of(task.get(current));
         int toCollect = task.get(current).getCount();
-        if (!matchNbt) {
+        if (matchNbt != ItemStackUtil.MATCH_TYPE.NOT_MATCHING) {
             itemStack = stackListStacks
                     .stream()
                     .filter(stack -> ItemStackUtil.isSame(stack.getStack(), task.get(current), matchNbt))
@@ -69,7 +69,7 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
     }
 
     @Override
-    public void setExtract(List<ItemStack> itemList, boolean matchNbt) {
+    public void setExtract(List<ItemStack> itemList, ItemStackUtil.MATCH_TYPE matchNbt) {
         this.task = itemList;
         this.matchNbt = matchNbt;
         current = 0;
@@ -82,9 +82,9 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
                     stackListStacks.stream()
                             .map(StackListEntry::getStack)
                             .filter(predicate)
-                            .toList(), true);
+                            .toList(), ItemStackUtil.MATCH_TYPE.MATCHING);
         else
-            setExtract(List.of(), true);
+            setExtract(List.of(), ItemStackUtil.MATCH_TYPE.MATCHING);
     }
 
     @Override

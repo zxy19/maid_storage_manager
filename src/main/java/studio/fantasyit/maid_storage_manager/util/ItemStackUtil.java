@@ -15,10 +15,16 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 public class ItemStackUtil {
-    public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag, boolean crafting) {
-        if (crafting)
+    public enum MATCH_TYPE {
+        AUTO,
+        NOT_MATCHING,
+        MATCHING,
+    }
+
+    public static boolean isSame(ItemStack stack1, ItemStack stack2, MATCH_TYPE match) {
+        if (match == MATCH_TYPE.AUTO)
             return isSameInCrafting(stack1, stack2);
-        return isSame(stack1, stack2, matchTag);
+        return isSame(stack1, stack2, match == MATCH_TYPE.MATCHING);
     }
 
     public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag) {
@@ -55,6 +61,10 @@ public class ItemStackUtil {
         return tag1.equals(tag2);
     }
 
+    public static ItemStack removeIsMatchInList(List<ItemStack> list, ItemStack itemStack, MATCH_TYPE matchTag) {
+        return removeIsMatchInList(list, itemStack, (a, b) -> isSame(a, b, matchTag));
+    }
+
     public static ItemStack removeIsMatchInList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {
         return removeIsMatchInList(list, itemStack, (a, b) -> isSame(a, b, matchTag));
     }
@@ -75,6 +85,10 @@ public class ItemStackUtil {
                 return ItemStack.EMPTY;
         }
         return itemStack;
+    }
+
+    public static ItemStack addToList(List<ItemStack> list, ItemStack itemStack, MATCH_TYPE matchTag) {
+        return ItemStackUtil.addToList(list, itemStack, (a, b) -> isSame(a, b, matchTag));
     }
 
     public static ItemStack addToList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {

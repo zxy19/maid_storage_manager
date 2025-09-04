@@ -52,6 +52,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
     public static final String TAG_ITEMS_MISSING = "missing";
     public static final String TAG_ITEMS_FAIL_ADDITION = "fail";
     public static final String TAG_MATCH_TAG = "match_tag";
+    public static final String TAG_MATCH = "match";
     public static final String TAG_UUID = "uuid";
     public static final String TAG_IGNORE_TASK = "ignore_task";
     public static final String TAG_COOLING_DOWN = "cooling";
@@ -66,6 +67,22 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public RequestListItem() {
         super(new Properties().stacksTo(1));
+    }
+
+    public static ItemStackUtil.MATCH_TYPE getMatchType(ItemStack mainHandItem) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStackUtil.MATCH_TYPE.AUTO;
+        if (!mainHandItem.hasTag()) return ItemStackUtil.MATCH_TYPE.AUTO;
+        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
+        if (tag.contains(TAG_MATCH_TAG)) {
+            tag.putInt(TAG_MATCH, (tag.getBoolean(TAG_MATCH_TAG) ? ItemStackUtil.MATCH_TYPE.MATCHING : ItemStackUtil.MATCH_TYPE.NOT_MATCHING).ordinal());
+            tag.remove(TAG_MATCH_TAG);
+        }
+        return ItemStackUtil.MATCH_TYPE.values()[tag.getInt(TAG_MATCH)];
+    }
+
+    public static ItemStackUtil.MATCH_TYPE getMatchType(ItemStack mainHandItem, boolean crafting) {
+        if (crafting) return ItemStackUtil.MATCH_TYPE.AUTO;
+        return getMatchType(mainHandItem);
     }
 
     public static boolean isIgnored(ItemStack mainHandItem) {
@@ -90,7 +107,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         for (int i = 0; i < items.size(); i++) {
             CompoundTag tmp = items.getCompound(i);
             ItemStack item = ItemStackUtil.parseStack(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (!ItemStackUtil.isSame(item, a, tag.getBoolean(TAG_MATCH_TAG))) continue;
+            if (!ItemStackUtil.isSame(item, a, getMatchType(mainHandItem))) continue;
 
             int newCount = tag.getInt(TAG_ITEMS_COLLECTED) + count;
             tmp.putInt(TAG_ITEMS_COLLECTED, newCount);
@@ -143,13 +160,6 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
         tag.put(RequestListItem.TAG_ITEMS, list);
         target.setTag(tag);
-    }
-
-    public static boolean matchNbt(ItemStack mainHandItem) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        if (!mainHandItem.hasTag()) return false;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        return tag.getBoolean(RequestListItem.TAG_MATCH_TAG);
     }
 
     public static boolean isCoolingDown(ItemStack item) {
@@ -442,7 +452,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (tmp.getBoolean(TAG_ITEMS_DONE)) continue;
             //获取每一组被需求的物品
             ItemStack requested = ItemStackUtil.parseStack(tmp.getCompound(TAG_ITEMS_ITEM));
-            if (ItemStackUtil.isSame(collected, requested, tag.getBoolean(TAG_MATCH_TAG), isInCrafting)) {
+            if (ItemStackUtil.isSame(collected, requested, getMatchType(stack, isInCrafting))) {
                 //如果黑名单，那么匹配的物品是不用收集的
                 if (tag.getBoolean(TAG_BLACKMODE)) return collected;
                 int requestedCount = tmp.getInt(TAG_ITEMS_REQUESTED);
@@ -494,7 +504,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int collected = tmp.getInt(TAG_ITEMS_COLLECTED);
             int stored = tmp.getInt(TAG_ITEMS_STORED);
             if (stored >= collected) continue;
-            if (ItemStackUtil.isSame(toStore, target, tag.getBoolean(TAG_MATCH_TAG), isInCrafting)) {
+            if (ItemStackUtil.isSame(toStore, target, getMatchType(stack, isInCrafting))) {
                 //黑名单物品不进行存储
                 if (tag.getBoolean(TAG_BLACKMODE)) return rest;
                 int maxToStore = collected - stored;
@@ -530,7 +540,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int count = 0;
             for (int j = 0; j < tmpStorage.getSlots(); j++) {
                 ItemStack itemStack = tmpStorage.getStackInSlot(j);
-                if (ItemStackUtil.isSame(itemStack, target, tag.getBoolean(TAG_MATCH_TAG))) {
+                if (ItemStackUtil.isSame(itemStack, target, getMatchType(stack))) {
                     count += itemStack.getCount();
                 }
             }

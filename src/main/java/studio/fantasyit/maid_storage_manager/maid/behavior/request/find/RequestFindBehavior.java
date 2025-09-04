@@ -111,7 +111,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                 isec.tick(takeItem);
             else {
                 List<Pair<ItemStack, Integer>> itemStacksNotDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
-                isec.setExtract(itemStacksNotDone.stream().map(c -> c.getA().copyWithCount(c.getB() == -1 ? Integer.MAX_VALUE : c.getB())).toList(), RequestListItem.matchNbt(maid.getMainHandItem()));
+                isec.setExtract(itemStacksNotDone.stream().map(c -> c.getA().copyWithCount(c.getB() == -1 ? Integer.MAX_VALUE : c.getB())).toList(), RequestListItem.getMatchType(maid.getMainHandItem()));
             }
         }
     }
@@ -139,7 +139,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
                     return itemStack;
                 });
             else
-                isec.setExtract(List.of(ItemRegistry.CRAFT_GUIDE.get().getDefaultInstance()), false);
+                isec.setExtract(List.of(ItemRegistry.CRAFT_GUIDE.get().getDefaultInstance()), ItemStackUtil.MATCH_TYPE.NOT_MATCHING);
         }
     }
 

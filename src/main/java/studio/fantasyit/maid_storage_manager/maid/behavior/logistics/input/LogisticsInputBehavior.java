@@ -281,7 +281,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             if (isec.hasTask())
                 isec.tick(taker);
             else
-                isec.setExtract(layer.getUnCollectedItems(), true);
+                isec.setExtract(layer.getUnCollectedItems(), ItemStackUtil.MATCH_TYPE.AUTO);
         }
     }
 

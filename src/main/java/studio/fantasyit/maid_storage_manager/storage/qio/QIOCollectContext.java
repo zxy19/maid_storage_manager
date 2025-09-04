@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,6 @@ public class QIOCollectContext extends QIOBaseContext implements IStorageExtract
     private List<ItemStack> list;
     private List<ItemStack> toExtract;
     private int index;
-    private boolean matchNbt;
     EntityMaid maid;
 
     @Override
@@ -64,10 +64,9 @@ public class QIOCollectContext extends QIOBaseContext implements IStorageExtract
     }
 
     @Override
-    public void setExtract(List<ItemStack> itemList, boolean matchNbt) {
+    public void setExtract(List<ItemStack> itemList, ItemStackUtil.MATCH_TYPE matchNbt) {
         toExtract = itemList;
         index = 0;
-        this.matchNbt = matchNbt;
     }
 
     @Override
@@ -75,6 +74,6 @@ public class QIOCollectContext extends QIOBaseContext implements IStorageExtract
         setExtract(
                 list.stream()
                         .filter(predicate)
-                        .toList(), true);
+                        .toList(), ItemStackUtil.MATCH_TYPE.MATCHING);
     }
 }

@@ -224,6 +224,19 @@ public class RequestItemUtil {
      * @return 虚拟物品
      */
     public static ItemStack makeVirtualItemStack(List<ItemStack> list, @Nullable Target target, @Nullable Entity targetEntity, String virtual_source) {
+        return makeVirtualItemStack(list, target, targetEntity, virtual_source, ItemStackUtil.MATCH_TYPE.AUTO);
+    }
+
+    /**
+     * 创建虚拟的请求列表（显示为女仆事务且玩家不可使用，结束后自动销毁）
+     *
+     * @param list           物品列表
+     * @param target         目标
+     * @param targetEntity   目标实体
+     * @param virtual_source 来源。用于回调事件。还在设计中。
+     * @return 虚拟物品
+     */
+    public static ItemStack makeVirtualItemStack(List<ItemStack> list, @Nullable Target target, @Nullable Entity targetEntity, String virtual_source, ItemStackUtil.MATCH_TYPE match) {
         ItemStack itemStack = ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
         CompoundTag tag = itemStack.getOrCreateTag();
         tag.putBoolean(RequestListItem.TAG_VIRTUAL, true);
@@ -240,7 +253,7 @@ public class RequestItemUtil {
         tag.putBoolean(RequestListItem.TAG_BLACKMODE, false);
         tag.putBoolean(RequestListItem.TAG_STOCK_MODE, false);
         tag.putBoolean(RequestListItem.TAG_IGNORE_TASK, false);
-        tag.putBoolean(RequestListItem.TAG_MATCH_TAG, false);
+        tag.putInt(RequestListItem.TAG_MATCH, match.ordinal());
         tag.putInt(RequestListItem.TAG_REPEAT_INTERVAL, 0);
         if (target != null) {
             tag.put(RequestListItem.TAG_STORAGE, target.toNbt());
