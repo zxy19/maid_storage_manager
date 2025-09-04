@@ -451,8 +451,10 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
                 }
                 for (Function<List<ItemStack>, @Nullable CraftGuideData> f : craftNode.craftGuideSupplier) {
                     CraftGuideData apply = f.apply(items);
-                    if (apply != null)
+                    if (apply != null) {
+                        debugContext.log(CraftingDebugContext.TYPE.GENERATOR_GUIDE, "Craft guide added %s", apply);
                         craftGuides.add(apply);
+                    }
                 }
             }
         } else {

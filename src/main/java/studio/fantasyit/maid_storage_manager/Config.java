@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -263,8 +264,17 @@ public class Config {
     public static boolean noBubbleForSub;
     public static int craftingMaxLayerLimit;
 
+    public static void testLoad(CommentedConfig config) {
+        BUILDER.build().acceptConfig(config);
+        onLoad();
+    }
+
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+        onLoad();
+    }
+
+    static void onLoad() {
         enableDebug = ENABLE_DEBUG.get();
         enableAe2Sup = ENABLE_AE2SUP.get();
         enableRsSup = ENABLE_RS_SUP.get();

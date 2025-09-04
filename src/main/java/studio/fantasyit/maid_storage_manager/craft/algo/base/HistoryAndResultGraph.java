@@ -4,9 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNode;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNode;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.*;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.CraftPlanEvaluator;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
@@ -42,13 +40,13 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
         this.history.push(new HistoryAndResultGraph.HistoryRecord(historyId.addAndGet(1), node, id, value));
         switch (id) {
             case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {
-                ((ItemNode) node).crafted += value;
+                ((ItemNodeBasic) node).crafted += value;
             }
             case HistoryAndResultGraph.HistoryRecord.RECORD_REQUIRED -> {
-                ((ItemNode) node).required += value;
+                ((ItemNodeBasic) node).required += value;
             }
             case HistoryAndResultGraph.HistoryRecord.RECORD_SCHEDULED -> {
-                ((CraftNode) node).scheduled += value;
+                ((CraftNodeBasic) node).scheduled += value;
             }
         }
     }
@@ -58,13 +56,13 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
             HistoryAndResultGraph.HistoryRecord pop = this.history.pop();
             switch (pop.id) {
                 case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {
-                    ((ItemNode) pop.node).crafted -= pop.value;
+                    ((ItemNodeBasic) pop.node).crafted -= pop.value;
                 }
                 case HistoryAndResultGraph.HistoryRecord.RECORD_REQUIRED -> {
-                    ((ItemNode) pop.node).required -= pop.value;
+                    ((ItemNodeBasic) pop.node).required -= pop.value;
                 }
                 case HistoryAndResultGraph.HistoryRecord.RECORD_SCHEDULED -> {
-                    ((CraftNode) pop.node).scheduled -= pop.value;
+                    ((CraftNodeBasic) pop.node).scheduled -= pop.value;
                 }
             }
         }
@@ -79,13 +77,13 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
             changes.put(pop.node.id, changes.get(pop.node.id) - pop.value);
             switch (pop.id) {
                 case HistoryAndResultGraph.HistoryRecord.RECORD_CRAFTED -> {
-                    ((ItemNode) pop.node).crafted -= pop.value;
+                    ((ItemNodeBasic) pop.node).crafted -= pop.value;
                 }
                 case HistoryAndResultGraph.HistoryRecord.RECORD_REQUIRED -> {
-                    ((ItemNode) pop.node).required -= pop.value;
+                    ((ItemNodeBasic) pop.node).required -= pop.value;
                 }
                 case HistoryAndResultGraph.HistoryRecord.RECORD_SCHEDULED -> {
-                    ((CraftNode) pop.node).scheduled -= pop.value;
+                    ((CraftNodeBasic) pop.node).scheduled -= pop.value;
                 }
             }
         }
@@ -95,13 +93,22 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
     @Override
     public void startContext(ItemStack item, int count) {
         super.startContext(item, count);
+        targetItem = item;
+    }
+
+    @Override
+    public void startContext(int itemNodeId, int count) {
+        super.startContext(itemNodeId, count);
+        targetItemNodeId = itemNodeId;
+        targetCount = count;
         history.clear();
         historyId.setValue(0);
-        targetItem = item;
-        targetItemNodeId = getItemNode(item).id;
-        targetCount = count;
         results.clear();
         targetAvailable = -1;
+    }
+
+    public List<CraftResultNode> getRawResults() {
+        return new ArrayList<>(this.results);
     }
 
     @Override

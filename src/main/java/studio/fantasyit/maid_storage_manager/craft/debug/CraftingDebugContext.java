@@ -6,6 +6,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy;
@@ -52,7 +53,8 @@ public class CraftingDebugContext {
         LOOP_RESOLVER(false),
         PREFILTER(false),
         GENERATOR_RECIPE(true),
-        SIMULATOR(false);
+        SIMULATOR(false),
+        GENERATOR_GUIDE(true);
         public final boolean disableByDefault;
 
 
@@ -74,7 +76,20 @@ public class CraftingDebugContext {
             config = null;
             return;
         }
-        tData tmp = getLogger(id);
+        tData tmp = getLogger(id, null);
+        logger = tmp.logger;
+        config = tmp.config;
+        Arrays.stream(TYPE.values()).filter(type -> type.disableByDefault).forEach(this::disable);
+    }
+
+    public CraftingDebugContext(boolean b, String pathOverride) {
+        id = "debug_" + System.currentTimeMillis();
+        if (b) {
+            logger = null;
+            config = null;
+            return;
+        }
+        tData tmp = getLogger(id, pathOverride);
         logger = tmp.logger;
         config = tmp.config;
         Arrays.stream(TYPE.values()).filter(type -> type.disableByDefault).forEach(this::disable);
@@ -88,7 +103,7 @@ public class CraftingDebugContext {
         disable[type.ordinal()] = false;
     }
 
-    public static tData getLogger(String id) {
+    private static tData getLogger(String id, String pathOverride) {
         // 获取LoggerContext
         LoggerContext context = (LoggerContext) LogManager.getContext(false);
         Configuration config = context.getConfiguration();
@@ -96,7 +111,8 @@ public class CraftingDebugContext {
                 .withConfiguration(config)
                 .withPattern("%d{HH:mm:ss.SSS}[%-20t] %msg%n")
                 .build();
-        String baseFilePath = FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/" + id + ".log";
+        String baseFilePath = (pathOverride != null ? pathOverride : (FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/"))
+                + id + ".log";
         TriggeringPolicy policy = CompositeTriggeringPolicy.createPolicy(
                 SizeBasedTriggeringPolicy.createPolicy("1 GB")
         );
@@ -122,6 +138,25 @@ public class CraftingDebugContext {
         config.addLogger(id, loggerConfig);
         context.updateLoggers(config);
         return new tData(LogManager.getLogger(id), loggerConfig);
+    }
+
+    private static void closeLogger(Logger logger, LoggerConfig loggerConfig) {
+        if (loggerConfig == null || logger == null) return;
+
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        // 1. 从配置中移除 LoggerConfig
+        config.removeLogger(loggerConfig.getName());
+
+        // 2. 停止并移除 Appender
+        Appender appender = loggerConfig.getAppenders().get(loggerConfig.getName());
+        if (appender != null) {
+            loggerConfig.removeAppender(appender.getName());
+            appender.stop();
+            config.getAppenders().remove(appender.getName());
+        }
+        context.updateLoggers(config);
     }
 
 
@@ -175,7 +210,7 @@ public class CraftingDebugContext {
     }
 
     public void stop() {
-        config.stop();
+        closeLogger(logger, config);
     }
 
     int graphIndex = 0;

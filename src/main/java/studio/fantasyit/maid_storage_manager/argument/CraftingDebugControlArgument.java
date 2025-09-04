@@ -25,7 +25,7 @@ public class CraftingDebugControlArgument implements ArgumentType<String> {
         }
 
         String s = reader.getString().substring(i, reader.getCursor());
-        String[] ss = s.split("/,/");
+        String[] ss = s.split(",");
         for (String s1 : ss) {
             CraftingDebugContext.TYPE.valueOf(s1.substring(1));
             assert s1.startsWith("+") || s1.startsWith("-");

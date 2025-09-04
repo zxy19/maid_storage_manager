@@ -5,7 +5,6 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNodeBasic;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNode;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNodeBasic;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
@@ -45,7 +44,7 @@ public class LoopSolver implements IDebugContextSetter {
             if (node.edges.size() <= index.intValue()) {
                 if (node instanceof CraftNodeBasic craftNode) {
                     craftNode.hasLoopIngredient = craftNode.edges
-                            .stream().anyMatch(edge -> ((ItemNode) graph.getNode(edge.getA())).isLoopedIngredient);
+                            .stream().anyMatch(edge -> ((ItemNodeBasic) graph.getNode(edge.getA())).isLoopedIngredient);
                 }
                 visited.put(node.id, visited.get(node.id) - 1);
                 queue.pop();
@@ -133,7 +132,7 @@ public class LoopSolver implements IDebugContextSetter {
         }
 
         if (isSelfProductLoop) {
-            ItemNodeBasic node = (ItemNode) graph.getNode(path.get(startNode));
+            ItemNodeBasic node = (ItemNodeBasic) graph.getNode(path.get(startNode));
             if (node.loopInputIngredientCount == 0)
                 node.loopInputIngredientCount = startCount;
             node.loopInputIngredientCount = Math.min(startCount, node.loopInputIngredientCount);
@@ -141,7 +140,7 @@ public class LoopSolver implements IDebugContextSetter {
             node.isLoopedIngredient = true;
             debugContext.logNoLevel(CraftingDebugContext.TYPE.LOOP_RESOLVER, "%s -> single(%s)", node, node.singleTimeCount);
             for (int i = startNode + 2; i < path.size(); i += 2) {
-                ItemNodeBasic walkNode = (ItemNode) graph.getNode(path.get(i));
+                ItemNodeBasic walkNode = (ItemNodeBasic) graph.getNode(path.get(i));
                 //环上所有节点也进行设置
                 if (walkNode.loopInputIngredientCount == 0)
                     walkNode.loopInputIngredientCount = counts[i];
@@ -151,7 +150,7 @@ public class LoopSolver implements IDebugContextSetter {
                 debugContext.logNoLevel(CraftingDebugContext.TYPE.LOOP_RESOLVER, "* %s -> single(%s)", walkNode, walkNode.singleTimeCount);
             }
         } else {
-            ItemNodeBasic node = (ItemNode) graph.getNode(path.get(startNode));
+            ItemNodeBasic node = (ItemNodeBasic) graph.getNode(path.get(startNode));
             //对于主分支非自增环，其实际上没有意义（因为所求直接就是产物，那么循环也不会带来任何收益，直接设置false）
             if (!isMainBranchLoop) {
                 node.isLoopedIngredient = true;
