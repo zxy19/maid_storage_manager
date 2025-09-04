@@ -180,6 +180,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                         tag.putString("id", t.type().getPath());
                         sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SET_MODE, 0, tag));
                     });
+                    actionSelector.setSelectedAction(value);
                     actionSelector.expandFrom(actionSelectorButton);
                     return new SelectButtonWidget.Option<>(
                             value,
