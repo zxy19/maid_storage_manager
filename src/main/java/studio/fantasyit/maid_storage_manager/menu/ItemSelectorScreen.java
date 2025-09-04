@@ -114,22 +114,27 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
         this.addRenderableWidget(new ButtonWidget(
                 119, 70, 16, 16,
                 background,
-                (widget) -> {
-                    if (this.getMenu().matchTag) {
-                        return new Pair<>(208, widget.isHovered() ? 16 : 0);
-                    } else {
-                        return new Pair<>(224, widget.isHovered() ? 16 : 0);
-                    }
+                (widget) ->
+                        switch (this.getMenu().matching) {
+                            case AUTO -> new Pair<>(224, widget.isHovered() ? 48 : 32);
+                            case MATCHING -> new Pair<>(208, widget.isHovered() ? 16 : 0);
+                            case NOT_MATCHING -> new Pair<>(224, widget.isHovered() ? 16 : 0);
+                        },
+                () -> switch (this.getMenu().matching) {
+                    case AUTO -> Component.translatable("gui.maid_storage_manager.request_list.match_tag_auto");
+                    case MATCHING -> Component.translatable("gui.maid_storage_manager.request_list.match_tag_on");
+                    case NOT_MATCHING -> Component.translatable("gui.maid_storage_manager.request_list.match_tag_off");
                 },
-                () -> this.getMenu().matchTag ?
-                        Component.translatable("gui.maid_storage_manager.request_list.match_tag_on") :
-                        Component.translatable("gui.maid_storage_manager.request_list.match_tag_off"),
                 () -> {
-                    this.getMenu().matchTag = !this.getMenu().matchTag;
+                    this.getMenu().matching = switch (this.getMenu().matching) {
+                        case AUTO -> ItemStackUtil.MATCH_TYPE.MATCHING;
+                        case MATCHING -> ItemStackUtil.MATCH_TYPE.NOT_MATCHING;
+                        case NOT_MATCHING -> ItemStackUtil.MATCH_TYPE.AUTO;
+                    };
                     Network.sendItemSelectorGuiPacket(
                             ItemSelectorGuiPacket.SlotType.MATCH_TAG,
                             0,
-                            this.getMenu().matchTag ? 1 : 0
+                            this.getMenu().matching.ordinal()
                     );
                 },
                 this

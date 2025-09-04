@@ -25,7 +25,8 @@ public class ActionOptionSet {
     }
 
     public <T> ActionOptionSet add(ActionOption<T> option, T selection, @Nullable String value) {
-        return new ActionOptionSet(List.of(new ActionOptionSetItem<>(option, selection, value)));
+        this.options.add(new ActionOptionSetItem<>(option, selection, value));
+        return this;
     }
 
     public static <T> ActionOptionSet with(ActionOption<T> option, T selection) {

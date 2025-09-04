@@ -86,7 +86,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
                 isec.tick(taker);
             else {
                 List<ItemStack> filterMismatch = MemoryUtil.getResorting(maid).getNeedToResort();
-                isec.setExtract(filterMismatch, true);
+                isec.setExtract(filterMismatch, ItemStackUtil.MATCH_TYPE.MATCHING);
             }
         }
     }

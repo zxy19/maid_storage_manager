@@ -90,7 +90,7 @@ public class MealBehavior extends MaidWorkMealTask {
             if (isec.hasTask())
                 isec.tick(taker);
             else {
-                isec.setExtract(List.of(MemoryUtil.getMeal(maid).getCheckItem()), true);
+                isec.setExtract(List.of(MemoryUtil.getMeal(maid).getCheckItem()), ItemStackUtil.MATCH_TYPE.AUTO);
             }
         }
     }

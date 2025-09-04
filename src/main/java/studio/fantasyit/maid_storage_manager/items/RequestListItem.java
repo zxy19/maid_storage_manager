@@ -57,6 +57,22 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         return Objects.requireNonNull(target.get(DataComponentRegistry.REQUEST_ITEMS.get()));
     }
 
+    public static ItemStackUtil.MATCH_TYPE getMatchType(ItemStack mainHandItem) {
+        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStackUtil.MATCH_TYPE.AUTO;
+        if (!mainHandItem.hasTag()) return ItemStackUtil.MATCH_TYPE.AUTO;
+        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
+        if (tag.contains(TAG_MATCH_TAG)) {
+            tag.putInt(TAG_MATCH, (tag.getBoolean(TAG_MATCH_TAG) ? ItemStackUtil.MATCH_TYPE.MATCHING : ItemStackUtil.MATCH_TYPE.NOT_MATCHING).ordinal());
+            tag.remove(TAG_MATCH_TAG);
+        }
+        return ItemStackUtil.MATCH_TYPE.values()[tag.getInt(TAG_MATCH)];
+    }
+
+    public static ItemStackUtil.MATCH_TYPE getMatchType(ItemStack mainHandItem, boolean crafting) {
+        if (crafting) return ItemStackUtil.MATCH_TYPE.AUTO;
+        return getMatchType(mainHandItem);
+    }
+
     public static boolean isIgnored(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
         return mainHandItem.getOrDefault(DataComponentRegistry.REQUEST_IGNORE.get(), false);
@@ -87,7 +103,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         List<RequestItemStackList.ListItem> items = request.getList();
         for (RequestItemStackList.ListItem listItem : items) {
             ItemStack item = listItem.getItem();
-            if (!ItemStackUtil.isSame(item, a, request.matchTag)) continue;
+            if (!ItemStackUtil.isSame(item, a, request.matching)) continue;
 
             listItem.collected += count;
             if (listItem.collected > listItem.requested && listItem.requested != -1) {
@@ -129,11 +145,6 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         target.set(DataComponentRegistry.REQUEST_FAIL_ADDITION.get(), "");
         target.set(DataComponentRegistry.REQUEST_CD.get(), 0);
         target.set(DataComponentRegistry.REQUEST_IGNORE.get(), false);
-    }
-
-    public static boolean matchNbt(ItemStack mainHandItem) {
-        if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return false;
-        return Objects.requireNonNull(getImmutableRequestData(mainHandItem)).matchTag();
     }
 
     public static boolean isCoolingDown(ItemStack item) {
@@ -370,7 +381,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             if (tmp.done) continue;
             //获取每一组被需求的物品
             ItemStack requested = tmp.getItem();
-            if (ItemStackUtil.isSame(collected, requested, request.matchTag, isInCrafting)) {
+            if (ItemStackUtil.isSame(collected, requested, getMatchType(stack, isInCrafting))) {
                 //如果黑名单，那么匹配的物品是不用收集的
                 if (request.blackList) return collected;
                 int requestedCount = tmp.requested;
@@ -422,7 +433,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int collected = tmp.collected;
             int stored = tmp.stored;
             if (stored >= collected) continue;
-            if (ItemStackUtil.isSame(toStore, target, request.matchTag, isInCrafting)) {
+            if (ItemStackUtil.isSame(toStore, target, getMatchType(stack, isInCrafting))) {
                 //黑名单物品不进行存储
                 if (request.blackList) return rest;
                 int maxToStore = collected - stored;
@@ -456,7 +467,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             int count = 0;
             for (int j = 0; j < tmpStorage.getSlots(); j++) {
                 ItemStack itemStack = tmpStorage.getStackInSlot(j);
-                if (ItemStackUtil.isSame(itemStack, target, request.matchTag)) {
+                if (ItemStackUtil.isSame(itemStack, target, getMatchType(stack))) {
                     count += itemStack.getCount();
                 }
             }

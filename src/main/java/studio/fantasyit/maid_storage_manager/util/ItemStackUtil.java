@@ -30,6 +30,11 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 public class ItemStackUtil {
+    public enum MATCH_TYPE {
+        AUTO,
+        NOT_MATCHING,
+        MATCHING,
+    }
     static Codec<ItemStack> CODEC_UNLIMITED = Codec.lazyInitialized(() -> RecordCodecBuilder.create((p_347288_) -> p_347288_.group(
                     ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
                     Codec.INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
@@ -70,10 +75,10 @@ public class ItemStackUtil {
         }
     };
 
-    public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag, boolean isCrafting) {
-        if (isCrafting)
+    public static boolean isSame(ItemStack stack1, ItemStack stack2, MATCH_TYPE match) {
+        if (match == MATCH_TYPE.AUTO)
             return isSameInCrafting(stack1, stack2);
-        return isSame(stack1, stack2, matchTag);
+        return isSame(stack1, stack2, match == MATCH_TYPE.MATCHING);
     }
 
     public static boolean isSame(ItemStack stack1, ItemStack stack2, boolean matchTag) {
@@ -110,6 +115,10 @@ public class ItemStackUtil {
         return true;
     }
 
+    public static ItemStack removeIsMatchInList(List<ItemStack> list, ItemStack itemStack, MATCH_TYPE matchTag) {
+        return removeIsMatchInList(list, itemStack, (a, b) -> isSame(a, b, matchTag));
+    }
+
     public static ItemStack removeIsMatchInList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {
         return removeIsMatchInList(list, itemStack, (a, b) -> isSame(a, b, matchTag));
     }
@@ -130,6 +139,10 @@ public class ItemStackUtil {
                 return ItemStack.EMPTY;
         }
         return itemStack;
+    }
+
+    public static ItemStack addToList(List<ItemStack> list, ItemStack itemStack, MATCH_TYPE matchTag) {
+        return ItemStackUtil.addToList(list, itemStack, (a, b) -> isSame(a, b, matchTag));
     }
 
     public static ItemStack addToList(List<ItemStack> list, ItemStack itemStack, boolean matchTag) {

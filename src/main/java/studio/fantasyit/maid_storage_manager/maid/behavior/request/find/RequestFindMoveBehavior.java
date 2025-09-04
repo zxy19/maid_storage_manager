@@ -87,7 +87,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (!Conditions.usePriorityTarget(maid)) return false;
         if (RequestListItem.isBlackMode(maid.getMainHandItem())) return false;
         List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
-        boolean matchTag = RequestListItem.matchNbt(maid.getMainHandItem());
+        ItemStackUtil.MATCH_TYPE matchTag = RequestListItem.getMatchType(maid.getMainHandItem());
         Map<Target, List<ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
         for (Map.Entry<Target, List<ItemCount>> blockPos : viewed.entrySet()) {

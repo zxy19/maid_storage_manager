@@ -451,5 +451,10 @@
   "gui.maid_storage_manager.craft_guide.common.use_single": "单击",
   "gui.maid_storage_manager.craft_guide.common.use_long": "长按",
   "gui.maid_storage_manager.craft_guide.common.attack_destroy": "破坏方块",
-  "gui.maid_storage_manager.craft_guide.common.attack_single": "单次攻击"
+  "gui.maid_storage_manager.craft_guide.common.attack_single": "单次攻击",
+  "gui.maid_storage_manager.craft_guide.global.mergeable": "可合并的合成指南",
+  "gui.maid_storage_manager.craft_guide.global.not_mergeable": "不可合并的合成指南",
+  "gui.maid_storage_manager.craft_guide.global.occupy": "占据",
+  "gui.maid_storage_manager.craft_guide.global.no_occupy": "不占据",
+  "gui.maid_storage_manager.request_list.match_tag_auto": "自动"
 }
