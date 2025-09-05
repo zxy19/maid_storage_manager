@@ -324,12 +324,24 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                             outputId++;
                         }
                     }
+                    if (id != selectedIndex) {
+                        step.save();
+                    }
                 }
                 save();
             }
             case SYNC -> {
                 if (data != null)
                     craftGuideData.steps.set(key, CraftGuideStepData.fromCompound(player.registryAccess(), data));
+            }
+            case GLOBAL -> {
+                switch (key) {
+                    case 0 -> craftGuideData.isMergeable(value == 1);
+                    case 1 -> craftGuideData.isNoOccupy(value == 1);
+                    default -> {
+                    }
+                }
+                save();
             }
         }
     }

@@ -273,6 +273,7 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         } else {
             List<CraftLayer> optimize = ResultListOptimizer.optimize(results);
             optimize = RequestListSplitter.splitLayerMax(optimize, StorageManagerConfigData.get(maid).maxCraftingLayerRepeatCount());
+            optimize = ResultListOptimizer.mergeMergeable(optimize);
             optimize.forEach(craftLayer -> plan.addLayer(craftLayer));
 
             debugContext.logEntryNewLevel(CraftingDebugContext.TYPE.PLANNER,
