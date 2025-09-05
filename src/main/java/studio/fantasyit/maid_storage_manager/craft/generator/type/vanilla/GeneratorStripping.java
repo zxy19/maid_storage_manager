@@ -70,8 +70,9 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                         if (axeStrippingState == null) return;
                         ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
                         @Nullable ResourceLocation _key = ForgeRegistries.ITEMS.getKey(strippedItem.getItem());
-                        if (_key == null) return;
-                        ResourceLocation key = new ResourceLocation(_key.getNamespace(), _key.getPath() + "_stripping");
+                        @Nullable ResourceLocation _key2 = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
+                        if (_key == null || _key2 == null) return;
+                        ResourceLocation key = new ResourceLocation(_key.getNamespace(), _key.getPath() + "_stripping_from" + _key2.getNamespace() + "_" + _key2.getPath());
                         graph.addRecipe(
                                 key,
                                 List.of(Ingredient.of(itemStack), Ingredient.of(ItemTags.AXES)),
@@ -134,6 +135,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                     }
                 });
     }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.stripping");
