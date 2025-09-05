@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tester {
+public class CraftingCalculationTester {
     public static void main(String[] args) throws IOException {
         startTestFrom(args[0]);
     }
