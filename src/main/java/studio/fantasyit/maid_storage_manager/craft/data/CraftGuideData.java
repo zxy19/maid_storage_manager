@@ -370,6 +370,12 @@ public class CraftGuideData {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("CraftGuideData{");
+        if (isNoOccupy()) {
+            builder.append("[NO]");
+        }
+        if (isMergeable()) {
+            builder.append("[ME]");
+        }
         getInput().forEach(itemStack -> builder.append(itemStack.getItem()).append(","));
         builder.append("->");
         getOutput().forEach(itemStack -> builder.append(itemStack.getItem()).append(","));

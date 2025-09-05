@@ -13,7 +13,6 @@ import java.util.Optional;
 public class ResultListOptimizer {
     public static List<CraftLayer> optimize(List<CraftLayer> layers) {
         layers = mergeSame(layers);
-        layers = mergeMergeable(layers);
         return layers;
     }
 
