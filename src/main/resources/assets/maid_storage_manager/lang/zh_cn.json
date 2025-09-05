@@ -454,5 +454,5 @@
   "gui.maid_storage_manager.craft_guide.global.not_mergeable": "不可合并的合成指南",
   "gui.maid_storage_manager.craft_guide.global.occupy": "占据",
   "gui.maid_storage_manager.craft_guide.global.no_occupy": "不占据",
-  "gui.maid_storage_manager.request_list.match_tag_auto": "自动"
+  "gui.maid_storage_manager.request_list.match_tag_auto": "自动判断标签"
 }
