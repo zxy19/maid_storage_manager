@@ -594,8 +594,26 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     private Double mouseStartDraggingOffset = null;
 
     private float getScrollBlockHeight() {
-        return Math.min(2 * SCROLL_AREA_TOTAL_HEIGHT - menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1), SCROLL_AREA_TOTAL_HEIGHT + 6);
+        return Math.max(
+                Math.min(2 * SCROLL_AREA_TOTAL_HEIGHT - menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1), SCROLL_AREA_TOTAL_HEIGHT + 6),
+                10
+        );
     }
+
+    private float getScrollBlockOffset() {
+        float scrollableHeight = getMaxListOffset();
+        float totalMaxHeight = getMaxScrollOffset();
+        return scrollOffsetTop * scrollableHeight / totalMaxHeight;
+    }
+
+    private float getMaxScrollOffset() {
+        return menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1) - SCROLL_AREA_TOTAL_HEIGHT;
+    }
+
+    private float getMaxListOffset() {
+        return SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight();
+    }
+
 
     private void makeScreenScissor(GuiGraphics graphics) {
         graphics.enableScissor(getGuiLeft() + 26, getGuiTop() + 26, getGuiLeft() + 100, getGuiTop() + 119);
@@ -607,8 +625,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     private void scroll(float delta) {
         scrollOffsetTop += delta;
-        if (scrollOffsetTop > SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight()) {
-            scrollOffsetTop = SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight();
+        if (scrollOffsetTop > getMaxScrollOffset()) {
+            scrollOffsetTop = getMaxScrollOffset();
         }
         if (scrollOffsetTop < 0) {
             scrollOffsetTop = 0;
@@ -752,7 +770,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                 graphics,
                 CommonCraftAssets.BACKGROUND,
                 getGuiLeft() + 100,
-                getGuiTop() + 23 + (int) scrollOffsetTop,
+                getGuiTop() + 23 + (int) getScrollBlockOffset(),
                 base.w,
                 (int) getScrollBlockHeight(),
                 1,
@@ -765,7 +783,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         deco.blit(
                 graphics,
                 getGuiLeft() + 100,
-                getGuiTop() + 23 + (int) scrollOffsetTop + (int) (getScrollBlockHeight() / 2 - (float) deco.h / 2)
+                getGuiTop() + 23 + (int) getScrollBlockOffset() + (int) (getScrollBlockHeight() / 2 - (float) deco.h / 2)
         );
     }
 
@@ -784,15 +802,15 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         double rx = x - getGuiLeft();
         double ry = y - getGuiTop() - 23;
         if (rx > 104 || rx < 100) return false;
-        if (ry < scrollOffsetTop) return false;
-        if (ry > scrollOffsetTop + getScrollBlockHeight()) return false;
+        if (ry < getScrollBlockOffset()) return false;
+        if (ry > getScrollBlockOffset() + getScrollBlockHeight()) return false;
         return true;
     }
 
     @Override
     public boolean mouseDragged(double x, double y, int p_97754_, double p_97755_, double p_97756_) {
         if (mouseDraggingScrollingBar != null && mouseStartDraggingOffset != null) {
-            scrollOffsetTop = (float) (mouseStartDraggingOffset + (y - mouseDraggingScrollingBar));
+            scrollOffsetTop = (float) (mouseStartDraggingOffset + (y - mouseDraggingScrollingBar) / getMaxListOffset() * getMaxScrollOffset());
             scroll(0);
         }
         return super.mouseDragged(x, y, p_97754_, p_97755_, p_97756_);
