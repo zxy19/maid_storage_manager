@@ -413,6 +413,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
 
     protected void addToQueueIfNotIn(Node node) {
         if (!node.inqueue) {
+            debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR, "%s marked available", node);
             node.inqueue = true;
             queue.add(node);
             pushedSteps++;
