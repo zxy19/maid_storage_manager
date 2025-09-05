@@ -215,8 +215,8 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6885237")
-    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:6885237")
+    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6911704")
+    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:6911704")
 
 
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
