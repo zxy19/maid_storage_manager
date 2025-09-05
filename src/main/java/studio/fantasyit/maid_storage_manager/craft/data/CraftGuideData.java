@@ -78,16 +78,16 @@ public class CraftGuideData {
             List<ItemStack> input = step.getInput();
             for (ItemStack _item : input) {
                 if (_item.isEmpty()) continue;
+
                 ItemStack item = _item.copy();
                 if (!step.isOptional()) {
-                    if (ItemStackUtil.removeIsMatchInList(outputs, item, ItemStackUtil::isSameInCrafting).isEmpty())
-                        continue;
-                    ItemStackUtil.addToList(inputs, item.copy(), ItemStackUtil::isSameInCrafting);
+                    if (!ItemStackUtil.removeIsMatchInList(outputs, item, ItemStackUtil::isSameInCrafting).isEmpty())
+                        ItemStackUtil.addToList(inputs, item.copy(), ItemStackUtil::isSameInCrafting);
                 }
 
-                if (ItemStackUtil.removeIsMatchInList(outputsWithOptional, item, ItemStackUtil::isSameInCrafting).isEmpty())
-                    continue;
-                ItemStackUtil.addToList(inputsWithOptional, item.copy(), ItemStackUtil::isSameInCrafting);
+                item = _item.copy();
+                if (!ItemStackUtil.removeIsMatchInList(outputsWithOptional, item, ItemStackUtil::isSameInCrafting).isEmpty())
+                    ItemStackUtil.addToList(inputsWithOptional, item.copy(), ItemStackUtil::isSameInCrafting);
             }
             for (ItemStack _item : step.getOutput()) {
                 if (_item.isEmpty()) continue;
