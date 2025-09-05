@@ -456,5 +456,5 @@
   "gui.maid_storage_manager.craft_guide.global.not_mergeable": "Not Mergeable Craft Guide",
   "gui.maid_storage_manager.craft_guide.global.occupy": "Occupy",
   "gui.maid_storage_manager.craft_guide.global.no_occupy": "No Occupy",
-  "gui.maid_storage_manager.request_list.match_tag_auto": "Auto"
+  "gui.maid_storage_manager.request_list.match_tag_auto": "Auto Check&Matching"
 }
