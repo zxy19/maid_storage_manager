@@ -33,6 +33,7 @@ public class AutoGraphGenerator implements IDebugContextSetter {
     protected final ICachableGeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
     protected final List<InventoryItem> inventory;
+    private final List<ItemStack> itemList;
     protected MaidPathFindingBFS pathfindingBFS;
     Map<ResourceLocation, List<BlockPos>> recognizedTypePositions;
     Set<ResourceLocation> hasDoneTypes;
@@ -63,6 +64,7 @@ public class AutoGraphGenerator implements IDebugContextSetter {
 
     public AutoGraphGenerator(EntityMaid maid, List<ItemStack> itemList, List<CraftGuideData> hasExisted) {
         this.maid = maid;
+        this.itemList = itemList;
         BlockPos center = maid.blockPosition();
         if (maid.hasRestriction())
             center = maid.getRestrictCenter();
@@ -181,7 +183,12 @@ public class AutoGraphGenerator implements IDebugContextSetter {
                 isProcessingBlocks = false;
             return false;
         } else {
-            return graph.process();
+            if (graph.process()) {
+                if (!debugContext.isDummy() && graph instanceof GeneratorGraph g)
+                    debugContext.saveGeneratorGraph(g, inventory.stream().map(t -> t.itemStack).toList(), itemList.get(0));
+                return true;
+            }
+            return false;
         }
     }
 

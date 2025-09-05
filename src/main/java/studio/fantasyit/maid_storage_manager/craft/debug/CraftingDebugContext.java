@@ -19,8 +19,11 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.GeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.debug.CraftGuideGeneratorTester;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class CraftingDebugContext {
     public void convey(Object anyOther) {
@@ -221,8 +224,16 @@ public class CraftingDebugContext {
     public void saveGraph(AbstractBiCraftGraph graph, ItemStack target, int count) {
         if (isDummy()) return;
         String path = FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/" + id + "_crafting_data_" + in(target.getItem()) + "_" + (graphIndex++) + ".json";
-        Tester.exportTo(graph, target, count, path);
+        CraftingCalculationTester.exportTo(graph, target, count, path);
         graph.restoreCurrent();
+    }
+
+    int generatorIndex = 0;
+
+    public void saveGeneratorGraph(GeneratorGraph graph, List<ItemStack> inventory, ItemStack target) {
+        if (isDummy()) return;
+        String path = FMLPaths.GAMEDIR.get() + "/logs/msm_crafting/" + id + "_generator_data_" + in(target.getItem()) + "_" + (graphIndex++) + ".json";
+        CraftGuideGeneratorTester.exportTo(graph, inventory, path);
     }
 
     private static String in(Item item) {

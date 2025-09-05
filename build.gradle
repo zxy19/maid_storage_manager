@@ -127,7 +127,7 @@ minecraft {
         }
 
         testCrafting{
-            main 'studio.fantasyit.maid_storage_manager.craft.debug.Tester'
+            main 'studio.fantasyit.maid_storage_manager.craft.debug.CraftingCalculationTester'
             workingDirectory project.file('run')
             arg "test.json"
         }

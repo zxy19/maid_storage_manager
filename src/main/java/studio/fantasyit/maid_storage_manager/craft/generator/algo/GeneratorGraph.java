@@ -30,6 +30,10 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
 
     private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
+    public int getNodeCount() {
+        return nodes.size();
+    }
+
     protected record AddRecipeData(ResourceLocation id,
                                    List<Ingredient> ingredients,
                                    List<Integer> ingredientCounts,
