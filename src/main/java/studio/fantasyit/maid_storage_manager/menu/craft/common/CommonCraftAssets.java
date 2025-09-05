@@ -11,7 +11,7 @@ import java.util.Map;
 public class CommonCraftAssets {
     public static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
 
-    public static final ResourceLocation BACKGROUND_OPT = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/craft/type/common_opt.png");
+    public static final ResourceLocation BACKGROUND_OPT = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common_opt.png");
 
 
     public static ImageAsset ROW_HIGHLIGHT = ImageAsset.from4Point(

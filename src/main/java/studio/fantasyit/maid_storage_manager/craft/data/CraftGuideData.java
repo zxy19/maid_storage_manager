@@ -23,8 +23,10 @@ public class CraftGuideData {
                     ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_TYPE)
                             .forGetter(CraftGuideData::getType),
                     Codec.BOOL.fieldOf(CraftGuide.TAG_MARK_MERGEABLE)
+                            .orElse(false)
                             .forGetter(CraftGuideData::isMergeable),
                     Codec.BOOL.fieldOf(CraftGuide.TAG_MARK_NO_OCCUPY)
+                            .orElse(false)
                             .forGetter(CraftGuideData::isNoOccupy)
             ).apply(instance, CraftGuideData::new)
     );
@@ -33,9 +35,9 @@ public class CraftGuideData {
             CraftGuideData::getSteps,
             ResourceLocation.STREAM_CODEC,
             CraftGuideData::getType,
-            ByteBufCodecs.BYTE,
+            ByteBufCodecs.BOOL,
             CraftGuideData::isMergeable,
-            ByteBufCodecs.BYTE,
+            ByteBufCodecs.BOOL,
             CraftGuideData::isNoOccupy,
             CraftGuideData::new
     );

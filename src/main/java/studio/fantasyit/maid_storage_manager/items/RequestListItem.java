@@ -59,13 +59,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     public static ItemStackUtil.MATCH_TYPE getMatchType(ItemStack mainHandItem) {
         if (!mainHandItem.is(ItemRegistry.REQUEST_LIST_ITEM.get())) return ItemStackUtil.MATCH_TYPE.AUTO;
-        if (!mainHandItem.hasTag()) return ItemStackUtil.MATCH_TYPE.AUTO;
-        CompoundTag tag = Objects.requireNonNull(mainHandItem.getTag());
-        if (tag.contains(TAG_MATCH_TAG)) {
-            tag.putInt(TAG_MATCH, (tag.getBoolean(TAG_MATCH_TAG) ? ItemStackUtil.MATCH_TYPE.MATCHING : ItemStackUtil.MATCH_TYPE.NOT_MATCHING).ordinal());
-            tag.remove(TAG_MATCH_TAG);
-        }
-        return ItemStackUtil.MATCH_TYPE.values()[tag.getInt(TAG_MATCH)];
+        return ItemStackUtil.MATCH_TYPE.values()[mainHandItem.getOrDefault(DataComponentRegistry.REQUEST_MATCHING.get(), 0)];
     }
 
     public static ItemStackUtil.MATCH_TYPE getMatchType(ItemStack mainHandItem, boolean crafting) {
@@ -103,7 +97,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
         List<RequestItemStackList.ListItem> items = request.getList();
         for (RequestItemStackList.ListItem listItem : items) {
             ItemStack item = listItem.getItem();
-            if (!ItemStackUtil.isSame(item, a, request.matching)) continue;
+            if (!ItemStackUtil.isSame(item, a, getMatchType(mainHandItem))) continue;
 
             listItem.collected += count;
             if (listItem.collected > listItem.requested && listItem.requested != -1) {

@@ -40,10 +40,10 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         super(GuiRegistry.ITEM_SELECTOR_MENU.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
+        matching = RequestListItem.getMatchType(target);
         filteredItems = new FilterContainer(10, this);
         RequestItemStackList.Immutable requestData = target.getOrDefault(DataComponentRegistry.REQUEST_ITEMS, RequestItemStackList.EMPTY);
         filteredItems.loadFromRequestData(requestData);
-        matching = requestData.matching();
         blackmode = requestData.blackList();
         stockMode = requestData.stockMode();
         repeat = target.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0);
@@ -79,9 +79,9 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
             list.get(i).requested = filteredItems.getCount(i);
         }
         data.stockMode = stockMode;
-        data.matching = matching;
         data.blackList = blackmode;
         target.set(DataComponentRegistry.REQUEST_ITEMS, data.toImmutable());
+        target.set(DataComponentRegistry.REQUEST_MATCHING, matching.ordinal());
         target.set(DataComponentRegistry.REQUEST_CD_UNIT, unitSecond);
         target.set(DataComponentRegistry.REQUEST_INTERVAL, repeat * (unitSecond ? 20 : 1));
         target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(player.registryAccess(), storageHandler.getItem(0).copy()));

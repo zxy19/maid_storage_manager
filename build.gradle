@@ -142,8 +142,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "curse.maven:touhou-little-maid-355044:6885289"
-    runtimeOnly "curse.maven:touhou-little-maid-355044:6885289"
+    compileOnly "curse.maven:touhou-little-maid-355044:6911706"
+    runtimeOnly "curse.maven:touhou-little-maid-355044:6911706"
 
     runtimeOnly "curse.maven:accelerated-rendering-1314021:6839175"
 

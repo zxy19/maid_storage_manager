@@ -34,6 +34,7 @@ import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;

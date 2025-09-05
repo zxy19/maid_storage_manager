@@ -12,6 +12,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("DeprecatedIsStillUsed")
 public class RequestItemStackList {
 
     public static final Immutable EMPTY = new RequestItemStackList().toImmutable();
@@ -86,6 +87,7 @@ public class RequestItemStackList {
     }
 
     public List<ListItem> list;
+    @Deprecated
     public boolean matchTag;
     public boolean blackList;
     public boolean blacklistDone;
@@ -124,6 +126,7 @@ public class RequestItemStackList {
         return list;
     }
 
+    @Deprecated
     public boolean isMatchTag() {
         return matchTag;
     }
@@ -190,6 +193,7 @@ public class RequestItemStackList {
 
     public record Immutable(
             List<ImmutableItem> list,
+            @Deprecated
             boolean matchTag,
             boolean blackList,
             boolean stockMode,

@@ -47,14 +47,13 @@ public class RSCollectContext extends AbstractRSContext implements IStorageExtra
         if (itemStorage == null || task == null || current >= task.size()) return;
         int toCollect = task.get(current).getCount();
 
-        if (matchNbt != ItemStackUtil.MATCH_TYPE.NOT_MATCHING) {
         List<ResourceAmount> itemStack = itemStorage
                 .getAll()
                 .stream()
                 .filter(key -> key.resource() instanceof ItemResource)
                 .filter(stack -> ItemStackUtil.isSame(((ItemResource) (stack.resource())).toItemStack(), task.get(current), matchNbt))
                 .toList();
-        }
+        
 
         for (ResourceAmount stack : itemStack) {
             int currentToCollect = Math.min(toCollect, MathUtil.toIntOrMax(stack.amount()));

@@ -236,8 +236,8 @@ public class RequestItemUtil {
         }
         data.blackList = false;
         data.stockMode = false;
-        data.matching = match;
         itemStack.set(DataComponentRegistry.REQUEST_ITEMS, data.toImmutable());
+        itemStack.set(DataComponentRegistry.REQUEST_MATCHING, match.ordinal());
         itemStack.set(DataComponentRegistry.REQUEST_FAIL_ADDITION, "");
         itemStack.set(DataComponentRegistry.REQUEST_INTERVAL, 0);
         itemStack.set(DataComponentRegistry.REQUEST_IGNORE, false);

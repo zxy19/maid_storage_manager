@@ -66,6 +66,8 @@ public class DataComponentRegistry {
             .register("request_virtual_source", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CompoundTag>> REQUEST_VIRTUAL_DATA = DATA_COMPONENTS
             .register("request_virtual_data", () -> DataComponentType.<CompoundTag>builder().persistent(CompoundTag.CODEC).networkSynchronized(ByteBufCodecs.COMPOUND_TAG).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> REQUEST_MATCHING = DATA_COMPONENTS
+            .register("request_matching", () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build());
     //endregion
     //region WrittenInventoryList
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Long>> INVENTORY_TIME = DATA_COMPONENTS
