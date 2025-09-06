@@ -10,7 +10,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
@@ -189,13 +188,13 @@ public class InvUtil {
         return -1;
     }
 
-    public static int getTargetIndexInCraftingWithoutHand(EntityMaid maid, ItemStack itemStack) {
-        return getTargetIndexInCraftingWithoutHand(maid, itemStack, -1);
+    public static int getTargetIndexInCrafting(EntityMaid maid, ItemStack itemStack, int skip) {
+        return getTargetIndexInCrafting(maid, itemStack, skip, -1);
     }
 
-    public static int getTargetIndexInCraftingWithoutHand(EntityMaid maid, ItemStack itemStack, int except) {
-        RangedWrapper inv = maid.getAvailableBackpackInv();
-        for (int i = 0; i < inv.getSlots(); i++) {
+    public static int getTargetIndexInCrafting(EntityMaid maid, ItemStack itemStack, int skip, int except) {
+        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        for (int i = skip; i < inv.getSlots(); i++) {
             if (i == except)
                 continue;
             if (itemStack.isEmpty() && inv.getStackInSlot(i).isEmpty()) {
