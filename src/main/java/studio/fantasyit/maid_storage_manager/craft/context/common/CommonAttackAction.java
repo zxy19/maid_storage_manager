@@ -88,22 +88,17 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
         ItemStack targetItem = craftGuideStepData.getInput().get(0);
         ItemStack targetItem2 = craftGuideStepData.getInput().get(1);
-        MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
-        storedSlotMainHand = InvUtil.getTargetIndexInCraftingWithoutHand(maid, targetItem);
+        storedSlotMainHand = InvUtil.getTargetIndexInCrafting(maid, targetItem, 1);
         if (storedSlotMainHand == -1)
             return Result.FAIL;
-        storedSlotMainHand += 2;
 
-        storedSlotOffHand = InvUtil.getTargetIndexInCraftingWithoutHand(maid, targetItem2, storedSlotMainHand);
+        storedSlotOffHand = InvUtil.getTargetIndexInCrafting(maid, targetItem2, 2, storedSlotMainHand);
         if (storedSlotOffHand == -1)
             return Result.FAIL;
-        storedSlotOffHand += 2;
 
-        if (storedSlotOffHand != -1)
-            InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
-        if (storedSlotMainHand != -1)
-            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
-
+        InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
+        InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
+        MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
         return Result.CONTINUE;
     }
 
