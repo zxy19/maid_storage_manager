@@ -71,7 +71,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
                     c.convey(planner);
                     debugContext = c;
                     debugContext.logNoLevel(CraftingDebugContext.TYPE.COMMON, "Starting craft calculator");
-                }, () -> debugContext = null);
+                }, () -> debugContext = CraftingDebugContext.Dummy.INSTANCE);
     }
 
     @Override

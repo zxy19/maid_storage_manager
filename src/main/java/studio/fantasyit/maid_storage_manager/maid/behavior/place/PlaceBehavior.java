@@ -21,6 +21,7 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,8 +86,9 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 count++;
                 continue;
             }
-            if(context instanceof ISlotBasedStorage slotContext && exceedSlotLimit(slotContext, item)){
-
+            if (context instanceof ISlotBasedStorage slotContext && exceedSlotLimit(slotContext, item, maid)) {
+                count++;
+                continue;
             }
             if (context instanceof IStorageInsertableContext isic) {
                 List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
@@ -110,6 +112,28 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             }
             count++;
         }
+    }
+
+    private boolean exceedSlotLimit(ISlotBasedStorage slotContext, @NotNull ItemStack item, EntityMaid maid) {
+        List<ItemStack> existingItems = new ArrayList<>();
+        boolean found = false;
+        for (int i = 0; i < slotContext.getSlots(); i++) {
+            ItemStack stack = slotContext.getStackInSlot(i);
+            if (stack.isEmpty()) continue;
+            if (existingItems.stream().noneMatch(itemStack -> ItemStackUtil.isSame(itemStack, stack, false))) {
+                existingItems.add(stack);
+            }
+            if (ItemStackUtil.isSame(stack, item, false)) {
+                found = true;
+            }
+        }
+        if (found) {
+            return false;
+        }
+        int i = StorageManagerConfigData.get(maid).itemTypeLimit();
+        if (i == -1 || existingItems.size() < i)
+            return false;
+        return true;
     }
 
 
