@@ -141,6 +141,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             this.itemTypeLimit = itemTypeLimit;
             if (itemTypeLimit < 0)
                 this.itemTypeLimit = -1;
+            if(itemTypeLimit > 1024)
+                this.itemTypeLimit = 1024;
         }
         public int itemTypeLimit() {
             return itemTypeLimit;

@@ -217,6 +217,14 @@ public class Network {
                             );
                             data.maxCraftingLayerRepeatCount(msg.value);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        } else if (msg.type == MaidDataSyncPacket.Type.AutoSorting) {
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
+                            data.autoSorting(msg.value != 0);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        } else if (msg.type == MaidDataSyncPacket.Type.ItemTypeLimit) {
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
+                            data.itemTypeLimit(msg.value);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
                 }

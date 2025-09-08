@@ -19,9 +19,7 @@
   ],
   "client": [
     "CreateStockKeeperScreenMixin",
-    "EntityGraphicsBufferSourceGetter",
-    "GuiGraphicMixin",
-    "MinecraftMixin"
+    "EntityGraphicsBufferSourceGetter"
   ],
   "injectors": {
     "defaultRequire": 1
