@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBlockStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.base.ISortSlotContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class ItemHandlerStorage implements IMaidStorage {
@@ -57,5 +58,10 @@ public class ItemHandlerStorage implements IMaidStorage {
     @Override
     public @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Target storage) {
         return new AbstractFilterableBlockStorage();
+    }
+
+    @Override
+    public @Nullable ISortSlotContext onStartSorting(ServerLevel level, EntityMaid maid, Target target) {
+        return new AbstractItemHandlerContext();
     }
 }

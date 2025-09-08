@@ -88,6 +88,12 @@ public class MemoryUtil {
         return maid.getBrain().getMemory(MemoryModuleRegistry.CRAFTING.get()).orElse(null);
     }
 
+    public static SortingMemory getSorting(EntityMaid maid) {
+        if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.SORTING.get()))
+            maid.getBrain().setMemory(MemoryModuleRegistry.SORTING.get(), new SortingMemory());
+        return maid.getBrain().getMemory(MemoryModuleRegistry.SORTING.get()).orElse(null);
+    }
+
     public static LogisticsMemory getLogistics(EntityMaid maid) {
         if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.LOGISTICS.get()))
             maid.getBrain().setMemory(MemoryModuleRegistry.LOGISTICS.get(), new LogisticsMemory());
@@ -181,7 +187,7 @@ public class MemoryUtil {
     }
 
     public static void goRestrictCenterAndWait(EntityMaid maid, float speed) {
-        
+
         if (!maid.hasRestriction()) return;
         BlockPos restrictCenter = maid.getSchedulePos().getWorkPos();
         if (maid.distanceToSqr(restrictCenter.getCenter()) < 9) return;

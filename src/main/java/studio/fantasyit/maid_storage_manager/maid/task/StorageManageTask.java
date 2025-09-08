@@ -56,6 +56,8 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.request.stock.StockCh
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.stock.StockCheckMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.resort.ResortMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.sorting.SortingBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.sorting.SortingMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.WriteInventoryListBehavior;
@@ -126,6 +128,9 @@ public class StorageManageTask implements IMaidTask {
         //整理
         list.add(Pair.of(6, new ResortBehavior()));
         list.add(Pair.of(6, new ResortMoveBehavior()));
+        //整理
+        list.add(Pair.of(6, new SortingBehavior()));
+        list.add(Pair.of(6, new SortingMoveBehavior()));
         //存放物品
         list.add(Pair.of(7, new PlaceBehavior()));
         list.add(Pair.of(7, new PlaceMoveBehavior()));

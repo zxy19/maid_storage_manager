@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CoWorkChestView extends MaidCheckRateTask {
+    private StorageVisitLock.LockContext lock;
+
     public CoWorkChestView() {
         super(Map.of(MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get(), MemoryStatus.VALUE_PRESENT));
         this.setMaxCheckRate(20);
@@ -47,6 +50,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
     protected void start(@NotNull ServerLevel level,
                          @NotNull EntityMaid maid,
                          long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         Target interactedTarget = MemoryUtil.getCoWorkTargetStorage(maid);
         if (interactedTarget == null) {
             maid.getBrain().eraseMemory(MemoryModuleRegistry.CO_WORK_TARGET_STORAGE.get());
@@ -83,10 +87,13 @@ public class CoWorkChestView extends MaidCheckRateTask {
         context.start(maid, level, target);
         MemoryUtil.setLookAt(maid, target.pos);
         holdStamp = level.getServer().getTickCount();
+        lock = StorageVisitLock.getReadLock(target);
     }
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock())
+            return;
         MemoryUtil.setLookAt(maid, target.pos);
         if (context instanceof IStorageInteractContext context) {
             context.tick(itemStack -> {
@@ -108,6 +115,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
 
     @Override
     protected void stop(ServerLevel p_22548_, EntityMaid maid, long p_22550_) {
+        lock.release();
         if (MemoryUtil.getCoWorkTargetStorage(maid) != null)
             setNextCheckTickCount(5);
         if (context != null) {

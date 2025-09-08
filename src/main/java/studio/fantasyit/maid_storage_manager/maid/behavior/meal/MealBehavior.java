@@ -9,6 +9,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageExtractableContext;
@@ -25,6 +26,7 @@ public class MealBehavior extends MaidWorkMealTask {
     Target target = null;
     MutableBoolean hasTaken = new MutableBoolean(false);
     long endTimeStamp = -1;
+    private StorageVisitLock.LockContext lock;
 
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid maid) {
@@ -43,6 +45,7 @@ public class MealBehavior extends MaidWorkMealTask {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         if (!MemoryUtil.getMeal(maid).hasTarget()) return;
         MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getMeal(maid).getTarget();
@@ -55,10 +58,14 @@ public class MealBehavior extends MaidWorkMealTask {
         }
         hasTaken = new MutableBoolean(false);
         endTimeStamp = -1;
+        lock = StorageVisitLock.getReadLock(target);
     }
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock()) {
+            return;
+        }
         if (hasTaken.getValue()) {
             return;
         }
@@ -97,6 +104,7 @@ public class MealBehavior extends MaidWorkMealTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         if (context != null)
             context.finish();
         MemoryUtil.setWorking(maid, false);

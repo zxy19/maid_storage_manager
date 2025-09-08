@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
@@ -35,6 +36,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     private boolean targetEntityReady = false;
     private VirtualItemEntity thrown;
     boolean inCrafting = false;
+    private StorageVisitLock.LockContext lock = StorageVisitLock.DUMMY;
 
     public RequestRetBehavior() {
         super(Map.of());
@@ -57,6 +59,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         context = null;
         targetEntity = null;
         thrown = null;
@@ -71,6 +74,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                         .onStartPlace(level, maid, target);
                 if (context != null)
                     context.start(maid, level, target);
+                lock = StorageVisitLock.getWriteLock(target);
             } else if (requestProgress.getTargetEntityUUID().isPresent()) {
                 targetEntity = level.getEntity(requestProgress.getTargetEntityUUID().get());
                 if (targetEntity instanceof EntityMaid m) {
@@ -143,6 +147,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     }
 
     private void tickStorageContext(EntityMaid maid) {
+        if (!lock.checkAndTryGrantLock()) return;
         CombinedInvWrapper availableInv = maid.getAvailableInv(true);
 
         for (int i = 0; i < 5 && currentSlot < availableInv.getSlots(); i++)
@@ -168,6 +173,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
+        lock.release();
         super.stop(level, maid, p_22550_);
         if (context != null)
             context.finish();

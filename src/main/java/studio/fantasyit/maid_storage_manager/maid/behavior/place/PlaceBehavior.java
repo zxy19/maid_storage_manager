@@ -13,8 +13,10 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
+import studio.fantasyit.maid_storage_manager.storage.base.ISlotBasedStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -28,6 +30,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     Target target = null;
     int count = 0;
     private boolean changed;
+    StorageVisitLock.LockContext lock = StorageVisitLock.DUMMY;
 
     public PlaceBehavior() {
         super(Map.of());
@@ -51,6 +54,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         if (!MemoryUtil.getPlacingInv(maid).hasTarget()) return;
         MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getPlacingInv(maid).getTarget();
@@ -63,22 +67,26 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         }
         count = 0;
         changed = false;
+        lock = StorageVisitLock.getWriteLock(target);
     }
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
-        super.tick(p_22551_, maid, p_22553_);
+        if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         for (int _i = 0; _i < inv.getSlots() / 3; _i++) {
             if (count >= inv.getSlots()) {
-                return;
+                break;
             }
             @NotNull ItemStack item = inv.getStackInSlot(count);
             int oCount = item.getCount();
             if (context instanceof IFilterable iFilterable && !iFilterable.isAvailable(item)) {
                 count++;
                 continue;
+            }
+            if(context instanceof ISlotBasedStorage slotContext && exceedSlotLimit(slotContext, item)){
+
             }
             if (context instanceof IStorageInsertableContext isic) {
                 List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
@@ -109,6 +117,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         MemoryUtil.setWorking(maid, false);
         if (context != null) {
             context.finish();
@@ -131,6 +140,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         }
         MemoryUtil.clearTarget(maid);
         MemoryUtil.getCrafting(maid).tryStartIfHasPlan();
+        MemoryUtil.getSorting(maid).addNeedToSorting(target);
     }
 
     @Override

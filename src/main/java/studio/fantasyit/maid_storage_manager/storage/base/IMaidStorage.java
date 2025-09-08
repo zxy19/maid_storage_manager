@@ -102,6 +102,10 @@ public interface IMaidStorage {
         return null;
     }
 
+    default @Nullable ISortSlotContext onStartSorting(ServerLevel level, EntityMaid maid, Target target) {
+        return null;
+    }
+
     /**
      * 是否合成指南提供者
      *

@@ -4,19 +4,13 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBlockStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageSplitInsertableContext;
 
-public class ContextItemHandlerStore extends AbstractFilterableBlockStorage implements IStorageInsertableContext, IStorageSplitInsertableContext {
-    private SimulateTargetInteractHelper helper;
-
-
+public class ContextItemHandlerStore extends AbstractItemHandlerContext implements IStorageInsertableContext, IStorageSplitInsertableContext {
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
         super.start(maid, level,target);
-        helper = new SimulateTargetInteractHelper(maid, target.pos, target.side, level);
-        helper.open();
     }
 
     @Override

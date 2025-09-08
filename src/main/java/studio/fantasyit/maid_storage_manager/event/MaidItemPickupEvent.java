@@ -32,7 +32,7 @@ public class MaidItemPickupEvent {
                     event.setCanceled(true);
                 }
             }
-            case VIEW, NO_SCHEDULE, RESORT -> {
+            case VIEW, NO_SCHEDULE, RESORT, SORTING, MEAL -> {
             }
             case CO_WORK -> {
                 if (event.isSimulate())
