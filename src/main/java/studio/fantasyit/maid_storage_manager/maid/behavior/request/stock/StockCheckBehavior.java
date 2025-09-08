@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInteractContext;
@@ -21,6 +22,7 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
     private final BehaviorBreath breath = new BehaviorBreath();
     IStorageContext context;
     private Target target;
+    StorageVisitLock.LockContext lock = StorageVisitLock.DUMMY;
 
     public StockCheckBehavior() {
         super(Map.of());
@@ -41,6 +43,7 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return;
         target = MemoryUtil.getRequestProgress(maid).getTarget();
         context = MaidStorage
@@ -50,10 +53,12 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.start(maid, level, target);
         }
+        lock = StorageVisitLock.getReadLock(target);
     }
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
         super.tick(p_22551_, maid, p_22553_);
         if (context instanceof IStorageInteractContext isic) {
@@ -71,7 +76,7 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
-        super.stop(level, maid, p_22550_);
+        lock.release();
         if (context != null) {
             context.finish();
         }

@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
@@ -34,6 +35,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
     int currentSlot = 0;
     private Target target;
     CraftLayer layer = null;
+    StorageVisitLock.LockContext lock;
 
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
@@ -56,6 +58,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         if (MemoryUtil.getLogistics(maid).hasTarget()) {
             target = MemoryUtil.getLogistics(maid).getTarget();
             context = Objects.requireNonNull(MaidStorage
@@ -66,6 +69,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
                 context.start(maid, level, target);
 
             layer = MemoryUtil.getLogistics(maid).getResultLayer();
+            lock = StorageVisitLock.getWriteLock(target);
         }
 
         currentSlot = 0;
@@ -73,6 +77,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
         CombinedInvWrapper availableInv = maid.getAvailableInv(true);
 
@@ -103,7 +108,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
-        super.stop(level, maid, p_22550_);
+        lock.release();
         if (context != null)
             context.finish();
         if (Conditions.isNothingToPlace(maid))

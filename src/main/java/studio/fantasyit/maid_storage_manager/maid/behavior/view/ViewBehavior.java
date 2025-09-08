@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -33,6 +34,7 @@ public class ViewBehavior extends MaidCheckRateTask {
     boolean shouldSeekForWorkMeal = false;
     MutableObject<ItemStack> workMeal = new MutableObject<>(null);
     int holdStamp = -1;
+    StorageVisitLock.LockContext lock;
 
     public ViewBehavior() {
         super(Map.of());
@@ -55,6 +57,7 @@ public class ViewBehavior extends MaidCheckRateTask {
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         if (!MemoryUtil.getViewedInventory(maid).hasTarget()) return;
         MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getViewedInventory(maid).getTarget();
@@ -76,10 +79,12 @@ public class ViewBehavior extends MaidCheckRateTask {
         shouldSeekForWorkMeal = MemoryUtil.getMeal(maid).shouldTakeMeal(maid);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.VIEW);
         holdStamp = level.getServer().getTickCount();
+        lock = StorageVisitLock.getReadLock(target);
     }
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
         super.tick(p_22551_, maid, p_22553_);
         if (context instanceof IStorageInteractContext isic) {
@@ -100,6 +105,7 @@ public class ViewBehavior extends MaidCheckRateTask {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         MemoryUtil.setWorking(maid, false);
         if (context != null) {
             MemoryUtil.getViewedInventory(maid).addVisitedPos(target);

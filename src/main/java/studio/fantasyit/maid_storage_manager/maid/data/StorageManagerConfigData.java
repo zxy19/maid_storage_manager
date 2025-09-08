@@ -15,6 +15,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         private boolean allowSeekWorkMeal = false;
         private int maxParallel;
         private int maxCraftingLayerRepeatCount;
+        private boolean autoSorting = true;
+        private int itemTypeLimit = -1;
 
         public Data(MemoryAssistant memoryAssistant,
                     boolean noSortPlacement,
@@ -23,7 +25,9 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     boolean allowSeekWorkMeal,
                     boolean useMemorizedCraftGuide,
                     int maxParallel,
-                    int maxCraftingLayerRepeatCount
+                    int maxCraftingLayerRepeatCount,
+                    boolean autoSorting,
+                    int itemTypeLimit
         ) {
             this.memoryAssistant = memoryAssistant;
             this.noSortPlacement = noSortPlacement;
@@ -33,6 +37,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             this.useMemorizedCraftGuide = useMemorizedCraftGuide;
             this.maxParallel = maxParallel;
             this.maxCraftingLayerRepeatCount = maxCraftingLayerRepeatCount;
+            this.autoSorting = autoSorting;
+            this.itemTypeLimit = itemTypeLimit;
         }
 
         public static Data getDefault() {
@@ -43,7 +49,9 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     false,
                     false,
                     5,
-                    8
+                    8,
+                    true,
+                    -1
             );
         }
 
@@ -120,6 +128,20 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
             }
             this.maxCraftingLayerRepeatCount = 32;
         }
+
+        public boolean autoSorting() {
+            return autoSorting;
+        }
+
+        public void autoSorting(boolean autoSorting) {
+            this.autoSorting = autoSorting;
+        }
+
+        public void itemTypeLimit(int itemTypeLimit) {
+            this.itemTypeLimit = itemTypeLimit;
+            if (itemTypeLimit < 0)
+                this.itemTypeLimit = -1;
+        }
     }
 
     public static TaskDataKey<Data> KEY = null;
@@ -161,7 +183,9 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         int maxCraftingLayerRepeatCount = compound.contains("maxCraftingLayerRepeatCount")
                 ? compound.getInt("maxCraftingLayerRepeatCount")
                 : (alwaysSingleCrafting ? 1 : 8);
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, maxCraftingLayerRepeatCount);
+        boolean autoSorting = compound.contains("autoSorting") ? compound.getBoolean("autoSorting") : true;
+        int itemTypeLimit = compound.contains("itemTypeLimit") ? compound.getInt("itemTypeLimit") : -1;
+        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, maxCraftingLayerRepeatCount, autoSorting, itemTypeLimit);
     }
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {

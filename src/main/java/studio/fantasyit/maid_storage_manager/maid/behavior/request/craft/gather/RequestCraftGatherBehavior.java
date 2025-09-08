@@ -12,6 +12,7 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -29,6 +30,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     boolean changed = false;
     CraftLayerChain plan;
     CraftLayer layer;
+    private StorageVisitLock.LockContext lock;
 
     public RequestCraftGatherBehavior() {
         super(Map.of());
@@ -50,6 +52,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
+        lock = StorageVisitLock.DUMMY;
         plan = MemoryUtil.getCrafting(maid).plan();
         layer = plan.getCurrentLayer();
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return;
@@ -64,6 +67,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
             context.start(maid, level, target);
         plan.showCraftingProgress(maid);
         InvUtil.mergeSameStack(maid.getAvailableInv(true));
+        lock = StorageVisitLock.getReadLock(target);
     }
 
     @Override
@@ -80,6 +84,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
@@ -116,6 +121,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         super.stop(level, maid, p_22550_);
         if (context != null) {
             context.finish();

@@ -60,6 +60,7 @@ public class MaidExtension implements ILittleMaid {
                         MemoryModuleRegistry.PLACING_INVENTORY.get(),
                         MemoryModuleRegistry.REQUEST_PROGRESS.get(),
                         MemoryModuleRegistry.RESORTING.get(),
+                        MemoryModuleRegistry.SORTING.get(),
                         MemoryModuleRegistry.CRAFTING.get(),
                         MemoryModuleRegistry.LOGISTICS.get(),
                         MemoryModuleRegistry.CURRENTLY_WORKING.get(),

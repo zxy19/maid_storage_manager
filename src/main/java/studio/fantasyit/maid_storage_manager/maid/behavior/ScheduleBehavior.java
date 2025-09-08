@@ -25,6 +25,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
         CO_WORK,
         LOGISTICS,
         RESORT,
+        SORTING,
         MEAL
     }
 
@@ -73,6 +74,8 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
                 next = Schedule.PLACE;
         else if (MemoryUtil.getResorting(maid).hasTarget())
             next = Schedule.RESORT;
+        else if (MemoryUtil.getSorting(maid).hasAny())
+            next = Schedule.SORTING;
         else if (MemoryUtil.getMeal(maid).hasTarget())
             next = Schedule.MEAL;
         else if (!MemoryUtil.getViewedInventory(maid).getMarkChanged().isEmpty())

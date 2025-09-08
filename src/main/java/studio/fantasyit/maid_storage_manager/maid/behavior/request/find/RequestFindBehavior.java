@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.*;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -28,6 +29,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     boolean canPick = false;
     Target target;
     ItemStack checkItem = null;
+    private StorageVisitLock.LockContext lock;
 
 
     public RequestFindBehavior() {
@@ -56,6 +58,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
+        lock = StorageVisitLock.DUMMY;
         @Nullable IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(MemoryUtil.getRequestProgress(maid).getTarget().getType()));
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return;
         target = MemoryUtil.getRequestProgress(maid).getTarget();
@@ -66,11 +69,13 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (context != null)
             context.start(maid, level, target);
         canPick = false;
+        lock = StorageVisitLock.getReadLock(target);
     }
 
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
+        if (!lock.checkAndTryGrantLock()) return;
         if (canPick) tickPick(level, maid, p_22553_);
         else {
             tickGather(level, maid, p_22553_);
@@ -96,7 +101,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
             if (maxStore > 0) {
                 ItemStack copy = itemStack.copy();
-                ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore,false);
+                ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore, false);
                 copy.shrink(tmp.getCount());
                 ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, level, target, itemStack, copy.getCount());
                 InvUtil.tryPlace(maid.getAvailableInv(false), copy);
@@ -145,6 +150,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         super.stop(level, maid, p_22550_);
         if (context != null) {
             context.finish();

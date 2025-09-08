@@ -8,6 +8,7 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IFilterable;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -24,6 +25,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     private IStorageContext context = null;
     Target target = null;
     int count = 0;
+    private StorageVisitLock.LockContext lock = StorageVisitLock.DUMMY;
 
     public ResortBehavior() {
         super(Map.of());
@@ -45,6 +47,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        lock = StorageVisitLock.DUMMY;
         if (!MemoryUtil.getResorting(maid).hasTarget()) return;
         MemoryUtil.setWorking(maid, true);
         target = MemoryUtil.getResorting(maid).getTarget();
@@ -59,11 +62,12 @@ public class ResortBehavior extends Behavior<EntityMaid> {
             context.start(maid, level, target);
         }
         count = 0;
+        lock = StorageVisitLock.getWriteLock(target);
     }
 
     @Override
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
-        super.tick(p_22551_, maid, p_22553_);
+        if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
         CombinedInvWrapper maidInv = maid.getAvailableInv(false);
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
@@ -93,6 +97,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         MemoryUtil.setWorking(maid, false);
         if (context != null) {
             if (context.isDone())

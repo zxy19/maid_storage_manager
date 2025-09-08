@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
@@ -45,6 +46,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
     IStorageContext contextView;
     private Target target;
     int failCount = 0;
+    StorageVisitLock.LockContext lock;
 
     @Override
     protected boolean canStillUse(ServerLevel level, EntityMaid maid, long p_22547_) {
@@ -80,6 +82,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
+        lock = StorageVisitLock.DUMMY;
         target = MemoryUtil.getLogistics(maid).getTarget();
         IMaidStorage storage = MaidStorage.getInstance().getStorage(target.getType());
         if (storage == null)
@@ -104,11 +107,13 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
             MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
+        lock = StorageVisitLock.getReadLock(target);
     }
 
     @Override
     protected void tick(ServerLevel level, EntityMaid maid, long p_22553_) {
         if (context == null || contextView == null) return;
+        if (!lock.checkAndTryGrantLock()) return;
 
         if (!contextView.isDone()) {//第一步，重新计算Inventory
             tickView(level, maid, p_22553_);
@@ -138,6 +143,8 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         if (craftGuideData != null) {
             count = getAvailableCountFromCraftAndSetLayer(maid, craftGuideData, itemsAt, count);
             if (count == 0) {
+                lock.release();
+                lock = StorageVisitLock.getReadLock(target);
                 contextView.reset();
                 MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
                 failCount++;
@@ -279,6 +286,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        lock.release();
         super.stop(level, maid, p_22550_);
         if (contextView != null) {
             contextView.finish();
