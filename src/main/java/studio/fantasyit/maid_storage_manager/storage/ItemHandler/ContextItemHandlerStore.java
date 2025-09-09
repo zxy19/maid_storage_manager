@@ -14,11 +14,6 @@ public class ContextItemHandlerStore extends AbstractItemHandlerContext implemen
     }
 
     @Override
-    public void finish() {
-        helper.stop();
-    }
-
-    @Override
     public ItemStack insert(ItemStack item) {
         if (!this.helper.isStillValid()) return item;
         ItemStack copy = item.copy();
