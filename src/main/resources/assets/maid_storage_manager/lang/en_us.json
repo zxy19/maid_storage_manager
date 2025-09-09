@@ -460,5 +460,9 @@
   "gui.maid_storage_manager.config.auto_sorting": "Auto Sorting Items",
   "gui.maid_storage_manager.config.item_type_limit": "Max Item Type per Container",
   "gui.maid_storage_manager.config.item_type_limit_unlimited": "Unlimited",
-  "gui.maid_storage_manager.config.item_type_limit_keep": "Keep Content"
+  "gui.maid_storage_manager.config.item_type_limit_keep": "Keep Content",
+  "config.maid_storage_manager.misc.inv_list_damage_factor": "Inventory List Damage Factor",
+  "config.maid_storage_manager.misc.inv_list_damage_max": "Inventory List Damage Max",
+  "config.maid_storage_manager.misc.inv_list_damage_min": "Inventory List Damage Min",
+  "config.maid_storage_manager.misc": "Misc"
 }

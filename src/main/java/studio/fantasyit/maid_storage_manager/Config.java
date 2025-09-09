@@ -211,6 +211,15 @@ public class Config {
             .comment("The way to select the correct crafting path.")
             .defineEnum("crafting.shortest_path_evaluator", CraftPlanEvaluator.CRAFT_GUIDES, CraftPlanEvaluator.values());
 
+    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_FACTOR = BUILDER
+            .defineInRange("misc.inv_list_damage.factor", 0.025f, 0.0f, 1.0f);
+    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_MAX = BUILDER
+            .defineInRange("misc.inv_list_damage.max", 20.0f, 0.0f, 10000000.0f);
+    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_MIN = BUILDER
+            .defineInRange("misc.inv_list_damage.min", 2.0f, 0.0f, 10000000.0f);
+    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_ATTACK_SPD = BUILDER
+            .defineInRange("misc.inv_list_damage.speed", 1.2f, 0.0f, 100.0f);
+
 
     static final ModConfigSpec SPEC = BUILDER.build();
 
@@ -264,6 +273,10 @@ public class Config {
     public static CraftGenerator craftingGenerator;
     public static boolean noBubbleForSub;
     public static int craftingMaxLayerLimit;
+    public static double invListDamageFactor;
+    public static double invListDamageMax;
+    public static double invListDamageMin;
+    public static double invListDamageAttackSpd;
 
     public static void testLoad(CommentedConfig config) {
         BUILDER.build().correct(config);
@@ -330,6 +343,10 @@ public class Config {
             NBT_NO_MATCH_PATH.set(noMatchPaths);
         }
         craftingMaxLayerLimit = CRAFTING_MAX_LAYER_LIMIT.get();
+        invListDamageFactor = INV_LIST_DAMAGE_FACTOR.get();
+        invListDamageMax = INV_LIST_DAMAGE_MAX.get();
+        invListDamageMin = INV_LIST_DAMAGE_MIN.get();
+        invListDamageAttackSpd = INV_LIST_DAMAGE_ATTACK_SPD.get();
     }
 
     public static void save() {
@@ -382,6 +399,10 @@ public class Config {
         USING_BETTER_LIGHT_ON_ITEM.set(usingBetterLightOnItems);
         TRY_GO_WORK_CENTER_WHEN_FAIL_PATHFINDING.set(tryGoingWorkCenterWhenFailPathFinding);
         CRAFTING_MAX_LAYER_LIMIT.set(craftingMaxLayerLimit);
+        INV_LIST_DAMAGE_FACTOR.set(invListDamageFactor);
+        INV_LIST_DAMAGE_MAX.set(invListDamageMax);
+        INV_LIST_DAMAGE_MIN.set(invListDamageMin);
+        INV_LIST_DAMAGE_ATTACK_SPD.set(invListDamageAttackSpd);
     }
 
     static boolean changed = false;

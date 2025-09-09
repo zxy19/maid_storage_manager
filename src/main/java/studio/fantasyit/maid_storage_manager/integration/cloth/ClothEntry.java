@@ -49,6 +49,7 @@ public class ClothEntry {
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.ai"), ClothEntry::addEntryAI);
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.utility"), ClothEntry::addEntryUtility);
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.render"), ClothEntry::addEntryRender);
+        subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.misc"), ClothEntry::addEntryMisc);
         subCategory(category, entryBuilder, Component.translatable("config.maid_storage_manager.crafting"), ClothEntry::addEntryCrafting);
     }
 
@@ -260,6 +261,24 @@ public class ClothEntry {
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.render.using_better_light_on_items"), Config.usingBetterLightOnItems)
                         .setTooltip(Component.translatable("config.maid_storage_manager.render.using_better_light_on_items.tooltip"))
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.usingBetterLightOnItems = t))
+                        .build()
+        );
+    }
+
+    private static void addEntryMisc(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {
+        builder.add(
+                entryBuilder.startDoubleField(Component.translatable("config.maid_storage_manager.misc.inv_list_damage_factor"), Config.invListDamageFactor)
+                        .setSaveConsumer(s -> Config.saveAfter(() -> Config.invListDamageFactor = s))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startDoubleField(Component.translatable("config.maid_storage_manager.misc.inv_list_damage_max"), Config.invListDamageMax)
+                        .setSaveConsumer(s -> Config.saveAfter(() -> Config.invListDamageMax = s))
+                        .build()
+        );
+        builder.add(
+                entryBuilder.startDoubleField(Component.translatable("config.maid_storage_manager.misc.inv_list_damage_min"), Config.invListDamageMin)
+                        .setSaveConsumer(s -> Config.saveAfter(() -> Config.invListDamageMin = s))
                         .build()
         );
     }
