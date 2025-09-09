@@ -68,7 +68,7 @@ public class CommonIdleAction extends AbstractCraftActionContext {
 
     @Override
     public Result tick() {
-        if (maid.getDeltaMovement().length() > 0.1) return Result.CONTINUE;
+        if (maid.getDeltaMovement().length() > 0.1) return Result.NOT_DONE;
         if (Objects.requireNonNull(maid.level().getServer()).getTickCount() < endTick)
             return Result.CONTINUE_INTERRUPTABLE;
         return Result.SUCCESS;
