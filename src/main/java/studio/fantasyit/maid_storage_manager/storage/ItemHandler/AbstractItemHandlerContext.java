@@ -35,7 +35,10 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
 
     @Override
     public void tickSorting() {
-        if (helper.itemHandler == null || !isSortingSlots || sortingSlot <= 0) return;
+        if (helper.itemHandler == null || !isSortingSlots || sortingSlot <= 0) {
+            isSortingSlots = false;
+            return;
+        }
         int cstT = 3000 / helper.itemHandler.getSlots();
         while (sortingSlot >= 0 && cstT > 0) {
             if (helper.itemHandler.getStackInSlot(sortingSlot).isEmpty()) {
@@ -129,5 +132,10 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
         if (helper.itemHandler == null)
             return ItemStack.EMPTY;
         return helper.itemHandler.getStackInSlot(slot);
+    }
+
+    @Override
+    public void finish() {
+        helper.stop();
     }
 }

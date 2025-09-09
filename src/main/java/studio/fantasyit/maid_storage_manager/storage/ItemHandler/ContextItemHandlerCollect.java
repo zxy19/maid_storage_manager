@@ -16,11 +16,6 @@ public class ContextItemHandlerCollect extends AbstractItemHandlerContext implem
     }
 
     @Override
-    public void finish() {
-        helper.stop();
-    }
-
-    @Override
     public boolean isDone() {
         return helper.doneTaking();
     }

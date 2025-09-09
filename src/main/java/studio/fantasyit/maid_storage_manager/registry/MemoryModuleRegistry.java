@@ -28,7 +28,7 @@ public class MemoryModuleRegistry {
             = REGISTER.register("viewed_inventory", () -> new MemoryModuleType<>(Optional.of(ViewedInventoryMemory.CODEC)));
     public static final RegistryObject<MemoryModuleType<ResortingMemory>> RESORTING
             = REGISTER.register("resorting", () -> new MemoryModuleType<>(Optional.of(ResortingMemory.CODEC)));
-    public static final RegistryObject<MemoryModuleType<SortingMemory>> SORTING
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<SortingMemory>> SORTING
             = REGISTER.register("sorting", () -> new MemoryModuleType<>(Optional.of(SortingMemory.CODEC)));
 
     public static final RegistryObject<MemoryModuleType<ScheduleBehavior.Schedule>> CURRENTLY_WORKING

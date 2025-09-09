@@ -31,6 +31,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     Target target = null;
     int count = 0;
     private boolean changed;
+    private boolean anyMatched;
     StorageVisitLock.LockContext lock = StorageVisitLock.DUMMY;
 
     public PlaceBehavior() {
@@ -68,6 +69,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         }
         count = 0;
         changed = false;
+        anyMatched = false;
         lock = StorageVisitLock.getWriteLock(target);
     }
 
@@ -94,6 +96,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 count++;
                 continue;
             }
+            anyMatched = true;
             if (context instanceof IStorageInsertableContext isic) {
                 List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
                 if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
@@ -160,7 +163,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getPlacingInv(maid).addVisitedPos(target.sameType(pos, null));
             });
         }
-        if (!changed) {
+        if (!changed && anyMatched) {
             if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
                 MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);
                 DebugData.sendDebug("[PLACE]Suppress set at %s", target);
@@ -168,7 +171,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         }
         MemoryUtil.clearTarget(maid);
         MemoryUtil.getCrafting(maid).tryStartIfHasPlan();
-        if (StorageManagerConfigData.get(maid).autoSorting())
+        if (changed && StorageManagerConfigData.get(maid).autoSorting())
             MemoryUtil.getSorting(maid).addNeedToSorting(target);
     }
 

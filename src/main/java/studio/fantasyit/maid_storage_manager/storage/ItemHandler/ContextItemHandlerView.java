@@ -15,12 +15,6 @@ public class ContextItemHandlerView extends AbstractItemHandlerContext implement
         super.start(maid, level,target);
     }
 
-
-    @Override
-    public void finish() {
-        helper.stop();
-    }
-
     @Override
     public boolean isDone() {
         return helper.doneViewing();

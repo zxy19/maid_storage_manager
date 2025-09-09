@@ -261,11 +261,11 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
     }
 
     private static final int SCROLL_AREA_HEIGHT = 112;
-    private static final ImageAsset ROW_BG_HOVER = new ImageAsset(new ResourceLocation(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 1, 136, 154, 13);
-    private static final ImageAsset ROW_BG = new ImageAsset(new ResourceLocation(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 1, 123, 154, 13);
-    private static final ImageAsset BAR = ImageAsset.from4Point(new ResourceLocation(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 0, 0, 8, 111);
-    private static final ImageAsset BAR_BLOCK = ImageAsset.from4Point(new ResourceLocation(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 0, 112, 6, 120);
-    private static final ImageAsset BAR_BLOCK_ACTIVE = ImageAsset.from4Point(new ResourceLocation(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 7, 112, 12, 120);
+    private static final ImageAsset ROW_BG_HOVER = new ImageAsset(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 1, 136, 154, 13);
+    private static final ImageAsset ROW_BG = new ImageAsset(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 1, 123, 154, 13);
+    private static final ImageAsset BAR = ImageAsset.from4Point(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 0, 0, 8, 111);
+    private static final ImageAsset BAR_BLOCK = ImageAsset.from4Point(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 0, 112, 6, 120);
+    private static final ImageAsset BAR_BLOCK_ACTIVE = ImageAsset.from4Point(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/maid_work_setting.png"), 7, 112, 12, 120);
 
     int lastScrolling = -1;
     long startMills = -1;
@@ -328,12 +328,12 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double p_94688_) {
         if (isInScrollArea(p_94686_, p_94687_)) {
             scroll(-3 * p_94688_);
             return true;
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
     }
 
     private double getS2SFactor() {
