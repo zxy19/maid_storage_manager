@@ -458,5 +458,9 @@
   "gui.maid_storage_manager.config.auto_sorting": "自动排序物品",
   "gui.maid_storage_manager.config.item_type_limit": "容器内物品种类限制",
   "gui.maid_storage_manager.config.item_type_limit_unlimited": "无限",
-  "gui.maid_storage_manager.config.item_type_limit_keep": "保持现状"
+  "gui.maid_storage_manager.config.item_type_limit_keep": "保持现状",
+  "config.maid_storage_manager.misc.inv_list_damage_factor": "库存清单伤害值系数",
+  "config.maid_storage_manager.misc.inv_list_damage_max": "最大库存清单伤害值",
+  "config.maid_storage_manager.misc.inv_list_damage_min": "最小库存清单伤害值",
+  "config.maid_storage_manager.misc": "杂项"
 }

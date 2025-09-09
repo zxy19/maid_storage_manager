@@ -4,18 +4,22 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.items.WrittenInvListItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,8 +56,9 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         ItemStack item = ItemRegistry.WRITTEN_INVENTORY_LIST.get().getDefaultInstance().copyWithCount(1);
         UUID uuid = UUID.randomUUID();
 
+        List<InventoryItem> flatten = MemoryUtil.getViewedInventory(maid).flatten();
         level.getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY).ifPresent(inventoryListData -> {
-            inventoryListData.addWithCraftable(uuid, MemoryUtil.getViewedInventory(maid).flatten());
+            inventoryListData.addWithCraftable(uuid, flatten);
         });
 
         CompoundTag tag = item.getOrCreateTag();
@@ -61,9 +66,14 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         tag.putString(WrittenInvListItem.TAG_AUTHOR, maid.getName().getString());
         tag.putLong(WrittenInvListItem.TAG_TIME, level.getDayTime());
         item.setTag(tag);
-        if (maid.getOwner() instanceof ServerPlayer player)
+        if (maid.getOwner() instanceof ServerPlayer player) {
+            double dmg = Config.invListDamageMin + Math.min(Config.invListDamageMax, Config.invListDamageFactor * flatten.size());
+            ((WrittenInvListItem) ItemRegistry.WRITTEN_INVENTORY_LIST.get()).setAttributes(
+                    item,
+                    dmg - player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE),
+                    Config.invListDamageAttackSpd - player.getAttributeBaseValue(Attributes.ATTACK_SPEED));
             InvUtil.throwItem(maid, item, MathUtil.getFromToWithFriction(maid, player.position()));
-        else
+        } else
             InvUtil.throwItem(maid, item);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.STORAGE_LIST);
     }
