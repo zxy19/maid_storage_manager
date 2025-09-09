@@ -456,5 +456,7 @@
   "gui.maid_storage_manager.craft_guide.global.no_occupy": "No Occupy",
   "gui.maid_storage_manager.request_list.match_tag_auto": "Auto Check&Matching",
   "gui.maid_storage_manager.config.auto_sorting": "Auto Sorting Items",
-  "gui.maid_storage_manager.config.item_type_limit": "Item Type Limit"
+  "gui.maid_storage_manager.config.item_type_limit": "Max Item Type per Container",
+  "gui.maid_storage_manager.config.item_type_limit_unlimited": "Unlimited",
+  "gui.maid_storage_manager.config.item_type_limit_keep": "Keep Content"
 }

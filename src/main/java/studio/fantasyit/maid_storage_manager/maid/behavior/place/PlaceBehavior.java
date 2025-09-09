@@ -82,11 +82,15 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             }
             @NotNull ItemStack item = inv.getStackInSlot(count);
             int oCount = item.getCount();
-            if (context instanceof IFilterable iFilterable && !iFilterable.isAvailable(item)) {
-                count++;
-                continue;
+            boolean whitelist = false;
+            if (context instanceof IFilterable iFilterable) {
+                if (!iFilterable.isAvailable(item)) {
+                    count++;
+                    continue;
+                }
+                whitelist = iFilterable.isWhitelist();
             }
-            if (context instanceof ISlotBasedStorage slotContext && exceedSlotLimit(slotContext, item, maid)) {
+            if (context instanceof ISlotBasedStorage slotContext && exceedSlotLimit(slotContext, item, maid) && !whitelist) {
                 count++;
                 continue;
             }
@@ -164,7 +168,8 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         }
         MemoryUtil.clearTarget(maid);
         MemoryUtil.getCrafting(maid).tryStartIfHasPlan();
-        MemoryUtil.getSorting(maid).addNeedToSorting(target);
+        if (StorageManagerConfigData.get(maid).autoSorting())
+            MemoryUtil.getSorting(maid).addNeedToSorting(target);
     }
 
     @Override
