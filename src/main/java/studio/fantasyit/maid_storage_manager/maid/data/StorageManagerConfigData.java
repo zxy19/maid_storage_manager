@@ -168,6 +168,8 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         tag.putBoolean("useMemorizedCraftGuide", data.useMemorizedCraftGuide());
         tag.putInt("maxParallel", data.maxParallel());
         tag.putInt("maxCraftingLayerRepeatCount", data.maxCraftingLayerRepeatCount());
+        tag.putBoolean("autoSorting", data.autoSorting());
+        tag.putInt("itemTypeLimit", data.itemTypeLimit());
         return tag;
     }
 

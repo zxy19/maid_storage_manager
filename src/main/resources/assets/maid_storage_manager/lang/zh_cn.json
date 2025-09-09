@@ -456,5 +456,9 @@
   "gui.maid_storage_manager.craft_guide.global.not_mergeable": "不可合并的合成指南",
   "gui.maid_storage_manager.craft_guide.global.occupy": "占据",
   "gui.maid_storage_manager.craft_guide.global.no_occupy": "不占据",
-  "gui.maid_storage_manager.request_list.match_tag_auto": "自动判断标签"
+  "gui.maid_storage_manager.request_list.match_tag_auto": "自动判断标签",
+  "gui.maid_storage_manager.config.auto_sorting": "自动排序物品",
+  "gui.maid_storage_manager.config.item_type_limit": "容器内物品种类限制",
+  "gui.maid_storage_manager.config.item_type_limit_unlimited": "无限",
+  "gui.maid_storage_manager.config.item_type_limit_keep": "保持现状"
 }
