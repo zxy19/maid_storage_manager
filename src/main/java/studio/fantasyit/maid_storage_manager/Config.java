@@ -211,13 +211,13 @@ public class Config {
             .comment("The way to select the correct crafting path.")
             .defineEnum("crafting.shortest_path_evaluator", CraftPlanEvaluator.CRAFT_GUIDES, CraftPlanEvaluator.values());
 
-    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_FACTOR = BUILDER
+    private static final ModConfigSpec.DoubleValue INV_LIST_DAMAGE_FACTOR = BUILDER
             .defineInRange("misc.inv_list_damage.factor", 0.025f, 0.0f, 1.0f);
-    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_MAX = BUILDER
+    private static final ModConfigSpec.DoubleValue INV_LIST_DAMAGE_MAX = BUILDER
             .defineInRange("misc.inv_list_damage.max", 20.0f, 0.0f, 10000000.0f);
-    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_MIN = BUILDER
+    private static final ModConfigSpec.DoubleValue INV_LIST_DAMAGE_MIN = BUILDER
             .defineInRange("misc.inv_list_damage.min", 2.0f, 0.0f, 10000000.0f);
-    private static final ForgeConfigSpec.DoubleValue INV_LIST_DAMAGE_ATTACK_SPD = BUILDER
+    private static final ModConfigSpec.DoubleValue INV_LIST_DAMAGE_ATTACK_SPD = BUILDER
             .defineInRange("misc.inv_list_damage.speed", 1.2f, 0.0f, 100.0f);
 
 

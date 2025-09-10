@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.attachment.InventoryListData;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -60,7 +61,7 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
         item.set(DataComponentRegistry.INVENTORY_TIME, level.getDayTime());
         if (maid.getOwner() instanceof ServerPlayer player) {
             double dmg = Config.invListDamageMin + Math.min(Config.invListDamageMax, Config.invListDamageFactor * flatten.size());
-            ((WrittenInvListItem) ItemRegistry.WRITTEN_INVENTORY_LIST.get()).setAttributes(
+            ItemRegistry.WRITTEN_INVENTORY_LIST.get().setAttributes(
                     item,
                     dmg - player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE),
                     Config.invListDamageAttackSpd - player.getAttributeBaseValue(Attributes.ATTACK_SPEED));

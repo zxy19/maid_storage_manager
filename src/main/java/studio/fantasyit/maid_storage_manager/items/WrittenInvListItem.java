@@ -2,16 +2,19 @@ package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -77,18 +80,19 @@ public class WrittenInvListItem extends Item {
                 .getString();
     }
 
-    public static final String ATN_DAMAGE = "Attack damage by content";
-    public static final String ATN_SPEED = "Attack speed";
-
     public void setAttributes(ItemStack stack, double attackDamage, double attackSpeed) {
-        stack.addAttributeModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, ATN_DAMAGE, attackDamage, AttributeModifier.Operation.ADDITION), EquipmentSlot.MAINHAND);
-        stack.addAttributeModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, ATN_SPEED, attackSpeed, AttributeModifier.Operation.ADDITION), EquipmentSlot.MAINHAND);
-    }
-
-    public AttributeModifier getAttackDamageModifier(double attackDamage) {
-        return new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, ATN_DAMAGE, attackDamage, AttributeModifier.Operation.ADDITION);
-    }
-    public AttributeModifier getAttackSpeedModifier(double attackSpeed){
-        return new AttributeModifier(BASE_ATTACK_SPEED_UUID, ATN_SPEED, attackSpeed, AttributeModifier.Operation.ADDITION);
+        stack.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder()
+                .add(
+                        Attributes.ATTACK_DAMAGE,
+                        new AttributeModifier(BASE_ATTACK_DAMAGE_ID, attackDamage, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.bySlot(EquipmentSlot.MAINHAND)
+                )
+                .add(
+                        Attributes.ATTACK_SPEED,
+                        new AttributeModifier(BASE_ATTACK_SPEED_ID, attackSpeed, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.bySlot(EquipmentSlot.MAINHAND)
+                )
+                .build()
+        );
     }
 }
