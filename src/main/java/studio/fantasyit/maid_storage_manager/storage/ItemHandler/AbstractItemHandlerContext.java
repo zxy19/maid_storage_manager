@@ -39,7 +39,7 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
             isSortingSlots = false;
             return;
         }
-        int cstT = 3000 / helper.itemHandler.getSlots();
+        int cstT = Math.max(3000 / helper.itemHandler.getSlots(), 1);
         while (sortingSlot >= 0 && cstT > 0) {
             if (helper.itemHandler.getStackInSlot(sortingSlot).isEmpty()) {
                 sortingSlot--;
