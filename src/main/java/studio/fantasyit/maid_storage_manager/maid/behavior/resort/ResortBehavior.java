@@ -62,7 +62,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
             context.start(maid, level, target);
         }
         count = 0;
-        lock = StorageVisitLock.getWriteLock(target);
+        lock = StorageVisitLock.getWriteLock(target, maid);
     }
 
     @Override

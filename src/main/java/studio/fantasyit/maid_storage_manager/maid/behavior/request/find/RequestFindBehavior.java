@@ -48,6 +48,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (MemoryUtil.isWorking(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return false;
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
@@ -59,6 +60,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(@NotNull ServerLevel level, @NotNull EntityMaid maid, long gameTimeIn) {
         lock = StorageVisitLock.DUMMY;
+        MemoryUtil.setWorking(maid, true);
         @Nullable IMaidStorage storage = Objects.requireNonNull(MaidStorage.getInstance().getStorage(MemoryUtil.getRequestProgress(maid).getTarget().getType()));
         if (!MemoryUtil.getRequestProgress(maid).hasTarget()) return;
         target = MemoryUtil.getRequestProgress(maid).getTarget();
@@ -69,7 +71,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (context != null)
             context.start(maid, level, target);
         canPick = false;
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
     }
 
 
@@ -150,6 +152,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
+        MemoryUtil.setWorking(maid, false);
         lock.release();
         super.stop(level, maid, p_22550_);
         if (context != null) {

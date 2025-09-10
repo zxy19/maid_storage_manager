@@ -97,6 +97,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         }
         CraftBlockOccupy.get(p_22548_).removeAllOccupiesFor(maid);
         MemoryUtil.getCrafting(maid).resetAndMarkVis(p_22548_, maid);
+        MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
         if (!debugContext.isDummy()) {
             Optional.ofNullable(maid.getOwner())

@@ -79,7 +79,7 @@ public class ViewBehavior extends MaidCheckRateTask {
         shouldSeekForWorkMeal = MemoryUtil.getMeal(maid).shouldTakeMeal(maid);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.VIEW);
         holdStamp = level.getServer().getTickCount();
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
     }
 
     @Override

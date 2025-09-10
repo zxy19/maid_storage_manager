@@ -107,7 +107,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         StorageAccessUtil.checkNearByContainers(level, target.getPos(), pos -> {
             MemoryUtil.getViewedInventory(maid).resetViewedInvForPosAsRemoved(target.sameType(pos, null));
         });
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
     }
 
     @Override
@@ -144,7 +144,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
             count = getAvailableCountFromCraftAndSetLayer(maid, craftGuideData, itemsAt, count);
             if (count == 0) {
                 lock.release();
-                lock = StorageVisitLock.getReadLock(target);
+                lock = StorageVisitLock.getReadLock(target, maid);
                 contextView.reset();
                 MemoryUtil.getViewedInventory(maid).resetViewedInvForPos(target);
                 failCount++;

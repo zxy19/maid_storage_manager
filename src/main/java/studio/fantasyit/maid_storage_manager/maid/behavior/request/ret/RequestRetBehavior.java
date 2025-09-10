@@ -45,6 +45,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(ServerLevel p_22538_, EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (MemoryUtil.isWorking(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         return Conditions.hasReachedValidTargetOrReset(maid);
     }
@@ -59,6 +60,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
+        MemoryUtil.setWorking(maid, true);
         lock = StorageVisitLock.DUMMY;
         context = null;
         targetEntity = null;
@@ -74,7 +76,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                         .onStartPlace(level, maid, target);
                 if (context != null)
                     context.start(maid, level, target);
-                lock = StorageVisitLock.getWriteLock(target);
+                lock = StorageVisitLock.getWriteLock(target, maid);
             } else if (requestProgress.getTargetEntityUUID().isPresent()) {
                 targetEntity = level.getEntity(requestProgress.getTargetEntityUUID().get());
                 if (targetEntity instanceof EntityMaid m) {
@@ -174,6 +176,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     @Override
     protected void stop(@NotNull ServerLevel level, @NotNull EntityMaid maid, long p_22550_) {
         lock.release();
+        MemoryUtil.setWorking(maid, false);
         super.stop(level, maid, p_22550_);
         if (context != null)
             context.finish();

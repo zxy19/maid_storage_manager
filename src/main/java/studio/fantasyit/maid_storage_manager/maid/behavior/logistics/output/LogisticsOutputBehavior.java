@@ -69,7 +69,7 @@ public class LogisticsOutputBehavior extends Behavior<EntityMaid> {
                 context.start(maid, level, target);
 
             layer = MemoryUtil.getLogistics(maid).getResultLayer();
-            lock = StorageVisitLock.getWriteLock(target);
+            lock = StorageVisitLock.getWriteLock(target, maid);
         }
 
         currentSlot = 0;

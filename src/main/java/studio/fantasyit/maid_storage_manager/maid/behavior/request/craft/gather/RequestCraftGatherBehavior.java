@@ -40,6 +40,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel level, @NotNull EntityMaid maid) {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
+        if (MemoryUtil.isWorking(maid)) return false;
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
         if (MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
@@ -67,7 +68,8 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
             context.start(maid, level, target);
         plan.showCraftingProgress(maid);
         InvUtil.mergeSameStack(maid.getAvailableInv(true));
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
+        MemoryUtil.setWorking(maid, true);
     }
 
     @Override
@@ -122,6 +124,7 @@ public class RequestCraftGatherBehavior extends Behavior<EntityMaid> {
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
         lock.release();
+        MemoryUtil.setWorking(maid, false);
         super.stop(level, maid, p_22550_);
         if (context != null) {
             context.finish();

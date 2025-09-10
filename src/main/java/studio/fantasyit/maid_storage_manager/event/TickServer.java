@@ -8,12 +8,14 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
+import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 
 @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class TickServer {
     @SubscribeEvent
     public static void onTick(ServerTickEvent.Post event) {
         SimulateTargetInteractHelper.removeInvalid();
+        StorageVisitLock.invalidateInvalidedLock();
     }
 
     @SubscribeEvent
