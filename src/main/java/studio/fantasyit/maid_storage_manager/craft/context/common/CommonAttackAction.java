@@ -95,8 +95,8 @@ public class CommonAttackAction extends AbstractCraftActionContext {
         if (storedSlotOffHand == -1)
             return Result.FAIL;
 
-        InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
         InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
+        InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
         return Result.CONTINUE;
     }
@@ -203,7 +203,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
                 craftGuideStepData.getStorage().side,
                 ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
         );
-        if (craftGuideStepData.getOptionSelection(OPTION_USE_METHOD).orElse(USE_TYPE.SINGLE) == USE_TYPE.LONG) {
+        if (craftGuideStepData.getOptionSelection(OPTION_USE_METHOD).orElse(USE_TYPE.LONG) == USE_TYPE.LONG) {
             if (event.getUseBlock() != DENY) {
                 onStartDestroyBlock(level, target);
             }
@@ -251,10 +251,10 @@ public class CommonAttackAction extends AbstractCraftActionContext {
 
     @Override
     public void stop() {
-        if (storedSlotMainHand != -1)
-            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
         if (storedSlotOffHand != -1)
             InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
+        if (storedSlotMainHand != -1)
+            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(false);
     }
 

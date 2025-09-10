@@ -87,7 +87,7 @@ public class CoWorkChestView extends MaidCheckRateTask {
         context.start(maid, level, target);
         MemoryUtil.setLookAt(maid, target.pos);
         holdStamp = level.getServer().getTickCount();
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
     }
 
     @Override

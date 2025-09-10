@@ -41,6 +41,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean checkExtraStartConditions(@NotNull ServerLevel worldIn, @NotNull EntityMaid owner) {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.PLACE) return false;
+        if (MemoryUtil.isWorking(owner)) return false;
         if (!super.checkExtraStartConditions(worldIn, owner)) return false;
         if (!MemoryUtil.getPlacingInv(owner).hasTarget()) return false;
         return Conditions.hasReachedValidTargetOrReset(owner);
@@ -70,7 +71,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         count = 0;
         changed = false;
         anyMatched = false;
-        lock = StorageVisitLock.getWriteLock(target);
+        lock = StorageVisitLock.getWriteLock(target, maid);
     }
 
     @Override

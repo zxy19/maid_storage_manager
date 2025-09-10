@@ -53,7 +53,7 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.start(maid, level, target);
         }
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
     }
 
     @Override

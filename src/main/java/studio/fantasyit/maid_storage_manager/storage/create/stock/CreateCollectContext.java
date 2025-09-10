@@ -317,7 +317,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
             if (!PackageItem.getAddress(packageBox.item).equals(targetPackageName)) {
                 return false;
             }
-            if (packageBox.worldPosition.distanceTo(maid.position()) > 8) {
+            if (packageBox.worldPosition != null && packageBox.worldPosition.distanceTo(maid.position()) > 8) {
                 return false;
             }
             maid.swing(InteractionHand.MAIN_HAND);

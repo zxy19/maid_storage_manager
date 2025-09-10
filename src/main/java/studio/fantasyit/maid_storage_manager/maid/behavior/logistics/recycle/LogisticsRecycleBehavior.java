@@ -69,7 +69,7 @@ public class LogisticsRecycleBehavior extends Behavior<EntityMaid> {
                 context.start(maid, level, target);
 
             layer = MemoryUtil.getLogistics(maid).getCraftLayer();
-            lock = StorageVisitLock.getWriteLock(target);
+            lock = StorageVisitLock.getWriteLock(target, maid);
         }
 
         currentSlot = 0;

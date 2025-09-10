@@ -108,8 +108,8 @@ public class CommonUseAction extends AbstractCraftActionContext {
         if (storedSlotOffHand == -1)
             return Result.FAIL;
 
-        InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
         InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
+        InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
         MemoryUtil.getCrafting(maid).setSwappingHandWhenCrafting(true);
         failCount = 0;
         return Result.CONTINUE;
@@ -298,10 +298,10 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
     @Override
     public void stop() {
-        if (storedSlotMainHand != -1)
-            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
         if (storedSlotOffHand != -1)
             InvUtil.swapHandAndSlot(maid, InteractionHand.OFF_HAND, storedSlotOffHand);
+        if (storedSlotMainHand != -1)
+            InvUtil.swapHandAndSlot(maid, InteractionHand.MAIN_HAND, storedSlotMainHand);
         fakePlayer.getCapability(PowerCapabilityProvider.POWER_CAP).ifPresent(powerCapability -> {
             if (powerCapability.get() != powerPointAtStart) {
                 float deltaPP = powerCapability.get() - powerPointAtStart;

@@ -52,7 +52,7 @@ public class SortingBehavior extends Behavior<EntityMaid> {
         if (context != null) {
             context.start(maid, level, target);
             context.startSorting();
-            lock = StorageVisitLock.getWriteLock(target);
+            lock = StorageVisitLock.getWriteLock(target, maid);
         }
     }
 

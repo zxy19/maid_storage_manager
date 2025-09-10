@@ -58,7 +58,7 @@ public class MealBehavior extends MaidWorkMealTask {
         }
         hasTaken = new MutableBoolean(false);
         endTimeStamp = -1;
-        lock = StorageVisitLock.getReadLock(target);
+        lock = StorageVisitLock.getReadLock(target, maid);
     }
 
     @Override
