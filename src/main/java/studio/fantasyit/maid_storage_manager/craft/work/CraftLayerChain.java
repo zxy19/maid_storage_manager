@@ -1101,7 +1101,7 @@ public class CraftLayerChain {
                 } else {
                     invConsumeSimulator.addLayerOutput(layer);
                 }
-                int totalSlots = invConsumeSimulator.getCurrentSlotConsume();
+                int totalSlots = invConsumeSimulator.getCurrentSlotConsume() + layer.getExtraSlotConsume();
                 invConsumeSimulator.restoreSnapshot();
                 if (totalSlots <= freeSlots) {
                     isFull.setFalse();
