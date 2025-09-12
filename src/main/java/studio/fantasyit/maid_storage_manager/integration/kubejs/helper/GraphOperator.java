@@ -8,12 +8,14 @@ import net.minecraft.world.item.crafting.Recipe;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.SpecialCraftNode;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
-public class GraphOperator{
+public class GraphOperator {
     public ICachableGeneratorGraph graph;
 
     public GraphOperator(ICachableGeneratorGraph graph) {
@@ -56,5 +58,24 @@ public class GraphOperator{
 
     public void removeBlockedType(ResourceLocation type) {
         graph.removeBlockedType(type);
+    }
+
+    public void addSpecialCraftNode(Consumer<ICachableGeneratorGraph> build, Consumer<ICachableGeneratorGraph> generate, String name) {
+        graph.addSpecialCraftNode(t -> new SpecialCraftNode(t) {
+            @Override
+            public void buildGraph(ICachableGeneratorGraph graph) {
+                build.accept(graph);
+            }
+
+            @Override
+            public void generate(ICachableGeneratorGraph graph) {
+                generate.accept(graph);
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        });
     }
 }
