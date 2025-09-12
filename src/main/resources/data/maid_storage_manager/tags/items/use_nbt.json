@@ -13,15 +13,15 @@
     "maid_storage_manager:work_card",
     {
       "id": "tacz:ammo",
-      "required": "false"
+      "required": false
     },
     {
       "id": "tacz:attachment",
-      "required": "false"
+      "required": false
     },
     {
       "id": "tacz:modern_kinetic_gun",
-      "required": "false"
+      "required": false
     }
   ]
 }
