@@ -100,7 +100,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
 
     @Override
     public void addToQueue(Node node) {
-        queue.add(node);
+        addToQueueIfNotIn(node);
     }
 
     @Override
@@ -351,11 +351,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     Queue<Function<Integer, SpecialCraftNode>> specialCraftNodeBuilder = new LinkedList<>();
 
     public boolean process() {
-        if (!addRecipeQueue.isEmpty()) {
-            processAddRecipe();
-            return false;
-        } else if (!specialCraftNodeBuilder.isEmpty()) {
+        if (!specialCraftNodeBuilder.isEmpty()) {
             processAddSpecial();
+            return false;
+        } else if (!addRecipeQueue.isEmpty()) {
+            processAddRecipe();
             return false;
         } else if (!reversedQueue.isEmpty()) {
             processReversed();
@@ -419,6 +419,9 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
                     Node to = getNode(toId);
                     addToQueueIfNotIn(to);
                 });
+            } else if (node instanceof SpecialCraftNode specialCraftNode) {
+                specialCraftNode.generate(this);
+                specialCraftNode.addNextNodes(this);
             }
         }
         return true;

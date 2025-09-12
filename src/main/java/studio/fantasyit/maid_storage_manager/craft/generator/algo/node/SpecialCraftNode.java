@@ -22,6 +22,13 @@ public abstract class SpecialCraftNode extends Node {
             throw new IllegalArgumentException("Cannot add edge from SpecialCraftNode to " + node);
     }
 
+    public void addNextNodes(ICachableGeneratorGraph graph) {
+        forEachEdge((toId, weight) -> {
+            Node to = graph.getNode(toId);
+            graph.addToQueue(to);
+        });
+    }
+
     private void addToQueue(ICachableGeneratorGraph graph) {
         graph.addToQueue(this);
     }
