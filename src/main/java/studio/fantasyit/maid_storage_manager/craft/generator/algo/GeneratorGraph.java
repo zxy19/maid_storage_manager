@@ -103,6 +103,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         queue.add(node);
     }
 
+    @Override
+    public void addCraftGuide(CraftGuideData craftGuideData) {
+        craftGuides.add(craftGuideData);
+    }
+
     public ItemNode getItemNode(ItemStack itemStack) {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(itemStack.getItem());
         if (itemNodeMap.containsKey(id)) {
@@ -529,4 +534,6 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
             }
         }
     }
+
+
 }

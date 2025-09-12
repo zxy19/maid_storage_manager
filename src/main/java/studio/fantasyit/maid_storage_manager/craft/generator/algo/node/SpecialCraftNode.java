@@ -1,5 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.algo.node;
 
+import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 
 public abstract class SpecialCraftNode extends Node {
@@ -23,5 +24,9 @@ public abstract class SpecialCraftNode extends Node {
 
     private void addToQueue(ICachableGeneratorGraph graph) {
         graph.addToQueue(this);
+    }
+
+    private void addCraftGuide(ICachableGeneratorGraph graph, CraftGuideData craftGuideData) {
+        graph.addCraftGuide(craftGuideData);
     }
 }
