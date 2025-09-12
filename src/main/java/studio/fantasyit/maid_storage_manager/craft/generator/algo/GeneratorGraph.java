@@ -13,10 +13,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.CraftNode;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.IngredientNode;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.ItemNode;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.Node;
+import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.*;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
@@ -28,8 +25,6 @@ import java.util.*;
 import java.util.function.Function;
 
 public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSetter {
-
-
     private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
 
     public int getNodeCount() {
@@ -63,9 +58,16 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     Set<ResourceLocation> notToAddRecipe = new HashSet<>();
     Set<ResourceLocation> notToAddType = new HashSet<>();
 
+    @Override
     public Node getNode(int a) {
         return nodes.get(a);
     }
+
+    @Override
+    public List<Node> getNodes() {
+        return nodes;
+    }
+
 
     public GeneratorGraph(RegistryAccess registryAccess) {
         this.registryAccess = registryAccess;
@@ -97,6 +99,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         if (tmp == null)
             tmp = addItemNode(itemStack, available);
         return tmp;
+    }
+
+    @Override
+    public void addToQueue(Node node) {
+        queue.add(node);
     }
 
     public ItemNode getItemNode(ItemStack itemStack) {
@@ -231,6 +238,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         pushedSteps++;
     }
 
+    public void addSpecialCraftNode(Function<Integer, SpecialCraftNode> idToNodeBuilder) {
+        specialCraftNodeBuilder.add(idToNodeBuilder);
+        pushedSteps++;
+    }
+
     public void blockType(ResourceLocation type) {
         notToAddType.add(type);
     }
@@ -336,16 +348,29 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     Queue<Node> queue = new LinkedList<>();
     Queue<Node> reversedQueue = new LinkedList<>();
     Queue<AddRecipeData> addRecipeQueue = new LinkedList<>();
+    Queue<Function<Integer, SpecialCraftNode>> specialCraftNodeBuilder = new LinkedList<>();
 
     public boolean process() {
         if (!addRecipeQueue.isEmpty()) {
             processAddRecipe();
+            return false;
+        } else if (!specialCraftNodeBuilder.isEmpty()) {
+            processAddSpecial();
             return false;
         } else if (!reversedQueue.isEmpty()) {
             processReversed();
             return false;
         }
         return processData();
+    }
+
+    private void processAddSpecial() {
+        if (specialCraftNodeBuilder.isEmpty()) return;
+        Function<Integer, SpecialCraftNode> builder = specialCraftNodeBuilder.poll();
+        SpecialCraftNode specialNode = builder.apply(nodes.size());
+        nodes.add(specialNode);
+        debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR, "add special node %s", specialNode);
+        specialNode.buildGraph(this);
     }
 
     public void processAddRecipe() {
