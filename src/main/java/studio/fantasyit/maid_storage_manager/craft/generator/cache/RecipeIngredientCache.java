@@ -75,23 +75,7 @@ public class RecipeIngredientCache {
         }
         List<UUID> cachedIngredientNodeUUID = new ArrayList<>();
         for (Ingredient ingredient : ingredients) {
-            boolean found = false;
-            LOCK.readLock().lock();
-            for (CachedIngredient ingredientNode : cachedNode) {
-                if (ingredientNode.isEqualTo(ingredient)) {
-                    found = true;
-                    cachedIngredientNodeUUID.add(ingredientNode.cachedUUID);
-                    break;
-                }
-            }
-            LOCK.readLock().unlock();
-            if (!found) {
-                LOCK.writeLock().lock();
-                UUID uuid = UUID.randomUUID();
-                cachedNode.add(new CachedIngredient(ingredient.getItems(), uuid));
-                cachedIngredientNodeUUID.add(uuid);
-                LOCK.writeLock().unlock();
-            }
+            cachedIngredientNodeUUID.add(cacheIngredient(ingredient));
         }
         CACHE.put(id, cachedIngredientNodeUUID);
     }
@@ -110,6 +94,25 @@ public class RecipeIngredientCache {
         CraftManager.getInstance().getAutoCraftGuideGenerators().forEach(generator -> {
             generator.onCache(manager);
         });
+    }
+
+    public static UUID cacheIngredient(Ingredient ingredient) {
+        UUID uuid = null;
+        LOCK.readLock().lock();
+        for (CachedIngredient ingredientNode : cachedNode) {
+            if (ingredientNode.isEqualTo(ingredient)) {
+                uuid = ingredientNode.cachedUUID;
+                break;
+            }
+        }
+        LOCK.readLock().unlock();
+        if (uuid == null) {
+            LOCK.writeLock().lock();
+            uuid = UUID.randomUUID();
+            cachedNode.add(new CachedIngredient(ingredient.getItems(), uuid));
+            LOCK.writeLock().unlock();
+        }
+        return uuid;
     }
 
     public static class CachedIngredient {
