@@ -68,4 +68,6 @@ public interface ICachableGeneratorGraph {
     ItemNode getItemNodeOrCreate(ItemStack itemStack, boolean defaultAvailable);
 
     void addToQueue(Node node);
+
+    void addCraftGuide(CraftGuideData craftGuideData);
 }
