@@ -17,8 +17,10 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 public class StartUpEvent {
     @SubscribeEvent
     public static void onStartUp(FMLCommonSetupEvent event) {
-        MaidStorage.getInstance().collectStorage();
-        CraftManager.getInstance().collect();
+        event.enqueueWork(() -> {
+            MaidStorage.getInstance().collectStorage();
+            CraftManager.getInstance().collect();
+        });
     }
 
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
