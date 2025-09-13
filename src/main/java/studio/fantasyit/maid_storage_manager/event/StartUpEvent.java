@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.event;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -16,9 +15,11 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class StartUpEvent {
     @SubscribeEvent
-    public static void onStartUp(FMLCommonSetupEvent event) {
-        MaidStorage.getInstance().collectStorage();
-        CraftManager.getInstance().collect();
+    public static void onStartUp(FMLLoadCompleteEvent event) {
+        event.enqueueWork(() -> {
+            MaidStorage.getInstance().collectStorage();
+            CraftManager.getInstance().collect();
+        });
     }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
