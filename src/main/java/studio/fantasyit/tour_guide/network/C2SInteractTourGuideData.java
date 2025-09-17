@@ -14,6 +14,7 @@ public record C2SInteractTourGuideData(Type type) {
         QUIT,
         SKIP
     }
+
     public void toNetwork(FriendlyByteBuf buf) {
         buf.writeEnum(type);
     }
@@ -35,6 +36,7 @@ public record C2SInteractTourGuideData(Type type) {
             switch (packet.type) {
                 case DONE -> tourData.doneAndTryNextStep();
                 case SKIP -> tourData.skipAndTryNextStep();
+                case QUIT -> tourData.stop();
             }
         });
         ctxGetter.get().setPacketHandled(true);

@@ -24,11 +24,11 @@ public class EntityMarkRenderer implements IWorldMarkRenderer<EntityMark>, IText
         if (entity == null) {
             return;
         }
-        Vec3 position = mc.getCameraEntity().getPosition(0).reverse();
+        Vec3 position = camera.getPosition().reverse();
         AABB aabb = entity.getBoundingBox().move(position).inflate(0.3);
         VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
         int tColor = mark.color();
-        LevelRenderer.renderLineBox(poseStack, buffer, aabb,(tColor & 0xff) / 255.0f, ((tColor >> 8) & 0xff) / 255.0f, ((tColor >> 16) & 0xff) / 255.0f, ((tColor >> 24) & 0xff)/255.0f);
+        LevelRenderer.renderLineBox(poseStack, buffer, aabb, (tColor & 0xff) / 255.0f, ((tColor >> 8) & 0xff) / 255.0f, ((tColor >> 16) & 0xff) / 255.0f, ((tColor >> 24) & 0xff) / 255.0f);
         Vec3 livingFrom = entity.getPosition(partialTicks).add(0, entity.getBbHeight() + 0.5f, 0);
         drawText(poseStack, partialTicks, mc, camera, livingFrom, mark.text(), 0xffffffff, 0);
     }

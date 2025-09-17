@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
+import studio.fantasyit.tour_guide.client.gui.GuiMainTipMarkRenderer;
 import studio.fantasyit.tour_guide.client.gui.GuiRectMarkRenderer;
 import studio.fantasyit.tour_guide.client.gui.GuiSlotMarkRenderer;
 import studio.fantasyit.tour_guide.client.gui.GuiTextMarkRenderer;
@@ -17,6 +18,7 @@ import studio.fantasyit.tour_guide.client.world.EntityMarkRenderer;
 import studio.fantasyit.tour_guide.client.world.TextMarkRenderer;
 import studio.fantasyit.tour_guide.mark.IGuiMark;
 import studio.fantasyit.tour_guide.mark.IMark;
+import studio.fantasyit.tour_guide.mark.gui.GuiMainTipMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiRectMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiSlotMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiTextMark;
@@ -42,7 +44,7 @@ public class MarkRendererManager {
         if (!renderers.containsKey(mark.getId())) return;
         Either<IWorldMarkRenderer<?>, IGuiMarkRenderer<?>> iWorldMarkRendererIGuiMarkRendererEither = renderers.get(mark.getId());
         iWorldMarkRendererIGuiMarkRendererEither.ifLeft(i -> {
-            ((IWorldMarkRenderer) i).render(source, levelRenderer, poseStack,camera, partialTicks, mark, new IWorldMarkRenderer.Context(new HashMap<>()));
+            ((IWorldMarkRenderer) i).render(source, levelRenderer, poseStack, camera, partialTicks, mark, new IWorldMarkRenderer.Context(new HashMap<>()));
         });
     }
 
@@ -64,9 +66,9 @@ public class MarkRendererManager {
         register(GuiTextMark.ID, new GuiTextMarkRenderer());
         register(GuiSlotMark.ID, new GuiSlotMarkRenderer());
         register(GuiRectMark.ID, new GuiRectMarkRenderer());
+        register(GuiMainTipMark.ID, new GuiMainTipMarkRenderer());
         register(TextMark.ID, new TextMarkRenderer());
         register(BlockMark.ID, new BlockMarkRenderer());
         register(EntityMark.ID, new EntityMarkRenderer());
-
     }
 }
