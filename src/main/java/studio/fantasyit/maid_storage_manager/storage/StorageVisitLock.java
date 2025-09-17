@@ -58,6 +58,7 @@ public class StorageVisitLock {
                 }
                 if (maid != null)
                     MAID_TO_LOCK.remove(maid.getUUID());
+                granted = false;
             }
         }
 
