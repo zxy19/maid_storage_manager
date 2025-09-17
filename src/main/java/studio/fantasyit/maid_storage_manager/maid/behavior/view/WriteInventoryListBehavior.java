@@ -17,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 import java.util.List;
 import java.util.Map;
@@ -66,8 +67,10 @@ public class WriteInventoryListBehavior extends Behavior<EntityMaid> {
                     dmg - player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE),
                     Config.invListDamageAttackSpd - player.getAttributeBaseValue(Attributes.ATTACK_SPEED));
             InvUtil.throwItem(maid, item, MathUtil.getFromToWithFriction(maid, player.position()));
+            TourGuideTrigger.trigger(player, InventoryListTour.TRIGGER_WRITE_INV);
         } else
             InvUtil.throwItem(maid, item);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.STORAGE_LIST);
+
     }
 }

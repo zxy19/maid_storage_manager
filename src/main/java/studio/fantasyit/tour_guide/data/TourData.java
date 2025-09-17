@@ -4,10 +4,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.tour_guide.api.TourManager;
 import studio.fantasyit.tour_guide.mark.IMark;
 import studio.fantasyit.tour_guide.network.Network;
 import studio.fantasyit.tour_guide.network.S2CUpdateTourGuideData;
+import studio.fantasyit.tour_guide.step.ITourStepData;
+import studio.fantasyit.tour_guide.step.TourStepId;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,12 +40,12 @@ public class TourData {
     public void doneAndTryNextStep() {
         if (currentStep == null)
             throw new IllegalStateException("TourData is not started");
-        Component unfinishReason = currentStep.getUnfinishReason();
+        Component unfinishReason = currentStep.getUnfinishReason(this);
         if (unfinishReason != null) {
             player.sendSystemMessage(unfinishReason);
             return;
         }
-        data.put(currentStep.getId(), currentStep.finish());
+        data.put(currentStep.getId().id(), currentStep.finish(this));
         tryNextStep();
     }
 
@@ -69,7 +72,7 @@ public class TourData {
     }
 
     public void receiveTrigger(String key) {
-        if (currentStep != null && currentStep.receiveTrigger(key) && currentStep.checkIfFinished()) {
+        if (currentStep != null && currentStep.receiveTrigger(key) && currentStep.checkIfFinished(this)) {
             doneAndTryNextStep();
         }
     }
@@ -79,7 +82,7 @@ public class TourData {
             throw new IllegalStateException("TourData is not started");
         if (!currentStep.allowSkip())
             return;
-        currentStep.skipped();
+        currentStep.skipped(this);
         tryNextStep();
     }
 
@@ -88,6 +91,12 @@ public class TourData {
         if (currentStep == null)
             throw new IllegalStateException("TourData is not started");
         List<IMark> init = currentStep.init(this);
+        @Nullable List<Component> chats = currentStep.getChatText(this);
+        if (chats != null) {
+            for (Component chat : chats) {
+                player.sendSystemMessage(chat);
+            }
+        }
         Network.INSTANCE
                 .send(PacketDistributor.PLAYER.with(() -> player), new S2CUpdateTourGuideData(init));
     }
@@ -112,5 +121,13 @@ public class TourData {
 
     public <T> T getData(ResourceLocation id) {
         return (T) data.get(id);
+    }
+
+    public <T> T getData(TourStepId<T> id) {
+        return getData(id.id());
+    }
+
+    public ServerPlayer getPlayer() {
+        return player;
     }
 }

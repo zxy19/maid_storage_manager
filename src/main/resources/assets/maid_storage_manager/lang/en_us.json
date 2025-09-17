@@ -469,5 +469,11 @@
   "key.tour_guide.category": "Tour Guide",
   "key.tour_guide.skip": "Skip Step",
   "key.tour_guide.quit": "Quit Tour Guide",
-  "key.tour_guide.start": "Start Tour Guide"
+  "key.tour_guide.start": "Start Tour Guide",
+  "tooltip.tour_guide.item_tour_guide": "[ %s ]",
+  "tour_guide.maid_storage_manager.test": "Test",
+  "tooltip.tour_guide.item_tour_guide.start": "Hold [%s] To Start Tour",
+  "tooltip.tour_guide.item_tour_guide.hold": "[%s%s]",
+  "gui.tour_guide.key_tip": "Done [%s], Skip [%s], Quit [%s]",
+  "gui.tour_guide.key_tip_no_skip": "Done [%s], Quit [%s]"
 }

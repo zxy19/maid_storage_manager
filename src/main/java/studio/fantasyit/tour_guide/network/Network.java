@@ -27,6 +27,36 @@ public class Network {
                 S2CUpdateTourGuideData::fromNetwork,
                 S2CUpdateTourGuideData::handle
         );
+        INSTANCE.registerMessage(i++,
+                S2CSyncTriggerableItems.class,
+                S2CSyncTriggerableItems::toNetwork,
+                S2CSyncTriggerableItems::fromNetwork,
+                S2CSyncTriggerableItems::handle
+        );
+        INSTANCE.registerMessage(i++,
+                C2SRequestTriggerableItems.class,
+                C2SRequestTriggerableItems::toNetwork,
+                C2SRequestTriggerableItems::fromNetwork,
+                C2SRequestTriggerableItems::handle
+        );
+        INSTANCE.registerMessage(i++,
+                C2SStartTourGuide.class,
+                C2SStartTourGuide::toNetwork,
+                C2SStartTourGuide::fromNetwork,
+                C2SStartTourGuide::handle
+        );
+        INSTANCE.registerMessage(i++,
+                C2SInteractTourGuideData.class,
+                C2SInteractTourGuideData::toNetwork,
+                C2SInteractTourGuideData::fromNetwork,
+                C2SInteractTourGuideData::handle
+        );
+        INSTANCE.registerMessage(i++,
+                C2SClientTrigger.class,
+                C2SClientTrigger::toNetwork,
+                C2SClientTrigger::fromNetwork,
+                C2SClientTrigger::handle
+        );
     }
 
 

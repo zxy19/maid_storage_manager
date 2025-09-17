@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.tour_guide.mark.ServerScreenPredicatorMarks;
+import studio.fantasyit.tour_guide.screen.BlockHoldKeyScreen;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class ScreenPredicatorAndTransformer {
     ));
     private static final Map<ResourceLocation, Predicate<@Nullable Screen>> SCREEN_PREDICATORS = new HashMap<>(Map.of(
             ServerScreenPredicatorMarks.ALL, screen -> true,
-            ServerScreenPredicatorMarks.NO_GUI, screen -> screen == null || screen instanceof ChatScreen
+            ServerScreenPredicatorMarks.NO_GUI, screen -> screen == null || screen instanceof ChatScreen || screen instanceof BlockHoldKeyScreen
     ));
 
     public static boolean predicate(ResourceLocation id, Screen screen) {

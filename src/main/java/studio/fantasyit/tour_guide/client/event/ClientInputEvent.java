@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
+import studio.fantasyit.tour_guide.client.ClientItemTourGuideCounter;
 import studio.fantasyit.tour_guide.network.C2SInteractTourGuideData;
 import studio.fantasyit.tour_guide.network.Network;
 
@@ -57,17 +57,27 @@ public class ClientInputEvent {
     @SubscribeEvent
     public static void onKey(net.minecraftforge.client.event.InputEvent.Key event) {
         InputConstants.Key key = InputConstants.getKey(event.getKey(), event.getScanCode());
-        if (KEY_QUIT.get().getKey().equals(key)) {
-            Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
-                    new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.QUIT));
-        }
-        if (KEY_SEE_THROUGH_MARK_BOX.get().getKey().equals(key)) {
-            if (event.getAction() == GLFW.GLFW_PRESS) {
-                BoxRenderUtil.useSeeThroughBox = true;
-            } else if (event.getAction() == GLFW.GLFW_RELEASE) {
-                BoxRenderUtil.useSeeThroughBox = false;
+        if(event.getAction() == GLFW.GLFW_PRESS) {
+            if (KEY_QUIT.get().getKey().equals(key)) {
+                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                        new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.QUIT));
+            }
+            if (KEY_SKIP.get().getKey().equals(key)) {
+                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                        new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.SKIP));
+            }
+            if (KEY_CHECK_STEP.get().getKey().equals(key)) {
+                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                        new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.DONE));
+            }
+            if (KEY_START_TOUR_GUIDE.get().getKey().equals(key)) {
+                ClientItemTourGuideCounter.keyPressed();
             }
         }
-
+        if(event.getAction() == GLFW.GLFW_RELEASE) {
+            if (KEY_START_TOUR_GUIDE.get().getKey().equals(key)) {
+                ClientItemTourGuideCounter.keyReleased();
+            }
+        }
     }
 }

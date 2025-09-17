@@ -3,7 +3,9 @@ package studio.fantasyit.tour_guide.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.tour_guide.data.ItemTourGuide;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +25,10 @@ public record S2CSyncTriggerableItems(List<Pair<ResourceLocation, ResourceLocati
 
     public static void handle(S2CSyncTriggerableItems packet, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            TourData.triggerableItems.clear();
-            TourData.triggerableItems.addAll(packet.items);
+            ItemTourGuide.clear();
+            packet.items.forEach(t -> {
+                ItemTourGuide.register(ForgeRegistries.ITEMS.getValue(t.getA()), t.getB());
+            });
         });
         ctx.get().setPacketHandled(true);
     }

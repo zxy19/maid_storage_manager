@@ -2,6 +2,7 @@ package studio.fantasyit.tour_guide.mark;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import studio.fantasyit.tour_guide.mark.gui.GuiMainTipMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiRectMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiSlotMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiTextMark;
@@ -57,6 +58,7 @@ public class ContextMarkSerializer {
         register(GuiTextMark.ID, of(GuiTextMark::fromNetwork, GuiTextMark::toNetwork));
         register(GuiSlotMark.ID, of(GuiSlotMark::fromNetwork, GuiSlotMark::toNetwork));
         register(GuiRectMark.ID, of(GuiRectMark::fromNetwork, GuiRectMark::toNetwork));
+        register(GuiMainTipMark.ID, of(GuiMainTipMark::fromNetwork, GuiMainTipMark::toNetwork));
         register(TextMark.ID, of(TextMark::fromNetwork, TextMark::toNetwork));
         register(BlockMark.ID, of(BlockMark::fromNetwork, BlockMark::toNetwork));
         register(EntityMark.ID, of(EntityMark::fromNetwork, EntityMark::toNetwork));
