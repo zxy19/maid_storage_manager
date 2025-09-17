@@ -109,4 +109,8 @@ public class Integrations {
     public static boolean ars() {
         return ModList.get().isLoaded("ars_nouveau");
     }
+
+    public static boolean ponder() {
+        return ModList.get().isLoaded("ponder");
+    }
 }
