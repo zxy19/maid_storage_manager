@@ -61,7 +61,7 @@ public class ClientItemTourGuideCounter {
             hasAvailable = ItemTourGuide.get(item) != null;
             startTimeStamp = 0;
         }
-        if (startTimeStamp != 0) {
+        if (startTimeStamp != 0 && hasAvailable) {
             if (System.currentTimeMillis() - startTimeStamp > TIME_OUT) {
                 sendStart();
                 startTimeStamp = 0;

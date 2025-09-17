@@ -7,7 +7,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.tour_guide.mark.IGuiMark;
 
 public record GuiTextMark(ResourceLocation screenPredicate, Component text, int x, int y, int width,
-                          int color) implements IGuiMark {
+                          int color,int background) implements IGuiMark {
 
     public static final ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "gui_text");
     @Override
@@ -15,7 +15,7 @@ public record GuiTextMark(ResourceLocation screenPredicate, Component text, int 
         return ID;
     }
     public static GuiTextMark fromNetwork(FriendlyByteBuf buf) {
-        return new GuiTextMark(buf.readResourceLocation(), buf.readComponent(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt());
+        return new GuiTextMark(buf.readResourceLocation(), buf.readComponent(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt(), buf.readInt());
     }
 
     public void toNetwork(FriendlyByteBuf buf) {
@@ -25,5 +25,6 @@ public record GuiTextMark(ResourceLocation screenPredicate, Component text, int 
         buf.writeInt(y);
         buf.writeInt(width);
         buf.writeInt(color);
+        buf.writeInt(background);
     }
 }

@@ -473,5 +473,22 @@
   "tooltip.tour_guide.item_tour_guide.start": "Hold [%s] To Start Tour",
   "tooltip.tour_guide.item_tour_guide.hold": "[%s%s]",
   "gui.tour_guide.key_tip": "Done [%s], Skip [%s], Quit [%s]",
-  "gui.tour_guide.key_tip_no_skip": "Done [%s], Quit [%s]"
+  "gui.tour_guide.key_tip_no_skip": "Done [%s], Quit [%s]",
+  "tour_guide.maid_storage_manager.request_list_tour.step_1.chat": "在向女仆请求物品之前，女仆应该有其管理的存储空间。关于此内容请查看[空白的库存清单]的导游。如果女仆现在已经管理了部分存储且存储中有物品，请点击完成。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_1.main": "确保女仆管理的仓库中有物品后，按下完成",
+  "tour_guide.maid_storage_manager.request_list_tour.step_1.no_data": "请确保女仆有能够管理的仓库且仓库内有物品",
+  "tour_guide.maid_storage_manager.request_list_tour.step_2.chat_1": "你可以手持请求列表并潜行右键一个容器，来指定女仆将获取的物品放入某处。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_2.chat_2": "需要注意的是，被请求列表标记的容器会被女仆排除。如果你要的物品在这个箱子里，女仆是拿不到的（女仆肯定不能拿之前给你的物品来交差罢）",
+  "tour_guide.maid_storage_manager.request_list_tour.step_2.chat_3": "如果你希望女仆把东西直接给你，那么你可以按下跳过键跳过这个步骤",
+  "tour_guide.maid_storage_manager.request_list_tour.step_2.main": "为请求列表绑定位置或者跳过这个步骤",
+  "tour_guide.maid_storage_manager.request_list_tour.step_2.no_data": "如果不需要绑定存储，请按下跳过键",
+  "tour_guide.maid_storage_manager.request_list_tour.step_3.chat": "手持请求列表右键，并在GUI中标记物品。这里我们尝试请求一个%s",
+  "tour_guide.maid_storage_manager.request_list_tour.step_3.main": "手持请求列表右键打开GUI",
+  "tour_guide.maid_storage_manager.request_list_tour.step_3.in_gui": "在格子中填入%s，或从JEI/EMI中将其拖拽到格子中",
+  "tour_guide.maid_storage_manager.request_list_tour.step_3.in_gui_text": "此处红色框标记的格子共有十个，这些格子可以填入你需要的物品，女仆会根据列表寻找物品。你可以使用鼠标滚轮来调节请求的数量。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_3.no_marked": "没有标记物品。请检查是否正确标记了物品，或者尝试点击重置工作状态按钮。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_3.in_gui_text_2": "绿框内的按钮是重置工作状态按钮。女仆会把请求的结果写入请求列表，如果需要再次使用，则需要点击这个按钮重置状态。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_4.chat": "现在，手持请求列表右键女仆，女仆就会帮你找到你想要的物品。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_4.main": "手持请求列表右键女仆，并等待女仆取回物品。",
+  "tour_guide.maid_storage_manager.request_list_tour.step_4.finish": "教程结束。女仆稍后会为你取回对应的物品。"
 }
