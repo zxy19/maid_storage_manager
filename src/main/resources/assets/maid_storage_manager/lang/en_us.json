@@ -464,5 +464,10 @@
   "config.maid_storage_manager.misc.inv_list_damage_factor": "Inventory List Damage Factor",
   "config.maid_storage_manager.misc.inv_list_damage_max": "Inventory List Damage Max",
   "config.maid_storage_manager.misc.inv_list_damage_min": "Inventory List Damage Min",
-  "config.maid_storage_manager.misc": "Misc"
+  "config.maid_storage_manager.misc": "Misc",
+  "key.tour_guide.check_step": "Check Step",
+  "key.tour_guide.category": "Tour Guide",
+  "key.tour_guide.skip": "Skip Step",
+  "key.tour_guide.quit": "Quit Tour Guide",
+  "key.tour_guide.start": "Start Tour Guide"
 }
