@@ -15,11 +15,13 @@ public class TourGuideRegister {
     public static void onRegisterTourGuideItem(ItemTourGuideRegisterEvent event) {
         event.register(InventoryListTour.ID, ItemRegistry.INVENTORY_LIST.get());
         event.register(RequestListTour.ID, ItemRegistry.REQUEST_LIST_ITEM.get());
+        event.register(RequestListTour.ID2, ItemRegistry.REQUEST_LIST_ITEM.get());
     }
 
     @SubscribeEvent
     public static void onRegisterTourGuide(TourDataRegisterEvent event) {
         event.register(InventoryListTour.ID, InventoryListTour.get());
         event.register(RequestListTour.ID, RequestListTour.get());
+        event.register(RequestListTour.ID2, RequestListTour.get2());
     }
 }

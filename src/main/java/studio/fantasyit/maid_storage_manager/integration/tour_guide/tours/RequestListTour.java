@@ -11,8 +11,8 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
+import studio.fantasyit.tour_guide.api.helper.TourDataBuilder;
 import studio.fantasyit.tour_guide.data.ITourDataFactory;
-import studio.fantasyit.tour_guide.helper.TourDataBuilder;
 import studio.fantasyit.tour_guide.mark.gui.GuiMainTipMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiRectMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiSlotMark;
@@ -25,6 +25,7 @@ import java.util.Optional;
 
 public class RequestListTour {
     public static ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "request_list_tour");
+    public static ResourceLocation ID2 = new ResourceLocation(MaidStorageManager.MODID, "request_list_tour2");
     public static final ResourceLocation GUI_REQUEST_LIST = new ResourceLocation(MaidStorageManager.MODID, "gui/request_list");
     public static final ResourceLocation GUI_REQUEST_LIST_NO_OFFSET = new ResourceLocation(MaidStorageManager.MODID, "gui/request_list_no_offset");
 
@@ -101,9 +102,19 @@ public class RequestListTour {
                 .dynamicMarks((tMark, data) -> {
                     tMark.add(new EntityMark(data.getData(STEP_TO_REQUEST_ITEM).maid.getId(), 0xffff0000, Component.literal("手持请求列表右键")));
                 })
+                .noCondition(true)
                 .triggers(List.of("request_list_take"))
                 .add()
                 .onFinish(t -> t.sendSystemMessage(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_4.finish")))
+                .getBuilder();
+    }
+
+    public static ITourDataFactory get2() {
+        return new TourDataBuilder()
+                .step(STEP_TO_REQUEST_ITEM)
+                .chat(Component.translatable("tour_guide.maid_storage_manager.request_list_tour2.step_1.chat"))
+                .noCondition(true)
+                .add()
                 .getBuilder();
     }
 }
