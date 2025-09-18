@@ -29,7 +29,7 @@ public class TourManager {
         if (!RUNNING_TOUR.containsKey(player.getUUID()))
             return;
         TourData tourData = RUNNING_TOUR.get(player.getUUID());
-        tourData.stop();
+        tourData.terminate();
     }
 
     public static void remove(ServerPlayer sender) {

@@ -23,6 +23,6 @@ public class TourDataManager {
     }
 
     public static TourData get(ResourceLocation id, ServerPlayer player) {
-        return TOURS.get(id).create(player);
+        return TOURS.get(id).create(player, id);
     }
 }

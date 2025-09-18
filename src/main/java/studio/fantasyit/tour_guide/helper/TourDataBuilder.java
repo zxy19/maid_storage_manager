@@ -43,8 +43,8 @@ public class TourDataBuilder {
     }
 
     public ITourDataFactory getBuilder() {
-        return player -> {
-            TourData t = new TourData(steps, player);
+        return (player, id) -> {
+            TourData t = new TourData(steps, id, player);
             if (onStart != null)
                 t.setOnFinish(() -> onStart.accept(player));
             if (onFinish != null)

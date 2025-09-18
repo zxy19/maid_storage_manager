@@ -11,18 +11,22 @@ import studio.fantasyit.tour_guide.api.event.ItemTourGuideRegisterEvent;
 import studio.fantasyit.tour_guide.network.Network;
 import studio.fantasyit.tour_guide.network.S2CSyncTriggerableItems;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ItemTourGuide {
-    public static Map<Item, ResourceLocation> itemTourGuide = new HashMap<>();
+    public static Map<Item, List<ResourceLocation>> itemTourGuide = new HashMap<>();
 
     public static void clear() {
         itemTourGuide.clear();
     }
 
     public static void register(Item item, ResourceLocation tourGuide) {
-        itemTourGuide.put(item, tourGuide);
+        if (itemTourGuide.containsKey(item))
+            itemTourGuide.get(item).add(tourGuide);
+        itemTourGuide.put(item, new ArrayList<>(List.of(tourGuide)));
     }
 
     public static void syncTo(ServerPlayer player) {
@@ -30,7 +34,11 @@ public class ItemTourGuide {
                 itemTourGuide
                         .entrySet()
                         .stream()
-                        .map(t -> new Pair<>(ForgeRegistries.ITEMS.getKey(t.getKey()), t.getValue()))
+                        .flatMap(t ->
+                                t.getValue()
+                                        .stream()
+                                        .map(tt -> new Pair<>(ForgeRegistries.ITEMS.getKey(t.getKey()), tt))
+                        )
                         .toList()
         ));
     }
@@ -40,7 +48,9 @@ public class ItemTourGuide {
         MinecraftForge.EVENT_BUS.post(new ItemTourGuideRegisterEvent());
     }
 
-    public static ResourceLocation get(Item item) {
-        return itemTourGuide.get(item);
+    public static ResourceLocation get(Item item, int offset) {
+        if (itemTourGuide.containsKey(item))
+            return itemTourGuide.get(item).get(offset % itemTourGuide.get(item).size());
+        return null;
     }
 }

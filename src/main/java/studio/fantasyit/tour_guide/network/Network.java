@@ -57,6 +57,12 @@ public class Network {
                 C2SClientTrigger::fromNetwork,
                 C2SClientTrigger::handle
         );
+        INSTANCE.registerMessage(i++,
+                S2CTipMessage.class,
+                S2CTipMessage::toNetwork,
+                S2CTipMessage::fromNetwork,
+                S2CTipMessage::handle
+        );
     }
 
 

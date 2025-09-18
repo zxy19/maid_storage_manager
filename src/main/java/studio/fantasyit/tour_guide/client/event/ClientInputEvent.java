@@ -41,7 +41,7 @@ public class ClientInputEvent {
             GLFW.GLFW_KEY_T,
             "key.tour_guide.category"
     ));
-    protected static boolean pressingSpecialKey = false;
+    public static boolean pressingShiftKey = false;
 
     @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ModBus {
@@ -57,7 +57,7 @@ public class ClientInputEvent {
     @SubscribeEvent
     public static void onKey(net.minecraftforge.client.event.InputEvent.Key event) {
         InputConstants.Key key = InputConstants.getKey(event.getKey(), event.getScanCode());
-        if(event.getAction() == GLFW.GLFW_PRESS) {
+        if (event.getAction() == GLFW.GLFW_PRESS) {
             if (KEY_QUIT.get().getKey().equals(key)) {
                 Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
                         new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.QUIT));
@@ -67,16 +67,26 @@ public class ClientInputEvent {
                         new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.SKIP));
             }
             if (KEY_CHECK_STEP.get().getKey().equals(key)) {
-                Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
-                        new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.DONE));
+                if ((event.getModifiers() & GLFW.GLFW_MOD_SHIFT) != 0)
+                    Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                            new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.BACK));
+                else
+                    Network.INSTANCE.send(PacketDistributor.SERVER.noArg(),
+                            new C2SInteractTourGuideData(C2SInteractTourGuideData.Type.DONE));
             }
             if (KEY_START_TOUR_GUIDE.get().getKey().equals(key)) {
                 ClientItemTourGuideCounter.keyPressed();
             }
+            if (key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT) {
+                pressingShiftKey = true;
+            }
         }
-        if(event.getAction() == GLFW.GLFW_RELEASE) {
+        if (event.getAction() == GLFW.GLFW_RELEASE) {
             if (KEY_START_TOUR_GUIDE.get().getKey().equals(key)) {
                 ClientItemTourGuideCounter.keyReleased();
+            }
+            if (key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT) {
+                pressingShiftKey = false;
             }
         }
     }

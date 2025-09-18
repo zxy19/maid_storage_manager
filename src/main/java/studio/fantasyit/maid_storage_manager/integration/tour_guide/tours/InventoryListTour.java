@@ -27,7 +27,7 @@ import java.util.Optional;
 public class InventoryListTour {
     public static final ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "inventory_list");
     public static final TourStepId<EntityMaid> STEP_MAID = new TourStepId<>(new ResourceLocation(MaidStorageManager.MODID, "inventory_list_maid"), EntityMaid.class);
-    public static final TourStepId<ItemStack> STEP_TARGET_ITEM = new TourStepId<>(new ResourceLocation(MaidStorageManager.MODID, "inventory_list_maid"), ItemStack.class);
+    public static final TourStepId<ItemStack> STEP_TARGET_ITEM = new TourStepId<>(new ResourceLocation(MaidStorageManager.MODID, "inventory_list_itemStack"), ItemStack.class);
 
     public static final String TRIGGER_WRITE_INV = "maid_write_inv_list";
     public static final String TRIGGER_CLICK_INV = "player_click_inventory_list_item";
