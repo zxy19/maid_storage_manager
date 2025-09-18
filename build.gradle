@@ -126,7 +126,7 @@ minecraft {
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
 
-        testCrafting{
+        testCrafting {
             main 'studio.fantasyit.maid_storage_manager.craft.debug.CraftingCalculationTester'
             workingDirectory project.file('run')
             arg "test.json"
@@ -214,6 +214,8 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    implementation fg.deobf(jarJar("libs:1.20.1-tour_guide:1.0.0"))
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6911704")
