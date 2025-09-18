@@ -17,11 +17,12 @@ public class ClientItemTourGuideCounter {
     public static long startTimeStamp = 0;
     public static Item lastItem = null;
     public static boolean hasAvailable = false;
+    public static int offset = 0;
 
     public static void addTooltip(Item item, List<Component> tooltip) {
         if (lastItem != item || !hasAvailable) return;
         tooltip.add(Component.translatable("tooltip.tour_guide.item_tour_guide",
-                Component.translatable("tour_guide." + ItemTourGuide.get(item).toLanguageKey())
+                Component.translatable("tour.tour_guide." + ItemTourGuide.get(item, offset).toLanguageKey())
         ).withStyle(ChatFormatting.GRAY));
         if (startTimeStamp == 0) {
             tooltip.add(Component.translatable("tooltip.tour_guide.item_tour_guide.start", ClientInputEvent.KEY_START_TOUR_GUIDE.get().getKey().getDisplayName()));
@@ -58,8 +59,9 @@ public class ClientItemTourGuideCounter {
     public static void updateHoveredItem(Item item) {
         if (item != lastItem) {
             lastItem = item;
-            hasAvailable = ItemTourGuide.get(item) != null;
+            hasAvailable = ItemTourGuide.get(item, offset) != null;
             startTimeStamp = 0;
+            offset = 0;
         }
         if (startTimeStamp != 0 && hasAvailable) {
             if (System.currentTimeMillis() - startTimeStamp > TIME_OUT) {
@@ -70,12 +72,16 @@ public class ClientItemTourGuideCounter {
     }
 
     private static void sendStart() {
-        Network.INSTANCE.sendToServer(new C2SStartTourGuide(ItemTourGuide.get(lastItem)));
+        Network.INSTANCE.sendToServer(new C2SStartTourGuide(ItemTourGuide.get(lastItem, offset)));
         Minecraft.getInstance().player.closeContainer();
         Minecraft.getInstance().setScreen(new BlockHoldKeyScreen());
     }
 
     public static boolean isHasAvailable() {
         return hasAvailable;
+    }
+
+    public static void offset() {
+        offset++;
     }
 }

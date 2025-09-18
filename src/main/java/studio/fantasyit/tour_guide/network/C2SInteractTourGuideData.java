@@ -1,6 +1,8 @@
 package studio.fantasyit.tour_guide.network;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import studio.fantasyit.tour_guide.api.TourManager;
@@ -12,7 +14,8 @@ public record C2SInteractTourGuideData(Type type) {
     public enum Type {
         DONE,
         QUIT,
-        SKIP
+        SKIP,
+        BACK
     }
 
     public void toNetwork(FriendlyByteBuf buf) {
@@ -33,10 +36,15 @@ public record C2SInteractTourGuideData(Type type) {
             if (tourData == null) {
                 return;
             }
-            switch (packet.type) {
-                case DONE -> tourData.doneAndTryNextStep();
-                case SKIP -> tourData.skipAndTryNextStep();
-                case QUIT -> tourData.stop();
+            try {
+                switch (packet.type) {
+                    case DONE -> tourData.doneAndTryNextStep();
+                    case SKIP -> tourData.skipAndTryNextStep();
+                    case QUIT -> tourData.stop();
+                    case BACK -> tourData.goPrevStep();
+                }
+            } catch (Exception e) {
+                sender.sendSystemMessage(Component.literal(e.getMessage()).withStyle(ChatFormatting.RED));
             }
         });
         ctxGetter.get().setPacketHandled(true);

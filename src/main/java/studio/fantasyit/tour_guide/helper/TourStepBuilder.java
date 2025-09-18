@@ -25,7 +25,7 @@ public class TourStepBuilder<T> {
     private List<IMark> marks = null;
     private BiConsumer<List<IMark>, TourData> dynamicMarks = null;
 
-    private boolean allowSkip = true;
+    private boolean allowSkip = false;
 
     private Function<TourData, Component> unfinishReason = null;
     private Function<TourData, T> finishCb = null;
