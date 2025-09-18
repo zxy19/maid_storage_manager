@@ -24,15 +24,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class RequestListTour {
-    public static ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "request_list_tour");
-    public static ResourceLocation ID2 = new ResourceLocation(MaidStorageManager.MODID, "request_list_tour2");
-    public static final ResourceLocation GUI_REQUEST_LIST = new ResourceLocation(MaidStorageManager.MODID, "gui/request_list");
-    public static final ResourceLocation GUI_REQUEST_LIST_NO_OFFSET = new ResourceLocation(MaidStorageManager.MODID, "gui/request_list_no_offset");
+    public static ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour");
+    public static ResourceLocation ID2 = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour2");
+    public static final ResourceLocation GUI_REQUEST_LIST = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "gui/request_list");
+    public static final ResourceLocation GUI_REQUEST_LIST_NO_OFFSET = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "gui/request_list_no_offset");
 
     public record MaidInv(EntityMaid maid, ItemStack item) {
     }
 
-    public static TourStepId<MaidInv> STEP_TO_REQUEST_ITEM = new TourStepId<>(new ResourceLocation(MaidStorageManager.MODID, "request_item"), MaidInv.class);
+    public static TourStepId<MaidInv> STEP_TO_REQUEST_ITEM = new TourStepId<>(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_item"), MaidInv.class);
 
     public static ITourDataFactory get() {
         return new TourDataBuilder()
@@ -56,7 +56,7 @@ public class RequestListTour {
                     return new MaidInv(maid, MemoryUtil.getViewedInventory(maid).flatten().stream().findFirst().map(t -> t.itemStack).orElseThrow(RuntimeException::new));
                 }, Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_1.no_data"))
                 .add()
-                .step(new ResourceLocation(MaidStorageManager.MODID, "request_list_tour_step_2"))
+                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour_step_2"))
                 .chat(List.of(
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_1"),
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_2").withStyle(ChatFormatting.YELLOW),
@@ -71,7 +71,7 @@ public class RequestListTour {
                     return null;
                 })
                 .add()
-                .step(new ResourceLocation(MaidStorageManager.MODID, "request_list_tour_step_3"))
+                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour_step_3"))
                 .dynamicChats((tChat, data) -> {
                     tChat.add(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_3.chat", data.getData(STEP_TO_REQUEST_ITEM).item.getHoverName()));
                 })
@@ -96,7 +96,7 @@ public class RequestListTour {
                 })
                 .triggers(List.of("item_selector_save"))
                 .add()
-                .step(new ResourceLocation(MaidStorageManager.MODID, "request_list_tour_step_4"))
+                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour_step_4"))
                 .chat(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_4.chat"))
                 .mainTipNoGui(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_4.main"))
                 .dynamicMarks((tMark, data) -> {
