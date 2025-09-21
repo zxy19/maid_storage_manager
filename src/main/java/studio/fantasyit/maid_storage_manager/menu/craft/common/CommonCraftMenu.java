@@ -298,34 +298,40 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 save();
             }
             case SET_ALL_INPUT -> {
-                ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
-                ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
-                int inputId = 0;
-                int outputId = 0;
-                CommonStepDataContainer _tmp = new CommonStepDataContainer(this);
-                for (int id = 0; id < craftGuideData.steps.size(); id++) {
-                    CommonStepDataContainer step = id == selectedIndex ? currentEditingItems : _tmp;
-                    if (id != selectedIndex)
-                        step.setStep(craftGuideData.steps.get(id));
-                    for (int i = 0; i < step.step.actionType.inputCount(); i++) {
-                        if (inputId < inputTag.size()) {
-                            ItemStack tmp = ItemStackUtil.parseStack(inputTag.getCompound(inputId));
-                            step.setItemNoTrigger(i, tmp);
-                            step.setCount(i, tmp.getCount());
-                            inputId++;
+                if(player instanceof ServerPlayer sp) {
+                    ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
+                    ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
+                    int inputId = 0;
+                    int outputId = 0;
+                    CommonStepDataContainer _tmp = new CommonStepDataContainer(this);
+                    for (int id = 0; id < craftGuideData.steps.size(); id++) {
+                        CommonStepDataContainer step = id == selectedIndex ? currentEditingItems : _tmp;
+                        if (id != selectedIndex)
+                            step.setStep(craftGuideData.steps.get(id));
+                        for (int i = 0; i < step.step.actionType.inputCount(); i++) {
+                            if (inputId < inputTag.size()) {
+                                ItemStack tmp = ItemStackUtil.parseStack(inputTag.getCompound(inputId));
+                                step.setItemNoTrigger(i, tmp);
+                                step.setCount(i, tmp.getCount());
+                                inputId++;
+                            }
                         }
-                    }
-                    for (int i = 0; i < step.step.actionType.outputCount(); i++) {
-                        if (outputId < outputTag.size()) {
-                            int inputOffset = step.padCount + step.inputCount;
-                            ItemStack tmp = ItemStackUtil.parseStack(outputTag.getCompound(outputId));
-                            step.setItemNoTrigger(inputOffset + i, tmp);
-                            step.setCount(inputOffset + i, tmp.getCount());
-                            outputId++;
+                        for (int i = 0; i < step.step.actionType.outputCount(); i++) {
+                            if (outputId < outputTag.size()) {
+                                int inputOffset = step.padCount + step.inputCount;
+                                ItemStack tmp = ItemStackUtil.parseStack(outputTag.getCompound(outputId));
+                                step.setItemNoTrigger(inputOffset + i, tmp);
+                                step.setCount(inputOffset + i, tmp.getCount());
+                                outputId++;
+                            }
                         }
-                    }
-                    if (id != selectedIndex) {
-                        step.save();
+                        if (id != selectedIndex) {
+                            step.save();
+                            Network.INSTANCE.send(
+                                    PacketDistributor.PLAYER.with(() -> sp),
+                                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, id, 0, step.step.toCompound())
+                            );
+                        }
                     }
                 }
                 save();
