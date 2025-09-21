@@ -59,6 +59,10 @@ public class AnvilCraftMenu extends AbstractCraftMenu<AnvilCraftMenu> {
                     save();
                 }
             }
+            case COUNT -> {
+                stepDataContainer.setCount(key, value);
+                stepDataContainer.setChanged();
+            }
             case EXTRA -> {
                 stepDataContainer.step.setExtraData(data);
                 save();
