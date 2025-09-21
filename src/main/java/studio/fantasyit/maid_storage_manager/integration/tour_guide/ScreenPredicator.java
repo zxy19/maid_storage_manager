@@ -17,11 +17,5 @@ public class ScreenPredicator {
     public static void register(ScreenPredicatorRegisterEvent event) {
         event.register(InventoryListTour.GUI_INVENTORY_SCREEN, t -> t instanceof InventoryListScreen);
         event.register(RequestListTour.GUI_REQUEST_LIST, t -> t instanceof ItemSelectorScreen);
-        event.register(RequestListTour.GUI_REQUEST_LIST_NO_OFFSET, t -> t instanceof ItemSelectorScreen);
-        event.register(RequestListTour.GUI_REQUEST_LIST_NO_OFFSET, (t, g) -> {
-            if (t instanceof ItemSelectorScreen iss) {
-                g.pose().translate(iss.getGuiLeft() + 88, 0, 0);
-            }
-        });
     }
 }

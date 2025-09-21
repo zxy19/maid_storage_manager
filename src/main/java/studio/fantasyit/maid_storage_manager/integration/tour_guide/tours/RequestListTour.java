@@ -13,6 +13,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.tour_guide.api.helper.TourDataBuilder;
 import studio.fantasyit.tour_guide.data.ITourDataFactory;
+import studio.fantasyit.tour_guide.mark.ServerScreenPredicatorMarks;
 import studio.fantasyit.tour_guide.mark.gui.GuiMainTipMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiRectMark;
 import studio.fantasyit.tour_guide.mark.gui.GuiSlotMark;
@@ -27,7 +28,6 @@ public class RequestListTour {
     public static ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "request_list_tour");
     public static ResourceLocation ID2 = new ResourceLocation(MaidStorageManager.MODID, "request_list_tour2");
     public static final ResourceLocation GUI_REQUEST_LIST = new ResourceLocation(MaidStorageManager.MODID, "gui/request_list");
-    public static final ResourceLocation GUI_REQUEST_LIST_NO_OFFSET = new ResourceLocation(MaidStorageManager.MODID, "gui/request_list_no_offset");
 
     public record MaidInv(EntityMaid maid, ItemStack item) {
     }
@@ -57,7 +57,7 @@ public class RequestListTour {
                 }, Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_1.no_data"))
                 .add()
                 .stepAnonymous()
-                .chat(List.of(
+                .chats(List.of(
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_1"),
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_2").withStyle(ChatFormatting.YELLOW),
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_3")
@@ -77,7 +77,7 @@ public class RequestListTour {
                 })
                 .mainTipNoGui(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_3.main"))
                 .dynamicMarks((tMark, data) -> {
-                    tMark.add(new GuiMainTipMark(GUI_REQUEST_LIST_NO_OFFSET, Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_3.in_gui", data.getData(STEP_TO_REQUEST_ITEM).item.getDisplayName()), false));
+                    tMark.add(new GuiMainTipMark(ServerScreenPredicatorMarks.noTransform(GUI_REQUEST_LIST), Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_3.in_gui", data.getData(STEP_TO_REQUEST_ITEM).item.getDisplayName()), false));
                     tMark.add(new GuiSlotMark(GUI_REQUEST_LIST, 36, 0xffff0000));
                     tMark.add(new GuiTextMark(GUI_REQUEST_LIST, Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_3.in_gui_text"), -60, 0, 100, 0xffffffff, 0x60000000));
                     tMark.add(new GuiRectMark(GUI_REQUEST_LIST, 147, 90, 18, 18, 0xFF00FF00, 0x00000000));

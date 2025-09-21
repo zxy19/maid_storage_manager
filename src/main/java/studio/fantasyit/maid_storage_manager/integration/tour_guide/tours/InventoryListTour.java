@@ -72,7 +72,7 @@ public class InventoryListTour {
                 .add()
                 //第三步：等女仆查看物品
                 .step(STEP_TARGET_ITEM)
-                .chat(List.of(
+                .chats(List.of(
                         Component.literal("女仆正在查看所有容器，请等待"),
                         Component.literal("如果女仆已经查看过每个容器至少一次，点击完成")
                 ))
