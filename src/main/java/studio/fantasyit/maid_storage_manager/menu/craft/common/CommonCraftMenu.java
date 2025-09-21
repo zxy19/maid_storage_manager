@@ -26,7 +26,6 @@ import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SimpleSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -328,9 +327,8 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     }
                     if (id != selectedIndex) {
                         step.save();
-                        Network.INSTANCE.send(
-                                PacketDistributor.PLAYER.with(() -> sp),
-                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, id, 0, step.step.toCompound())
+                        PacketDistributor.sendToPlayer(sp,
+                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, id, 0, step.step.toCompound(player.registryAccess()))
                         );
                     }
                 }

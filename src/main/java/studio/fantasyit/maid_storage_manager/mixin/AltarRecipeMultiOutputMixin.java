@@ -35,7 +35,10 @@ public abstract class AltarRecipeMultiOutputMixin extends ShapelessRecipe {
             List<ItemStack> list = this.result.get(DataComponentRegistry.TO_SPAWN_ITEMS);
             if (list != null) {
                 for (ItemStack itemStack : list) {
-                    ItemEntity itemEntity = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), itemStack.copy());
+                    ItemStack copy = itemStack.copy();
+                    if (copy.has(DataComponentRegistry.TO_SPAWN_ITEMS))
+                        copy.remove(DataComponentRegistry.TO_SPAWN_ITEMS);
+                    ItemEntity itemEntity = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), copy);
                     world.addFreshEntity(itemEntity);
                 }
                 ci.cancel();
