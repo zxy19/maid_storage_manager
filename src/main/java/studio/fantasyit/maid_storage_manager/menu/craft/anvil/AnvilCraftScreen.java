@@ -29,6 +29,7 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
     public AnvilCraftScreen(AnvilCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_, background);
     }
+
     @Override
     protected void addButtons() {
         EditBox editBox = new EditBox(font, getGuiLeft() + 58, getGuiTop() + 50, 96, 16, Component.literal(""));
@@ -64,6 +65,7 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
         compoundTag.putString("name", text);
         sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.EXTRA, 0, 0, compoundTag));
     }
+
     @Override
     public boolean keyPressed(int p_97765_, int p_97766_, int p_97767_) {
         if (p_97765_ == 256) {
@@ -76,7 +78,7 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double p_94688_) {
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc && !filterSlot.readonly) {
             MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
@@ -97,6 +99,6 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
                     )
             );
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
     }
 }
