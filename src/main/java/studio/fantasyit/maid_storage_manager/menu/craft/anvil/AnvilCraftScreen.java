@@ -78,7 +78,7 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double p_94688_) {
+    public boolean mouseScrolled(double p_94686_, double p_94687_,  double p_94688_) {
         @Nullable Slot slot = this.getSlotUnderMouse();
         if (slot instanceof FilterSlot filterSlot && filterSlot.container instanceof StepDataContainer sdc && !filterSlot.readonly) {
             MutableInt count = new MutableInt(sdc.getCount(filterSlot.getContainerSlot()));
@@ -99,6 +99,6 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
                     )
             );
         }
-        return super.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
     }
 }
