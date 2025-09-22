@@ -222,7 +222,7 @@ public class CraftManager {
                 CraftAction.PathEnoughLevel.NORMAL.value,
                 false, false,
                 2,
-                1,
+                3,
                 List.of()
         );
         event.addAction(
