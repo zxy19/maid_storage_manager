@@ -104,9 +104,14 @@ public class CraftGuideRenderData {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof CraftGuideRenderData craftGuideRenderData) {
-            boolean eq = craftGuideRenderData.stepBindings.equals(this.stepBindings) &&
-                    craftGuideRenderData.selecting == this.selecting &&
+            boolean eq = craftGuideRenderData.selecting == this.selecting &&
                     ItemStackUtil.isSame(craftGuideRenderData.icon, this.icon, true);
+            if (eq && craftGuideRenderData.stepBindings.size() == this.stepBindings.size()) {
+                for (int i = 0; i < craftGuideRenderData.stepBindings.size(); i++) {
+                    eq = eq & craftGuideRenderData.stepBindings.get(i).getA().equals(this.stepBindings.get(i).getA()) &&
+                            craftGuideRenderData.stepBindings.get(i).getB().equals(this.stepBindings.get(i).getB());
+                }
+            }
             if (eq && craftGuideRenderData.inputs.size() == this.inputs.size())
                 for (int i = 0; i < craftGuideRenderData.inputs.size(); i++) {
                     eq = eq & ItemStackUtil.isSame(craftGuideRenderData.inputs.get(i), this.inputs.get(i), true);
