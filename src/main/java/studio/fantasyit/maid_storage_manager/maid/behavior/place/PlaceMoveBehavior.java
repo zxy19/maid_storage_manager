@@ -122,6 +122,8 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 if (!MoveUtil.isValidTarget(level, maid, validTarget, false)) continue;
             }
 
+            if (RequestItemUtil.isRequestTarget(level, maid, validTarget))
+                continue;
 
             if (StorageAccessUtil.findTargetRewrite(level, maid, blockPos.getKey(), false).isEmpty()) {
                 continue;
@@ -249,7 +251,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 blockPos,
                 MemoryUtil.getPlacingInv(entityMaid),
                 false,
-                StoragePredictor::isPlaceable
+                t -> StoragePredictor.isPlaceable(t) && !RequestItemUtil.isRequestTarget(serverLevel, entityMaid, t)
         );
         if (canTouchChest != null) {
             chestPos = canTouchChest;
