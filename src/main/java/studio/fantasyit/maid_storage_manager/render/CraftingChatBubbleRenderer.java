@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
-import studio.fantasyit.maid_storage_manager.api.IEntityGraphicsBufferSourceGetter;
+import studio.fantasyit.maid_storage_manager.api.mixin.IEntityGraphicsBufferSourceGetter;
 
 import java.util.Comparator;
 import java.util.List;

@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.api.ICreateStockKeeperMaidChecker;
+import studio.fantasyit.maid_storage_manager.api.mixin.ICreateStockKeeperMaidChecker;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.network.CreateStockManagerPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
