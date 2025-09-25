@@ -11,6 +11,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftMenu;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
@@ -101,8 +102,23 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
         Optional<RecipeHolder<AltarRecipe>> recipe = RecipeUtil.getAltarRecipe(player.level(), RecipeUtil.wrapAltarRecipeInventory(items));
         recipe.ifPresentOrElse(craftingRecipe -> {
             ItemStack resultItem = craftingRecipe.value().getResultItem(player.level().registryAccess());
-            stepDataContainer.setItemNoTrigger(6, resultItem);
-            stepDataContainer.setCount(6, resultItem.getCount());
+            if (resultItem.has(DataComponentRegistry.TO_SPAWN_ITEMS)) {
+                List<ItemStack> ii = new ArrayList<>();
+                resultItem.get(DataComponentRegistry.TO_SPAWN_ITEMS).forEach(itemStack -> ItemStackUtil.addToList(ii, itemStack, ItemStackUtil.MATCH_TYPE.MATCHING));
+                ii.stream().findFirst()
+                        .ifPresentOrElse(
+                                itemStack -> {
+                                    stepDataContainer.setItemNoTrigger(6, itemStack);
+                                    stepDataContainer.setCount(6, itemStack.getCount());
+                                },
+                                () -> {
+                                    stepDataContainer.setItemNoTrigger(6, ItemStack.EMPTY);
+                                }
+                        );
+            } else {
+                stepDataContainer.setItemNoTrigger(6, resultItem);
+                stepDataContainer.setCount(6, resultItem.getCount());
+            }
             ppcost = craftingRecipe.value().getPower();
         }, () -> {
             stepDataContainer.setItemNoTrigger(6, ItemStack.EMPTY);
