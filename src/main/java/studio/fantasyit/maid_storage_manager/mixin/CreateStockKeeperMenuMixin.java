@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import studio.fantasyit.maid_storage_manager.api.ICreateStockKeeperMaidChecker;
+import studio.fantasyit.maid_storage_manager.api.mixin.ICreateStockKeeperMaidChecker;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 
 @Mixin(value = StockKeeperCategoryMenu.class,remap = false)

@@ -5,7 +5,7 @@ import mezz.jei.common.util.ImmutableRect2i;
 import mezz.jei.gui.elements.GuiIconToggleButton;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import studio.fantasyit.maid_storage_manager.api.IJEIButtonGetter;
+import studio.fantasyit.maid_storage_manager.api.mixin.IJEIButtonGetter;
 
 @Mixin(GuiIconToggleButton.class)
 public abstract class JeiGuiIconToggleButtonAccessor implements IJEIButtonGetter {
