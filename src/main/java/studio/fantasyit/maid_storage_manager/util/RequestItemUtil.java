@@ -46,9 +46,9 @@ import java.util.UUID;
 public class RequestItemUtil {
     public static boolean isRequestTarget(ServerLevel level, EntityMaid maid, Target target) {
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
-        if (storageBlock == null)
+        if (storageBlock == null || target == null)
             return false;
-        if (target.equals(storageBlock))
+        if (storageBlock.equals(target))
             return true;
         MutableBoolean result = new MutableBoolean(false);
         StorageAccessUtil.checkNearByContainers(
