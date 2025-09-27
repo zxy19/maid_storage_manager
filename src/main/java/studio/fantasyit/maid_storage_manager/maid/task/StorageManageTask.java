@@ -19,6 +19,9 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.behavior.GoCenterBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateDelayedCompleteManageBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateFindTargetBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateWorkBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.CoWorkChestView;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowActionBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowDisableBehavior;
@@ -156,6 +159,10 @@ public class StorageManageTask implements IMaidTask {
         //吃吃吃
         list.add(Pair.of(5, new MealBehavior()));
         list.add(Pair.of(5, new MealMoveBehavior()));
+        //女仆交流
+        list.add(Pair.of(5, new MaidCommunicateWorkBehavior()));
+        list.add(Pair.of(5, new MaidCommunicateFindTargetBehavior()));
+        list.add(Pair.of(5, new MaidCommunicateDelayedCompleteManageBehavior()));
         return list;
     }
 

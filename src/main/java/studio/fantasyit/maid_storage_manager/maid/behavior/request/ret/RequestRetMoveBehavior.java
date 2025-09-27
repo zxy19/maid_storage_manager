@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.ret;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -9,16 +10,14 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.MoveUtil;
-import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.Map;
 import java.util.UUID;
@@ -75,7 +74,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getRequestProgress(maid).setReturn();
             MemoryUtil.getRequestProgress(maid).setTarget(storage);
         } else if (entity != null) {
-            MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed);
+            setEntityTarget(level, maid, entity);
             MemoryUtil.getRequestProgress(maid).setReturn();
             MemoryUtil.getRequestProgress(maid).setTargetEntity(entity.getUUID());
         } else {
@@ -91,6 +90,23 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.getCrafting(maid).clearTarget();
                 MemoryUtil.clearTarget(maid);
             }
+        }
+    }
+
+    private void setEntityTarget(ServerLevel level, EntityMaid maid, @Nullable Entity entity) {
+        if (!(entity instanceof EntityMaid entityMaid)) {
+            MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed);
+            return;
+        }
+        float restrictRadiusOwner = maid.hasRestriction() ? maid.getRestrictRadius() : 5;
+        MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid, restrictRadiusOwner + 2, (int) (restrictRadiusOwner + 2));
+        if (pathFinding.canPathReach(entityMaid.blockPosition())) {
+            MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed);
+        } else {
+            Pair<BlockPos, BlockPos> bbp = PosUtil.pickMeetingPosPair(maid, entityMaid, pathFinding);
+            if (bbp == null) return;
+            MemoryUtil.setTarget(maid, bbp.getA(), (float) Config.collectSpeed);
+            MemoryUtil.setTarget(entityMaid, bbp.getB(), (float) Config.collectSpeed);
         }
     }
 }

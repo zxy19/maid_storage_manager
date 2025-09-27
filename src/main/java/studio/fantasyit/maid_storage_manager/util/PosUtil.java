@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +16,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -180,5 +182,43 @@ public class PosUtil {
         BlockPos.betweenClosedStream(aabb)
                 .filter(pos -> canTouch(level, origin.blockPosition().above(), pos))
                 .forEach(consumer);
+    }
+
+
+    public static @Nullable Pair<BlockPos, BlockPos> pickMeetingPosPair(EntityMaid owner, EntityMaid e, @Nullable MaidPathFindingBFS ownerPathfinding) {
+        BlockPos restrictCenterTarget = e.hasRestriction() ? e.getRestrictCenter() : e.blockPosition();
+        float restrictRadiusTarget = e.hasRestriction() ? e.getRestrictRadius() : 5;
+        BlockPos restrictCenterOwner = owner.hasRestriction() ? owner.getRestrictCenter() : owner.blockPosition();
+        float restrictRadiusOwner = owner.hasRestriction() ? owner.getRestrictRadius() : 5;
+        MaidPathFindingBFS pathFindingBFSOwner = ownerPathfinding == null ? new MaidPathFindingBFS(owner.getNavigation().getNodeEvaluator(), (ServerLevel) owner.level(), owner, restrictRadiusOwner + 2, (int) (restrictRadiusOwner + 2)) : ownerPathfinding;
+        MaidPathFindingBFS pathFindingBFSTarget = new MaidPathFindingBFS(e.getNavigation().getNodeEvaluator(), (ServerLevel) owner.level(), e, restrictRadiusTarget + 2, (int) (restrictRadiusTarget + 2));
+        BlockPos.MutableBlockPos targetT = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos targetO = new BlockPos.MutableBlockPos();
+        for (int x = 0; x <= restrictRadiusOwner; x = x > 0 ? -x : -x + 1) {
+            for (int z = 0; z <= restrictRadiusOwner; z = z > 0 ? -z : -z + 1) {
+                for (int y = 0; y <= restrictRadiusOwner; y = y > 0 ? -y : -y + 1) {
+                    targetO.setWithOffset(restrictCenterOwner, x, y, z);
+                    if (targetO.distSqr(restrictCenterOwner) > restrictRadiusOwner * restrictRadiusOwner)
+                        continue;
+                    if (!pathFindingBFSOwner.canPathReach(targetO))
+                        continue;
+                    for (int tx = 0; tx <= 2; tx = tx > 0 ? -tx : -tx + 1) {
+                        for (int tz = 0; tz <= 2; tz = tz > 0 ? -tz : -tz + 1) {
+                            for (int ty = 0; ty <= 2; ty = ty > 0 ? -ty : -ty + 1) {
+                                targetT.setWithOffset(restrictCenterOwner, x + tx, y + ty, z + tz);
+                                if (targetT.distManhattan(targetO) > 2)
+                                    continue;
+                                if (targetT.distSqr(restrictCenterTarget) > restrictRadiusTarget * restrictRadiusTarget)
+                                    continue;
+                                if (!pathFindingBFSTarget.canPathReach(targetT))
+                                    continue;
+                                return new Pair<>(targetO.immutable(), targetT.immutable());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
