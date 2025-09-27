@@ -105,6 +105,11 @@ public class MemoryUtil {
             maid.getBrain().setMemory(MemoryModuleRegistry.MEAL.get(), new MealMemory());
         return maid.getBrain().getMemory(MemoryModuleRegistry.MEAL.get()).orElse(null);
     }
+    public static CommunicateMemory getCommunicate(EntityMaid maid) {
+        if (!maid.getBrain().hasMemoryValue(MemoryModuleRegistry.COMMUNICATE.get()))
+            maid.getBrain().setMemory(MemoryModuleRegistry.COMMUNICATE.get(), new CommunicateMemory());
+        return maid.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE.get()).orElse(null);
+    }
 
     public static void setLookAt(EntityMaid maid, BlockPos pos) {
         maid.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(pos));

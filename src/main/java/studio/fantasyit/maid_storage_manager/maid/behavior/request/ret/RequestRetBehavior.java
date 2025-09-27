@@ -16,6 +16,7 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -47,6 +48,13 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (MemoryUtil.isWorking(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isReturning()) return false;
+        if (MemoryUtil.getRequestProgress(maid).getTargetEntityUUID().isPresent()) {
+            Entity targetEntity1 = MemoryUtil.getRequestProgress(maid).getTargetEntity(p_22538_);
+            if (!targetEntity1.isAlive() || !maid.isWithinRestriction(targetEntity1.blockPosition())) {
+                MemoryUtil.clearTarget(maid);
+                return false;
+            }
+        }
         return Conditions.hasReachedValidTargetOrReset(maid);
     }
 
@@ -91,8 +99,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     protected boolean tryReadyMaid(EntityMaid m, EntityMaid maid) {
         if (targetEntityReady) return true;
-        if (MemoryUtil.isWorking(m) && !MemoryUtil.isParallelWorking(m)) return false;
-        MemoryUtil.joinAndStartParallelWorking(m);
+        if (m.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+            if (MemoryUtil.isWorking(m) && !MemoryUtil.isParallelWorking(m)) return false;
+            MemoryUtil.joinAndStartParallelWorking(m);
+        }
         m.getNavigation().stop();
         MemoryUtil.setTarget(m, m, (float) Config.collectSpeed);
         targetEntityReady = true;
@@ -182,8 +192,10 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             context.finish();
         if (targetEntity instanceof EntityMaid m) {
             MemoryUtil.clearTarget(m);
-            MemoryUtil.clearPickUpItemTemp(m);
-            MemoryUtil.leaveParallelWorking(m);
+            if (m.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+                MemoryUtil.clearPickUpItemTemp(m);
+                MemoryUtil.leaveParallelWorking(m);
+            }
         }
         //正在合成过程中，合成树还未结束，直接返回合成
         if (MemoryUtil.getCrafting(maid).hasPlan()) {
