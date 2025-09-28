@@ -39,7 +39,7 @@ public class MaidCommunicateFindTargetBehavior extends Behavior<EntityMaid> {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         List<EntityMaid> entities = level.getEntities(
                 EntityTypeTest.forClass(EntityMaid.class),
-                maid.getBoundingBox().inflate(maid.hasRestriction() ? maid.getRestrictRadius() : 5),
+                maid.getBoundingBox().inflate((maid.hasRestriction() ? maid.getRestrictRadius() : 5) * 2),
                 e -> CommunicateUtil.getWillingCommunicatable(e).isPresent()
         );
         CommunicateMemory comm = MemoryUtil.getCommunicate(maid);
