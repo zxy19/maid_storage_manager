@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.api;
+package studio.fantasyit.maid_storage_manager.api.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 

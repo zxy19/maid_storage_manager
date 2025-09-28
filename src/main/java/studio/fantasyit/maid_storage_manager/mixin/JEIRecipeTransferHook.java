@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import studio.fantasyit.maid_storage_manager.api.IJEIButtonGetter;
+import studio.fantasyit.maid_storage_manager.api.mixin.IJEIButtonGetter;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
 import studio.fantasyit.maid_storage_manager.integration.request.JEIClient;
