@@ -298,6 +298,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 save();
             }
             case SET_ALL_INPUT -> {
+                if(player instanceof ServerPlayer sp) {
                 ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
                 ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
                 int inputId = 0;
@@ -326,7 +327,11 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     }
                     if (id != selectedIndex) {
                         step.save();
+                        PacketDistributor.sendToPlayer(sp,
+                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, id, 0, step.step.toCompound(player.registryAccess()))
+                        );
                     }
+                }
                 }
                 save();
             }

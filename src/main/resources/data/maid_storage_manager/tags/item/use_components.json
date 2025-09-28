@@ -21,6 +21,18 @@
     {
       "id": "tacz:modern_kinetic_gun",
       "required": false
+    },
+    {
+      "id": "#modulargolems:parts",
+      "required": false
+    },
+    {
+      "id": "#modulargolems:holders",
+      "required": false
+    },
+    {
+      "id": "modulargolems:golem_facade",
+      "required": false
     }
   ]
 }

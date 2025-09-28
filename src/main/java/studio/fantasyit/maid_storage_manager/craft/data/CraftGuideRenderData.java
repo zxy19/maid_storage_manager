@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.craft.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -75,7 +74,6 @@ public class CraftGuideRenderData {
     public static void recalculateItemStack(ItemStack itemStack) {
         CraftGuideData craftGuideData = CraftGuide.getCraftGuideReadOnly(itemStack);
         craftGuideData.buildInputAndOutputs();
-        CompoundTag data = new CompoundTag();
         ItemStack icon1 = CraftManager.getInstance().getType(craftGuideData.getType()).getIcon();
         itemStack.set(DataComponentRegistry.CRAFT_GUIDE_RENDER, new CraftGuideRenderData(
                 craftGuideData.steps.stream().map(t -> new Pair<>(t.getStorage(), t.getActionType())).toList(),
@@ -104,18 +102,25 @@ public class CraftGuideRenderData {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof CraftGuideRenderData craftGuideRenderData) {
-            boolean eq = craftGuideRenderData.stepBindings.equals(this.stepBindings) &&
-                    craftGuideRenderData.selecting == this.selecting &&
+            boolean eq = craftGuideRenderData.selecting == this.selecting &&
                     ItemStackUtil.isSame(craftGuideRenderData.icon, this.icon, true);
+            if (eq && craftGuideRenderData.stepBindings.size() == this.stepBindings.size()) {
+                for (int i = 0; i < craftGuideRenderData.stepBindings.size(); i++) {
+                    eq = eq & craftGuideRenderData.stepBindings.get(i).getA().equals(this.stepBindings.get(i).getA()) &&
+                            craftGuideRenderData.stepBindings.get(i).getB().equals(this.stepBindings.get(i).getB());
+                }
+            }
             if (eq && craftGuideRenderData.inputs.size() == this.inputs.size())
                 for (int i = 0; i < craftGuideRenderData.inputs.size(); i++) {
                     eq = eq & ItemStackUtil.isSame(craftGuideRenderData.inputs.get(i), this.inputs.get(i), true);
+                    eq = eq & craftGuideRenderData.inputs.get(i).getCount() == this.inputs.get(i).getCount();
                 }
             else
                 eq = false;
             if (eq && craftGuideRenderData.outputs.size() == this.outputs.size())
                 for (int i = 0; i < craftGuideRenderData.outputs.size(); i++) {
                     eq = eq & ItemStackUtil.isSame(craftGuideRenderData.outputs.get(i), this.outputs.get(i), true);
+                    eq = eq & craftGuideRenderData.outputs.get(i).getCount() == this.outputs.get(i).getCount();
                 }
             else
                 eq = false;

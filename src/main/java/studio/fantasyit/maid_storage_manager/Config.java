@@ -405,17 +405,8 @@ public class Config {
         INV_LIST_DAMAGE_ATTACK_SPD.set(invListDamageAttackSpd);
     }
 
-    static boolean changed = false;
-
     public static void saveAfter(Runnable o) {
         o.run();
-        changed = true;
-    }
-
-    public static void saveIfChanged() {
-        if (changed) {
-            save();
-            changed = false;
-        }
+        save();
     }
 }

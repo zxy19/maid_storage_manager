@@ -183,7 +183,7 @@ dependencies {
     runtimeOnly "curse.maven:sophisticated-core-618298:6760141"
     runtimeOnly "curse.maven:mouse-tweaks-60089:5637846"
     runtimeOnly "curse.maven:create-328085:6641610"
-    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+//    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
     runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:15.0.140")
     runtimeOnly "curse.maven:curios-309927:6529130"
     runtimeOnly "curse.maven:refined-storage-243076:6798977"

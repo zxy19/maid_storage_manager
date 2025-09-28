@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
+import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.handler.JEIRecipeHandler;
 import studio.fantasyit.maid_storage_manager.menu.craft.brewing.BrewingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.common.JEICommonRecipeHandler;
@@ -58,6 +59,12 @@ public class Plugin implements IModPlugin {
                         RecipeTypes.BREWING,
                         GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get()
                 ), RecipeTypes.BREWING);
+        registration.addRecipeTransferHandler(
+                new JEIRecipeHandler<>(
+                        AnvilCraftMenu.class,
+                        RecipeTypes.ANVIL,
+                        GuiRegistry.CRAFT_GUIDE_MENU_ANVIL.get()
+                ), RecipeTypes.ANVIL);
         registration.addRecipeTransferHandler(
                 new JEIRecipeHandler<>(
                         AltarCraftMenu.class,

@@ -74,7 +74,7 @@ public class CraftingTableCraftMenu extends AbstractCraftMenu<CraftingTableCraft
         Optional<RecipeHolder<CraftingRecipe>> recipe = RecipeUtil.getCraftingRecipe(player.level(), RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3).asCraftInput());
         recipe.ifPresentOrElse(craftingRecipe -> {
             List<ItemStack> result = new ArrayList<>();
-            result.add(craftingRecipe.value().getResultItem(player.level().registryAccess()));
+            result.add(craftingRecipe.value().assemble(RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3).asCraftInput(), player.level().registryAccess()));
             NonNullList<ItemStack> remain = craftingRecipe.value().getRemainingItems(RecipeUtil.wrapCraftingContainer(stepDataContainer, 3, 3).asCraftInput());
             remain.forEach(i -> ItemStackUtil.addToList(result, i, true));
             for (int i = 0; i < stepDataContainer.outputCount; i++) {
