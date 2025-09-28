@@ -15,8 +15,7 @@
     "JEIRecipeTransferHook",
     "TLMFeatureCenterSidePathFinding",
     "WorldRecipeLoaderMixin",
-    "tlm.MaidFarmTaskMixin",
-    "tlm.MaidFeedTaskMixin"
+    "tlm.MaidFarmTaskMixin"
   ],
   "client": [
     "CreateStockKeeperScreenMixin",

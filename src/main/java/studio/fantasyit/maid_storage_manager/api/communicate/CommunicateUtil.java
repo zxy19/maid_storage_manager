@@ -28,9 +28,13 @@ public class CommunicateUtil {
         UUID targetUUID = data.getUUID("target");
         if (maid.level() instanceof ServerLevel level && level.getEntity(targetUUID) instanceof EntityMaid em) {
             if (!RequestListItem.isAllSuccess(reqList)) {
-                MemoryUtil.getCommunicate(em).startCooldown(targetUUID, level, 1200);
+                communicateSetFailCooldown(maid, level);
             }
             MemoryUtil.getCommunicate(maid).getAndRemoveDelayCompleteContext().ifPresent(t -> t.complete(maid, em));
         }
+    }
+
+    public static void communicateSetFailCooldown(EntityMaid maid, ServerLevel level) {
+        MemoryUtil.getCommunicate(maid).startCooldown(maid.getUUID(), level, 1200);
     }
 }
