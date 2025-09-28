@@ -82,7 +82,7 @@ public class RequestItemUtil {
                 dispatchedTaskDone(maid, reqList);
             } else if (source.equals("DISPATCH_FIND")) {
                 dispatchFindTaskDone(maid, reqList);
-            } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("COMMUNICATE")) {
+            } else if (source.equals("COMMUNICATE")) {
                 CommunicateUtil.communicateRequestDone(maid, reqList);
             }
             //虚拟的，不用额外处理

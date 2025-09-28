@@ -56,8 +56,8 @@ public class RequestListTour {
                     return new MaidInv(maid, MemoryUtil.getViewedInventory(maid).flatten().stream().findFirst().map(t -> t.itemStack).orElseThrow(RuntimeException::new));
                 }, Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_1.no_data"))
                 .add()
-                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour_step_2"))
-                .chat(List.of(
+                .stepAnonymous()
+                .chats(List.of(
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_1"),
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_2").withStyle(ChatFormatting.YELLOW),
                         Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_2.chat_3")
@@ -71,7 +71,7 @@ public class RequestListTour {
                     return null;
                 })
                 .add()
-                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour_step_3"))
+                .stepAnonymous()
                 .dynamicChats((tChat, data) -> {
                     tChat.add(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_3.chat", data.getData(STEP_TO_REQUEST_ITEM).item.getHoverName()));
                 })
@@ -96,7 +96,7 @@ public class RequestListTour {
                 })
                 .triggers(List.of("item_selector_save"))
                 .add()
-                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "request_list_tour_step_4"))
+                .stepAnonymous()
                 .chat(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_4.chat"))
                 .mainTipNoGui(Component.translatable("tour_guide.maid_storage_manager.request_list_tour.step_4.main"))
                 .dynamicMarks((tMark, data) -> {

@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.mixin.tlm;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskNormalFarm;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.spongepowered.asm.mixin.Mixin;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.context.ICommunicateContext;

@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.api.communicate.context;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;

@@ -53,7 +53,7 @@ public class InventoryListTour {
                 }, Component.literal("没有找到女仆，请放置一个女仆，并将其切换到仓库管理工作模式"))
                 .add()
                 //第二步：放置容器，放置物品
-                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list_prepare_inventory"))
+                .stepAnonymous()
                 .chat(Component.literal("为了让女仆能够工作，你需要先准备一些存储容器，例如箱子、木桶等。在女仆的工作范围内放置若干个这样的容器，并放入一些物品，然后点击完成键"))
                 .mainTipNoGui(Component.literal("准备一些容器（箱子、木桶等），将其放置在女仆的工作范围内并放入一些物品"))
                 .unfinishReason(data -> {
@@ -72,7 +72,7 @@ public class InventoryListTour {
                 .add()
                 //第三步：等女仆查看物品
                 .step(STEP_TARGET_ITEM)
-                .chat(List.of(
+                .chats(List.of(
                         Component.literal("女仆正在查看所有容器，请等待"),
                         Component.literal("如果女仆已经查看过每个容器至少一次，点击完成")
                 ))
@@ -85,7 +85,7 @@ public class InventoryListTour {
                 )
                 .add()
                 //第四步：交互，获取库存清单
-                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list_interact"))
+                .stepAnonymous()
                 .chat(Component.literal("请将手持空白的库存清单，并右键女仆"))
                 .mainTipNoGui(Component.literal("手持空白的库存清单右键女仆，女仆会将已经写好的库存清单交还给你"))
                 .dynamicMarks((t, d) -> {
@@ -94,7 +94,7 @@ public class InventoryListTour {
                 .triggers(List.of(TRIGGER_WRITE_INV))
                 .add()
                 //第五步：选择目标物品，查看存储位置
-                .step(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list_select_target"))
+                .stepAnonymous()
                 .mainTipNoGui(Component.literal("手持库存清单右键打开GUI"))
                 .dynamicChats((tChat, data) -> {
                     tChat.add(Component.literal("拿到了库存清单，让我们来试试寻找一个物品。这里我们来找一个").append(data.getData(STEP_TARGET_ITEM).getHoverName()));
