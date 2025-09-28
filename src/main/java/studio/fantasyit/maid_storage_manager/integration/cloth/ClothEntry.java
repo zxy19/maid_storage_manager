@@ -34,7 +34,6 @@ public class ClothEntry {
 
     public static void createEntry(ConfigBuilder root, ConfigEntryBuilder entryBuilder) {
         ConfigCategory category = root.getOrCreateCategory(Component.translatable("config.maid_storage_manager.title"));
-        root.setSavingRunnable(Config::saveIfChanged);
         category.addEntry(
                 entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.debug"), Config.enableDebug)
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.enableDebug = t))

@@ -25,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.AiUtils;
@@ -43,6 +44,25 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class RequestItemUtil {
+    public static boolean isRequestTarget(ServerLevel level, EntityMaid maid, Target target) {
+        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        if (storageBlock == null || target == null)
+            return false;
+        if (storageBlock.equals(target))
+            return true;
+        MutableBoolean result = new MutableBoolean(false);
+        StorageAccessUtil.checkNearByContainers(
+                level,
+                target.getPos(),
+                pos -> {
+                    Target m = target.sameType(pos, null);
+                    if (storageBlock.equals(m))
+                        result.setTrue();
+                }
+        );
+        return result.getValue();
+    }
+
     public static void stopJobAndStoreOrThrowItem(EntityMaid maid, @Nullable IStorageContext storeTo, @Nullable Entity targetEntity) {
         Level level = maid.level();
         ItemStack reqList = maid.getMainHandItem();

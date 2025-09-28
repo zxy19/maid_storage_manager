@@ -16,6 +16,7 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
 
     boolean isSortingSlots = false;
     int sortingSlot = -1;
+    int maxSortingChances = 0;
     protected SimulateTargetInteractHelper helper;
 
     @Override
@@ -31,16 +32,17 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
             return;
         isSortingSlots = true;
         sortingSlot = helper.itemHandler.getSlots() - 1;
+        maxSortingChances = helper.itemHandler.getSlots() * helper.itemHandler.getSlots() / 2;
     }
 
     @Override
     public void tickSorting() {
-        if (helper.itemHandler == null || !isSortingSlots || sortingSlot <= 0) {
+        if (helper.itemHandler == null || !isSortingSlots || sortingSlot <= 0 || maxSortingChances <= 0) {
             isSortingSlots = false;
             return;
         }
         int cstT = Math.max(3000 / helper.itemHandler.getSlots(), 1);
-        while (sortingSlot >= 0 && cstT > 0) {
+        while (sortingSlot >= 0 && cstT > 0 && maxSortingChances > 0) {
             if (helper.itemHandler.getStackInSlot(sortingSlot).isEmpty()) {
                 sortingSlot--;
                 continue;
@@ -72,6 +74,7 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
             if (targetP != -1) {
                 int targetIndex = targetP + 1;
                 swap(targetIndex, sortingSlot);
+                maxSortingChances--;
                 sortingSlot = helper.itemHandler.getSlots() - 1;
             } else {
                 //否则，当前位置正常，向前进行交换
@@ -83,17 +86,21 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
     private void swap(int slot1, int slot2) {
         if (slot2 == slot1 || helper.itemHandler == null) return;
         Stack<ItemStack> extracted = new Stack<>();
-        while (helper.itemHandler.getStackInSlot(slot1).getCount() > 0) {
+        int t0 = helper.itemHandler.getStackInSlot(slot1).getCount();
+        while (helper.itemHandler.getStackInSlot(slot1).getCount() > 0 && t0 > 0) {
             ItemStack itemStack = helper.itemHandler.extractItem(slot1, helper.itemHandler.getStackInSlot(slot1).getCount(), false);
+            t0 -= itemStack.getCount();
             if (itemStack.isEmpty()) break;
             extracted.push(itemStack);
         }
-        while (helper.itemHandler.getStackInSlot(slot2).getCount() > 0) {
+        int t1 = helper.itemHandler.getStackInSlot(slot2).getCount();
+        while (helper.itemHandler.getStackInSlot(slot2).getCount() > 0 && t1 > 0) {
             ItemStack itemStack = helper.itemHandler.extractItem(slot2, helper.itemHandler.getStackInSlot(slot2).getCount(), true);
             if (itemStack.isEmpty()) break;
             @NotNull ItemStack rest = helper.itemHandler.insertItem(slot1, itemStack, true);
             ItemStack toInsert = itemStack.copy();
             toInsert.shrink(rest.getCount());
+            t1 -= toInsert.getCount();
             if (toInsert.isEmpty()) break;
             helper.itemHandler.insertItem(slot1, helper.itemHandler.extractItem(slot2, toInsert.getCount(), false), false);
         }
@@ -117,7 +124,7 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
 
     @Override
     public boolean isDoneSorting() {
-        return !isSortingSlots;
+        return !isSortingSlots || maxSortingChances == 0;
     }
 
     @Override

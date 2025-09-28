@@ -123,6 +123,15 @@ public class AnvilRecipeAction extends AbstractCraftActionContext {
                                 ItemStackUtil.isSameInCrafting(t2, craftGuideStepData.getInput().get(1))
                 ) {
                     anvilMenu.onTake(player, result);
+                    for (int i = 0; i < 2; i++) {
+                        ItemStack itemStack = anvilMenu.getSlot(i).getItem();
+                        if (!itemStack.isEmpty()) {
+                            ItemStack itemStack1 = InvUtil.tryPlace(maid.getAvailableInv(false), itemStack);
+                            if (!itemStack1.isEmpty()) {
+                                InvUtil.throwItem(maid, itemStack1);
+                            }
+                        }
+                    }
                     InvUtil.tryPlace(maid.getAvailableInv(false), result.copy());
                     maid.setExperience(maid.getExperience() - pointCost);
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());

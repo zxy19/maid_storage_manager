@@ -59,6 +59,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     @Override
     protected void init() {
         super.init();
+        options.clear();
         addOptionButtons();
         addSortButtons();
         addActionButtons();
@@ -83,7 +84,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             SelectButtonWidget<Integer> btn = addRenderableWidget(new SelectButtonWidget<>(
                     sx, sy + i * 12,
                     (value) -> {
-                        if (menu.currentEditingItems.options.isEmpty()) {
+                        if (menu.currentEditingItems.options.size() <= optionIdx) {
                             return new SelectButtonWidget.Option<>(
                                     0,
                                     CommonCraftAssets.BTN_OPTION,
