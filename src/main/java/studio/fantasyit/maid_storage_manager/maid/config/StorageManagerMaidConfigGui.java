@@ -227,6 +227,20 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                     Network.sendMaidDataSync(MaidDataSyncPacket.Type.ItemTypeLimit, this.maid.getId(), this.currentMAData.itemTypeLimit());
                 }
         ));
+        this.options.add(new OptionRow(
+                Component.translatable("gui.maid_storage_manager.config.do_communicate"),
+                Component.translatable(StorageManagerConfigData.getTranslationKey(this.currentMAData.doCommunicate())),
+                button -> {
+                    this.currentMAData.doCommunicate(false);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(false)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.DoCommunicate, this.maid.getId(), 0);
+                },
+                button -> {
+                    this.currentMAData.doCommunicate(true);
+                    button.setValue(Component.translatable(StorageManagerConfigData.getTranslationKey(true)));
+                    Network.sendMaidDataSync(MaidDataSyncPacket.Type.DoCommunicate, this.maid.getId(), 1);
+                }
+        ));
     }
 
     private Component getItemTypeLimitButtonText() {

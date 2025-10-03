@@ -484,5 +484,6 @@
   "tour_guide.maid_storage_manager.request_list_tour.step_4.chat": "现在，手持请求列表右键女仆，女仆就会帮你找到你想要的物品。",
   "tour_guide.maid_storage_manager.request_list_tour.step_4.main": "手持请求列表右键女仆，并等待女仆取回物品。",
   "tour_guide.maid_storage_manager.request_list_tour.step_4.finish": "教程结束。女仆稍后会为你取回对应的物品。",
-  "tour_guide.maid_storage_manager.request_list_tour2.step_1.chat": "111111111111111111111"
+  "tour_guide.maid_storage_manager.request_list_tour2.step_1.chat": "111111111111111111111",
+  "gui.maid_storage_manager.config.do_communicate": "Do Communicate"
 }
