@@ -6,7 +6,6 @@ import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,13 +15,29 @@ import java.util.Map;
 public class InvConsumeSimulator {
     public static Codec<InvConsumeSimulator> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.unboundedMap(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED, Codec.INT).fieldOf("itemConsumeCount").forGetter(t -> t.itemConsumeCount)
-            ).apply(instance, InvConsumeSimulator::new)
+                            RecordCodecBuilder.create((RecordCodecBuilder.Instance<Pair<ItemStack, Integer>> ii) ->
+                                    ii.group(
+                                            ItemStack.CODEC.fieldOf("itemStack").forGetter(Pair::getA),
+                                            Codec.INT.fieldOf("count").forGetter(Pair::getB)
+                                    ).apply(ii, Pair::new)
+                            ).listOf().fieldOf("data").forGetter(InvConsumeSimulator::getToSave)
+                    ).
+                    apply(instance, InvConsumeSimulator::new)
     );
+
+    private List<Pair<ItemStack, Integer>> getToSave() {
+        return itemConsumeCount.entrySet().stream().map(e -> new Pair<>(e.getKey(), e.getValue())).toList();
+    }
 
     public boolean enableLog = false;
     Map<ItemStack, Integer> itemConsumeCount;
     Map<ItemStack, Integer> snapshot;
+
+    public InvConsumeSimulator(List<Pair<ItemStack, Integer>> mapBuilder) {
+        this.itemConsumeCount = new HashMap<>();
+        mapBuilder.forEach(pair -> itemConsumeCount.put(pair.getA(), pair.getB()));
+        snapshot = null;
+    }
 
     public InvConsumeSimulator(Map<ItemStack, Integer> itemConsumeCount) {
         this.itemConsumeCount = new HashMap<>(itemConsumeCount);
