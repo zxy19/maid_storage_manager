@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 
 public class ViewedInventoryMemory extends AbstractTargetMemory {
 
+
     public record ItemCount(ItemStack item, int count) {
         public static final Codec<ItemCount> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
@@ -164,6 +165,20 @@ public class ViewedInventoryMemory extends AbstractTargetMemory {
                                 )
                         );
                 }
+            }
+        }
+        return result;
+    }
+
+    public int getItemCount(ItemStack itemStack, ItemStackUtil.MATCH_TYPE matchType) {
+        String k = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString();
+        if (!viewedInventory.containsKey(k))
+            return 0;
+        int result = 0;
+        for (Map.Entry<String, List<ItemCount>> entry : viewedInventory.get(k).entrySet()) {
+            for (ItemCount itemCount : entry.getValue()) {
+                if (ItemStackUtil.isSame(itemStack, itemCount.getFirst(), matchType))
+                    result += itemCount.count();
             }
         }
         return result;

@@ -256,6 +256,13 @@ public class Network {
                             );
                             data.itemTypeLimit(msg.value);
                             maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                        } else if (msg.type == MaidDataSyncPacket.Type.DoCommunicate) {
+                            StorageManagerConfigData.Data data = maid.getOrCreateData(
+                                    StorageManagerConfigData.KEY,
+                                    StorageManagerConfigData.Data.getDefault()
+                            );
+                            data.doCommunicate(msg.value != 0);
+                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
                         }
                     }
                     context.get().setPacketHandled(true);

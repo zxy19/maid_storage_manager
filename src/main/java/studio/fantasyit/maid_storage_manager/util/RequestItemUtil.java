@@ -87,6 +87,7 @@ public class RequestItemUtil {
                 CommunicateUtil.communicateRequestDone(maid, reqList);
             }
             //虚拟的，不用额外处理
+            //TODO 事件处理
         }
         //1.1 尝试扔给目标实体
         else if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) <= 0 && targetEntity != null) {
