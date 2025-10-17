@@ -11,7 +11,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.api.communicate.CommunicateUtil;
+import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.CommunicateMemory;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -40,7 +40,7 @@ public class MaidCommunicateFindTargetBehavior extends Behavior<EntityMaid> {
         List<EntityMaid> entities = level.getEntities(
                 EntityTypeTest.forClass(EntityMaid.class),
                 maid.getBoundingBox().inflate((maid.hasRestriction() ? maid.getRestrictRadius() : 5) * 2),
-                e -> CommunicateUtil.getWillingCommunicatable(e).isPresent()
+                e -> CommunicateUtil.getWillingCommunicatable(e,maid).isPresent()
         );
         CommunicateMemory comm = MemoryUtil.getCommunicate(maid);
         List<EntityMaid> el = entities

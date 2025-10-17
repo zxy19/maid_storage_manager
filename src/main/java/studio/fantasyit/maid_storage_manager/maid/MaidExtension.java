@@ -47,6 +47,7 @@ public class MaidExtension implements ILittleMaid {
         manager.bind(ItemRegistry.LOGISTICS_GUIDE.get(), (IMaidBauble) ItemRegistry.LOGISTICS_GUIDE.get());
         manager.bind(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), (IMaidBauble) ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get());
         manager.bind(ItemRegistry.WORK_CARD.get(), (IMaidBauble) ItemRegistry.WORK_CARD.get());
+        manager.bind(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get(), (IMaidBauble) ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get());
     }
 
     @Override

@@ -47,4 +47,6 @@ public class ItemRegistry {
     public static final DeferredHolder<Item, ChangeFlag> CHANGE_FLAG = item("change_flag", ChangeFlag::new);
 
     public static final DeferredHolder<Item, ProgressPad> PROGRESS_PAD = item("progress_pad", ProgressPad::new);
+
+    public static final DeferredHolder<Item,ConfigurableCommunicateMark> CONFIGURABLE_COMMUNICATE_MARK = item("configurable_communicate_mark", ConfigurableCommunicateMark::new);
 }

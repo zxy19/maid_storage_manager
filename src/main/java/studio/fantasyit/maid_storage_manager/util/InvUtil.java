@@ -55,7 +55,7 @@ public class InvUtil {
         return itemStack;
     }
 
-    public static ItemStack tryExtract(IItemHandler inv, ItemStack itemStack, boolean matchTag) {
+    public static ItemStack tryExtract(IItemHandler inv, ItemStack itemStack, ItemStackUtil.MATCH_TYPE matchTag) {
         int count = 0;
         int max = itemStack.getCount();
         for (int i = 0; i < inv.getSlots(); i++) {

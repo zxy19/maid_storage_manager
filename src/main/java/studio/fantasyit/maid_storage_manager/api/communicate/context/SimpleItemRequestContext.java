@@ -19,21 +19,21 @@ public class SimpleItemRequestContext implements ICommunicateContext {
     }
 
     @Override
-    public void start(EntityMaid maid, EntityMaid toCommunicate) {
+    public void start(EntityMaid wisher, EntityMaid handler) {
         List<ItemStack> toRequestItems = this.toRequestItems;
         if (toRequestItems.size() > 10)
             toRequestItems = toRequestItems.subList(0, 10);
         else
             isFinished = false;
-        ItemStack vreq = RequestItemUtil.makeVirtualItemStack(toRequestItems, null, maid, "COMMUNICATE");
+        ItemStack vreq = RequestItemUtil.makeVirtualItemStack(toRequestItems, null, wisher, "COMMUNICATE");
         CompoundTag tag = new CompoundTag();
-        tag.putUUID("target", maid.getUUID());
+        tag.putUUID("target", wisher.getUUID());
         RequestListItem.setVirtualData(vreq, tag);
-        InvUtil.tryPlace(toCommunicate.getAvailableInv(true), vreq);
+        InvUtil.tryPlace(handler.getAvailableInv(true), vreq);
     }
 
     @Override
-    public boolean isFinished(EntityMaid maid, EntityMaid toCommunicate) {
+    public boolean isFinished(EntityMaid wisher, EntityMaid handler) {
         return isFinished;
     }
 }

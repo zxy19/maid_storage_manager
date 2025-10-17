@@ -1,10 +1,11 @@
-package studio.fantasyit.maid_storage_manager.api.communicate;
+package studio.fantasyit.maid_storage_manager.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
@@ -12,12 +13,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class CommunicateUtil {
-    public static Optional<ICommunicatable> getWillingCommunicatable(EntityMaid e) {
-        if (e.getTask() instanceof ICommunicatable ic && ic.willingCommunicate(e)) return Optional.of(ic);
-        BaubleItemHandler maidBauble = e.getMaidBauble();
+    public static Optional<WrappedCommunicateContextGetter> getWillingCommunicatable(EntityMaid wisher, EntityMaid handler) {
+        if (wisher.getTask() instanceof ICommunicatable ic && ic.willingCommunicate(wisher, null, handler))
+            return Optional.of(new WrappedCommunicateContextGetter(ic, null));
+        BaubleItemHandler maidBauble = wisher.getMaidBauble();
         for (int i = 0; i < maidBauble.getSlots(); i++) {
-            if (maidBauble.getStackInSlot(i).getItem() instanceof ICommunicatable ic && ic.willingCommunicate(e))
-                return Optional.of(ic);
+            if (maidBauble.getStackInSlot(i).getItem() instanceof ICommunicatable ic && ic.willingCommunicate(wisher, maidBauble.getStackInSlot(i), handler))
+                return Optional.of(new WrappedCommunicateContextGetter(ic, maidBauble.getStackInSlot(i)));
         }
         return Optional.empty();
     }
