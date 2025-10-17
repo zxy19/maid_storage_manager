@@ -14,8 +14,7 @@
     "JeiGuiIconToggleButtonAccessor",
     "JEIRecipeTransferHook",
     "TLMFeatureCenterSidePathFinding",
-    "WorldRecipeLoaderMixin",
-    "tlm.MaidFarmTaskMixin"
+    "WorldRecipeLoaderMixin"
   ],
   "client": [
     "CreateStockKeeperScreenMixin",

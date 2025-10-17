@@ -269,7 +269,7 @@ public class StorageAccessUtil {
         ItemStack itemStack = inv.extractItem(0, markItem.getCount(), true);
         if (itemStack.isEmpty() || !ItemStackUtil.isSame(itemStack, markItem, true)) {
             tmpExtracted.add(itemStack);
-            InvUtil.tryExtract(inv, markItem, true);
+            InvUtil.tryExtract(inv, markItem, ItemStackUtil.MATCH_TYPE.MATCHING);
         } else {
             inv.extractItem(0, markItem.getCount(), false);
         }

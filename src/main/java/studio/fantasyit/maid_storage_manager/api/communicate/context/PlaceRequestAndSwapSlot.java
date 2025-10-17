@@ -1,21 +1,18 @@
 package studio.fantasyit.maid_storage_manager.api.communicate.context;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
-import studio.fantasyit.maid_storage_manager.data.ConfigurableCommunicateData;
+import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.communicate.ConfigurableCommunicateData;
+import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
-import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
+import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayCompleteContext {
     final ConfigurableCommunicateData data;
@@ -24,6 +21,7 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
     private ViewedInventoryMemory viewedInventory;
     boolean done = false;
     boolean anyFail = false;
+    VirtualItemEntity virtualItemEntity = null;
 
     public PlaceRequestAndSwapSlot(ConfigurableCommunicateData data) {
         this.data = data;
@@ -31,32 +29,58 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
 
 
     @Override
-    public void complete(EntityMaid maid, EntityMaid toCommunicate) {
+    public void complete(EntityMaid wisher, EntityMaid handler) {
+        for (ConfigurableCommunicateData.Item item : data.items) {
+            List<ItemStack> itemStacks = item.getItemStacks(wisher);
+            for (int i = 0; i < item.itemStacks().size(); i++) {
+                ItemStack required = itemStacks.get(i);
+                int count = itemStacks.size();
+                for (ItemStack itemStack : itemStacks) {
+                    if (ItemStackUtil.isSame(itemStack, required, item.match()))
+                        count -= itemStack.getCount();
+                    if (count <= 0)
+                        break;
+                }
+                if (count > 0) {
+                    ItemStack toTransfer = required.copyWithCount(count);
+                    ItemStack canTransfer = InvUtil.tryExtract(wisher.getAvailableInv(false), toTransfer, item.match());
+                    if (!canTransfer.isEmpty()) {
 
+                    }
+                }
+            }
+        }
     }
 
     @Override
-    public void start(EntityMaid maid, EntityMaid toCommunicate) {
-        viewedInventory = MemoryUtil.getViewedInventory(maid);
+    public void start(EntityMaid wisher, EntityMaid handler) {
+        viewedInventory = MemoryUtil.getViewedInventory(wisher);
     }
 
     @Override
-    public boolean isFinished(EntityMaid maid, EntityMaid toCommunicate) {
+    public boolean isFinished(EntityMaid wisher, EntityMaid handler) {
         return done;
     }
 
     @Override
-    public boolean tick(EntityMaid maid, EntityMaid toCommunicate) {
-        if (currentProcessing >= data.items.size()) {
-            return generateRequestList(maid, toCommunicate);
+    public boolean tick(EntityMaid wisher, EntityMaid handler) {
+        if (virtualItemEntity != null) {
+            InvUtil.pickUpVirtual(wisher, virtualItemEntity);
+            if (virtualItemEntity.isAlive())
+                InvUtil.pickUpVirtual(handler, virtualItemEntity);
+            return false;
         }
-        if (!InvUtil.hasAnyFree(maid.getAvailableInv(false)))
+        if (currentProcessing >= data.items.size()) {
+            return generateRequestList(wisher, handler);
+        }
+        if (!InvUtil.hasAnyFree(wisher.getAvailableInv(false)))
             return true;
         ConfigurableCommunicateData.Item item = data.items.get(currentProcessing);
         boolean whiteMode = item.whiteMode();
         List<ItemStack> itemStacks = item.itemStacks();
         List<Integer> invThreshold = item.thresholdCount();
         //先执行放置的操作
+        boolean goNext = true;
 
         if (!whiteMode) {
             //黑名单：遍历每个物品，取走不匹配的物品
@@ -65,12 +89,20 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
                 if (stack.isEmpty()) continue;
                 if (invThreshold.get(i) != -1 && viewedInventory.getItemCount(stack, item.match()) >= invThreshold.get(i))
                     continue;
-                processSlotItems(maid, item.slot(), itemStack -> {
+                goNext = item.processSlotItemsAndGetIsFinished(wisher, itemStack -> {
                     if (!ItemStackUtil.isSame(stack, itemStack, item.match())) {
-                        ItemStack itemStack1 = InvUtil.tryPlace(maid.getAvailableInv(false), stack);
-                        if (!itemStack1.isEmpty())
+                        int itemStack1Count = InvUtil.maxCanPlace(wisher.getAvailableInv(false), stack);
+
+                        if (itemStack1Count == 0)
                             anyFail = true;
-                        return itemStack1;
+                        else
+                            virtualItemEntity = InvUtil.throwItemVirtual(
+                                    handler,
+                                    itemStack.copyWithCount(itemStack1Count),
+                                    MathUtil.getFromToWithFriction(handler, wisher.position())
+                            );
+
+                        return itemStack.copyWithCount(itemStack.getCount() - itemStack1Count);
                     }
                     return stack;
                 });
@@ -82,7 +114,7 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
             for (ItemStack stack : itemStacks) remainAllowed.add(stack.getCount());
 
             //遍历每个物品
-            processSlotItems(maid, item.slot(), itemStack -> {
+            goNext = item.processSlotItemsAndGetIsFinished(wisher, itemStack -> {
                 int toPlace = itemStack.getCount();
                 //使用方案预算来消费当前物品堆
                 for (int i = 0; i < itemStacks.size() && toPlace > 0; i++) {
@@ -94,14 +126,21 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
                 }
                 //如果物品堆未被方案消费完，那么需要进行放置
                 if (toPlace > 0) {
-                    ItemStack remainNotPlaced = InvUtil.tryPlace(maid.getAvailableInv(false), itemStack.copyWithCount(toPlace));
-                    ItemStack result = itemStack.copy();
-                    result.shrink(toPlace);
-                    result.grow(remainNotPlaced.getCount());
-                    return result;
+                    int toPlaceCount = InvUtil.maxCanPlace(wisher.getAvailableInv(false), itemStack.copyWithCount(toPlace));
+                    if (toPlaceCount == 0)
+                        return itemStack;
+                    virtualItemEntity = InvUtil.throwItemVirtual(
+                            handler,
+                            itemStack.copyWithCount(toPlaceCount),
+                            MathUtil.getFromToWithFriction(handler, wisher.position())
+                    );
+                    return itemStack.copyWithCount(itemStack.getCount() - toPlaceCount);
                 }
                 return itemStack;
             });
+        }
+        if (goNext) {
+            currentProcessing++;
         }
         return false;
     }
@@ -125,7 +164,7 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
         ConfigurableCommunicateData.Item item = data.items.get(currentChecking);
         if (item.whiteMode()) {
             List<ItemStack> reqs = item.itemStacks();
-            List<ItemStack> itemStacks = getItemStacks(maid, item.slot());
+            List<ItemStack> itemStacks = item.getItemStacks(maid);
             for (int i = 0; i < reqs.size(); i++) {
                 int count = 0;
                 for (ItemStack itemStack : itemStacks) {
@@ -147,81 +186,52 @@ public class PlaceRequestAndSwapSlot implements IMultiTickContext, IDelayComplet
     }
 
     @Override
-    public void stop(EntityMaid maid, EntityMaid toCommunicate) {
-        //todo
+    public void stop(EntityMaid wisher, EntityMaid handler) {
     }
 
-    private List<ItemStack> getItemStacks(EntityMaid maid, ConfigurableCommunicateData.SlotType slot) {
-        List<ItemStack> list = new ArrayList<>();
-        switch (slot) {
-            case ALL -> {
-                CombinedInvWrapper availableInv = maid.getAvailableInv(false);
-                for (int i = 0; i < availableInv.getSlots(); i++) {
-                    list.add(availableInv.getStackInSlot(i));
-                }
-            }
-            case HEAD -> list.add(maid.getItemBySlot(EquipmentSlot.HEAD));
-            case CHEST -> list.add(maid.getItemBySlot(EquipmentSlot.CHEST));
-            case LEGS -> list.add(maid.getItemBySlot(EquipmentSlot.LEGS));
-            case FEET -> list.add(maid.getItemBySlot(EquipmentSlot.FEET));
-            case MAIN_HAND -> list.add(maid.getItemBySlot(EquipmentSlot.MAINHAND));
-            case OFF_HAND -> list.add(maid.getItemBySlot(EquipmentSlot.OFFHAND));
-            case BAUBLE -> {
-                BaubleItemHandler bauble = maid.getMaidBauble();
-                for (int i = 0; i < bauble.getSlots(); i++) {
-                    list.add(bauble.getStackInSlot(i));
-                }
-            }
+    private ItemStack tryPlace(EntityMaid maid, ItemStack itemStack, ConfigurableCommunicateData.SlotType slot) {
+        return switch (slot) {
+            case ALL -> InvUtil.tryPlace(maid.getAvailableInv(false), itemStack);
+            case HEAD -> placeToSlotType(maid, itemStack, EquipmentSlot.HEAD);
+            case CHEST -> placeToSlotType(maid, itemStack, EquipmentSlot.CHEST);
+            case LEGS -> placeToSlotType(maid, itemStack, EquipmentSlot.LEGS);
+            case FEET -> placeToSlotType(maid, itemStack, EquipmentSlot.FEET);
+            case MAIN_HAND -> placeToSlotType(maid, itemStack, EquipmentSlot.MAINHAND);
+            case OFF_HAND -> placeToSlotType(maid, itemStack, EquipmentSlot.OFFHAND);
             case FLOWER -> {
                 RangedWrapper inv = maid.getAvailableBackpackInv();
-                if (inv.getSlots() > 5)
-                    list.add(inv.getStackInSlot(5));
+                RangedWrapper onlyLast = new RangedWrapper(inv, 5, 6);
+                yield InvUtil.tryPlace(onlyLast, itemStack);
             }
             case ETA -> {
                 RangedWrapper inv = maid.getAvailableBackpackInv();
-                for (int i = 0; i < inv.getSlots(); i++) {
-                    if (i != 5)
-                        list.add(inv.getStackInSlot(i));
-                }
+                CombinedInvWrapper noLast = new CombinedInvWrapper(
+                        new RangedWrapper(inv, 0, 5),
+                        new RangedWrapper(inv, 6, inv.getSlots())
+                );
+                yield InvUtil.tryPlace(noLast, itemStack);
             }
-        }
-        return list;
+            case BAUBLE -> InvUtil.tryPlace(maid.getMaidBauble(), itemStack);
+        };
     }
 
-    private void processSlotItems(EntityMaid maid, ConfigurableCommunicateData.SlotType slot, Function<ItemStack, ItemStack> process) {
-        switch (slot) {
-            case ALL -> {
-                CombinedInvWrapper availableInv = maid.getAvailableInv(false);
-                for (int i = 0; i < availableInv.getSlots(); i++) {
-                    availableInv.setStackInSlot(i, process.apply(availableInv.getStackInSlot(i)));
-                }
-            }
-            case HEAD -> maid.setItemSlot(EquipmentSlot.HEAD, process.apply(maid.getItemBySlot(EquipmentSlot.HEAD)));
-            case CHEST -> maid.setItemSlot(EquipmentSlot.CHEST, process.apply(maid.getItemBySlot(EquipmentSlot.CHEST)));
-            case LEGS -> maid.setItemSlot(EquipmentSlot.LEGS, process.apply(maid.getItemBySlot(EquipmentSlot.LEGS)));
-            case FEET -> maid.setItemSlot(EquipmentSlot.FEET, process.apply(maid.getItemBySlot(EquipmentSlot.FEET)));
-            case MAIN_HAND ->
-                    maid.setItemSlot(EquipmentSlot.MAINHAND, process.apply(maid.getItemBySlot(EquipmentSlot.MAINHAND)));
-            case OFF_HAND ->
-                    maid.setItemSlot(EquipmentSlot.OFFHAND, process.apply(maid.getItemBySlot(EquipmentSlot.OFFHAND)));
-            case BAUBLE -> {
-                BaubleItemHandler bauble = maid.getMaidBauble();
-                for (int i = 0; i < bauble.getSlots(); i++) {
-                    bauble.setStackInSlot(i, process.apply(bauble.getStackInSlot(i)));
-                }
-            }
-            case FLOWER -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
-                if (inv.getSlots() > 5)
-                    inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5)));
-            }
-            case ETA -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
-                for (int i = 0; i < inv.getSlots(); i++) {
-                    if (i != 5)
-                        inv.setStackInSlot(i, process.apply(inv.getStackInSlot(i)));
-                }
-            }
-        }
+    private @NotNull ItemStack placeToSlotType(EntityMaid maid, ItemStack itemStack, EquipmentSlot slot) {
+        ItemStack canPlace = getCanPlace(itemStack, maid.getItemBySlot(slot));
+        if (canPlace.isEmpty())
+            return itemStack;
+        ItemStack toPlace = canPlace.copy();
+        toPlace.grow(maid.getItemBySlot(slot).getCount());
+        maid.setItemSlot(slot, toPlace);
+        return itemStack.copyWithCount(itemStack.getCount() - toPlace.getCount());
+    }
+
+    private ItemStack getCanPlace(ItemStack original, ItemStack income) {
+        if (original.isEmpty())
+            return income;
+        if (original.getItem() == income.getItem())
+            return original.getCount() + income.getCount() > original.getMaxStackSize() ?
+                    original.copyWithCount(original.getMaxStackSize()) :
+                    original.copyWithCount(original.getCount() + income.getCount());
+        return ItemStack.EMPTY;
     }
 }

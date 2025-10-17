@@ -31,24 +31,24 @@ public class SimpleStoreContext implements IMultiTickContext {
     }
 
     @Override
-    public boolean isFinished(EntityMaid maid, EntityMaid toCommunicate) {
-        return idx >= maid.getAvailableInv(false).getSlots();
+    public boolean isFinished(EntityMaid wisher, EntityMaid handler) {
+        return idx >= wisher.getAvailableInv(false).getSlots();
     }
 
     @Override
-    public void start(EntityMaid maid, EntityMaid toCommunicate) {
+    public void start(EntityMaid wisher, EntityMaid handler) {
         idx = 0;
     }
 
     @Override
-    public boolean tick(EntityMaid maid, EntityMaid toCommunicate) {
+    public boolean tick(EntityMaid wisher, EntityMaid handler) {
         if (toPickItem != null) {
-            InvUtil.pickUpVirtual(toCommunicate, toPickItem);
+            InvUtil.pickUpVirtual(handler, toPickItem);
             toPickItem = null;
             return false;
-        } else if (!InvUtil.hasAnyFree(toCommunicate.getAvailableInv(false)))
+        } else if (!InvUtil.hasAnyFree(handler.getAvailableInv(false)))
             return true;
-        else return tickStoreItem(maid, t -> this.store(t, maid, toCommunicate));
+        else return tickStoreItem(wisher, t -> this.store(t, wisher, handler));
     }
 
     private ItemStack store(ItemStack itemStack, EntityMaid maid, EntityMaid toCommunicate) {
@@ -59,6 +59,6 @@ public class SimpleStoreContext implements IMultiTickContext {
     }
 
     @Override
-    public void stop(EntityMaid maid, EntityMaid toCommunicate) {
+    public void stop(EntityMaid wisher, EntityMaid handler) {
     }
 }

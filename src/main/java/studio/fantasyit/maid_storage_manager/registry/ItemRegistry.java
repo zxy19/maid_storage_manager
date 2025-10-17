@@ -48,4 +48,6 @@ public class ItemRegistry {
     public static final RegistryObject<Item> CHANGE_FLAG = item("change_flag", ChangeFlag::new);
 
     public static final RegistryObject<Item> PROGRESS_PAD = item("progress_pad", ProgressPad::new);
+
+    public static final RegistryObject<Item> CONFIGURABLE_COMMUNICATE_MARK = item("configurable_communicate_mark", ConfigurableCommunicateMark::new);
 }

@@ -3,11 +3,11 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.communicate;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import studio.fantasyit.maid_storage_manager.api.communicate.CommunicateUtil;
-import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.context.ICommunicateContext;
 import studio.fantasyit.maid_storage_manager.api.communicate.context.IDelayCompleteContext;
 import studio.fantasyit.maid_storage_manager.api.communicate.context.IMultiTickContext;
+import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
+import studio.fantasyit.maid_storage_manager.communicate.WrappedCommunicateContextGetter;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -40,7 +40,7 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         targetMaid = MemoryUtil.getCommunicate(maid).getTargetMaid();
-        ICommunicatable communicatable = CommunicateUtil.getWillingCommunicatable(targetMaid).orElse(null);
+        WrappedCommunicateContextGetter communicatable = CommunicateUtil.getWillingCommunicatable(targetMaid,maid).orElse(null);
         if (communicatable == null) {
             done = true;
             communicateContext = null;
@@ -48,7 +48,7 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
         }
         done = false;
         isFinished = false;
-        communicateContext = communicatable.startCommunicate(targetMaid);
+        communicateContext = communicatable.get(targetMaid, maid);
         if (communicateContext == null)
             return;
         communicateContext.start(targetMaid, maid);

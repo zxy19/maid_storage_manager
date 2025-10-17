@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
+import studio.fantasyit.maid_storage_manager.communicate.TaskDefaultCommunicate;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.cloth.AddClothEvent;
@@ -20,6 +21,7 @@ public class StartUpEvent {
         event.enqueueWork(() -> {
             MaidStorage.getInstance().collectStorage();
             CraftManager.getInstance().collect();
+            TaskDefaultCommunicate.init();
         });
     }
 
