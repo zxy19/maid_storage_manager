@@ -1,39 +1,40 @@
 package studio.fantasyit.maid_storage_manager.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Predicate;
 
 public class CommunicateUtil {
-    public static Optional<WrappedCommunicateContextGetter> getWillingCommunicatable(EntityMaid wisher, EntityMaid handler) {
-        if (wisher.getTask() instanceof ICommunicatable ic && ic.willingCommunicate(wisher, null, handler))
-            return Optional.of(new WrappedCommunicateContextGetter(ic, null));
-        BaubleItemHandler maidBauble = wisher.getMaidBauble();
-        for (int i = 0; i < maidBauble.getSlots(); i++) {
-            if (maidBauble.getStackInSlot(i).getItem() instanceof ICommunicatable ic && ic.willingCommunicate(wisher, maidBauble.getStackInSlot(i), handler))
-                return Optional.of(new WrappedCommunicateContextGetter(ic, maidBauble.getStackInSlot(i)));
+    public static Optional<CommunicatePlan> sendCommunicateWishAndGetPlan(EntityMaid wisher, CommunicateWish wish, Predicate<CommunicatePlan> planPredicate) {
+        List<ResourceLocation> requestTypes = wish.wishes().stream().map(IActionWish::getType).toList();
+        List<EntityMaid> maids = wisher.level().getEntities(
+                EntityTypeTest.forClass(EntityMaid.class),
+                wisher.getBoundingBox().inflate(32.0D, 32.0D, 32.0D),
+                entity ->
+                        entity != wisher &&
+                                entity.getTask() instanceof ICommunicatable communicatable &&
+                                communicatable.getAcceptedWishTypes().containsAll(requestTypes)
+        );
+        for (EntityMaid maid : maids) {
+            ICommunicatable communicateHandler = (ICommunicatable) maid.getTask();
+            CommunicatePlan actionPlan = communicateHandler.acceptCommunicateWish(maid, wish);
+            if (actionPlan != null) {
+                if (planPredicate.test(actionPlan)) {
+                    return Optional.of(actionPlan);
+                }
+            }
         }
         return Optional.empty();
-    }
-
-    public static void communicateRequestDone(EntityMaid maid, ItemStack reqList) {
-        CompoundTag data = RequestListItem.getVirtualData(reqList);
-        if (data == null) return;
-        UUID targetUUID = data.getUUID("target");
-        if (maid.level() instanceof ServerLevel level && level.getEntity(targetUUID) instanceof EntityMaid em) {
-            if (!RequestListItem.isAllSuccess(reqList)) {
-                communicateSetFailCooldown(maid, level);
-            }
-            MemoryUtil.getCommunicate(maid).getAndRemoveDelayCompleteContext().ifPresent(t -> t.complete(maid, em));
-        }
     }
 
     public static void communicateSetFailCooldown(EntityMaid maid, ServerLevel level) {

@@ -1,12 +1,20 @@
 package studio.fantasyit.maid_storage_manager.api.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.api.communicate.context.ICommunicateContext;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
+
+import java.util.Set;
 
 public interface ICommunicatable {
-    boolean willingCommunicate(EntityMaid wisher, @Nullable ItemStack wisherItemStack, EntityMaid handler);
+    Set<ResourceLocation> getAcceptedWishTypes();
 
-    @Nullable ICommunicateContext startCommunicate(EntityMaid wisher, @Nullable ItemStack wisherItemStack, EntityMaid handler);
+    @Nullable CommunicatePlan acceptCommunicateWish(EntityMaid handler, CommunicateWish wish);
+
+    boolean startCommunicate(CommunicateRequest plan);
+
+    CommunicateRequest getCurrentCommunicateRequest(EntityMaid handler);
 }
