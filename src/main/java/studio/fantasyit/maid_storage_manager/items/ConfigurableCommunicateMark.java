@@ -5,9 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.ICommunicateContext;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.PlaceRequestAndSwapSlot;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
 import studio.fantasyit.maid_storage_manager.communicate.ConfigurableCommunicateData;
 import studio.fantasyit.maid_storage_manager.communicate.TaskDefaultCommunicate;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -15,7 +13,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
-public class ConfigurableCommunicateMark extends Item implements ICommunicatable, IMaidBauble {
+public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
 
     public ConfigurableCommunicateMark() {
         super(new Properties());
@@ -62,11 +60,10 @@ public class ConfigurableCommunicateMark extends Item implements ICommunicatable
         return false;
     }
 
-    @Override
-    public @Nullable ICommunicateContext startCommunicate(EntityMaid wisher, @Nullable ItemStack wisherItemStack, EntityMaid handler) {
-        assert wisherItemStack != null;
-        return new PlaceRequestAndSwapSlot(getDataFrom(wisherItemStack, wisher));
+    private List<IActionWish> buildWishList(EntityMaid wisher, ConfigurableCommunicateData data) {
+
     }
+
 
     public static ConfigurableCommunicateData getDataFrom(ItemStack stack, EntityMaid maid) {
         if (!stack.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get()))

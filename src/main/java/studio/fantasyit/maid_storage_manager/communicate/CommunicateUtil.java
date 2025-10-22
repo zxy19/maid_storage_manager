@@ -2,13 +2,11 @@ package studio.fantasyit.maid_storage_manager.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +33,5 @@ public class CommunicateUtil {
             }
         }
         return Optional.empty();
-    }
-
-    public static void communicateSetFailCooldown(EntityMaid maid, ServerLevel level) {
-        MemoryUtil.getCommunicate(maid).startCooldown(maid.getUUID(), level, 1200);
     }
 }

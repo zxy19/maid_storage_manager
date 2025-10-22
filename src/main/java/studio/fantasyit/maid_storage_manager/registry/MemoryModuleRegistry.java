@@ -7,6 +7,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateHolder;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.*;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -45,8 +47,11 @@ public class MemoryModuleRegistry {
             = REGISTER.register("co_work_target", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<MealMemory>> MEAL
             = REGISTER.register("meal", () -> new MemoryModuleType<>(Optional.of(MealMemory.CODEC)));
-    public static final RegistryObject<MemoryModuleType<CommunicateMemory>> COMMUNICATE
-            = REGISTER.register("communicate", () -> new MemoryModuleType<>(Optional.empty()));
+
+    public static final RegistryObject<MemoryModuleType<CommunicateRequest>> COMMUNICATE_REQUEST
+            = REGISTER.register("communicate_request", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final RegistryObject<MemoryModuleType<CommunicateHolder>> COMMUNICATE_HOLDER
+            = REGISTER.register("communicate_holder", () -> new MemoryModuleType<>(Optional.empty()));
 
     public static final RegistryObject<MemoryModuleType<Boolean>> RETURN_CENTER
             = REGISTER.register("return_center", () -> new MemoryModuleType<>(Optional.empty()));

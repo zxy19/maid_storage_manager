@@ -16,12 +16,14 @@ public record CommunicateRequest(
     public boolean isFinished() {
         return currentStep.intValue() >= plan.steps().size();
     }
-
     public IActionStep getCurrentStep() {
         return plan.steps().get(currentStep.intValue());
     }
-
     public void nextStep() {
         currentStep.increment();
+    }
+
+    public CommunicateHolder getHolder() {
+        return new CommunicateHolder(requestId, handler);
     }
 }
