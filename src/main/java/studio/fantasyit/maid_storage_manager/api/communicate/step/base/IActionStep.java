@@ -10,13 +10,20 @@ public interface IActionStep {
         return true;
     }
 
-    boolean prepare(EntityMaid wisher, EntityMaid handler);
+    default boolean prepare(EntityMaid wisher, EntityMaid handler) {
+        return true;
+    }
 
-    boolean isPrepareDone(EntityMaid wisher, EntityMaid handler);
+    default boolean isPrepareDone(EntityMaid wisher, EntityMaid handler) {
+        return true;
+    }
 
     ActionResult start(EntityMaid wisher, EntityMaid handler);
 
-    ActionResult tick(EntityMaid wisher, EntityMaid handler);
+    default ActionResult tick(EntityMaid wisher, EntityMaid handler) {
+        return ActionResult.FAIL;
+    }
 
-    void stop(EntityMaid wisher, EntityMaid handler);
+    default void stop(EntityMaid wisher, EntityMaid handler) {
+    }
 }
