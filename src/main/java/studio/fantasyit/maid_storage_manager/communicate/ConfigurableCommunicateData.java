@@ -1,182 +1,21 @@
 package studio.fantasyit.maid_storage_manager.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.items.wrapper.RangedWrapper;
+import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.PlaceItemWish;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.RequestItemWish;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class ConfigurableCommunicateData {
-    public enum SlotType {
-        ALL,
-        HEAD,
-        CHEST,
-        LEGS,
-        FEET,
-        MAIN_HAND,
-        OFF_HAND,
-        FLOWER,
-        ETA,
-        BAUBLE;
-
-
-        public List<ItemStack> getItemStacks(EntityMaid maid) {
-            List<ItemStack> list = new ArrayList<>();
-            switch (this) {
-                case ALL -> {
-                    CombinedInvWrapper availableInv = maid.getAvailableInv(false);
-                    for (int i = 0; i < availableInv.getSlots(); i++) {
-                        list.add(availableInv.getStackInSlot(i));
-                    }
-                }
-                case HEAD -> list.add(maid.getItemBySlot(EquipmentSlot.HEAD));
-                case CHEST -> list.add(maid.getItemBySlot(EquipmentSlot.CHEST));
-                case LEGS -> list.add(maid.getItemBySlot(EquipmentSlot.LEGS));
-                case FEET -> list.add(maid.getItemBySlot(EquipmentSlot.FEET));
-                case MAIN_HAND -> list.add(maid.getItemBySlot(EquipmentSlot.MAINHAND));
-                case OFF_HAND -> list.add(maid.getItemBySlot(EquipmentSlot.OFFHAND));
-                case BAUBLE -> {
-                    BaubleItemHandler bauble = maid.getMaidBauble();
-                    for (int i = 0; i < bauble.getSlots(); i++) {
-                        list.add(bauble.getStackInSlot(i));
-                    }
-                }
-                case FLOWER -> {
-                    RangedWrapper inv = maid.getAvailableBackpackInv();
-                    if (inv.getSlots() > 5)
-                        list.add(inv.getStackInSlot(5));
-                }
-                case ETA -> {
-                    RangedWrapper inv = maid.getAvailableBackpackInv();
-                    for (int i = 0; i < inv.getSlots(); i++) {
-                        if (i != 5)
-                            list.add(inv.getStackInSlot(i));
-                    }
-                }
-            }
-            return list;
-        }
-
-        public boolean processSlotItemsAndGetIsFinished(EntityMaid maid, Function<ItemStack, ItemStack> process) {
-            switch (this) {
-                case ALL -> {
-                    CombinedInvWrapper availableInv = maid.getAvailableInv(false);
-                    return resetSlotItemWithProcessAndCheckIfAnyChanged(process, availableInv);
-                }
-                case HEAD ->
-                        maid.setItemSlot(EquipmentSlot.HEAD, process.apply(maid.getItemBySlot(EquipmentSlot.HEAD)));
-                case CHEST ->
-                        maid.setItemSlot(EquipmentSlot.CHEST, process.apply(maid.getItemBySlot(EquipmentSlot.CHEST)));
-                case LEGS ->
-                        maid.setItemSlot(EquipmentSlot.LEGS, process.apply(maid.getItemBySlot(EquipmentSlot.LEGS)));
-                case FEET ->
-                        maid.setItemSlot(EquipmentSlot.FEET, process.apply(maid.getItemBySlot(EquipmentSlot.FEET)));
-                case MAIN_HAND ->
-                        maid.setItemSlot(EquipmentSlot.MAINHAND, process.apply(maid.getItemBySlot(EquipmentSlot.MAINHAND)));
-                case OFF_HAND ->
-                        maid.setItemSlot(EquipmentSlot.OFFHAND, process.apply(maid.getItemBySlot(EquipmentSlot.OFFHAND)));
-                case BAUBLE -> {
-                    BaubleItemHandler bauble = maid.getMaidBauble();
-                    return resetSlotItemWithProcessAndCheckIfAnyChanged(process, bauble);
-                }
-                case FLOWER -> {
-                    RangedWrapper inv = maid.getAvailableBackpackInv();
-                    if (inv.getSlots() > 5)
-                        inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5)));
-                }
-                case ETA -> {
-                    RangedWrapper inv = maid.getAvailableBackpackInv();
-                    CombinedInvWrapper noLast = new CombinedInvWrapper(
-                            new RangedWrapper(inv, 0, 5),
-                            new RangedWrapper(inv, 6, inv.getSlots())
-                    );
-                    return resetSlotItemWithProcessAndCheckIfAnyChanged(process, noLast);
-                }
-            }
-            return true;
-        }
-
-        public void iterItemExceptSlotForMaid(EntityMaid maid, Function<ItemStack, ItemStack> process) {
-            if (this == ALL) return;
-            CombinedInvWrapper inv = maid.getAvailableInv(true);
-            for (int i = 0; i < inv.getSlots(); i++) {
-                if (this == MAIN_HAND && i == 0) continue;
-                if (this == OFF_HAND && i == 1) continue;
-                if (this == FLOWER && i == 7) continue;
-                inv.setStackInSlot(i, process.apply(inv.getStackInSlot(i)));
-            }
-        }
-
-        private boolean resetSlotItemWithProcessAndCheckIfAnyChanged(Function<ItemStack, ItemStack> process, IItemHandlerModifiable bauble) {
-            for (int i = 0; i < bauble.getSlots(); i++) {
-                int oCount = bauble.getStackInSlot(i).getCount();
-                ItemStack t = process.apply(bauble.getStackInSlot(i));
-                bauble.setStackInSlot(i, t);
-                if (t.getCount() != oCount)
-                    return true;
-            }
-            return false;
-        }
-
-        public ItemStack tryPlaceItemIn(ItemStack itemStack, EntityMaid maid) {
-            return switch (this) {
-                case ALL -> InvUtil.tryPlace(maid.getAvailableInv(true), itemStack);
-                case HEAD -> placeArmorSlot(itemStack, maid, EquipmentSlot.HEAD);
-                case CHEST -> placeArmorSlot(itemStack, maid, EquipmentSlot.CHEST);
-                case LEGS -> placeArmorSlot(itemStack, maid, EquipmentSlot.LEGS);
-                case FEET -> placeArmorSlot(itemStack, maid, EquipmentSlot.FEET);
-                case MAIN_HAND -> placeArmorSlot(itemStack, maid, EquipmentSlot.MAINHAND);
-                case OFF_HAND -> placeArmorSlot(itemStack, maid, EquipmentSlot.OFFHAND);
-                case BAUBLE -> InvUtil.tryPlace(maid.getMaidBauble(), itemStack);
-                case FLOWER -> {
-                    RangedWrapper backpackInv = maid.getAvailableBackpackInv();
-                    if (backpackInv.getSlots() > 5) {
-                        ItemStack stackInSlot = backpackInv.getStackInSlot(5);
-                        if (stackInSlot.isEmpty()) {
-                            backpackInv.setStackInSlot(5, itemStack);
-                            yield ItemStack.EMPTY;
-                        }
-                        if (ItemStackUtil.isSame(stackInSlot, itemStack, ItemStackUtil.MATCH_TYPE.MATCHING)) {
-                            int finallyCount = Math.min(itemStack.getMaxStackSize(), itemStack.getCount() + stackInSlot.getCount());
-                            backpackInv.setStackInSlot(5, itemStack.copyWithCount(finallyCount));
-                            yield itemStack.copyWithCount(itemStack.getCount() - finallyCount);
-                        }
-                    }
-                    yield itemStack;
-                }
-                case ETA -> {
-                    RangedWrapper inv = maid.getAvailableBackpackInv();
-                    CombinedInvWrapper noLast = new CombinedInvWrapper(
-                            new RangedWrapper(inv, 0, 5),
-                            new RangedWrapper(inv, 6, inv.getSlots())
-                    );
-                    yield InvUtil.tryPlace(noLast, itemStack);
-                }
-            };
-        }
-
-        private ItemStack placeArmorSlot(ItemStack itemStack, EntityMaid maid, EquipmentSlot slot) {
-            if (maid.getItemBySlot(slot).isEmpty() || ItemStackUtil.isSame(maid.getItemBySlot(slot), itemStack, ItemStackUtil.MATCH_TYPE.MATCHING)) {
-                int finallyCount = Math.min(itemStack.getMaxStackSize(), itemStack.getCount() + maid.getItemBySlot(slot).getCount());
-                maid.setItemSlot(slot, itemStack.copyWithCount(finallyCount));
-                return itemStack.copyWithCount(itemStack.getCount() - finallyCount);
-            } else return itemStack;
-        }
-    }
-
     public record Item(
             List<ItemStack> itemStacks,
             boolean whiteMode,
@@ -251,7 +90,46 @@ public class ConfigurableCommunicateData {
     public List<IActionWish> buildWish(EntityMaid maid) {
         List<IActionWish> list = new ArrayList<>();
         for (Item item : items) {
-            
+            List<ItemStack> toTakeItem = new ArrayList<>();
+            List<ItemStack> toRequestItem = new ArrayList<>();
+            List<ItemStack> hasItem = item.slot.getItemStacks(maid);
+            if (item.whiteMode) {
+                List<MutableInt> count = item.itemStacks.stream().map(itemStack -> new MutableInt(itemStack.getCount())).toList();
+                for (ItemStack itemStack : hasItem) {
+                    boolean find = false;
+                    for (int i = 0; i < item.itemStacks.size(); i++) {
+                        if (ItemStackUtil.isSame(itemStack, item.itemStacks.get(i), item.match)) {
+                            find = true;
+                            int shouldTake = Math.max(itemStack.getCount() - count.get(i).getValue(), 0);
+                            count.get(i).subtract(itemStack.getCount() - shouldTake);
+                            if (shouldTake != 0)
+                                ItemStackUtil.addToList(toTakeItem, itemStack.copyWithCount(shouldTake), item.match);
+                        }
+                    }
+                    if (!find) {
+                        ItemStackUtil.addToList(toRequestItem, itemStack, item.match);
+                    }
+                }
+                for (int i = 0; i < item.itemStacks.size(); i++) {
+                    if (count.get(i).getValue() != 0) {
+                        ItemStackUtil.addToList(toRequestItem, item.itemStacks.get(i).copyWithCount(count.get(i).getValue()), item.match);
+                    }
+                }
+            } else {
+                for (ItemStack itemStack : hasItem) {
+                    for (ItemStack itemStack1 : item.itemStacks) {
+                        if (ItemStackUtil.isSame(itemStack, itemStack1, item.match)) {
+                            ItemStackUtil.addToList(toTakeItem, itemStack.copyWithCount(itemStack.getCount()), item.match);
+                        }
+                    }
+                }
+            }
+
+            if (!toTakeItem.isEmpty())
+                list.add(new PlaceItemWish(toRequestItem, true, true, item.slot, item.match));
+            if (!toRequestItem.isEmpty())
+                list.add(new RequestItemWish(toTakeItem, item.match, item.slot));
         }
+        return list;
     }
 }

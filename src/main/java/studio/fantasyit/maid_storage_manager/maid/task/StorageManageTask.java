@@ -17,10 +17,11 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.PlaceItemWish;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.RequestItemWish;
 import studio.fantasyit.maid_storage_manager.maid.behavior.GoCenterBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateDelayedCompleteManageBehavior;
-import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateFindTargetBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateWorkBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.CoWorkChestView;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowActionBehavior;
@@ -65,10 +66,12 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.WriteInventoryListBehavior;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
+import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class StorageManageTask implements IMaidTask {
     public static ResourceLocation TASK_ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "storage_manage");
@@ -161,8 +164,6 @@ public class StorageManageTask implements IMaidTask {
         list.add(Pair.of(5, new MealMoveBehavior()));
         //女仆交流
         list.add(Pair.of(5, new MaidCommunicateWorkBehavior()));
-        list.add(Pair.of(5, new MaidCommunicateFindTargetBehavior()));
-        list.add(Pair.of(5, new MaidCommunicateDelayedCompleteManageBehavior()));
         return list;
     }
 
@@ -204,5 +205,18 @@ public class StorageManageTask implements IMaidTask {
                 return new StorageManagerMaidConfigGui.Container(index, playerInventory, maid.getId());
             }
         };
+    }
+
+    @Override
+    public Set<ResourceLocation> getAcceptedWishTypes() {
+        return Set.of(
+                PlaceItemWish.TYPE,
+                RequestItemWish.TYPE
+        );
+    }
+
+    @Override
+    public CommunicateRequest getCurrentCommunicateRequest(EntityMaid handler) {
+        return handler.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get()).orElse(null);
     }
 }
