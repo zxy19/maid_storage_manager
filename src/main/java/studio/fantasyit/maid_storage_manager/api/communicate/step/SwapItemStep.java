@@ -5,19 +5,19 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.base.ActionResult;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IMeetActionStep;
-import studio.fantasyit.maid_storage_manager.communicate.ConfigurableCommunicateData;
+import studio.fantasyit.maid_storage_manager.communicate.SlotType;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
 public class SwapItemStep implements IMeetActionStep {
-    final ConfigurableCommunicateData.SlotType slot;
+    final SlotType slot;
     final List<ItemStack> marked;
     final ItemStackUtil.MATCH_TYPE match;
     List<ItemStack> currentHas;
     int index = 0;
 
-    public SwapItemStep(ConfigurableCommunicateData.SlotType slot, List<ItemStack> marked, ItemStackUtil.MATCH_TYPE match) {
+    public SwapItemStep(SlotType slot, List<ItemStack> marked, ItemStackUtil.MATCH_TYPE match) {
         this.slot = slot;
         this.marked = marked;
         this.match = match;

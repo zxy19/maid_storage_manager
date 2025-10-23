@@ -4,9 +4,12 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateHolder;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
+import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,5 +36,19 @@ public class CommunicateUtil {
             }
         }
         return Optional.empty();
+    }
+
+    public static boolean hasCommunicateHolder(EntityMaid maid) {
+        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.COMMUNICATE_HOLDER.get());
+    }
+
+    public static boolean hasCommunicateRequest(EntityMaid maid) {
+        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.COMMUNICATE_REQUEST.get());
+    }
+    public static CommunicateHolder getCommunicateHolder(EntityMaid maid) {
+        return maid.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get()).orElse(null);
+    }
+    public static CommunicateRequest getCommunicateRequest(EntityMaid maid) {
+        return maid.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get()).orElse(null);
     }
 }

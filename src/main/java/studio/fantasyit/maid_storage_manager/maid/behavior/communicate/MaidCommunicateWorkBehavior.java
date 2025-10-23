@@ -7,8 +7,6 @@ import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.base.ActionResult;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
-import studio.fantasyit.maid_storage_manager.util.Conditions;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
 
@@ -23,9 +21,6 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, EntityMaid maid) {
-        if (!MemoryUtil.getCommunicate(maid).hasTargetMaid()) return false;
-        if (!Conditions.hasReachedValidTargetOrReset(MemoryUtil.getCommunicate(maid).getTargetMaid())) return false;
-        return Conditions.hasReachedValidTargetOrReset(maid);
     }
 
 

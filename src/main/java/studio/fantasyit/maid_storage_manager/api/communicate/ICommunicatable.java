@@ -6,14 +6,27 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public interface ICommunicatable {
     Set<ResourceLocation> getAcceptedWishTypes();
 
-    @Nullable CommunicatePlan acceptCommunicateWish(EntityMaid handler, CommunicateWish wish);
+    default @Nullable CommunicatePlan acceptCommunicateWish(EntityMaid handler, CommunicateWish wish) {
+        Set<ResourceLocation> acceptedWishTypes = getAcceptedWishTypes();
+        List<IActionStep> steps = new ArrayList<>();
+        for (IActionWish w : wish.wishes()) {
+            if (!acceptedWishTypes.contains(w.getType()))
+                return null;
+            steps.addAll(w.getSteps());
+        }
+        return new CommunicatePlan(steps, handler);
+    }
 
     default boolean startCommunicate(EntityMaid handler, CommunicateRequest plan) {
         if (handler != plan.handler())

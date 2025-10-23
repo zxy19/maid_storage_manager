@@ -26,7 +26,7 @@ public class TaskDefaultCommunicate {
                                 List.of(),
                                 true,
                                 ItemStackUtil.MATCH_TYPE.NOT_MATCHING,
-                                ConfigurableCommunicateData.SlotType.ALL,
+                                SlotType.ALL,
                                 List.of()
                         )
                 )

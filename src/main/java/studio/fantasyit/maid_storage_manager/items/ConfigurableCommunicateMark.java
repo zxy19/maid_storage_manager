@@ -2,16 +2,23 @@ package studio.fantasyit.maid_storage_manager.items;
 
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
+import org.apache.commons.lang3.mutable.MutableInt;
+import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
+import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.communicate.ConfigurableCommunicateData;
 import studio.fantasyit.maid_storage_manager.communicate.TaskDefaultCommunicate;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
 
@@ -20,50 +27,30 @@ public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
     }
 
     @Override
-    public boolean willingCommunicate(EntityMaid wisher, @Nullable ItemStack wisherItemStack, EntityMaid handler) {
-        if (wisherItemStack == null)
-            return false;
-        ConfigurableCommunicateData dataFrom = getDataFrom(wisherItemStack, wisher);
-        if (dataFrom == null)
-            return false;
-        for (ConfigurableCommunicateData.Item item : dataFrom.items) {
-            List<ItemStack> currentItemStacks = item.getItemStacks(wisher);
-            List<ItemStack> markedItemStacks = item.itemStacks();
-            for (ItemStack mi : markedItemStacks) {
-                int count = mi.getCount();
-                //对于每个标记物品，在背包中寻找对应物品。如果找到，黑名单，那么返回true。否则统计数量，如果数量超过白名单，那么返回true
-                //对于出现的不符合标记的物品，白名单的情况下，也应该直接返回true。
-                for (ItemStack ci : currentItemStacks) {
-                    if (ItemStackUtil.isSame(ci, mi, item.match())) {
-                        if (item.whiteMode())
-                            count -= ci.getCount();
-                        else
-                            return true;
-                    } else if (item.whiteMode())
-                        return true;
-                }
-                if (count != 0)
-                    return true;
-            }
-            if (item.whiteMode()) {
-                for (ItemStack ci : currentItemStacks) {
-                    boolean find = false;
-                    for (ItemStack mi : markedItemStacks) {
-                        if (ItemStackUtil.isSame(ci, mi, item.match()))
-                            find = true;
-                    }
-                    if (!find)
-                        return true;
-                }
-            }
+    public void onTick(EntityMaid maid, ItemStack baubleItem) {
+        if (CommunicateUtil.hasCommunicateHolder(maid))
+            return;
+        CompoundTag tag = baubleItem.getOrCreateTag();
+        int cd = tag.getInt("cd");
+        if (cd > 0) {
+            tag.putInt("cd", cd - 1);
+            return;
+        } else {
+            tag.putInt("cd", 600);
         }
-        return false;
+        ConfigurableCommunicateData data = getDataFrom(baubleItem, maid);
+        List<IActionWish> iActionWishes = data.buildWish(maid);
+        Optional<CommunicatePlan> communicatePlan = CommunicateUtil.sendCommunicateWishAndGetPlan(
+                maid,
+                new CommunicateWish(maid, iActionWishes),
+                plan -> true
+        );
+        communicatePlan.ifPresent(plan -> {
+            if (plan.handler() instanceof ICommunicatable ic) {
+                ic.startCommunicate(plan.handler(), new CommunicateRequest(plan, maid, plan.handler(), UUID.randomUUID(), new MutableInt()));
+            }
+        });
     }
-
-    private List<IActionWish> buildWishList(EntityMaid wisher, ConfigurableCommunicateData data) {
-
-    }
-
 
     public static ConfigurableCommunicateData getDataFrom(ItemStack stack, EntityMaid maid) {
         if (!stack.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get()))

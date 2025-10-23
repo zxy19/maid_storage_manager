@@ -2,9 +2,9 @@ package studio.fantasyit.maid_storage_manager.api.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.base.ActionResult;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IMeetActionStep;
+import studio.fantasyit.maid_storage_manager.communicate.SlotType;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -12,6 +12,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PlaceItemStep implements IMeetActionStep {
     int index = 0;
@@ -19,20 +20,20 @@ public class PlaceItemStep implements IMeetActionStep {
     final List<ItemStack> marked;
     final boolean whitelist;
     final ItemStackUtil.MATCH_TYPE matchTag;
-    private CombinedInvWrapper inv;
+    private final SlotType slot;
 
     BehaviorBreath breath = new BehaviorBreath();
 
-    public PlaceItemStep(List<ItemStack> marked, boolean whitelist, ItemStackUtil.MATCH_TYPE matchTag) {
+    public PlaceItemStep(List<ItemStack> marked, boolean whitelist, SlotType slot, ItemStackUtil.MATCH_TYPE matchTag) {
         this.marked = marked;
         this.whitelist = whitelist;
         this.matchTag = matchTag;
+        this.slot = slot;
     }
 
     @Override
     public ActionResult start(EntityMaid wisher, EntityMaid handler) {
         breath.reset();
-        inv = wisher.getAvailableInv(true);
         item = null;
         return ActionResult.CONTINUE;
     }
@@ -51,21 +52,17 @@ public class PlaceItemStep implements IMeetActionStep {
             item = null;
             return ActionResult.CONTINUE;
         }
-        for (int c = 0; c < 20; c++) {
-            if (index >= inv.getSlots()) {
-                return ActionResult.SUCCESS;
-            }
-            ItemStack stack = inv.getStackInSlot(index);
+        Optional<Integer> i = slot.processSlotItemsAndGetIsFinished(wisher, index, (stack, idx) -> {
             if (marked.stream().anyMatch(itemStack -> ItemStackUtil.isSame(stack, itemStack, matchTag)) == whitelist) {
-                continue;
+                return stack;
             }
             item = InvUtil.throwItemVirtual(wisher, stack, MathUtil.getFromToWithFriction(wisher, handler.position()));
+            return ItemStack.EMPTY;
+        });
+        if (i.isPresent()) {
+            index = i.get();
             return ActionResult.CONTINUE;
         }
-        return ActionResult.CONTINUE;
-    }
-
-    @Override
-    public void stop(EntityMaid wisher, EntityMaid handler) {
+        return ActionResult.SUCCESS;
     }
 }
