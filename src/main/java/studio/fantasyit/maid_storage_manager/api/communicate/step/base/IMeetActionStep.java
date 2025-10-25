@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.api.communicate.step.base;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
+import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +34,6 @@ public interface IMeetActionStep extends IActionStep {
 
     @Override
     default boolean prepare(EntityMaid wisher, EntityMaid handler) {
-
         Pair<BlockPos, BlockPos> blockPosBlockPosPair = getMeetPoint(wisher, handler);
         if (blockPosBlockPosPair == null)
             return false;
@@ -45,5 +45,16 @@ public interface IMeetActionStep extends IActionStep {
     @Override
     default boolean isPrepareDone(EntityMaid wisher, EntityMaid handler) {
         return Conditions.hasReachedValidTargetOrReset(wisher) && Conditions.hasReachedValidTargetOrReset(handler);
+    }
+
+    @Override
+    default boolean shouldRunPrepare(EntityMaid wisher, EntityMaid handler, boolean prepared) {
+        if (!prepared)
+            return true;
+        if (!wisher.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get()))
+            return true;
+        if (!handler.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get()))
+            return true;
+        return false;
     }
 }

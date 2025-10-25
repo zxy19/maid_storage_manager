@@ -29,7 +29,10 @@ public class MaidCommunicatePrepareBehavior extends Behavior<EntityMaid> {
             return false;
         if (communicateRequest.isFinished())
             return false;
-        return !communicateRequest.isPrepared();
+        IActionStep currentStep = communicateRequest.getCurrentStep();
+        if (currentStep == null)
+            return false;
+        return currentStep.shouldRunPrepare(communicateRequest.wisher(), maid, communicateRequest.isPrepared());
     }
 
 
@@ -39,7 +42,8 @@ public class MaidCommunicatePrepareBehavior extends Behavior<EntityMaid> {
         if (communicateRequest == null)
             return;
         step = communicateRequest.getCurrentStep();
-        if (step.prepare(maid, maid)) {
+        assert step != null;
+        if (step.prepare(communicateRequest.wisher(), maid)) {
             communicateRequest.prepare();
         }
     }

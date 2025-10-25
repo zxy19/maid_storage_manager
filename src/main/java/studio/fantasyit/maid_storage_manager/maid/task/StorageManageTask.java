@@ -23,6 +23,7 @@ import studio.fantasyit.maid_storage_manager.api.communicate.wish.PlaceItemWish;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.RequestItemWish;
 import studio.fantasyit.maid_storage_manager.maid.behavior.GoCenterBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicatePrepareBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.communicate.MaidCommunicateWorkBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.CoWorkChestView;
 import studio.fantasyit.maid_storage_manager.maid.behavior.cowork.FollowActionBehavior;
@@ -165,6 +166,7 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
         list.add(Pair.of(5, new MealMoveBehavior()));
         //女仆交流
         list.add(Pair.of(5, new MaidCommunicateWorkBehavior()));
+        list.add(Pair.of(5, new MaidCommunicatePrepareBehavior()));
         return list;
     }
 

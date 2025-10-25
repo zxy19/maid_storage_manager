@@ -29,7 +29,7 @@ public class RequestItemStep implements IActionStep {
         if (!InvUtil.isEmpty(wisher.getAvailableInv(true)))
             return false;
         ItemStack vi = RequestItemUtil.makeVirtualItemStack(requested, null, wisher, "COMMUNICATE");
-        InvUtil.tryPlace(wisher.getAvailableInv(true), vi);
+        InvUtil.tryPlace(handler.getAvailableInv(true), vi);
         return true;
     }
 

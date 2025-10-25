@@ -29,6 +29,8 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.AiUtils;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.RequestItemStep;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -84,7 +86,9 @@ public class RequestItemUtil {
             } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("DISPATCH_FIND")) {
                 dispatchFindTaskDone(maid, reqList);
             } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("COMMUNICATE")) {
-                CommunicateUtil.communicateRequestDone(maid, reqList);
+                CommunicateRequest communicateRequest = CommunicateUtil.getCommunicateRequest(maid);
+                if (communicateRequest != null && communicateRequest.getCurrentStep() instanceof RequestItemStep requestItemStep)
+                    requestItemStep.onRequestDone(RequestListItem.isAllSuccess(reqList));
             }
             //虚拟的，不用额外处理
             //TODO 事件处理
