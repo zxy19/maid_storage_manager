@@ -126,9 +126,9 @@ public class ConfigurableCommunicateData {
             }
 
             if (!toTakeItem.isEmpty())
-                list.add(new PlaceItemWish(toRequestItem, true, true, item.slot, item.match));
+                list.add(new PlaceItemWish(toTakeItem, true, true, item.slot, item.match));
             if (!toRequestItem.isEmpty())
-                list.add(new RequestItemWish(toTakeItem, item.match, item.slot));
+                list.add(new RequestItemWish(toRequestItem, item.match, item.slot));
         }
         return list;
     }

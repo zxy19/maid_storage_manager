@@ -73,7 +73,8 @@ public class MaidExtension implements ILittleMaid {
                         MemoryModuleRegistry.PARALLEL_WORKING.get(),
                         MemoryModuleRegistry.ENABLE_PICKUP_TEMP.get(),
                         MemoryModuleRegistry.RETURN_CENTER.get(),
-                        MemoryModuleRegistry.COMMUNICATE.get()
+                        MemoryModuleRegistry.COMMUNICATE_HOLDER.get(),
+                        MemoryModuleRegistry.COMMUNICATE_REQUEST.get()
                 );
             }
         });

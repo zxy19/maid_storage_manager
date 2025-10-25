@@ -87,7 +87,7 @@ public enum SlotType {
             case FLOWER -> {
                 RangedWrapper inv = maid.getAvailableBackpackInv();
                 if (inv.getSlots() > 5)
-                    inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5)));
+                    inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5),0));
             }
             case ETA -> {
                 RangedWrapper inv = maid.getAvailableBackpackInv();

@@ -5,7 +5,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
@@ -18,7 +17,6 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
 
@@ -28,6 +26,8 @@ public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
 
     @Override
     public void onTick(EntityMaid maid, ItemStack baubleItem) {
+        if (maid.level().isClientSide)
+            return;
         if (CommunicateUtil.hasCommunicateHolder(maid))
             return;
         CompoundTag tag = baubleItem.getOrCreateTag();
@@ -39,6 +39,8 @@ public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
             tag.putInt("cd", 600);
         }
         ConfigurableCommunicateData data = getDataFrom(baubleItem, maid);
+        if (data == null)
+            return;
         List<IActionWish> iActionWishes = data.buildWish(maid);
         Optional<CommunicatePlan> communicatePlan = CommunicateUtil.sendCommunicateWishAndGetPlan(
                 maid,
@@ -46,8 +48,8 @@ public class ConfigurableCommunicateMark extends Item implements IMaidBauble {
                 plan -> true
         );
         communicatePlan.ifPresent(plan -> {
-            if (plan.handler() instanceof ICommunicatable ic) {
-                ic.startCommunicate(plan.handler(), new CommunicateRequest(plan, maid, plan.handler(), UUID.randomUUID(), new MutableInt()));
+            if (plan.handler().getTask() instanceof ICommunicatable ic) {
+                ic.startCommunicate(plan.handler(), CommunicateRequest.create(plan, maid));
             }
         });
     }

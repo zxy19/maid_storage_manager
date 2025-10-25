@@ -1,7 +1,9 @@
 package studio.fantasyit.maid_storage_manager.communicate;
 
+import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskAttack;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskIdle;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.common.MinecraftForge;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -32,6 +34,17 @@ public class TaskDefaultCommunicate {
                 )
         );
         event.register(TaskIdle.UID, commonPlaceAll);
+        event.register(TaskAttack.UID, new ConfigurableCommunicateData(
+                List.of(
+                        new ConfigurableCommunicateData.Item(
+                                List.of(Items.CARROT.getDefaultInstance().copyWithCount(10)),
+                                true,
+                                ItemStackUtil.MATCH_TYPE.NOT_MATCHING,
+                                SlotType.MAIN_HAND,
+                                List.of()
+                        )
+                )
+        ));
     }
 
     public static ConfigurableCommunicateData get(ResourceLocation id) {

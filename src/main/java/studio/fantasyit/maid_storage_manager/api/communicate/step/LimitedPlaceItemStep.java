@@ -12,13 +12,14 @@ import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 public class LimitedPlaceItemStep implements IMeetActionStep {
     int index = 0;
     List<MutableInt> requiredCounts;
-    List<MutableInt> indexOfMarkToSlot;
+    HashMap<Integer, MutableInt> indexOfMarkToSlot;
     VirtualItemEntity item;
     private final List<ItemStack> marked;
     private final ItemStackUtil.MATCH_TYPE matchTag;
@@ -31,6 +32,7 @@ public class LimitedPlaceItemStep implements IMeetActionStep {
         this.matchTag = matchTag;
         this.slot = slot;
         requiredCounts = marked.stream().map(ItemStack::getCount).map(MutableInt::new).toList();
+        indexOfMarkToSlot = new HashMap<>();
     }
 
     @Override
@@ -56,6 +58,8 @@ public class LimitedPlaceItemStep implements IMeetActionStep {
         }
 
         Optional<Integer> i1 = slot.processSlotItemsAndGetIsFinished(wisher, index, (stack, idx) -> {
+            if (!indexOfMarkToSlot.containsKey(idx))
+                indexOfMarkToSlot.put(idx, new MutableInt(0));
             MutableInt _i = indexOfMarkToSlot.get(idx);
             for (; _i.getValue() < marked.size(); _i.increment()) {
                 int i = _i.getValue();
