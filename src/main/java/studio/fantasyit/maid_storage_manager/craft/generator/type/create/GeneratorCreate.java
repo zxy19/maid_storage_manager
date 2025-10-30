@@ -174,7 +174,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
                     itemIngredients.forEach(ingredient ->
                             counts.add(Arrays.stream(ingredient.getItems()).findFirst().map(ItemStack::getCount).orElse(0) * multiplier)
                     );
-                    recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.getAmount() * multiplier / 1000));
+                    recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.amount() * multiplier / 1000));
 
                     transformAllIngredients(recipe, all, counts);
 
