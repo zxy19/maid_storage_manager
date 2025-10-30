@@ -125,7 +125,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
     protected int getMinFullBucketCount(T recipe) {
         MutableInt minFullBucketCount = new MutableInt(1);
         recipe.getFluidIngredients().forEach(fluidIngredient -> {
-            int times = MathUtil.lcm(1000, fluidIngredient.getAmount()) / fluidIngredient.getAmount();
+            int times = MathUtil.lcm(1000, fluidIngredient.amount()) / fluidIngredient.amount();
             minFullBucketCount.setValue(MathUtil.lcm(minFullBucketCount.getValue(), times));
         });
         recipe.getFluidResults().forEach(fluidStack -> {
