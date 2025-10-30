@@ -157,7 +157,7 @@ dependencies {
     compileOnly "curse.maven:just-enough-characters-250702:6681787"
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
     compileOnly "dev.emi:emi-neoforge:${emi_version}"
-    compileOnly "curse.maven:create-328085:6641610"
+    compileOnly "curse.maven:create-328085:7149903"
     compileOnly "com.tterrag.registrate:Registrate:MC1.21-1.3.0+62"
     compileOnly "net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:1.0.60"
     compileOnly "curse.maven:refined-storage-243076:6798977"
@@ -182,7 +182,7 @@ dependencies {
     runtimeOnly "curse.maven:sophisticated-storage-619320:6759132"
     runtimeOnly "curse.maven:sophisticated-core-618298:6760141"
     runtimeOnly "curse.maven:mouse-tweaks-60089:5637846"
-    runtimeOnly "curse.maven:create-328085:6641610"
+    runtimeOnly "curse.maven:create-328085:7149903"
 //    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
     runtimeOnly("me.shedaniel.cloth:cloth-config-neoforge:15.0.140")
     runtimeOnly "curse.maven:curios-309927:6529130"
@@ -244,6 +244,7 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.warnings = false
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
