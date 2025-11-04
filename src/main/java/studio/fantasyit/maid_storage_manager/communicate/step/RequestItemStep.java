@@ -1,9 +1,9 @@
-package studio.fantasyit.maid_storage_manager.api.communicate.step;
+package studio.fantasyit.maid_storage_manager.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.ActionResult;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.ActionResult;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -26,7 +26,7 @@ public class RequestItemStep implements IActionStep {
 
     @Override
     public boolean prepare(EntityMaid wisher, EntityMaid handler) {
-        if (!InvUtil.isEmpty(wisher.getAvailableInv(true)))
+        if (!InvUtil.isEmpty(handler.getAvailableInv(true)))
             return false;
         ItemStack vi = RequestItemUtil.makeVirtualItemStack(requested, null, wisher, "COMMUNICATE");
         InvUtil.tryPlace(handler.getAvailableInv(true), vi);
@@ -42,7 +42,7 @@ public class RequestItemStep implements IActionStep {
 
     @Override
     public ActionResult start(EntityMaid wisher, EntityMaid handler) {
-        return isSuccess ? ActionResult.SUCCESS : ActionResult.FAIL;
+        return isSuccess ? ActionResult.SUCCESS : ActionResult.SOFT_FAIL;
     }
 
     public void onRequestDone(boolean success) {

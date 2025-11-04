@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.filter;
 
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;

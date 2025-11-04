@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.logistics;
 
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;

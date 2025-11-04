@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.logistics;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;

@@ -6,8 +6,8 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.ActionResult;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.ActionResult;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
@@ -18,6 +18,7 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
     private CommunicateRequest communicateRequest;
     private boolean isEnd;
     private boolean isSuccess;
+    private boolean isKeepOn;
 
     public MaidCommunicateWorkBehavior() {
         super(Map.of(
@@ -55,6 +56,7 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
         ActionResult startResult = step.start(communicateRequest.wisher(), communicateRequest.handler());
         isEnd = startResult.isEnd();
         isSuccess = startResult.isSuccess();
+        isKeepOn = startResult.isKeepon();
         communicateRequest.startWorking();
     }
 
@@ -65,11 +67,13 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
         ActionResult tick = step.tick(communicateRequest.wisher(), maid);
         isEnd = tick.isEnd();
         isSuccess = isSuccess && tick.isSuccess();
+        isKeepOn = isKeepOn && tick.isKeepon();
     }
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
-        if (isEnd && isSuccess) {
+        step.stop(communicateRequest.wisher(), communicateRequest.handler());
+        if (isEnd && isKeepOn) {
             communicateRequest.nextStep();
             if (communicateRequest.isFinished())
                 communicateRequest.stopAndClear();

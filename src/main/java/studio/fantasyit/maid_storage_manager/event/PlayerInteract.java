@@ -24,7 +24,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
 import studio.fantasyit.maid_storage_manager.items.HangUpItem;
-import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
+import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;

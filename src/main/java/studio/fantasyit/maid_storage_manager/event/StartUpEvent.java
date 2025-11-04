@@ -19,7 +19,6 @@ public class StartUpEvent {
         event.enqueueWork(() -> {
             MaidStorage.getInstance().collectStorage();
             CraftManager.getInstance().collect();
-            TaskDefaultCommunicate.init();
         });
     }
 

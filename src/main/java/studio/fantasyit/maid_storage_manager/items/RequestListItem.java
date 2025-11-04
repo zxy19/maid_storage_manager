@@ -31,7 +31,6 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 import java.util.List;
 import java.util.Objects;
@@ -230,12 +229,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                         }
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                         item.set(DataComponentRegistry.REQUEST_STORAGE_BLOCK, storage);
-                        TourGuideTrigger.trigger(serverPlayer, "request_list_bind");
+//                        TourGuideTrigger.trigger(serverPlayer, "request_list_bind");
                     }
                 } else {
                     item.set(DataComponentRegistry.REQUEST_STORAGE_BLOCK, validTarget);
                     serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
-                    TourGuideTrigger.trigger(serverPlayer, "request_list_bind");
+                    //TODO bind Trigger
                 }
             }
             return InteractionResult.CONSUME;

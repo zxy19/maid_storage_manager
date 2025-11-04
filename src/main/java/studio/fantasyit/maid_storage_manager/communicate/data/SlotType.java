@@ -1,12 +1,20 @@
-package studio.fantasyit.maid_storage_manager.communicate;
+package studio.fantasyit.maid_storage_manager.communicate.data;
 
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
+import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -17,17 +25,25 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public enum SlotType {
-    ALL,
-    HEAD,
-    CHEST,
-    LEGS,
-    FEET,
-    MAIN_HAND,
-    OFF_HAND,
-    FLOWER,
-    ETA,
-    BAUBLE;
+    ALL(new ResourceLocation(MaidStorageManager.MODID, "slot/empty_slot_all")),
+    HEAD(InventoryMenu.EMPTY_ARMOR_SLOT_HELMET),
+    CHEST(InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE),
+    LEGS(InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS),
+    FEET(InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS),
+    MAIN_HAND(new ResourceLocation("minecraft", "item/empty_slot_sword")),
+    OFF_HAND(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD),
+    FLOWER(new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot")),
+    ETA(new ResourceLocation(MaidStorageManager.MODID, "slot/empty_slot_eta")),
+    BAUBLE(new ResourceLocation(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
 
+    private final ImageAsset icon;
+
+    SlotType(@Nullable ResourceLocation icon) {
+        this.icon = icon == null ? null : new ImageAsset(new ResourceLocation(
+                icon.getNamespace(),
+                "textures/" + icon.getPath() + ".png"
+        ), 0, 0, 16, 16, 16, 16);
+    }
 
     public List<ItemStack> getItemStacks(EntityMaid maid) {
         List<ItemStack> list = new ArrayList<>();
@@ -72,14 +88,15 @@ public enum SlotType {
                 CombinedInvWrapper availableInv = maid.getAvailableInv(false);
                 return resetSlotItemWithProcessAndCheckIfAnyChanged(process, availableInv, startIndex);
             }
-            case HEAD -> maid.setItemSlot(EquipmentSlot.HEAD, process.apply(maid.getItemBySlot(EquipmentSlot.HEAD),0));
-            case CHEST -> maid.setItemSlot(EquipmentSlot.CHEST, process.apply(maid.getItemBySlot(EquipmentSlot.CHEST),0));
-            case LEGS -> maid.setItemSlot(EquipmentSlot.LEGS, process.apply(maid.getItemBySlot(EquipmentSlot.LEGS),0));
-            case FEET -> maid.setItemSlot(EquipmentSlot.FEET, process.apply(maid.getItemBySlot(EquipmentSlot.FEET),0));
+            case HEAD -> maid.setItemSlot(EquipmentSlot.HEAD, process.apply(maid.getItemBySlot(EquipmentSlot.HEAD), 0));
+            case CHEST ->
+                    maid.setItemSlot(EquipmentSlot.CHEST, process.apply(maid.getItemBySlot(EquipmentSlot.CHEST), 0));
+            case LEGS -> maid.setItemSlot(EquipmentSlot.LEGS, process.apply(maid.getItemBySlot(EquipmentSlot.LEGS), 0));
+            case FEET -> maid.setItemSlot(EquipmentSlot.FEET, process.apply(maid.getItemBySlot(EquipmentSlot.FEET), 0));
             case MAIN_HAND ->
-                    maid.setItemSlot(EquipmentSlot.MAINHAND, process.apply(maid.getItemBySlot(EquipmentSlot.MAINHAND),0));
+                    maid.setItemSlot(EquipmentSlot.MAINHAND, process.apply(maid.getItemBySlot(EquipmentSlot.MAINHAND), 0));
             case OFF_HAND ->
-                    maid.setItemSlot(EquipmentSlot.OFFHAND, process.apply(maid.getItemBySlot(EquipmentSlot.OFFHAND),0));
+                    maid.setItemSlot(EquipmentSlot.OFFHAND, process.apply(maid.getItemBySlot(EquipmentSlot.OFFHAND), 0));
             case BAUBLE -> {
                 BaubleItemHandler bauble = maid.getMaidBauble();
                 return resetSlotItemWithProcessAndCheckIfAnyChanged(process, bauble, startIndex);
@@ -87,14 +104,16 @@ public enum SlotType {
             case FLOWER -> {
                 RangedWrapper inv = maid.getAvailableBackpackInv();
                 if (inv.getSlots() > 5)
-                    inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5),0));
+                    inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5), 0));
             }
             case ETA -> {
                 RangedWrapper inv = maid.getAvailableBackpackInv();
-                CombinedInvWrapper noLast = new CombinedInvWrapper(
-                        new RangedWrapper(inv, 0, 5),
-                        new RangedWrapper(inv, 6, inv.getSlots())
-                );
+                IItemHandlerModifiable noLast = inv.getSlots() == 6 ?
+                        new RangedWrapper(inv, 0, 5) :
+                        new CombinedInvWrapper(
+                                new RangedWrapper(inv, 0, 5),
+                                new RangedWrapper(inv, 6, inv.getSlots())
+                        );
                 return resetSlotItemWithProcessAndCheckIfAnyChanged(process, noLast, startIndex);
             }
         }
@@ -115,7 +134,7 @@ public enum SlotType {
     private Optional<Integer> resetSlotItemWithProcessAndCheckIfAnyChanged(BiFunction<ItemStack, Integer, ItemStack> process, IItemHandlerModifiable bauble, int startIndex) {
         for (int i = startIndex; i < bauble.getSlots(); i++) {
             int oCount = bauble.getStackInSlot(i).getCount();
-            ItemStack t = process.apply(bauble.getStackInSlot(i),i);
+            ItemStack t = process.apply(bauble.getStackInSlot(i), i);
             bauble.setStackInSlot(i, t);
             if (t.getCount() != oCount)
                 return Optional.of(i);
@@ -166,5 +185,27 @@ public enum SlotType {
             maid.setItemSlot(slot, itemStack.copyWithCount(finallyCount));
             return itemStack.copyWithCount(itemStack.getCount() - finallyCount);
         } else return itemStack;
+    }
+
+    public @Nullable ImageAsset icon() {
+        return this.icon;
+    }
+
+    public Component getName() {
+        return Component.translatable("slot.maid_storage_manager.communicate." + this.name().toLowerCase());
+    }
+
+    public void drawGold(GuiGraphics graphics, int x, int y) {
+        if (icon == null) return;
+        graphics.flush();
+        graphics.setColor(1.69f, 1.69f, 0.04f, 1.0f);
+        icon.blit(graphics, x + 1, y + 1);
+        graphics.flush();
+        icon.blit(graphics, x + 1, y);
+        graphics.flush();
+        graphics.setColor(2.57f, 2.03f, 0.07f, 1.0f);
+        icon.blit(graphics, x, y);
+        graphics.flush();
+        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }

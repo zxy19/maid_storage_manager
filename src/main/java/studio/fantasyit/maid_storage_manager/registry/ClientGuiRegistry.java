@@ -6,9 +6,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
-import studio.fantasyit.maid_storage_manager.menu.FilterScreen;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorScreen;
-import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideScreen;
+import studio.fantasyit.maid_storage_manager.menu.communicate.CommunicateMarkScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.brewing.BrewingCraftScreen;
@@ -18,7 +16,9 @@ import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftScre
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.StoneCutterCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftScreen;
-//import studio.fantasyit.maid_storage_manager.menu.craft.tacz.TaczCraftScreen;
+import studio.fantasyit.maid_storage_manager.menu.filter.FilterScreen;
+import studio.fantasyit.maid_storage_manager.menu.logistics.LogisticsGuideScreen;
+import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorScreen;
 
 @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientGuiRegistry {
@@ -37,5 +37,6 @@ public class ClientGuiRegistry {
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_BREWING.get(), BrewingCraftScreen::new);
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_STONE_CUTTER.get(), StoneCutterCraftScreen::new);
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_TACZ.get(), TaczCraftScreen::new);
+        event.register(GuiRegistry.COMMUNICATE_MARK_MENU.get(), CommunicateMarkScreen::new);
     }
 }

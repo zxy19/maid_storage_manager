@@ -8,7 +8,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.tuple.Pair;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 
