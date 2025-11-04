@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.api.communicate.data;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
 
 import java.util.HashMap;
 import java.util.List;

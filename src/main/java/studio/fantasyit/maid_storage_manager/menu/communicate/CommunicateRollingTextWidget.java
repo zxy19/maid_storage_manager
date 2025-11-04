@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu.container;
+package studio.fantasyit.maid_storage_manager.menu.communicate;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -9,11 +9,11 @@ import net.minecraft.network.chat.TextColor;
 
 import java.util.Optional;
 
-public class RollingTextWidget extends AbstractWidget {
+public class CommunicateRollingTextWidget extends AbstractWidget {
     private Component text;
     private int color = 0xffffffff;
 
-    public RollingTextWidget(int p_93629_, int p_93630_, int p_93631_, int p_93632_, Component p_93633_) {
+    public CommunicateRollingTextWidget(int p_93629_, int p_93630_, int p_93631_, int p_93632_, Component p_93633_) {
         super(p_93629_, p_93630_, p_93631_, p_93632_, p_93633_);
         text = p_93633_;
     }
@@ -23,10 +23,13 @@ public class RollingTextWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics p_282139_, int p_268034_, int p_268009_, float p_268085_) {
+    protected void renderWidget(GuiGraphics graphics, int p_268034_, int p_268009_, float p_268085_) {
         if (!visible) return;
+        graphics.flush();
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 5);
         renderScrollingString(
-                p_282139_,
+                graphics,
                 Minecraft.getInstance().font,
                 text,
                 getX(),
@@ -35,6 +38,7 @@ public class RollingTextWidget extends AbstractWidget {
                 getY() + getHeight(),
                 Optional.ofNullable(text.getStyle().getColor()).map(TextColor::getValue).orElse(color)
         );
+        graphics.pose().popPose();
     }
 
     public void setColor(int color) {

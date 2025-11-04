@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.api.communicate.step.base;
+package studio.fantasyit.maid_storage_manager.api.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;

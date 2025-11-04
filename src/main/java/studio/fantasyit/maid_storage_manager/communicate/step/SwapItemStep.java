@@ -1,11 +1,11 @@
-package studio.fantasyit.maid_storage_manager.api.communicate.step;
+package studio.fantasyit.maid_storage_manager.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.ActionResult;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IMeetActionStep;
-import studio.fantasyit.maid_storage_manager.communicate.SlotType;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.ActionResult;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.IMeetActionStep;
+import studio.fantasyit.maid_storage_manager.communicate.data.SlotType;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
@@ -53,6 +53,7 @@ public class SwapItemStep implements IMeetActionStep {
             finalCount.subtract(maxTransfer - remainNotTransfer.getCount());
             return itemStack.copyWithCount(itemStack.getCount() - maxTransfer + remainNotTransfer.getCount());
         });
+        index++;
         return ActionResult.CONTINUE;
     }
 }

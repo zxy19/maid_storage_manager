@@ -1,8 +1,7 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.request;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -22,7 +21,6 @@ import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilter {
     public Player player;
@@ -343,7 +341,6 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     @Override
     public void removed(Player p_38940_) {
         super.removed(p_38940_);
-        if (p_38940_ instanceof ServerPlayer p)
-            TourGuideTrigger.trigger(p, "item_selector_save");
+        //TODO trigger
     }
 }

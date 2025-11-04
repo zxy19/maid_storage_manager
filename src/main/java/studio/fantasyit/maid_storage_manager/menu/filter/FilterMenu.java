@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.filter;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;

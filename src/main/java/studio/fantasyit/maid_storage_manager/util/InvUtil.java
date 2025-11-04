@@ -5,6 +5,7 @@ import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -227,5 +228,15 @@ public class InvUtil {
                 }
             }
         }
+    }
+
+    public static boolean hasItem(IItemHandler inv, Item item) {
+        for (int i = 0; i < inv.getSlots(); i++) {
+            ItemStack stackInSlot = inv.getStackInSlot(i);
+            if (!stackInSlot.isEmpty() && stackInSlot.getItem() == item) {
+                return true;
+            }
+        }
+        return false;
     }
 }

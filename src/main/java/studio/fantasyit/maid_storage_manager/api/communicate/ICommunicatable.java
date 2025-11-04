@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
@@ -23,7 +23,10 @@ public interface ICommunicatable {
         for (IActionWish w : wish.wishes()) {
             if (!acceptedWishTypes.contains(w.getType()))
                 return null;
-            steps.addAll(w.getSteps());
+            List<IActionStep> steps1 = w.getSteps(handler, wish);
+            if (steps1 == null)
+                return null;
+            steps.addAll(steps1);
         }
         return new CommunicatePlan(steps, handler);
     }

@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.menu;
+package studio.fantasyit.maid_storage_manager.menu.logistics;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.SimpleContainer;

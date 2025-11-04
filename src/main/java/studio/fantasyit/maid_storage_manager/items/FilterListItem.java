@@ -20,7 +20,7 @@ import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.render.CustomItemRenderer;
-import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
+import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 

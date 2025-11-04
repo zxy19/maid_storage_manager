@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
@@ -331,7 +332,7 @@ public class InventoryListScreen extends Screen {
                     minecraft.setScreen(toSelectTarget);
                 } else {
                     InventoryListDataClient.setShowingInv(list.get(idx), 400);
-                    TourGuideTrigger.triggerClient(InventoryListTour.TRIGGER_CLICK_INV);
+                    TourGuideTrigger.triggerClient(InventoryListTour.TRIGGER_CLICK_INV,new CompoundTag());
                     minecraft.setScreen(null);
                 }
             }

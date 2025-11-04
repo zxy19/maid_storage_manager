@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;

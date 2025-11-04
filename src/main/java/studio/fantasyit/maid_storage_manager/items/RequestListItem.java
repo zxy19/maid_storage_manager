@@ -28,12 +28,11 @@ import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
+import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 import java.util.List;
 import java.util.Objects;
@@ -292,12 +291,12 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                         }
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                         tag.put(TAG_STORAGE, storage.toNbt());
-                        TourGuideTrigger.trigger(serverPlayer, "request_list_bind");
+                        //TODO bind Trigger
                     }
                 } else {
                     tag.put(TAG_STORAGE, validTarget.toNbt());
                     serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
-                    TourGuideTrigger.trigger(serverPlayer, "request_list_bind");
+                    //TODO bind Trigger
                 }
                 item.setTag(tag);
             }

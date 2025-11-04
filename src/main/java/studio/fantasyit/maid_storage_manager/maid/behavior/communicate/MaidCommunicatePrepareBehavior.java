@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
-import studio.fantasyit.maid_storage_manager.api.communicate.step.base.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 

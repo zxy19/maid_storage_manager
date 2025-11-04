@@ -49,5 +49,5 @@ public class ItemRegistry {
 
     public static final RegistryObject<Item> PROGRESS_PAD = item("progress_pad", ProgressPad::new);
 
-    public static final RegistryObject<Item> CONFIGURABLE_COMMUNICATE_MARK = item("configurable_communicate_mark", ConfigurableCommunicateMark::new);
+    public static final RegistryObject<Item> CONFIGURABLE_COMMUNICATE_MARK = item("configurable_communicate_terminal", ConfigurableCommunicateTerminal::new);
 }

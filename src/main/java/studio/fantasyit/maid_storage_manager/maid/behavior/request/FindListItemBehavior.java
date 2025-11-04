@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +17,6 @@ import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
-import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 import java.util.Map;
 import java.util.UUID;
@@ -63,8 +61,8 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
                         @NotNull ItemStack itemstack = maidInv.extractItem(i, 1, false);
                         maidInv.insertItem(i, maid.getMainHandItem(), false);
                         maid.setItemInHand(InteractionHand.MAIN_HAND, itemstack);
-                        if(maid.getOwner() instanceof ServerPlayer sp)
-                            TourGuideTrigger.trigger(sp, "request_list_take");
+                        //if(maid.getOwner() instanceof ServerPlayer sp)
+                        //TODO bind Trigger
                         break;
                     }
                 }

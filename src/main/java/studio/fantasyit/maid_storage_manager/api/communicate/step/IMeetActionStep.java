@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.api.communicate.step.base;
+package studio.fantasyit.maid_storage_manager.api.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
@@ -56,5 +56,11 @@ public interface IMeetActionStep extends IActionStep {
         if (!handler.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get()))
             return true;
         return false;
+    }
+
+    @Override
+    default void stop(EntityMaid wisher, EntityMaid handler) {
+        MemoryUtil.clearTarget(wisher);
+        MemoryUtil.clearTarget(handler);
     }
 }

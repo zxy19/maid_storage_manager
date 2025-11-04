@@ -38,9 +38,10 @@ public class MaidInteractItem extends Item {
                     inv = maid.getAvailableInv(false);
                 }
                 if (InvUtil.maxCanPlace(inv, itemStack) > 0) {
-                    int count = InvUtil.tryPlace(inv, itemStack).getCount();
-                    p_41399_.getMainHandItem().setCount(count);
+                    int count = InvUtil.tryPlace(inv, itemStack.copyWithCount(1)).getCount();
 
+                    if (count == 0)
+                        p_41399_.getMainHandItem().shrink(1);
 
                     if (inv instanceof BaubleItemHandler bh) {
                         Network.INSTANCE.send(

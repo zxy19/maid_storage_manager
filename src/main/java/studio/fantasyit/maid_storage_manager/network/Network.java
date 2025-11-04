@@ -36,14 +36,15 @@ import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
-import studio.fantasyit.maid_storage_manager.menu.ItemSelectorMenu;
-import studio.fantasyit.maid_storage_manager.menu.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
+import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
+import studio.fantasyit.maid_storage_manager.menu.logistics.LogisticsGuideMenu;
+import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Network {
@@ -390,6 +391,17 @@ public class Network {
                 (p, c) -> {
                     c.get().enqueueWork(() -> {
                         ShowCommonPacket.handle(p);
+                        c.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(14,
+                CommunicateMarkGuiPacket.class,
+                CommunicateMarkGuiPacket::toBytes,
+                CommunicateMarkGuiPacket::new,
+                (p, c) -> {
+                    c.get().enqueueWork(() -> {
+                        CommunicateMarkGuiPacket.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(Network::getLocalPlayer), p);
                         c.get().setPacketHandled(true);
                     });
                 }

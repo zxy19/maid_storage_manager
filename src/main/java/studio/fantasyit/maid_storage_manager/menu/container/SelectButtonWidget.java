@@ -45,7 +45,7 @@ public class SelectButtonWidget<T> extends AbstractWidget {
     @Override
     protected void renderWidget(GuiGraphics guiGraphics, int x, int y, float p) {
         if (!visible) return;
-        if (this.isHovered) option.hoverImage.blit(guiGraphics, getX(), getY());
+        if (this.isHovered && this.active) option.hoverImage.blit(guiGraphics, getX(), getY());
         else option.image.blit(guiGraphics, getX(), getY());
     }
 
@@ -64,7 +64,7 @@ public class SelectButtonWidget<T> extends AbstractWidget {
 
     @Override
     protected boolean isValidClickButton(int p_93652_) {
-        if(!visible) return false;
+        if (!visible) return false;
         return true;
     }
 
