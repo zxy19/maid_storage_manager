@@ -45,10 +45,16 @@ public class CommunicateUtil {
     public static boolean hasCommunicateRequest(EntityMaid maid) {
         return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.COMMUNICATE_REQUEST.get());
     }
+
     public static CommunicateHolder getCommunicateHolder(EntityMaid maid) {
         return maid.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get()).orElse(null);
     }
+
     public static CommunicateRequest getCommunicateRequest(EntityMaid maid) {
         return maid.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get()).orElse(null);
+    }
+
+    public static void clearHolder(EntityMaid maid) {
+        maid.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get());
     }
 }

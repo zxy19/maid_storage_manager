@@ -157,6 +157,10 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         return true;
     }
 
+    protected static boolean hasBauble(EntityMaid maid, ItemStack source) {
+        return hasBaubleAndAvailable(maid, source, false, false);
+    }
+
     protected static boolean hasBaubleAndAvailable(EntityMaid maid, ItemStack source, boolean requireAvailable, boolean reversed) {
         if (requireAvailable) {
             if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.VIEW)

@@ -26,6 +26,8 @@ import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
+import java.util.function.Consumer;
+
 public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveFilter {
     Player player;
     ItemStack itemStack;
@@ -36,6 +38,7 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
     SimpleContainer workCard = new SimpleContainer(1);
     boolean isManual;
     int selected = 0;
+    Consumer<CommunicateMarkGuiPacket> screenPacketHandler = null;
 
 
     public CommunicateMarkMenu(int windowId, Player player) {
@@ -65,6 +68,7 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
             tag.put("data", data.toNbt());
         else if (tag.contains("data"))
             tag.remove("data");
+        tag.putInt("cd", 0);
         itemStack.setTag(tag);
         ConfigurableCommunicateTerminal.setWorkCardItem(itemStack, workCard.getItem(0));
         sendPacketToOpposite(new CommunicateMarkGuiPacket(
@@ -73,6 +77,10 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
                 0,
                 item.toNbt()
         ));
+    }
+
+    public void setScreenPacketHandler(Consumer<CommunicateMarkGuiPacket> screenPacketHandler) {
+        this.screenPacketHandler = screenPacketHandler;
     }
 
     public void sendPacketToOpposite(CommunicateMarkGuiPacket packet) {
@@ -185,6 +193,7 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
                 if (selected == p.key) {
                     item = data.items.get(selected);
                 }
+                updateCurrentSelected();
             }
             case SLOT -> item.slot = SlotType.values()[p.value];
             case MANUAL -> isManual = p.value == 1;
@@ -193,18 +202,24 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
                 updateCurrentSelected();
             }
             case USE_ID -> {
-                ConfigurableCommunicateData configurableCommunicateData = TaskDefaultCommunicate.get(ResourceLocation.tryParse(CommunicateMarkGuiPacket.getStringFrom(p.data)));
+                ResourceLocation id = ResourceLocation.tryParse(CommunicateMarkGuiPacket.getStringFrom(p.data));
+                ConfigurableCommunicateData configurableCommunicateData = TaskDefaultCommunicate.get(id);
                 if (configurableCommunicateData != null) {
-                    data = ConfigurableCommunicateData.toFixedLength(configurableCommunicateData);
-                    for (int i = 0; i < 6; i++) {
-                        data.items.set(i, configurableCommunicateData.items.get(i));
+                    data = ConfigurableCommunicateData.toFixedLength(ConfigurableCommunicateData.fromNbt(configurableCommunicateData.toNbt()));
+                    for (int i = 0; i < data.items.size(); i++) {
+                        if (i != selected)
+                            sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.DATA, i, data.items.get(i).toNbt()));
                     }
+                    item = data.items.get(selected);
                     updateCurrentSelected();
                 }
+                isManual = !TaskDefaultCommunicate.DUMMY_AUTO_DETECT_TASK.equals(id);
             }
         }
-        if (p.type != CommunicateMarkGuiPacket.Type.SELECT && p.type != CommunicateMarkGuiPacket.Type.DATA)
+        if (p.type != CommunicateMarkGuiPacket.Type.DATA)
             save();
+        if (screenPacketHandler != null)
+            screenPacketHandler.accept(p);
     }
 
     public void updateCurrentSelected() {
