@@ -9,14 +9,14 @@ import studio.fantasyit.tour_guide.step.TourStepId;
 import studio.fantasyit.tour_guide.trigger.TriggerKey;
 
 public class InventoryListTour {
-    public static final ResourceLocation ID = new ResourceLocation(MaidStorageManager.MODID, "inventory_list");
-    public static final TourStepId<EntityMaid> STEP_MAID = new TourStepId<>(new ResourceLocation(MaidStorageManager.MODID, "inventory_list_maid"), EntityMaid.class);
-    public static final TourStepId<ItemStack> STEP_TARGET_ITEM = new TourStepId<>(new ResourceLocation(MaidStorageManager.MODID, "inventory_list_itemStack"), ItemStack.class);
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list");
+    public static final TourStepId<EntityMaid> STEP_MAID = new TourStepId<>(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list_maid"), EntityMaid.class);
+    public static final TourStepId<ItemStack> STEP_TARGET_ITEM = new TourStepId<>(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "inventory_list_itemstack"), ItemStack.class);
 
-    public static final TriggerKey<Boolean> TRIGGER_WRITE_INV = new TriggerKey<>(new ResourceLocation(MaidStorageManager.MODID, "maid_write_inv_list"), Boolean.class);
-    public static final TriggerKey<CompoundTag> TRIGGER_CLICK_INV = new TriggerKey<>(new ResourceLocation(MaidStorageManager.MODID, "player_click_inventory_list_item"), CompoundTag.class);
+    public static final TriggerKey<Boolean> TRIGGER_WRITE_INV = new TriggerKey<>(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "maid_write_inv_list"), Boolean.class);
+    public static final TriggerKey<CompoundTag> TRIGGER_CLICK_INV = new TriggerKey<>(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "player_click_inventory_list_item"), CompoundTag.class);
 
-    public static final ResourceLocation GUI_INVENTORY_SCREEN = new ResourceLocation(MaidStorageManager.MODID, "gui/inventory_list");
+    public static final ResourceLocation GUI_INVENTORY_SCREEN = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "gui/inventory_list");
 
 
 

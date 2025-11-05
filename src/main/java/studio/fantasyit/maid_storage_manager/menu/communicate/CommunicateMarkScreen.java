@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkMenu> {
-    private static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
+    private static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
 
     List<AbstractWidget> listItems = new ArrayList<>();
     EditBox maxValue;
@@ -368,7 +368,6 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
 
     @Override
     protected void renderBg(@NotNull GuiGraphics graphics, float p_97788_, int p_97789_, int p_97790_) {
-        renderBackground(graphics);
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
         graphics.blit(background,
@@ -389,7 +388,7 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                 CommunicateMarkGuiPacket.Type.SET_ITEM,
                 slot.getContainerSlot(),
                 0,
-                ItemStackUtil.saveStack(item)
+                ItemStackUtil.saveStack(menu.player.registryAccess(), item)
         ));
     }
 
@@ -423,7 +422,7 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
     }
 
     @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+    public boolean mouseScrolled(double p_94686_, double p_94687_, double dx, double p_94688_) {
         if (maxValue.isMouseOver(p_94686_, p_94687_))
             addValueToBox(maxValue, p_94688_);
         if (minValue.isMouseOver(p_94686_, p_94687_))
@@ -431,9 +430,9 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
         if (threshold.isMouseOver(p_94686_, p_94687_))
             addValueToBox(threshold, p_94688_);
         if (methodSelector.visible) {
-            return methodSelector.mouseScrolled(p_94686_, p_94687_, p_94688_);
+            return methodSelector.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+        return super.mouseScrolled(p_94686_, p_94687_, dx, p_94688_);
     }
 
     @Override

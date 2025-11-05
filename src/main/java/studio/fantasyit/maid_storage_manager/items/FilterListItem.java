@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
-import studio.fantasyit.maid_storage_manager.menu.FilterMenu;
+import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 
 import java.util.List;

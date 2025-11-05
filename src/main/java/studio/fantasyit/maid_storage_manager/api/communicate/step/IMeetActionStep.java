@@ -14,7 +14,7 @@ import studio.fantasyit.maid_storage_manager.util.PosUtil;
 import java.util.Map;
 
 public interface IMeetActionStep extends IActionStep {
-    public static final ResourceLocation CHECK_PATH_MEETING = new ResourceLocation("maid_storage_manager:meet");
+    public static final ResourceLocation CHECK_PATH_MEETING = ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "meet");
 
     @Override
     default boolean isAvailable(Map<ResourceLocation, Boolean> checks, EntityMaid wisher, EntityMaid handler) {

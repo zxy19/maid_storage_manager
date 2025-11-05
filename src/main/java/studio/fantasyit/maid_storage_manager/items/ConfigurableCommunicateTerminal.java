@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskIdle;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
@@ -27,8 +25,8 @@ import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.communicate.data.ConfigurableCommunicateData;
 import studio.fantasyit.maid_storage_manager.communicate.data.TaskDefaultCommunicate;
 import studio.fantasyit.maid_storage_manager.menu.communicate.CommunicateMarkMenu;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,14 +47,13 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
                 CommunicateUtil.clearHolder(maid);
             return;
         }
-        CompoundTag tag = baubleItem.getOrCreateTag();
-        tag.putString("task", maid.getTask().getUid().toString());
-        int cd = tag.getInt("cd");
+        baubleItem.set(DataComponentRegistry.COMMUNICATE_LAST_TASK, maid.getTask().getUid());
+        int cd = baubleItem.getOrDefault(DataComponentRegistry.COMMUNICATE_CD, 0);
         if (cd > 0) {
-            tag.putInt("cd", cd - 1);
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, cd - 1);
             return;
         } else {
-            tag.putInt("cd", 600);
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, 600);
         }
         ConfigurableCommunicateData data = getDataFrom(baubleItem, maid);
         if (data == null)
@@ -76,7 +73,7 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
     }
 
     public static ConfigurableCommunicateData getDataFrom(ItemStack stack, @Nullable EntityMaid maid) {
-        if (!stack.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get()))
+        if (!stack.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK))
             return null;
         if (!isManual(stack)) {
             if (maid == null) {
@@ -84,20 +81,17 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
             }
             return TaskDefaultCommunicate.get(maid.getTask().getUid());
         }
-        assert stack.getTag() != null;
-        return ConfigurableCommunicateData.fromNbt(stack.getTag().getCompound("data"));
+        return stack.get(DataComponentRegistry.COMMUNICATE_DATA);
     }
 
     public static boolean isManual(ItemStack stack) {
-        if (!stack.hasTag()) return false;
-        assert stack.getTag() != null;
-        return stack.getTag().getBoolean("manual");
+        return stack.getOrDefault(DataComponentRegistry.COMMUNICATE_MANUAL, false);
     }
 
     public static ResourceLocation getLastTaskId(ItemStack stack) {
-        if (!stack.hasTag()) return null;
-        assert stack.getTag() != null;
-        return ResourceLocation.tryParse(stack.getTag().getString("task"));
+        if (!stack.has(DataComponentRegistry.COMMUNICATE_LAST_TASK))
+            return null;
+        return stack.get(DataComponentRegistry.COMMUNICATE_LAST_TASK);
     }
 
     @Override
@@ -115,7 +109,7 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown())
-                NetworkHooks.openScreen(serverPlayer, this, (buffer) -> {
+                serverPlayer.openMenu(this, (buffer) -> {
                     buffer.writeInt(-1);
                 });
             return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
@@ -125,17 +119,12 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
     }
 
     public static ItemStack getWorkCardItem(ItemStack item) {
-        if (!item.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get()))
+        if (!item.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK))
             return ItemStack.EMPTY;
-        if (!item.hasTag())
-            return ItemStack.EMPTY;
-        assert item.getTag() != null;
-        return ItemStackUtil.parseStack(item.getTag().getCompound("work_card"));
+        return item.getOrDefault(DataComponentRegistry.COMMUNICATE_WORK_CARD, ItemStack.EMPTY);
     }
 
     public static void setWorkCardItem(ItemStack item, ItemStack workCard) {
-        if (!item.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get()))
-            return;
-        item.getOrCreateTag().put("work_card", ItemStackUtil.saveStack(workCard));
+        item.set(DataComponentRegistry.COMMUNICATE_WORK_CARD, workCard);
     }
 }

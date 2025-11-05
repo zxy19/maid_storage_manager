@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class CommunicateMethodSelector extends AbstractWidget {
 
 
-    static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
+    static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
     static final ImageAsset BACK1 = ImageAsset.from4Point(background, 219, 64, 245, 150);
     static final ImageAsset BACK2 = ImageAsset.from4Point(background, 219, 151, 244, 237);
     static final ImageAsset MANUAL = ImageAsset.from4Point(background, 176, 32, 218, 47);
@@ -155,7 +155,7 @@ public class CommunicateMethodSelector extends AbstractWidget {
     long lastRollTick = 0;
 
     @Override
-    public boolean mouseScrolled(double p_94734_, double p_94735_, double p_94736_) {
+    public boolean mouseScrolled(double p_94734_, double p_94735_, double dx, double p_94736_) {
         long currentTime = System.currentTimeMillis();
         if (lastRollTick + 50 > currentTime) {
             return false;

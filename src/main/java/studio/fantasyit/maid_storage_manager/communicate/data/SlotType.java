@@ -9,9 +9,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.items.wrapper.RangedWrapper;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.RangedWrapper;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
@@ -25,21 +25,21 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public enum SlotType {
-    ALL(new ResourceLocation(MaidStorageManager.MODID, "slot/empty_slot_all")),
+    ALL(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_all")),
     HEAD(InventoryMenu.EMPTY_ARMOR_SLOT_HELMET),
     CHEST(InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE),
     LEGS(InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS),
     FEET(InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS),
-    MAIN_HAND(new ResourceLocation("minecraft", "item/empty_slot_sword")),
+    MAIN_HAND(ResourceLocation.fromNamespaceAndPath("minecraft", "item/empty_slot_sword")),
     OFF_HAND(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD),
-    FLOWER(new ResourceLocation(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot")),
-    ETA(new ResourceLocation(MaidStorageManager.MODID, "slot/empty_slot_eta")),
-    BAUBLE(new ResourceLocation(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
+    FLOWER(ResourceLocation.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot")),
+    ETA(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_eta")),
+    BAUBLE(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
 
     private final ImageAsset icon;
 
     SlotType(@Nullable ResourceLocation icon) {
-        this.icon = icon == null ? null : new ImageAsset(new ResourceLocation(
+        this.icon = icon == null ? null : new ImageAsset(ResourceLocation.fromNamespaceAndPath(
                 icon.getNamespace(),
                 "textures/" + icon.getPath() + ".png"
         ), 0, 0, 16, 16, 16, 16);

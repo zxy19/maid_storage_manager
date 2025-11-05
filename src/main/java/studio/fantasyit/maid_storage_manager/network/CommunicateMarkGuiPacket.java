@@ -2,10 +2,29 @@ package studio.fantasyit.maid_storage_manager.network;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.communicate.CommunicateMarkMenu;
 
-public class CommunicateMarkGuiPacket {
+public class CommunicateMarkGuiPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<CommunicateMarkGuiPacket> TYPE = new CustomPacketPayload.Type<>(
+            ResourceLocation.fromNamespaceAndPath(
+                    MaidStorageManager.MODID, "communicate_mark_gui_packet"
+            )
+    );
+    public static final StreamCodec<? super RegistryFriendlyByteBuf, CommunicateMarkGuiPacket> STREAM_CODEC = StreamCodec.of(
+            (t, o) -> o.toBytes(t),
+            CommunicateMarkGuiPacket::new
+    );
+
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
 
     public enum Type {
         MAX,

@@ -15,7 +15,7 @@ import java.util.List;
 
 public record RequestItemWish(List<ItemStack> marked, ItemStackUtil.MATCH_TYPE match,
                               SlotType slot) implements IActionWish {
-    public static final ResourceLocation TYPE = new ResourceLocation("maid_storage_manager", "request_item");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "request_item");
 
     @Override
     public ResourceLocation getType() {

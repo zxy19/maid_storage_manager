@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.communicate.wish.PlaceItemWish;
 import studio.fantasyit.maid_storage_manager.communicate.wish.RequestItemWish;
@@ -75,7 +76,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class StorageManageTask implements IMaidTask {
+public class StorageManageTask implements IMaidTask, ICommunicatable {
     public static ResourceLocation TASK_ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "storage_manage");
 
     @Override

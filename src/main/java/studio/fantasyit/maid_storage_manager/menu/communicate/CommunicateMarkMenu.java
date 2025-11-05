@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.communicate.data.ConfigurableCommunicateData;
 import studio.fantasyit.maid_storage_manager.communicate.data.SlotType;
@@ -21,7 +21,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.ISaveFilter;
 import studio.fantasyit.maid_storage_manager.menu.container.SimpleSlot;
 import studio.fantasyit.maid_storage_manager.network.CommunicateMarkGuiPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -45,7 +45,7 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
         super(GuiRegistry.COMMUNICATE_MARK_MENU.get(), windowId);
         this.player = player;
         itemStack = player.getMainHandItem();
-        if (itemStack.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get()))
+        if (itemStack.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK))
             data = ConfigurableCommunicateTerminal.getDataFrom(player.getMainHandItem(), null);
         data = ConfigurableCommunicateData.toFixedLength(data);
         isManual = ConfigurableCommunicateTerminal.isManual(itemStack);
@@ -62,20 +62,18 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
         for (int i = 0; i < 8; i++)
             item.requires.set(i, filteredItems.getItem(i));
         data.items.set(selected, item);
-        CompoundTag tag = itemStack.getOrCreateTag();
-        tag.putBoolean("manual", isManual);
+        itemStack.set(DataComponentRegistry.COMMUNICATE_MANUAL, isManual);
         if (isManual)
-            tag.put("data", data.toNbt());
-        else if (tag.contains("data"))
-            tag.remove("data");
-        tag.putInt("cd", 0);
-        itemStack.setTag(tag);
+            itemStack.set(DataComponentRegistry.COMMUNICATE_DATA, data);
+        else if (itemStack.has(DataComponentRegistry.COMMUNICATE_DATA))
+            itemStack.remove(DataComponentRegistry.COMMUNICATE_DATA);
+        itemStack.set(DataComponentRegistry.COMMUNICATE_CD, 0);
         ConfigurableCommunicateTerminal.setWorkCardItem(itemStack, workCard.getItem(0));
         sendPacketToOpposite(new CommunicateMarkGuiPacket(
                 CommunicateMarkGuiPacket.Type.DATA,
                 selected,
                 0,
-                item.toNbt()
+                item.toNbt(player.registryAccess())
         ));
     }
 
@@ -85,9 +83,9 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
 
     public void sendPacketToOpposite(CommunicateMarkGuiPacket packet) {
         if (player.level().isClientSide)
-            Network.INSTANCE.sendToServer(packet);
+            PacketDistributor.sendToServer(packet);
         else
-            Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) player), packet);
+            PacketDistributor.sendToPlayer((ServerPlayer) player, packet);
     }
 
     private void initSlots() {
@@ -154,7 +152,7 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
                 int containerSize = this.filteredItems.getContainerSize();
                 boolean found = false;
                 for (int i = 0; i < containerSize; i++)
-                    if (ItemStack.isSameItemSameTags(this.filteredItems.getItem(i), slot.getItem()))
+                    if (ItemStackUtil.isSame(this.filteredItems.getItem(i), slot.getItem(), ItemStackUtil.MATCH_TYPE.MATCHING))
                         found = true;
                 if (!found) {
                     for (int i = 0; i < containerSize; i++) {
@@ -175,13 +173,13 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
             case MIN -> item.min = p.value;
             case THRESHOLD -> item.thresholdCount = p.value;
             case SET_ITEM -> {
-                item.requires.set(p.key, ItemStackUtil.parseStack(p.data));
+                item.requires.set(p.key, ItemStackUtil.parseStack(player.registryAccess(), p.data));
                 updateCurrentSelected();
             }
             case SET_ITEMS -> {
                 ListTag list = p.data.getList("list", CompoundTag.TAG_COMPOUND);
                 for (int i = 0; i < Math.min(list.size(), item.requires.size()); i++) {
-                    ItemStack stack = ItemStackUtil.parseStack(list.getCompound(i));
+                    ItemStack stack = ItemStackUtil.parseStack(player.registryAccess(), list.getCompound(i));
                     item.requires.set(i, stack);
                 }
                 updateCurrentSelected();
@@ -189,7 +187,7 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
             case MATCH -> item.match = ItemStackUtil.MATCH_TYPE.values()[p.value];
             case WHITE_MODE -> item.whiteMode = p.value == 1;
             case DATA -> {
-                data.items.set(p.key, ConfigurableCommunicateData.Item.fromNbt(p.data));
+                data.items.set(p.key, ConfigurableCommunicateData.Item.fromNbt(p.data, player.registryAccess()));
                 if (selected == p.key) {
                     item = data.items.get(selected);
                 }
@@ -205,10 +203,10 @@ public class CommunicateMarkMenu extends AbstractContainerMenu implements ISaveF
                 ResourceLocation id = ResourceLocation.tryParse(CommunicateMarkGuiPacket.getStringFrom(p.data));
                 ConfigurableCommunicateData configurableCommunicateData = TaskDefaultCommunicate.get(id);
                 if (configurableCommunicateData != null) {
-                    data = ConfigurableCommunicateData.toFixedLength(ConfigurableCommunicateData.fromNbt(configurableCommunicateData.toNbt()));
+                    data = ConfigurableCommunicateData.toFixedLength(configurableCommunicateData.copy());
                     for (int i = 0; i < data.items.size(); i++) {
                         if (i != selected)
-                            sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.DATA, i, data.items.get(i).toNbt()));
+                            sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.DATA, i, data.items.get(i).toNbt(player.registryAccess())));
                     }
                     item = data.items.get(selected);
                     updateCurrentSelected();

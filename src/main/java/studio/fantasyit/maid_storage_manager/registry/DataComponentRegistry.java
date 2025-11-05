@@ -8,11 +8,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.communicate.data.ConfigurableCommunicateData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
@@ -126,6 +128,17 @@ public class DataComponentRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> PROGRESS_PAD_SELECTING = DATA_COMPONENTS
             .register("progress_pad_selecting", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
     //endregion
+    //region Communicate
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ResourceLocation>> COMMUNICATE_LAST_TASK = DATA_COMPONENTS
+            .register("communicate_last_task", () -> DataComponentType.<ResourceLocation>builder().persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> COMMUNICATE_CD = DATA_COMPONENTS
+            .register("communicate_cd", () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ConfigurableCommunicateData>> COMMUNICATE_DATA = DATA_COMPONENTS
+            .register("communicate_data", () -> DataComponentType.<ConfigurableCommunicateData>builder().persistent(ConfigurableCommunicateData.CODEC).networkSynchronized(ConfigurableCommunicateData.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> COMMUNICATE_MANUAL = DATA_COMPONENTS
+            .register("communicate_manual", () -> DataComponentType.<Boolean>builder().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStack>> COMMUNICATE_WORK_CARD = DATA_COMPONENTS
+            .register("communicate_work_card", () -> DataComponentType.<ItemStack>builder().persistent(ItemStack.CODEC).networkSynchronized(ItemStack.STREAM_CODEC).build());
 
     public static void register(IEventBus bus) {
         DATA_COMPONENTS.register(bus);

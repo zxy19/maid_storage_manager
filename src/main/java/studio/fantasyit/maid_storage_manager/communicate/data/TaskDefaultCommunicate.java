@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.event.CollectCommunicateDataEvent;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class TaskDefaultCommunicate {
-    public static final ResourceLocation DUMMY_AUTO_DETECT_TASK = new ResourceLocation(MaidStorageManager.MODID, "auto_detect");
-    public static final ResourceLocation DUMMY_USE_CURRENT_DATA = new ResourceLocation(MaidStorageManager.MODID, "current");
+    public static final ResourceLocation DUMMY_AUTO_DETECT_TASK = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "auto_detect");
+    public static final ResourceLocation DUMMY_USE_CURRENT_DATA = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "current");
 
     private static final Map<ResourceLocation, Component> translations = new HashMap<>();
     private static final Map<ResourceLocation, ConfigurableCommunicateData> taskDefaultCommunicateData = new HashMap<>();
@@ -30,7 +30,7 @@ public class TaskDefaultCommunicate {
         translations.put(DUMMY_USE_CURRENT_DATA, Component.translatable("maid_storage_manager.task.use_current_data"));
         CollectCommunicateDataEvent event = new CollectCommunicateDataEvent(taskDefaultCommunicateData, translations);
         fireInternal(event);
-        MinecraftForge.EVENT_BUS.post(event);
+        NeoForge.EVENT_BUS.post(event);
     }
 
     private static void fireInternal(CollectCommunicateDataEvent event) {

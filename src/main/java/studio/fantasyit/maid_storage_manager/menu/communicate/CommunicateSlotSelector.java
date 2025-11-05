@@ -28,7 +28,7 @@ public class CommunicateSlotSelector extends AbstractWidget {
         active = true;
     }
 
-    static final ResourceLocation background = new ResourceLocation(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
+    static final ResourceLocation background = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
     static final ImageAsset SLOT = new ImageAsset(background, 237, 32, 18, 18);
     static final ImageAsset SLOT_HIGHLIGHT = new ImageAsset(background, 219, 32, 18, 18);
     static final ImageAsset BACK1 = ImageAsset.from4Point(background, 176, 64, 216, 132);

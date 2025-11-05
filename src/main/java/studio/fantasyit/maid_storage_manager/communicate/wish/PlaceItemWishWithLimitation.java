@@ -20,7 +20,7 @@ import java.util.List;
 public record PlaceItemWishWithLimitation(List<Pair<ItemStack, Integer>> marked,
                                           SlotType slot,
                                           ItemStackUtil.MATCH_TYPE match) implements IActionWish {
-    public static final ResourceLocation TYPE = new ResourceLocation("maid_storage_manager:place_item");
+    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "place_item");
 
     @Override
     public ResourceLocation getType() {

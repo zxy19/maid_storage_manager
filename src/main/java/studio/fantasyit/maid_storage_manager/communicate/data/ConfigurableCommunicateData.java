@@ -1,8 +1,14 @@
 package studio.fantasyit.maid_storage_manager.communicate.data;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +22,67 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigurableCommunicateData {
+    public static final Codec<ConfigurableCommunicateData> CODEC = RecordCodecBuilder.create(instance -> instance
+            .group(
+                    Codec.list(Item.CODEC)
+                            .fieldOf("items")
+                            .forGetter(t -> t.items)
+            ).apply(instance, ConfigurableCommunicateData::new)
+    );
+    public static final StreamCodec<RegistryFriendlyByteBuf, ConfigurableCommunicateData> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.collection(ArrayList::new, Item.STREAM_CODEC),
+            (ConfigurableCommunicateData t) -> t.items,
+            ConfigurableCommunicateData::new
+    );
+
     public static class Item {
+        public static final Codec<Item> CODEC = RecordCodecBuilder.create(instance -> instance
+                .group(
+                        Codec.list(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED)
+                                .fieldOf("requires")
+                                .forGetter(t -> t.requires),
+                        Codec.BOOL
+                                .fieldOf("whiteMode")
+                                .forGetter(t -> t.whiteMode),
+                        Codec.STRING
+                                .fieldOf("match")
+                                .xmap(ItemStackUtil.MATCH_TYPE::valueOf, ItemStackUtil.MATCH_TYPE::name)
+                                .forGetter(t -> t.match),
+                        Codec.STRING
+                                .fieldOf("slot")
+                                .xmap(SlotType::valueOf, SlotType::name)
+                                .forGetter(t -> t.slot),
+                        Codec.INT
+                                .fieldOf("max")
+                                .forGetter(t -> t.max),
+                        Codec.INT
+                                .fieldOf("min")
+                                .forGetter(t -> t.min),
+                        Codec.INT
+                                .fieldOf("thresholdCount")
+                                .forGetter(t -> t.thresholdCount)
+                ).apply(instance, Item::new)
+        );
+        public static final StreamCodec<RegistryFriendlyByteBuf, Item> STREAM_CODEC = StreamCodec.of(
+                (t, o) -> {
+                    t.writeCollection(o.requires, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
+                    t.writeBoolean(o.whiteMode);
+                    t.writeUtf(o.match.name());
+                    t.writeUtf(o.slot.name());
+                    t.writeInt(o.max);
+                    t.writeInt(o.min);
+                    t.writeInt(o.thresholdCount);
+                },
+                (t) -> new Item(
+                        (ArrayList) t.readCollection(ArrayList::new, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
+                        t.readBoolean(),
+                        ItemStackUtil.MATCH_TYPE.valueOf(t.readUtf()),
+                        SlotType.valueOf(t.readUtf()),
+                        t.readInt(),
+                        t.readInt(),
+                        t.readInt()
+                )
+        );
         public List<ItemStack> requires;
         public boolean whiteMode;
         public ItemStackUtil.MATCH_TYPE match;
@@ -35,11 +101,11 @@ public class ConfigurableCommunicateData {
             this.thresholdCount = thresholdCount;
         }
 
-        public CompoundTag toNbt() {
+        public CompoundTag toNbt(HolderLookup.Provider p) {
             CompoundTag tag = new CompoundTag();
             ListTag requireTags = new ListTag();
             for (ItemStack req : requires) {
-                requireTags.add(ItemStackUtil.saveStack(req));
+                requireTags.add(ItemStackUtil.saveStack(p,req));
             }
             tag.put("requires", requireTags);
             tag.putBoolean("whiteMode", whiteMode);
@@ -51,11 +117,11 @@ public class ConfigurableCommunicateData {
             return tag;
         }
 
-        public static Item fromNbt(CompoundTag tag) {
+        public static Item fromNbt(CompoundTag tag, HolderLookup.Provider p) {
             List<ItemStack> list = new ArrayList<>();
             ListTag requires = tag.getList("requires", 10);
             for (int i = 0; i < requires.size(); i++) {
-                list.add(ItemStackUtil.parseStack(requires.getCompound(i)));
+                list.add(ItemStackUtil.parseStack(p,requires.getCompound(i)));
             }
             return new Item(
                     list,
@@ -79,6 +145,41 @@ public class ConfigurableCommunicateData {
                     -1
             );
         }
+
+        public Item copy() {
+            return new Item(
+                    requires.stream().map(ItemStack::copy).toList(),
+                    whiteMode,
+                    match,
+                    slot,
+                    max,
+                    min,
+                    thresholdCount
+            );
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Item item) {
+                return item.requires.equals(requires) &&
+                        item.whiteMode == whiteMode &&
+                        item.match == match &&
+                        item.slot == slot &&
+                        item.max == max &&
+                        item.min == min &&
+                        item.thresholdCount == thresholdCount;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 0;
+            for (ItemStack itemStack : requires) {
+                hash = hash * 17 + itemStack.hashCode();
+            }
+            return hash * 31 + (whiteMode ? 1 : 0) * 1007 + match.hashCode() * 1001 + slot.hashCode() * 1003 + max * 997 + min * 37 + thresholdCount * 17;
+        }
     }
 
     public List<Item> items;
@@ -87,23 +188,28 @@ public class ConfigurableCommunicateData {
         this.items = items;
     }
 
-    public CompoundTag toNbt() {
+
+    public CompoundTag toNbt(HolderLookup.Provider p) {
         CompoundTag tag = new CompoundTag();
         ListTag itemsTag = new ListTag();
         for (Item item : items) {
-            itemsTag.add(item.toNbt());
+            itemsTag.add(item.toNbt(p));
         }
         tag.put("items", itemsTag);
         return tag;
     }
 
-    public static ConfigurableCommunicateData fromNbt(CompoundTag tag) {
+    public static ConfigurableCommunicateData fromNbt(CompoundTag tag, HolderLookup.Provider p) {
         List<Item> list = new ArrayList<>();
         ListTag itemsTag = tag.getList("items", 10);
         for (int i = 0; i < itemsTag.size(); i++) {
-            list.add(Item.fromNbt(itemsTag.getCompound(i)));
+            list.add(Item.fromNbt(itemsTag.getCompound(i), p));
         }
         return new ConfigurableCommunicateData(list);
+    }
+
+    public ConfigurableCommunicateData copy() {
+        return new ConfigurableCommunicateData(items.stream().map(Item::copy).toList());
     }
 
     public List<IActionWish> buildWish(EntityMaid maid) {
@@ -203,5 +309,18 @@ public class ConfigurableCommunicateData {
             }
         }
         return new ConfigurableCommunicateData(fixedLengthItems);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ConfigurableCommunicateData ccd) {
+            return ccd.items.equals(this.items);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return items.hashCode();
     }
 }

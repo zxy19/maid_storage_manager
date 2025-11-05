@@ -31,7 +31,7 @@ public class GuiRegistry {
     public static final DeferredHolder<MenuType<?>, MenuType<LogisticsGuideMenu>> LOGISTICS_GUIDE_MENU = MENU_TYPES.register("logistics_guide",
             () -> IMenuTypeExtension.create((windowId, inv, data) -> new LogisticsGuideMenu(windowId, inv.player)));
     public static final DeferredHolder<MenuType<?>, MenuType<CommunicateMarkMenu>> COMMUNICATE_MARK_MENU = MENU_TYPES.register("craft_guide_menu",
-            () -> IForgeMenuType.create((windowId, inv, data) -> new CommunicateMarkMenu(windowId, inv.player)));
+            () -> IMenuTypeExtension.create((windowId, inv, data) -> new CommunicateMarkMenu(windowId, inv.player)));
     public static final DeferredHolder<MenuType<?>, MenuType<CommonCraftMenu>> CRAFT_GUIDE_MENU_COMMON = MENU_TYPES.register("craft_guide_menu_common",
             () -> IMenuTypeExtension.create((windowId, inv, data) -> new CommonCraftMenu(windowId, inv.player)));
     public static final DeferredHolder<MenuType<?>, MenuType<CraftingTableCraftMenu>> CRAFT_GUIDE_MENU_CRAFTING_TABLE = MENU_TYPES.register("craft_guide_menu_crafting_table",
