@@ -41,8 +41,9 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
         if (!Conditions.takingRequestList(maid)) return false;
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         if (!InvUtil.hasAnyFree(maid.getAvailableInv(false))) return false;
+        if (context == null) return false;
         if (!canPick) return true;
-        return context != null && !context.isDone();
+        return !context.isDone();
     }
 
     @Override
