@@ -84,8 +84,8 @@ public class CommunicateMethodSelector extends AbstractWidget {
             if (methods.get(i).equals(id)) {
                 currentId = i;
                 if (currentId >= methods.size() - 5) {
-                    currentId = methods.size() - 5;
                     mOffset = currentId - methods.size() + 5;
+                    currentId = methods.size() - 5;
                 } else {
                     mOffset = 0;
                 }
@@ -123,7 +123,7 @@ public class CommunicateMethodSelector extends AbstractWidget {
     }
 
     public ResourceLocation getSelected() {
-        return methods.get(currentId);
+        return methods.get(currentId + mOffset);
     }
 
     @Override

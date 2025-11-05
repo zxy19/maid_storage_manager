@@ -44,8 +44,11 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
     public void onTick(EntityMaid maid, ItemStack baubleItem) {
         if (maid.level().isClientSide)
             return;
-        if (CommunicateUtil.hasCommunicateHolder(maid))
+        if (CommunicateUtil.hasCommunicateHolder(maid)) {
+            if (!CommunicateUtil.getCommunicateHolder(maid).isValid())
+                CommunicateUtil.clearHolder(maid);
             return;
+        }
         CompoundTag tag = baubleItem.getOrCreateTag();
         tag.putString("task", maid.getTask().getUid().toString());
         int cd = tag.getInt("cd");
@@ -59,10 +62,11 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
         if (data == null)
             return;
         List<IActionWish> iActionWishes = data.buildWish(maid);
+        ItemStack workCard = getWorkCardItem(baubleItem);
         Optional<CommunicatePlan> communicatePlan = CommunicateUtil.sendCommunicateWishAndGetPlan(
                 maid,
                 new CommunicateWish(maid, iActionWishes),
-                plan -> true
+                plan -> workCard.isEmpty() || WorkCardItem.hasBauble(plan.handler(), workCard)
         );
         communicatePlan.ifPresent(plan -> {
             if (plan.handler().getTask() instanceof ICommunicatable ic) {

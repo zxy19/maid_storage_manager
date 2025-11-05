@@ -40,6 +40,7 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
     CommunicateMethodSelector methodSelector;
     CommunicateRollingTextWidget slotText;
     CommunicateRollingTextWidget btnManualText;
+    boolean internalUpdating = false;
 
     public CommunicateMarkScreen(CommunicateMarkMenu p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
@@ -55,6 +56,14 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
         addInputs();
         addButtons();
         addSelector();
+        menu.setScreenPacketHandler(this::handlePacket);
+    }
+
+    private void handlePacket(CommunicateMarkGuiPacket communicateMarkGuiPacket) {
+        if (communicateMarkGuiPacket.type == CommunicateMarkGuiPacket.Type.DATA) {
+            if (communicateMarkGuiPacket.key == menu.selected)
+                reloadFromData();
+        }
     }
 
     private void addMainList() {
@@ -72,18 +81,24 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                         menu.selected = idx;
                         menu.updateCurrentSelected();
                         menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.SELECT, idx));
-                        maxValue.setValue(String.valueOf(menu.item.max));
-                        minValue.setValue(String.valueOf(menu.item.min));
-                        threshold.setValue(String.valueOf(menu.item.thresholdCount));
-                        btnMatchNbt.setOption(null);
-                        btnWhitelist.setOption(null);
-                        btnSlot.setOption(null);
+                        reloadFromData();
                     }
             );
             listItems.add(communicateListItemWidget);
             addRenderableWidget(communicateListItemWidget);
             y += 16;
         }
+    }
+
+    private void reloadFromData() {
+        internalUpdating = true;
+        maxValue.setValue(String.valueOf(menu.item.max));
+        minValue.setValue(String.valueOf(menu.item.min));
+        threshold.setValue(String.valueOf(menu.item.thresholdCount));
+        btnMatchNbt.setOption(null);
+        btnWhitelist.setOption(null);
+        btnSlot.setOption(null);
+        internalUpdating = false;
     }
 
     private void addInputs() {
@@ -107,15 +122,18 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                 Component.literal("")));
         initBox(maxValue, menu.item.max, Component.translatable("gui.maid_storage_manager.communicate_terminal.max"), v -> {
             menu.item.max = v;
-            menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.MAX, 0, v));
+            if (!internalUpdating)
+                menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.MAX, 0, v));
         });
         initBox(minValue, menu.item.min, Component.translatable("gui.maid_storage_manager.communicate_terminal.min"), v -> {
             menu.item.min = v;
-            menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.MIN, 0, v));
+            if (!internalUpdating)
+                menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.MIN, 0, v));
         });
         initBox(threshold, menu.item.thresholdCount, Component.translatable("gui.maid_storage_manager.communicate_terminal.threshold"), v -> {
             menu.item.thresholdCount = v;
-            menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.THRESHOLD, 0, v));
+            if (!internalUpdating)
+                menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.THRESHOLD, 0, v));
         });
     }
 
@@ -286,7 +304,7 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                 menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.USE_ID, 0, CommunicateMarkGuiPacket.singleValue(method.toString())));
             }
             btnManual.setOption(new SelectButtonWidget.Option<>(method, MANUAL, MANUAL_HOVER, Component.empty()));
-            menu.sendPacketToOpposite(new CommunicateMarkGuiPacket(CommunicateMarkGuiPacket.Type.MANUAL, 0, menu.isManual ? 1 : 0));
+            btnManualText.setText(TaskDefaultCommunicate.getTranslate(method));
             activateOrDe(menu.isManual);
         });
         addRenderableWidget(methodSelector);

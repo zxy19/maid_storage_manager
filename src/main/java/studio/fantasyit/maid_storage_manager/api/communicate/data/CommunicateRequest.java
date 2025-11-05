@@ -15,10 +15,18 @@ public record CommunicateRequest(
         UUID requestId,
         MutableInt currentStep,
         MutableBoolean prepared,
-        MutableBoolean working
+        MutableBoolean working,
+        MutableInt tickToTimeOut
 ) {
     public static CommunicateRequest create(CommunicatePlan plan, EntityMaid wisher) {
-        return new CommunicateRequest(plan, wisher, plan.handler(), UUID.randomUUID(), new MutableInt(0), new MutableBoolean(false), new MutableBoolean(false));
+        return new CommunicateRequest(plan,
+                wisher,
+                plan.handler(),
+                UUID.randomUUID(),
+                new MutableInt(0),
+                new MutableBoolean(false),
+                new MutableBoolean(false),
+                new MutableInt(1200));
     }
 
     public boolean isFinished() {
@@ -35,13 +43,17 @@ public record CommunicateRequest(
         currentStep.increment();
         prepared.setValue(false);
         working.setValue(false);
+        resetTimeout();
     }
 
     public void prepare() {
         prepared.setValue(true);
+        resetTimeout();
     }
+
     public void startWorking() {
         working.setValue(true);
+        resetTimeout();
     }
 
     public boolean isPrepared() {
@@ -71,5 +83,17 @@ public record CommunicateRequest(
         //noinspection OptionalGetWithoutIsPresent
         return wisher.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get()).get().requestId().equals(requestId) &&
                 handler.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get()).get().requestId().equals(requestId);
+    }
+
+    public void resetTimeout() {
+        tickToTimeOut.setValue(1200);
+    }
+
+    public void tick() {
+        if (tickToTimeOut.intValue() > 0) {
+            tickToTimeOut.decrement();
+        } else {
+            stopAndClear();
+        }
     }
 }
