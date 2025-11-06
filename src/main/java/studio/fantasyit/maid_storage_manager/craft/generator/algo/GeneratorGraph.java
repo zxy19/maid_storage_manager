@@ -230,6 +230,8 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     }
 
     public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        if (RecipeUtil.shouldSkip(id, ingredients, ingredientCounts, output))
+            return;
         addRecipeQueue.add(new AddRecipeData(
                         id,
                         ingredients,
