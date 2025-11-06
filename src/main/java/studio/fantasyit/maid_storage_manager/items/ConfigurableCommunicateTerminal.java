@@ -55,7 +55,7 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
         if (cd > 0) {
             if (CommunicateUtil.hasLastResult(maid) && baubleItem.has(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID)) {
                 Pair<UUID, Boolean> lastResult = CommunicateUtil.getLastResult(maid);
-                if (lastResult.getA().equals(baubleItem.get(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID) && lastResult.getB()) {
+                if (lastResult.getA().equals(baubleItem.get(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID)) && lastResult.getB()) {
                     baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, Config.communicateCDFinish);
                 }
                 CommunicateUtil.clearLastResult(maid);
@@ -70,7 +70,7 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
             return;
         List<IActionWish> iActionWishes = data.buildWish(maid);
         if (iActionWishes.isEmpty()) {
-            tag.putInt("cd", Config.communicateCDNoTarget);
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, Config.communicateCDNoTarget);
             return;
         }
         ItemStack workCard = getWorkCardItem(baubleItem);
@@ -83,9 +83,9 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
             if (plan.handler().getTask() instanceof ICommunicatable ic) {
                 CommunicateRequest communicateRequest = CommunicateRequest.create(plan, maid);
                 ic.startCommunicate(plan.handler(), communicateRequest);
-                tag.putUUID("last_task", communicateRequest.requestId());
+                baubleItem.set(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID, communicateRequest.requestId());
             }
-        }, () -> tag.putInt("cd", Config.communicateCDNoTarget));
+        }, () -> baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, Config.communicateCDNoTarget));
     }
 
     public static ConfigurableCommunicateData getDataFrom(ItemStack stack, @Nullable EntityMaid maid) {

@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.api.event;
 
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 
 public class CommunicateFinishEvent extends Event {

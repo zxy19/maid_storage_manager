@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.api.communicate.data;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
@@ -78,7 +78,7 @@ public record CommunicateRequest(
         wisher.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get());
         handler.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get());
         CommunicateUtil.setLastResult(wisher, requestId, !isFailed());
-        MinecraftForge.EVENT_BUS.post(new CommunicateFinishEvent(this));
+        NeoForge.EVENT_BUS.post(new CommunicateFinishEvent(this));
     }
 
     public boolean isValid() {

@@ -139,7 +139,10 @@ public class DataComponentRegistry {
             .register("communicate_manual", () -> DataComponentType.<Boolean>builder().persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ItemStack>> COMMUNICATE_WORK_CARD = DATA_COMPONENTS
             .register("communicate_work_card", () -> DataComponentType.<ItemStack>builder().persistent(ItemStack.CODEC).networkSynchronized(ItemStack.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> COMMUNICATE_LAST_WORK_UUID = DATA_COMPONENTS
+            .register("communicate_last_work_uuid", () -> DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build());
 
+    //endregion
     public static void register(IEventBus bus) {
         DATA_COMPONENTS.register(bus);
     }
