@@ -200,6 +200,9 @@ public class Config {
     private static final ForgeConfigSpec.BooleanValue CRAFTING_GENERATING_NEAREST_ONLY = BUILDER
             .comment("Only generate recipe with nearest block to maid.")
             .define("crafting.generating.nearest_only", false);
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> CRAFTING_GENERATING_SKIP_RECIPE_ID_PATTERN = BUILDER
+            .comment("Skip the recipe whose id match the pattern.")
+            .defineList("crafting.generating.skip_recipe_id_pattern", List.of("[a-z_\\-\\/.\\\\]+:[a-z]+_nugget_from_(blasting|smelting)"), o -> o instanceof String);
     private static final ForgeConfigSpec.EnumValue<CraftGenerator> CRAFTING_GENERATOR = BUILDER
             .comment("Crafting generator algorithm to use.")
             .defineEnum("crafting.generating.algorithm", CraftGenerator.RELEVANCE_THREADED, CraftGenerator.values());
@@ -277,6 +280,7 @@ public class Config {
     public static CraftPlanEvaluator craftingShortestPathEvaluator;
     public static boolean generatePartial;
     public static boolean generateNearestOnly;
+    public static List<String> generateSkipRecipeIdPattern;
     public static CraftGenerator craftingGenerator;
     public static boolean noBubbleForSub;
     public static int craftingMaxLayerLimit;
@@ -355,6 +359,7 @@ public class Config {
         communicateCDFinish = COMMUNICATE_CD_FINISH.get();
         communicateCDFail = COMMUNICATE_CD_FAIL.get();
         communicateCDNoTarget = COMMUNICATE_CD_NO_TARGET.get();
+        generateSkipRecipeIdPattern = CRAFTING_GENERATING_SKIP_RECIPE_ID_PATTERN.get().stream().map(t -> (String) t).toList();
     }
 
     public static void save() {
@@ -402,6 +407,7 @@ public class Config {
         LOOP_SOLVER_PREVENT_NEW_BYPRODUCT.set(craftingLoopSolverPreventNewByProduct);
         CRAFTING_GENERATOR.set(craftingGenerator);
         CRAFTING_PREFER_SHORTEST_PATH.set(craftingShortestPathEvaluator);
+        CRAFTING_GENERATING_SKIP_RECIPE_ID_PATTERN.set(generateSkipRecipeIdPattern);
         NO_BUBBLE_FOR_SUB_TASK.set(noBubbleForSub);
         CRAFTING_GENERATING_NEAREST_ONLY.set(generateNearestOnly);
         USING_BETTER_LIGHT_ON_ITEM.set(usingBetterLightOnItems);
