@@ -489,5 +489,6 @@
   "gui.maid_storage_manager.communicate_terminal.threshold": "When to stop transfer item to storage.",
   "maid_storage_manager.task.auto_detect": "Auto Detect",
   "maid_storage_manager.task.use_current_data": "Use Current",
-  "item.maid_storage_manager.configurable_communicate_terminal":" Configurable Communicate Terminal"
+  "item.maid_storage_manager.configurable_communicate_terminal":" Configurable Communicate Terminal",
+  "gui.maid_storage_manager.config.do_communicate": "Do Communicate"
 }

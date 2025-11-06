@@ -220,6 +220,14 @@ public class Config {
             .defineInRange("misc.inv_list_damage.speed", 1.2f, 0.0f, 100.0f);
 
 
+    private static final ForgeConfigSpec.IntValue COMMUNICATE_CD_FINISH = BUILDER
+            .defineInRange("communicate.cd_finish", 30 * 20, 0, Integer.MAX_VALUE);
+    private static final ForgeConfigSpec.IntValue COMMUNICATE_CD_FAIL = BUILDER
+            .defineInRange("communicate.cd_fail", 150 * 20, 0, Integer.MAX_VALUE);
+    private static final ForgeConfigSpec.IntValue COMMUNICATE_CD_NO_TARGET = BUILDER
+            .defineInRange("communicate.cd_no_target", 5 * 20, 0, Integer.MAX_VALUE);
+
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean enableDebug;
@@ -276,6 +284,9 @@ public class Config {
     public static double invListDamageMax;
     public static double invListDamageMin;
     public static double invListDamageAttackSpd;
+    public static int communicateCDFinish;
+    public static int communicateCDFail;
+    public static int communicateCDNoTarget;
 
     public static void testLoad(CommentedConfig config) {
         BUILDER.build().acceptConfig(config);
@@ -341,6 +352,9 @@ public class Config {
         invListDamageMax = INV_LIST_DAMAGE_MAX.get();
         invListDamageMin = INV_LIST_DAMAGE_MIN.get();
         invListDamageAttackSpd = INV_LIST_DAMAGE_ATTACK_SPD.get();
+        communicateCDFinish = COMMUNICATE_CD_FINISH.get();
+        communicateCDFail = COMMUNICATE_CD_FAIL.get();
+        communicateCDNoTarget = COMMUNICATE_CD_NO_TARGET.get();
     }
 
     public static void save() {
@@ -397,6 +411,9 @@ public class Config {
         INV_LIST_DAMAGE_MAX.set(invListDamageMax);
         INV_LIST_DAMAGE_MIN.set(invListDamageMin);
         INV_LIST_DAMAGE_ATTACK_SPD.set(invListDamageAttackSpd);
+        COMMUNICATE_CD_FINISH.set(communicateCDFinish);
+        COMMUNICATE_CD_FAIL.set(communicateCDFail);
+        COMMUNICATE_CD_NO_TARGET.set(communicateCDNoTarget);
     }
 
     public static void saveAfter(Runnable o) {

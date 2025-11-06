@@ -63,6 +63,8 @@ public class PlaceItemStep implements IMeetActionStep {
             index = i.get();
             return ActionResult.CONTINUE;
         }
+        if(item != null)
+            return ActionResult.CONTINUE;
         return ActionResult.SUCCESS;
     }
 }

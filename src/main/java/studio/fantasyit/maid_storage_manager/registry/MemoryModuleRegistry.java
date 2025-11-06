@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateHolder;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
@@ -52,6 +53,8 @@ public class MemoryModuleRegistry {
             = REGISTER.register("communicate_request", () -> new MemoryModuleType<>(Optional.empty()));
     public static final RegistryObject<MemoryModuleType<CommunicateHolder>> COMMUNICATE_HOLDER
             = REGISTER.register("communicate_holder", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final RegistryObject<MemoryModuleType<Pair<UUID, Boolean>>> COMMUNICATE_LAST_RESULT
+            = REGISTER.register("communicate_last_result", () -> new MemoryModuleType<>(Optional.empty()));
 
     public static final RegistryObject<MemoryModuleType<Boolean>> RETURN_CENTER
             = REGISTER.register("return_center", () -> new MemoryModuleType<>(Optional.empty()));

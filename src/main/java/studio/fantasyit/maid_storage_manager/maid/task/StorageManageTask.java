@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
+import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateWish;
 import studio.fantasyit.maid_storage_manager.communicate.wish.PlaceItemWish;
 import studio.fantasyit.maid_storage_manager.communicate.wish.RequestItemWish;
 import studio.fantasyit.maid_storage_manager.maid.behavior.GoCenterBehavior;
@@ -69,6 +71,7 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.ViewMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.view.WriteInventoryListBehavior;
 import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
@@ -223,5 +226,13 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
     @Override
     public CommunicateRequest getCurrentCommunicateRequest(EntityMaid handler) {
         return handler.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get()).orElse(null);
+    }
+
+    @Override
+    public @Nullable CommunicatePlan acceptCommunicateWish(EntityMaid handler, CommunicateWish wish) {
+        StorageManagerConfigData.Data data = StorageManagerConfigData.get(handler);
+        if (!data.doCommunicate())
+            return null;
+        return ICommunicatable.super.acceptCommunicateWish(handler, wish);
     }
 }
