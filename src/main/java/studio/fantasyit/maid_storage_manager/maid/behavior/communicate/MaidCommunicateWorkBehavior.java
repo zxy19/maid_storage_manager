@@ -73,6 +73,8 @@ public class MaidCommunicateWorkBehavior extends Behavior<EntityMaid> {
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
         step.stop(communicateRequest.wisher(), communicateRequest.handler());
+        if (!isSuccess)
+            communicateRequest.fail();
         if (isEnd && isKeepOn) {
             communicateRequest.nextStep();
             if (communicateRequest.isFinished())

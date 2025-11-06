@@ -16,6 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
@@ -30,6 +32,7 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class ConfigurableCommunicateTerminal extends MaidInteractItem implements IMaidBauble, MenuProvider {
 
@@ -50,26 +53,39 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
         baubleItem.set(DataComponentRegistry.COMMUNICATE_LAST_TASK, maid.getTask().getUid());
         int cd = baubleItem.getOrDefault(DataComponentRegistry.COMMUNICATE_CD, 0);
         if (cd > 0) {
-            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, cd - 1);
+            if (CommunicateUtil.hasLastResult(maid) && baubleItem.has(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID)) {
+                Pair<UUID, Boolean> lastResult = CommunicateUtil.getLastResult(maid);
+                if (lastResult.getA().equals(baubleItem.get(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID) && lastResult.getB()) {
+                    baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, Config.communicateCDFinish);
+                }
+                CommunicateUtil.clearLastResult(maid);
+            }
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD,  cd - 1);
             return;
         } else {
-            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, 600);
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD,  Config.communicateCDFail);
         }
         ConfigurableCommunicateData data = getDataFrom(baubleItem, maid);
         if (data == null)
             return;
         List<IActionWish> iActionWishes = data.buildWish(maid);
+        if (iActionWishes.isEmpty()) {
+            tag.putInt("cd", Config.communicateCDNoTarget);
+            return;
+        }
         ItemStack workCard = getWorkCardItem(baubleItem);
         Optional<CommunicatePlan> communicatePlan = CommunicateUtil.sendCommunicateWishAndGetPlan(
                 maid,
                 new CommunicateWish(maid, iActionWishes),
                 plan -> workCard.isEmpty() || WorkCardItem.hasBauble(plan.handler(), workCard)
         );
-        communicatePlan.ifPresent(plan -> {
+        communicatePlan.ifPresentOrElse(plan -> {
             if (plan.handler().getTask() instanceof ICommunicatable ic) {
-                ic.startCommunicate(plan.handler(), CommunicateRequest.create(plan, maid));
+                CommunicateRequest communicateRequest = CommunicateRequest.create(plan, maid);
+                ic.startCommunicate(plan.handler(), communicateRequest);
+                tag.putUUID("last_task", communicateRequest.requestId());
             }
-        });
+        }, () -> tag.putInt("cd", Config.communicateCDNoTarget));
     }
 
     public static ConfigurableCommunicateData getDataFrom(ItemStack stack, @Nullable EntityMaid maid) {

@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.communicate;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateHolder;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
@@ -13,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 public class CommunicateUtil {
@@ -56,5 +58,21 @@ public class CommunicateUtil {
 
     public static void clearHolder(EntityMaid maid) {
         maid.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get());
+    }
+
+    public static boolean hasLastResult(EntityMaid maid) {
+        return maid.getBrain().hasMemoryValue(MemoryModuleRegistry.COMMUNICATE_LAST_RESULT.get());
+    }
+
+    public static Pair<UUID, Boolean> getLastResult(EntityMaid maid) {
+        return maid.getBrain().getMemory(MemoryModuleRegistry.COMMUNICATE_LAST_RESULT.get()).orElse(null);
+    }
+
+    public static void setLastResult(EntityMaid maid, UUID uuid, boolean result) {
+        maid.getBrain().setMemory(MemoryModuleRegistry.COMMUNICATE_LAST_RESULT.get(), new Pair<>(uuid, result));
+    }
+
+    public static void clearLastResult(EntityMaid maid) {
+        maid.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_LAST_RESULT.get());
     }
 }

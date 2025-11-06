@@ -82,6 +82,8 @@ public class LimitedPlaceItemStep implements IMeetActionStep {
             index = i1.get();
             return ActionResult.CONTINUE;
         }
+        if(item != null)
+            return ActionResult.CONTINUE;
         return ActionResult.SUCCESS;
     }
 }

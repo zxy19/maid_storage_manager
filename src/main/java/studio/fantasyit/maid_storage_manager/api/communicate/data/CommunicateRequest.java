@@ -1,9 +1,12 @@
 package studio.fantasyit.maid_storage_manager.api.communicate.data;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.api.communicate.step.IActionStep;
+import studio.fantasyit.maid_storage_manager.api.event.CommunicateFinishEvent;
+import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.UUID;
@@ -16,7 +19,8 @@ public record CommunicateRequest(
         MutableInt currentStep,
         MutableBoolean prepared,
         MutableBoolean working,
-        MutableInt tickToTimeOut
+        MutableInt tickToTimeOut,
+        MutableBoolean failed
 ) {
     public static CommunicateRequest create(CommunicatePlan plan, EntityMaid wisher) {
         return new CommunicateRequest(plan,
@@ -26,7 +30,9 @@ public record CommunicateRequest(
                 new MutableInt(0),
                 new MutableBoolean(false),
                 new MutableBoolean(false),
-                new MutableInt(1200));
+                new MutableInt(1200),
+                new MutableBoolean(false)
+        );
     }
 
     public boolean isFinished() {
@@ -71,6 +77,8 @@ public record CommunicateRequest(
     public void stopAndClear() {
         wisher.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_HOLDER.get());
         handler.getBrain().eraseMemory(MemoryModuleRegistry.COMMUNICATE_REQUEST.get());
+        CommunicateUtil.setLastResult(wisher, requestId, !isFailed());
+        MinecraftForge.EVENT_BUS.post(new CommunicateFinishEvent(this));
     }
 
     public boolean isValid() {
@@ -95,5 +103,13 @@ public record CommunicateRequest(
         } else {
             stopAndClear();
         }
+    }
+
+    public void fail() {
+        failed.setValue(true);
+    }
+
+    public boolean isFailed() {
+        return failed.booleanValue();
     }
 }
