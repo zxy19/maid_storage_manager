@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.create;
 
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -175,7 +176,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C>, R extends R
                     itemIngredients.forEach(ingredient ->
                             counts.add(Arrays.stream(ingredient.getItems()).findFirst().map(ItemStack::getCount).orElse(0) * multiplier)
                     );
-                    recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.amount() * multiplier / 1000));
+                    recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.getAmount() * multiplier / 1000));
 
                     transformAllIngredients(recipe, all, counts);
 
