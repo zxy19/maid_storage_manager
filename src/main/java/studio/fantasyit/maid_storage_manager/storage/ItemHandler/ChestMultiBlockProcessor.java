@@ -24,7 +24,7 @@ public class ChestMultiBlockProcessor implements IMultiBlockProcessor {
             return;
         ChestType opposite = value.getOpposite();
         Direction dir = level.getBlockState(pos).getValue(ChestBlock.FACING);
-        if(opposite == ChestType.LEFT)
+        if(opposite == ChestType.RIGHT)
             dir = dir.getClockWise();
         else
             dir = dir.getCounterClockWise();

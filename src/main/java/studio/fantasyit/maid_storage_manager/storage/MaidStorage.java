@@ -12,6 +12,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
+import studio.fantasyit.maid_storage_manager.integration.create.CreateMultiBlockVault;
+import studio.fantasyit.maid_storage_manager.integration.sophisticated_storage.SophisticatedStorageMultiBlock;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ChestMultiBlockProcessor;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
@@ -59,6 +61,13 @@ public class MaidStorage {
         list.add(new ItemHandlerStorage());
 
         processorList.add(new ChestMultiBlockProcessor());
+
+        if (Integrations.create()) {
+            processorList.add(new CreateMultiBlockVault());
+        }
+        if (Integrations.sophisticatedStorage()) {
+            processorList.add(new SophisticatedStorageMultiBlock());
+        }
 
         CollectStorageEvent event = new CollectStorageEvent(list, processorList);
 
