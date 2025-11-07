@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -12,9 +13,11 @@ import net.minecraftforge.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ChestMultiBlockProcessor;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.base.IMultiBlockProcessor;
 import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
 import studio.fantasyit.maid_storage_manager.storage.create.stock.CreateStockTickerStorage;
 import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
@@ -22,10 +25,12 @@ import studio.fantasyit.maid_storage_manager.storage.rs.RSStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class MaidStorage {
     public static MaidStorage instance = null;
     List<IMaidStorage> storages;
+    List<IMultiBlockProcessor> processors;
 
     public static MaidStorage getInstance() {
         if (instance == null) {
@@ -36,6 +41,7 @@ public class MaidStorage {
 
     public void collectStorage() {
         ArrayList<IMaidStorage> list = new ArrayList<>();
+        List<IMultiBlockProcessor> processorList = new ArrayList<>();
 
         if (Integrations.ae2Storage()) {
             list.add(new Ae2Storage());
@@ -52,9 +58,13 @@ public class MaidStorage {
         }
         list.add(new ItemHandlerStorage());
 
-        CollectStorageEvent event = new CollectStorageEvent(list);
+        processorList.add(new ChestMultiBlockProcessor());
+
+        CollectStorageEvent event = new CollectStorageEvent(list, processorList);
+
         ModLoader.get().postEvent(event);
         this.storages = event.getStorages();
+        this.processors = event.getMultiBlockStorageProcessors();
     }
 
     public @Nullable Target isValidTarget(ServerLevel level, LivingEntity maid, Target target) {
@@ -98,5 +108,15 @@ public class MaidStorage {
         IMaidStorage storage = getStorage(target.type);
         if (storage == null) return false;
         return storage.isCraftGuideProvider(blockPos);
+    }
+
+    public boolean processSpecialMultiBlockStorage(Level level, BlockPos target, Consumer<BlockPos> processor) {
+        for (var processorPair : processors) {
+            if (processorPair.isValid(level, target, level.getBlockState(target))) {
+                processorPair.process(level, target, processor);
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -29,6 +29,7 @@ import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.*;
@@ -120,6 +121,7 @@ public class StorageAccessUtil {
 
 
     public static TagKey<Block> allowTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "default_storage_blocks"));
+    public static TagKey<Block> multiblockTag = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "mb_chests"));
 
     /**
      * 重写目标列表。对于特定的目标，根据允许访问和禁止访问，将其重写为新的列表。
@@ -224,7 +226,7 @@ public class StorageAccessUtil {
      */
     public static void checkNearByContainers(Level level, BlockPos pos, Consumer<BlockPos> consumer) {
         BlockState blockState = level.getBlockState(pos);
-        if (!blockState.is(allowTag)) {
+        if (!blockState.is(multiblockTag)) {
             return;
         }
         List<BlockPos> nearByContainersCache = getNearByContainersCache(level, pos);
@@ -232,6 +234,15 @@ public class StorageAccessUtil {
             nearByContainersCache.forEach(consumer);
             return;
         }
+        List<BlockPos> list = new ArrayList<>();
+        if (MaidStorage.getInstance().processSpecialMultiBlockStorage(level, pos, b -> {
+            list.add(b);
+            consumer.accept(b);
+        })) {
+            setNearByCache(level, pos, list);
+            return;
+        }
+
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
         if (blockEntity1 == null) return;
         @NotNull LazyOptional<IItemHandler> optCap = blockEntity1.getCapability(ForgeCapabilities.ITEM_HANDLER);
@@ -248,7 +259,6 @@ public class StorageAccessUtil {
         tag.putUUID("uuid", UUID.randomUUID());
         markItem.setTag(tag);
         inv.insertItem(0, markItem.copy(), false);
-        List<BlockPos> list = new ArrayList<>();
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
             if (blockPos.equals(pos)) return null;
             BlockEntity blockEntity = level.getBlockEntity(blockPos);
