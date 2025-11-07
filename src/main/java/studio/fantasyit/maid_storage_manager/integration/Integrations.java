@@ -113,4 +113,8 @@ public class Integrations {
     public static boolean ponder() {
         return ModList.get().isLoaded("ponder");
     }
+
+    public static boolean sophisticatedStorage() {
+        return ModList.get().isLoaded("sophisticatedstorage");
+    }
 }
