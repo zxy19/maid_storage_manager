@@ -28,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.*;
@@ -119,6 +120,7 @@ public class StorageAccessUtil {
 
 
     public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "default_storage_blocks"));
+    public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "mb_chests"));
 
     /**
      * 重写目标列表。对于特定的目标，根据允许访问和禁止访问，将其重写为新的列表。
@@ -222,7 +224,7 @@ public class StorageAccessUtil {
      */
     public static void checkNearByContainers(Level level, BlockPos pos, Consumer<BlockPos> consumer) {
         BlockState blockState = level.getBlockState(pos);
-        if (!blockState.is(allowTag)) {
+        if (!blockState.is(multiblockTag)) {
             return;
         }
         List<BlockPos> nearByContainersCache = getNearByContainersCache(level, pos);
@@ -230,6 +232,15 @@ public class StorageAccessUtil {
             nearByContainersCache.forEach(consumer);
             return;
         }
+        List<BlockPos> list = new ArrayList<>();
+        if (MaidStorage.getInstance().processSpecialMultiBlockStorage(level, pos, b -> {
+            list.add(b);
+            consumer.accept(b);
+        })) {
+            setNearByCache(level, pos, list);
+            return;
+        }
+
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
         if (blockEntity1 == null) return;
         IItemHandler inv = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, blockState, blockEntity1, null);
@@ -243,7 +254,6 @@ public class StorageAccessUtil {
         ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
         markItem.set(DataComponentRegistry.MARK, UUID.randomUUID());
         inv.insertItem(0, markItem.copy(), false);
-        List<BlockPos> list = new ArrayList<>();
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
             if (blockPos.equals(pos)) return null;
             IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, null);
