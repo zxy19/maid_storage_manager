@@ -120,7 +120,7 @@ public class StorageAccessUtil {
 
 
     public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "default_storage_blocks"));
-    public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "mb_chests"));
+    public static TagKey<Block> multiblockTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "mb_chests"));
 
     /**
      * 重写目标列表。对于特定的目标，根据允许访问和禁止访问，将其重写为新的列表。

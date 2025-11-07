@@ -171,6 +171,8 @@ dependencies {
     compileOnly "curse.maven:ars-nouveau-401955:6770346"
     compileOnly "curse.maven:geckolib-388172:6659026"
     compileOnly "curse.maven:jade-324717:6738687"
+    compileOnly "curse.maven:sophisticated-storage-619320:6759132"
+    compileOnly "curse.maven:sophisticated-core-618298:6760141"
 
 
 //    runtimeOnly "curse.maven:botania-225643:5594997"
