@@ -223,6 +223,7 @@
     {"required": false,"id":"l2backpack:dimensional_storage_brown"},
     {"required": false,"id":"l2backpack:dimensional_storage_green"},
     {"required": false,"id":"l2backpack:dimensional_storage_red"},
-    {"required": false,"id":"l2backpack:dimensional_storage_black"}
+    {"required": false,"id":"l2backpack:dimensional_storage_black"},
+    {"required": false,"id":"#ironchests:chests.json"}
   ]
 }

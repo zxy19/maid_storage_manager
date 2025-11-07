@@ -220,8 +220,8 @@ dependencies {
     })
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:6911704")
-    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:6911704")
+    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:7192649")
+    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:7192649")
 
 
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
