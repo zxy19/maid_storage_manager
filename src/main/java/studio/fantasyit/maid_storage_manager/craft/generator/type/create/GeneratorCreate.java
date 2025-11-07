@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.create;
 import com.simibubi.create.content.processing.recipe.ProcessingOutput;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipe;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeParams;
-import com.simibubi.create.foundation.fluid.FluidIngredient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -13,6 +12,7 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOptionSet;
@@ -49,14 +49,12 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
         OUTPUT_ITEM_SELECTIVE, OUTPUT_FLUID
     }
 
-    protected static boolean isAllFluidHasBucket(List<FluidIngredient> ingredients) {
+    protected static boolean isAllFluidHasBucket(List<SizedFluidIngredient> ingredients) {
         if (ingredients.isEmpty())
             return true;
         return ingredients.stream()
                 .allMatch(fluidIngredient ->
-                        fluidIngredient
-                                .getMatchingFluidStacks()
-                                .stream()
+                        Arrays.stream(fluidIngredient.getFluids())
                                 .map(FluidStack::getFluid)
                                 .map(Fluid::getBucket)
                                 .findAny().isPresent());
@@ -69,13 +67,11 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
     }
 
 
-    protected static Optional<List<Ingredient>> transformFluidIngredient(List<FluidIngredient> ingredients) {
+    protected static Optional<List<Ingredient>> transformFluidIngredient(List<SizedFluidIngredient> ingredients) {
         if (ingredients.isEmpty())
             return Optional.empty();
         return Optional.of(ingredients.stream().map(fluidIngredient -> {
-                            ItemStack[] array = fluidIngredient
-                                    .getMatchingFluidStacks()
-                                    .stream()
+                            ItemStack[] array = Arrays.stream(fluidIngredient.getFluids())
                                     .map(FluidStack::getFluid)
                                     .map(Fluid::getBucket)
                                     .map(ItemStack::new)
@@ -126,7 +122,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
     protected int getMinFullBucketCount(T recipe) {
         MutableInt minFullBucketCount = new MutableInt(1);
         recipe.getFluidIngredients().forEach(fluidIngredient -> {
-            int times = MathUtil.lcm(1000, fluidIngredient.getRequiredAmount()) / fluidIngredient.getRequiredAmount();
+            int times = MathUtil.lcm(1000, fluidIngredient.amount()) / fluidIngredient.amount();
             minFullBucketCount.setValue(MathUtil.lcm(minFullBucketCount.getValue(), times));
         });
         recipe.getFluidResults().forEach(fluidStack -> {
@@ -178,7 +174,7 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
                     itemIngredients.forEach(ingredient ->
                             counts.add(Arrays.stream(ingredient.getItems()).findFirst().map(ItemStack::getCount).orElse(0) * multiplier)
                     );
-                    recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.getRequiredAmount() * multiplier / 1000));
+                    recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.amount() * multiplier / 1000));
 
                     transformAllIngredients(recipe, all, counts);
 
