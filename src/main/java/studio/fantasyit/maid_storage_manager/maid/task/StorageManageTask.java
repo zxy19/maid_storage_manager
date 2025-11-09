@@ -212,6 +212,11 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
             public AbstractContainerMenu createMenu(int index, Inventory playerInventory, Player player) {
                 return new StorageManagerMaidConfigGui.Container(index, playerInventory, maid.getId());
             }
+
+            @Override
+            public boolean shouldTriggerClientSideContainerClosingOnOpen() {
+                return false;
+            }
         };
     }
 
@@ -234,10 +239,5 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
         if (!data.doCommunicate())
             return null;
         return ICommunicatable.super.acceptCommunicateWish(handler, wish);
-    }
-
-    @Override
-    public boolean shouldTriggerClientSideContainerClosingOnOpen() {
-        return false;
     }
 }
