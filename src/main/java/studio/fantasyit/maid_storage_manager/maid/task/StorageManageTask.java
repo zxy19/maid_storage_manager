@@ -235,4 +235,9 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
             return null;
         return ICommunicatable.super.acceptCommunicateWish(handler, wish);
     }
+
+    @Override
+    public boolean shouldTriggerClientSideContainerClosingOnOpen() {
+        return false;
+    }
 }
