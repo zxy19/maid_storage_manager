@@ -110,7 +110,7 @@ public class RecipeUtil {
 
     public static CraftingContainer wrapCraftingContainer(Container items, int w, int h) {
         List<ItemStack> itemList = new ArrayList<>();
-        for (int i = 0; i < items.getContainerSize(); i++) {
+        for (int i = 0; i < Math.min(items.getContainerSize(), w * h); i++) {
             itemList.add(items.getItem(i));
         }
         return new ReadonlyCraftingContainer(itemList, w, h);

@@ -132,10 +132,9 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.clear_storage"));
                     } else {
                         if (storage.pos.equals(clickedPos)) {
-                            storage.side = context.getClickedFace();
+                            storage = storage.sameType(clickedPos, context.getClickedFace());
                         } else {
-                            storage.pos = clickedPos;
-                            storage.side = null;
+                            storage = storage.sameType(clickedPos, null);
                         }
                         serverPlayer.sendSystemMessage(Component.translatable("interaction.bind_storage", clickedPos.getX(), clickedPos.getY(), clickedPos.getZ()));
                         item.set(selecting, storage);
