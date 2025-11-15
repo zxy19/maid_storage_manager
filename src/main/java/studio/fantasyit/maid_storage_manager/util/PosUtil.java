@@ -38,6 +38,14 @@ public class PosUtil {
 
     static public @Nullable <T> T findAround(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
         T tmp;
+        if ((tmp = findHorizontal(pos, consumer)) != null) return tmp;
+        if ((tmp = consumer.apply(pos.above())) != null) return tmp;
+        if ((tmp = consumer.apply(pos.below())) != null) return tmp;
+        return null;
+    }
+
+    static public @Nullable <T> T findHorizontal(BlockPos pos, Function<BlockPos, @Nullable T> consumer) {
+        T tmp;
         if ((tmp = consumer.apply(pos)) != null) return tmp;
         if ((tmp = consumer.apply(pos.north())) != null) return tmp;
         if ((tmp = consumer.apply(pos.east())) != null) return tmp;
