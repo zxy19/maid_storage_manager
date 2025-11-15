@@ -1,0 +1,27 @@
+{
+    "type": "touhou_little_maid:altar_crafting",
+    "output": {
+      "type": "minecraft:item",
+      "nbt": {
+        "Item": {
+          "id": "maid_storage_manager:configurable_communicate_terminal",
+          "Count": 2
+        }
+      }
+    },
+    "power": 0,
+    "ingredients": [
+      {
+        "item": "minecraft:lightning_rod"
+      },
+      {
+        "item": "minecraft:redstone"
+      },
+      {
+        "item": "minecraft:item_frame"
+      },
+      {
+        "tag": "minecraft:buttons"
+      }
+    ]
+  }
