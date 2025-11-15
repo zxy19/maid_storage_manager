@@ -52,7 +52,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     public boolean isBlockValid(Level level, BlockPos pos) {
         if (!level.getBlockState(pos).is(Blocks.WATER)) return false;
         MutableInt count = new MutableInt(0);
-        PosUtil.findAround(pos, t -> {
+        PosUtil.findHorizontal(pos, t -> {
             if (level.getBlockState(t).is(Blocks.WATER))
                 count.increment();
             return null;
