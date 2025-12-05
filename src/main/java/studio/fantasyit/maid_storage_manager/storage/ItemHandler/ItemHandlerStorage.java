@@ -5,7 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -58,8 +60,11 @@ public class ItemHandlerStorage implements IMaidStorage {
         return new AbstractFilterableBlockStorage();
     }
 
+    public static TagKey<Block> SORTABLE = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "sortable_chests"));
     @Override
     public @Nullable ISortSlotContext onStartSorting(ServerLevel level, EntityMaid maid, Target target) {
-        return new AbstractItemHandlerContext();
+        if(level.getBlockState(target.getPos()).is(SORTABLE))
+            return new AbstractItemHandlerContext();
+        return null;
     }
 }
