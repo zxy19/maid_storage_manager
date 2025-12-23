@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "#forge:chests",
+    "#c:chests",
     {"required": false,"id":"netherchested:nether_chest"},
     {"required": false,"id":"ironchest:iron_chest"},
     {"required": false,"id":"ironchest:gold_chest"},

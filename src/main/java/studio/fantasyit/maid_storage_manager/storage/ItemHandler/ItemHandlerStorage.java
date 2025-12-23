@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
@@ -60,7 +61,7 @@ public class ItemHandlerStorage implements IMaidStorage {
         return new AbstractFilterableBlockStorage();
     }
 
-    public static TagKey<Block> SORTABLE = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MaidStorageManager.MODID, "sortable_chests"));
+    public static TagKey<Block> SORTABLE = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "sortable_chests"));
     @Override
     public @Nullable ISortSlotContext onStartSorting(ServerLevel level, EntityMaid maid, Target target) {
         if(level.getBlockState(target.getPos()).is(SORTABLE))
