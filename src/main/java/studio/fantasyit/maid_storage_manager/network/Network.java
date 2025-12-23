@@ -395,7 +395,7 @@ public class Network {
                     });
                 }
         );
-        Network.INSTANCE.registerMessage(14,
+        Network.INSTANCE.registerMessage(15,
                 CommunicateMarkGuiPacket.class,
                 CommunicateMarkGuiPacket::toBytes,
                 CommunicateMarkGuiPacket::new,
