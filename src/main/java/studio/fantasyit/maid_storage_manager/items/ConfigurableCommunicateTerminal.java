@@ -141,6 +141,10 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
     }
 
     public static void setWorkCardItem(ItemStack item, ItemStack workCard) {
-        item.set(DataComponentRegistry.COMMUNICATE_WORK_CARD, workCard);
+        if(workCard.isEmpty()) {
+            item.remove(DataComponentRegistry.COMMUNICATE_WORK_CARD);
+        } else {
+            item.set(DataComponentRegistry.COMMUNICATE_WORK_CARD, workCard);
+        }
     }
 }
