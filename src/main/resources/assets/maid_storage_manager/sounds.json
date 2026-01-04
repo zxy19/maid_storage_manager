@@ -1,6 +1,5 @@
 {
   "craft_action_roll": {
-    "subtitle": "gui.maid_storage_manager.craft_action_roll",
     "sounds": [
       "maid_storage_manager:craft_action_roll"
     ]
