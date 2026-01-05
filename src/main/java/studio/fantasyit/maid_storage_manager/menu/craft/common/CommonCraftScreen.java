@@ -16,6 +16,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -498,11 +499,11 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             return true;
         }
         Optional<GuiEventListener> child = this.getChildAt(x, y);
-        if (child.isPresent() && child.get() instanceof EditBox eb && eb.isVisible()) {
+        if (child.isPresent() && child.get() instanceof EditBox eb && eb.isVisible() && StringUtils.isNumeric(eb.getValue())) {
             int dv = (int) (Math.abs(p_94688_) / p_94688_);
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LSHIFT))
                 dv *= 10;
-            Integer ov = Integer.valueOf(eb.getValue());
+            int ov = Integer.parseInt(eb.getValue());
             eb.setValue(String.valueOf(ov + dv));
             return true;
         }
