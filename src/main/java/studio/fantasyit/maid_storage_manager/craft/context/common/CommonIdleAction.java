@@ -25,7 +25,7 @@ public class CommonIdleAction extends AbstractCraftActionContext {
                     ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_second.png"),
                     ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_tick.png")
             },
-            "",
+            "0",
             new ActionOption.BiConverter<>(
                     i -> i != 0, b -> b ? 1 : 0
             ),
