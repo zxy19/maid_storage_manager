@@ -64,9 +64,21 @@ public class TaskDefaultCommunicate {
                         )
                 )
         ));
-        event.register(TaskAttack.UID, commonPlaceAll);
+        event.register(TaskAttack.UID, new ConfigurableCommunicateData(
+                List.of(
+                        new ConfigurableCommunicateData.Item(
+                                List.of(),
+                                true,
+                                ItemStackUtil.MATCH_TYPE.NOT_MATCHING,
+                                SlotType.ETA,
+                                0,
+                                0,
+                                -1
+                        )
+                )
+        ));
         event.register(TaskBowAttack.UID, buildWithMainHandAndBackPack1AndPlaceAll(Items.BOW.getDefaultInstance(), 1, 1, Items.ARROW.getDefaultInstance(), 128, 32));
-        event.register(TaskCocoa.UID, commonPlaceAll);
+        event.register(TaskCocoa.UID, buildWithMainHandAndPlaceAll(Items.COCOA_BEANS.getDefaultInstance(), 64, 1));
         event.register(TaskCrossBowAttack.UID, buildWithMainHandAndBackPack1AndPlaceAll(Items.CROSSBOW.getDefaultInstance(), 1, 1, Items.ARROW.getDefaultInstance(), 128, 32));
         event.register(TaskFishing.UID, buildWithMainHandAndPlaceAll(Items.FISHING_ROD.getDefaultInstance(), 1, 1));
         event.register(TaskDanmakuAttack.UID, buildWithMainHandAndPlaceAll(InitItems.HAKUREI_GOHEI.get().getDefaultInstance(), 1, 1));
