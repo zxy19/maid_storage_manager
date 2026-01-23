@@ -142,7 +142,7 @@ repositories {
 }
 
 dependencies {
-    implementation jarJar("libs:1.21.1-tour_guide:1.0.1")
+    implementation jarJar("libs:1.21.1-tour_guide:1.0.2")
     compileOnly "curse.maven:touhou-little-maid-355044:6911706"
     runtimeOnly "curse.maven:touhou-little-maid-355044:6911706"
 
