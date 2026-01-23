@@ -1010,32 +1010,55 @@ public class CraftLayerChain {
             if (maxParallel != 0 || layer.getCraftData().isPresent())
                 return false;
 
-        //测试最大使用格子数
-        invConsumeSimulator.snapshot();
-        invConsumeSimulator.removeLayerInput(layer);
-        invConsumeSimulator.addLayer(layer);
-        int totalSlots = invConsumeSimulator.getCurrentSlotConsume();
-        invConsumeSimulator.restoreSnapshot();
+        // 当前情况意味着，第一次开始，进行一次预提取，获取不应该从material中获取的材料
+        if (node.progress().getValue() == SolvedCraftLayer.Progress.IDLE) {
+            //测试最大使用格子数
+            invConsumeSimulator.snapshot();
+            invConsumeSimulator.removeLayerInput(layer);
+            invConsumeSimulator.addLayer(layer);
+            int totalSlots = invConsumeSimulator.getCurrentSlotConsume();
+            invConsumeSimulator.restoreSnapshot();
 
-        if (totalSlots + layer.getExtraSlotConsume() > freeSlots) {
-            return false;
-        }
-        invConsumeSimulator.removeLayerInput(layer);
-        invConsumeSimulator.addLayer(layer);
-        currentParallel++;
-        node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
-        for (int i = 0; i < this.remainMaterials.size(); i++) {
-            ItemStack toTake = layer.memorizeItem(remainMaterials.get(i), remainMaterials.get(i).getCount());
-            remainMaterials.get(i).shrink(toTake.getCount());
-            if (remainMaterials.get(i).isEmpty()) {
-                remainMaterials.remove(i);
-                i--;
+            if (totalSlots + layer.getExtraSlotConsume() > freeSlots) {
+                return false;
+            }
+            invConsumeSimulator.removeLayerInput(layer);
+            invConsumeSimulator.addLayer(layer);
+            currentParallel++;
+            node.progress().setValue(SolvedCraftLayer.Progress.PREFETCH);
+
+            // 前置任务全部处于结束的状态，那么不需要进行预提取了，可以直接走正常获取流程
+            if (node.nonFinishPrev().getValue() == 0) {
+                node.progress().setValue(SolvedCraftLayer.Progress.STANDBY);
             }
         }
-        //来到树根了，清除剩余的材料（因为女仆会尝试放置到附近）
-        if (layer.getCraftData().isEmpty()) {
-            remainMaterials.clear();
-            invConsumeSimulator.clear();
+
+        // 当前情况意味着，当前层的预提取已经完成，现在开始进行正式合成步骤，下一步是GATHER获取未满足的材料
+        if (node.progress().getValue() == SolvedCraftLayer.Progress.STANDBY) {
+            for (int i = 0; i < this.remainMaterials.size(); i++) {
+                ItemStack toTake = layer.memorizeItem(remainMaterials.get(i), remainMaterials.get(i).getCount());
+                remainMaterials.get(i).shrink(toTake.getCount());
+                if (remainMaterials.get(i).isEmpty()) {
+                    remainMaterials.remove(i);
+                    i--;
+                }
+            }
+            /*来到树根了，清除剩余的材料（因为女仆会尝试放置到附近）*/
+            if (layer.getCraftData().isEmpty()) {
+                remainMaterials.clear();
+                invConsumeSimulator.clear();
+            }
+
+            // 还需要处理后续节点的启动前置条件
+            node.nextIndex().forEach(index -> {
+                SolvedCraftLayer nextNode = nodes.get(index);
+                nextNode.nonStartPrev().decrement();
+                // 如果当前节点的所有前置节点都已经进入【正常工作】状态，那么下一个节点可以开始预收集
+                if (nextNode.nonStartPrev().getValue() == 0 && !isStoppingAdding.value) {
+                    workingQueue.add(nextNode);
+                    nextNode.progress().setValue(SolvedCraftLayer.Progress.IDLE);
+                }
+            });
         }
         DebugData.sendDebug(
                 "[CRAFT_CHAIN]Starting Layer,%s", layer.getCraftData().map(e -> "Normal").orElse("TreeRoot")
