@@ -1,4 +1,4 @@
-package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather;
+package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.prefetch;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.network.chat.Component;
@@ -7,20 +7,24 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
+import studio.fantasyit.maid_storage_manager.craft.work.SolvedCraftLayer;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.AbstractGatherBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.List;
 
-public class RequestCraftGatherBehavior extends AbstractGatherBehavior {
+public class RequestCraftPrefetchBehavior extends AbstractGatherBehavior {
     CraftLayerChain plan;
     CraftLayer layer;
+    List<ItemStack> toPrefetchItems;
+    SolvedCraftLayer node;
 
-    public RequestCraftGatherBehavior() {
+    public RequestCraftPrefetchBehavior() {
         super();
     }
 
@@ -33,19 +37,26 @@ public class RequestCraftGatherBehavior extends AbstractGatherBehavior {
     protected void onStart(ServerLevel level, EntityMaid maid) {
         plan = MemoryUtil.getCrafting(maid).plan();
         layer = plan.getCurrentLayer();
+        node = plan.getCurrentNode();
         plan.showCraftingProgress(maid);
+        toPrefetchItems = layer.getToPrefetchItems(plan.getCurrentNode().prefetchable());
     }
 
     @Override
     protected void onStop(ServerLevel level, EntityMaid maid) {
-        if (layer.hasCollectedAll()) {
-            plan.finishGathering(maid);
+        if (layer.getToPrefetchItems(node.prefetchable()).isEmpty()) {
+            plan.finishPrefetching(maid);
         }
     }
 
     @Override
     protected int getMaxToGet(EntityMaid maid, ItemStack incomingItemstack) {
-        return incomingItemstack.getCount();
+        int maxCount = 0;
+        for (ItemStack itemStack : toPrefetchItems) {
+            if (ItemStackUtil.isSame(itemStack, incomingItemstack, ItemStackUtil.MATCH_TYPE.AUTO))
+                maxCount += itemStack.getCount();
+        }
+        return maxCount;
     }
 
     @Override
@@ -62,6 +73,7 @@ public class RequestCraftGatherBehavior extends AbstractGatherBehavior {
                         String.valueOf(itemStack.getCount())
                 )
         );
+        ItemStackUtil.removeIsMatchInList(toPrefetchItems, itemStack, ItemStackUtil.MATCH_TYPE.AUTO);
     }
 
     @Override
@@ -79,7 +91,7 @@ public class RequestCraftGatherBehavior extends AbstractGatherBehavior {
         if (MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
         if (!MemoryUtil.getCrafting(maid).hasTarget()) return false;
         if (!MemoryUtil.getCrafting(maid).hasPlan()) return false;
-        if (!MemoryUtil.getCrafting(maid).plan().isCurrentGathering()) return false;
+        if (!MemoryUtil.getCrafting(maid).plan().isCurrentPrefetching()) return false;
         return Conditions.hasReachedValidTargetOrReset(maid);
     }
 
@@ -89,7 +101,7 @@ public class RequestCraftGatherBehavior extends AbstractGatherBehavior {
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) return false;
         if (MemoryUtil.getCrafting(maid).hasPlan()) {
-            if (layer.hasCollectedAll())
+            if (toPrefetchItems.isEmpty())
                 return false;
         }
         return super.canStillUse(level, maid, p_22547_);

@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
+import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,16 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
                     Codec.list(Codec.INT)
                             .fieldOf("nextIndex")
                             .forGetter(SolvedCraftLayer::nextIndex),
-                    Codec.INT.fieldOf("inDegree")
-                            .forGetter(t -> t.inDegree.getValue()),
-                    Codec.STRING.fieldOf("progress")
-                            .forGetter(t -> t.progress.getValue().name()),
+                    Codec.INT.fieldOf("nonFinishPrev")
+                            .forGetter(t -> t.nonFinishPrev.getValue()),
+                    Codec.INT.fieldOf("prefetchInDeg").orElse(0)
+                            .forGetter(t -> t.nonStartPrev.getValue()),
                     Codec.INT.fieldOf("lastTouch").orElse(0)
-                            .forGetter(t -> t.lastTouch.getValue())
+                            .forGetter(t -> t.lastTouch.getValue()),
+                    Codec.STRING.fieldOf("progress")
+                    .forGetter(t -> t.progress.getValue().name()),
+                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("prefetchable")
+                            .forGetter(t -> t.prefetchable)
             ).apply(instance, SolvedCraftLayer::new)
     );
 
@@ -48,7 +53,26 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
         DISPATCHED
     }
 
-    public SolvedCraftLayer(int index, int group, int si, int so, List<Integer> nextIndex, int inDegree, String progress, int lastTouch) {
-        this(index, group, si, so, new ArrayList<>(nextIndex), new MutableInt(inDegree), new MutableInt(lastTouch), new MutableObject<>(Progress.valueOf(progress)));
+    public SolvedCraftLayer(int index,
+                            int group,
+                            int si,
+                            int so,
+                            List<Integer> nextIndex,
+                            int nonFinishPrev,
+                            int nonStartPrev,
+                            int lastTouch,
+                            String progress,
+                            List<ItemStack> prefetchable) {
+        this(index,
+                group,
+                si,
+                so,
+                new ArrayList<>(nextIndex),
+                new MutableInt(nonFinishPrev),
+                new MutableInt(nonStartPrev),
+                new MutableInt(lastTouch),
+                new MutableObject<>(Progress.valueOf(progress)),
+                prefetchable
+        );
     }
 }
