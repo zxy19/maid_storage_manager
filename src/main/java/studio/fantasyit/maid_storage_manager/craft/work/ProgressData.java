@@ -139,7 +139,7 @@ public class ProgressData {
                 buf.readInt(),
                 buf.readInt(),
                 buf.readInt(),
-                buf.readEnum(ProgressData.Status.class)
+                buf.readEnum(Status.class)
         );
     }
 
@@ -156,13 +156,13 @@ public class ProgressData {
             }
             peekItem = true;
             if (!switch (node.progress().getValue()) {
-                case IDLE, WAITING -> viewing == ProgressPad.Viewing.WAITING;
-                case DISPATCHED, WORKING, GATHERING -> viewing == ProgressPad.Viewing.WORKING;
+                case IDLE, WAITING, STANDBY -> viewing == ProgressPad.Viewing.WAITING;
+                case PREFETCH, DISPATCHED, WORKING, GATHERING -> viewing == ProgressPad.Viewing.WORKING;
                 case FINISHED -> viewing == ProgressPad.Viewing.DONE;
                 case FAILED -> viewing != ProgressPad.Viewing.WORKING;
             }) continue;
             Status status = switch (node.progress().getValue()) {
-                case IDLE, WAITING -> Status.WAITING;
+                case IDLE, WAITING, STANDBY -> Status.WAITING;
                 case FAILED -> Status.FAILED;
                 default -> Status.NORMAL;
             };

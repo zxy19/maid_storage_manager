@@ -35,12 +35,12 @@ public record SolvedCraftLayer(int index,
                             .forGetter(SolvedCraftLayer::nextIndex),
                     Codec.INT.fieldOf("nonFinishPrev")
                             .forGetter(t -> t.nonFinishPrev.getValue()),
-                    Codec.STRING.fieldOf("progress")
-                            .forGetter(t -> t.progress.getValue().name()),
-                    Codec.INT.fieldOf("lastTouch").orElse(0)
-                            .forGetter(t -> t.lastTouch.getValue()),
                     Codec.INT.fieldOf("prefetchInDeg").orElse(0)
                             .forGetter(t -> t.nonStartPrev.getValue()),
+                    Codec.INT.fieldOf("lastTouch").orElse(0)
+                            .forGetter(t -> t.lastTouch.getValue()),
+                    Codec.STRING.fieldOf("progress")
+                    .forGetter(t -> t.progress.getValue().name()),
                     ItemStack.CODEC.listOf().fieldOf("prefetchable")
                             .forGetter(t -> t.prefetchable)
             ).apply(instance, SolvedCraftLayer::new)
@@ -78,8 +78,8 @@ public record SolvedCraftLayer(int index,
                             List<Integer> nextIndex,
                             int nonFinishPrev,
                             int nonStartPrev,
-                            String progress,
                             int lastTouch,
+                            String progress,
                             List<ItemStack> prefetchable) {
         this(index,
                 group,

@@ -825,6 +825,26 @@ public class CraftLayerChain {
     }
 
     /**
+     * 完成预收集。
+     * 如果当前步骤此时全部前置步骤均已经完成，那么可以直接开始
+     * 否则，进入STANDBY，并开始下一个任务
+     *
+     * @param maid
+     */
+    public void finishPrefetching(EntityMaid maid) {
+        CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
+        SolvedCraftLayer node = Objects.requireNonNull(this.getCurrentNode());
+
+        if (node.nonFinishPrev().getValue() == 0) {
+            tryStartLayer(node, layer);
+            showCraftingProgress(maid);
+        } else {
+            node.progress().setValue(SolvedCraftLayer.Progress.STANDBY);
+            startAny(true);
+        }
+    }
+
+    /**
      * 完成收集。该步骤会采取下面操作之一：
      * <li>所有物品收集成功，开始合成</li>
      * <li>收集成功但是检测到背包内物品不齐全，继续收集（此时会更改需要的物品的量）</>
@@ -1073,6 +1093,7 @@ public class CraftLayerChain {
                     nextNode.progress().setValue(SolvedCraftLayer.Progress.IDLE);
                 }
             });
+            node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
         }
 
         DebugData.sendDebug(
@@ -1087,10 +1108,18 @@ public class CraftLayerChain {
     }
 
     protected boolean startAny(boolean skipLast) {
+        if (startAnyWithFilter(skipLast, true))
+            return true;
+        return startAnyWithFilter(skipLast, false);
+    }
+
+    protected boolean startAnyWithFilter(boolean skipLast, boolean standByOnly) {
         int totalCount = workingQueue.size();
         if (skipLast) totalCount--;
         for (int i = 0; i < totalCount; i++) {
             SolvedCraftLayer currentNode = workingQueue.peek();
+            if (standByOnly && currentNode.progress().getValue() != SolvedCraftLayer.Progress.STANDBY)
+                continue;
             if (tryStartLayer(currentNode, layers.get(currentNode.index()))) {
                 setChanged();
                 return true;

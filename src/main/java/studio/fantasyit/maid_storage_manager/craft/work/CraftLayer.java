@@ -244,6 +244,18 @@ public class CraftLayer {
         return unCollectedItems;
     }
 
+    public List<ItemStack> getToPrefetchItems(List<ItemStack> original){
+        List<ItemStack> toPrefetch = new ArrayList<>();
+        for (ItemStack itemStack : original) {
+            for(int i = 0; i < items.size(); i++){
+                if(ItemStackUtil.isSameInCrafting(itemStack, items.get(i)) && itemStack.getCount() > collectedCounts.get(i)){
+                    toPrefetch.add(itemStack.copyWithCount(itemStack.getCount() - collectedCounts.get(i)));
+                }
+            }
+        }
+        return toPrefetch;
+    }
+
     public void resetStep() {
         this.step = 0;
         this.tryTick = 0;

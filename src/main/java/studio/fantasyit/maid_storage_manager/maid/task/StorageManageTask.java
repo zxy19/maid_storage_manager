@@ -54,6 +54,8 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.dispatc
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.dispatched.DispatchedGatherMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.gather.RequestCraftGatherMoveBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.prefetch.RequestCraftPrefetchBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.prefetch.RequestCraftPrefetchMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.ret.ReturnOnVehicleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.request.craft.work.RequestCraftWorkMoveBehavior;
@@ -127,6 +129,8 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
         //合成
         list.add(Pair.of(10, new DispatchedGatherMoveBehavior()));
         list.add(Pair.of(10, new DispatchedGatherBehavior()));
+        list.add(Pair.of(10, new RequestCraftPrefetchMoveBehavior()));
+        list.add(Pair.of(10, new RequestCraftPrefetchBehavior()));
         list.add(Pair.of(9, new RequestCraftGatherBehavior()));
         list.add(Pair.of(9, new RequestCraftGatherMoveBehavior()));
         list.add(Pair.of(8, new RequestCraftWorkBehavior()));
