@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -84,10 +85,10 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
         if (storageBlock != null) {
             MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock);
-            DebugData.sendDebug("[REQUEST]initial vis %s", storageBlock);
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST]initial vis %s", storageBlock);
             StorageAccessUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {
                 MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock.sameType(pos, null));
-                DebugData.sendDebug("[REQUEST]initial vis %s", pos.toShortString());
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST]initial vis %s", pos.toShortString());
             });
         }
 

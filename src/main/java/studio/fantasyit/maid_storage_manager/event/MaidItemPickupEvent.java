@@ -9,6 +9,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -82,7 +83,7 @@ public class MaidItemPickupEvent {
                     MemoryUtil.getPlacingInv(maid).clearTarget();
                     MemoryUtil.clearTarget(maid);
                 }
-                DebugData.sendDebug("Placing Inv Reset(Picking)");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "Placing Inv Reset(Picking)");
             }
         }
     }

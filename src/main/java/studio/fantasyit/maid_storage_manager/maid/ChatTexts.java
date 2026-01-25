@@ -109,8 +109,8 @@ public class ChatTexts {
     public static final String CHAT_SECONDARY_CRAFTING = "chat_bubbles.maid_storage_manager.secondary_crafting";
 
     public static final String CHAT_SECONDARY_CRAFTING_GATHER = "chat_bubbles.maid_storage_manager.secondary_crafting.gather";
-
     public static final String CHAT_SECONDARY_CRAFTING_WORK = "chat_bubbles.maid_storage_manager.secondary_crafting.work";
+    public static final String CHAT_SECONDARY_CRAFTING_PREFETCH = "chat_bubbles.maid_storage_manager.secondary_crafting.prefetch";
 
     public static final String CHAT_SECONDARY_CRAFTING_STATUS_NO_DISPATCHING = "chat_bubbles.maid_storage_manager.secondary_crafting.status_no_dispatch";
     public static final String CHAT_SECONDARY_CRAFTING_STATUS_SUB = "chat_bubbles.maid_storage_manager.secondary_crafting.status_sub";

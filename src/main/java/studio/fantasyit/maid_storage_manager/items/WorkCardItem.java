@@ -107,6 +107,10 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                     //构建记忆，直接开始合成，跳过寻找阶段
                     MemoryUtil.getCrafting(toMaid).setGatheringDispatched(true);
                     MemoryUtil.getCrafting(toMaid).setPlan(newPlan);
+                    newPlan.getNode(0).prefetchable().addAll(node.prefetchable());
+                    newPlan.getNode(0).nonFinishPrev().setValue(node.nonFinishPrev().getValue());
+                    if (node.nonFinishPrev().getValue() != 0)
+                        newPlan.getNode(0).progress().setValue(SolvedCraftLayer.Progress.PREFETCH);
                     MemoryUtil.getRequestProgress(toMaid).newWork(RequestListItem.getUUID(dispatchedRequest));
                     MemoryUtil.getRequestProgress(toMaid).setTryCrafting(true);
                     toMaid.setItemInHand(InteractionHand.MAIN_HAND, dispatchedRequest);
@@ -115,6 +119,9 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                     plan.doDispatchLayer(node, toMaid.getUUID(), RequestListItem.getUUID(dispatchedRequest));
                     plan.showCraftingProgress(maid);
                     newPlan.showCraftingProgress(toMaid);
+
+                    if (node.nonFinishPrev().getValue() == 0)
+                        plan.onDispatchedStarted(maid, node.index());
 
                     MemoryUtil.getViewedInventory(toMaid).receiveFrom(MemoryUtil.getViewedInventory(maid));
                     MemoryUtil.clearTarget(toMaid);

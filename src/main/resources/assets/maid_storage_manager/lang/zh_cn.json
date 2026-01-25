@@ -61,6 +61,7 @@
   "chat_bubbles.maid_storage_manager.secondary_crafting.status_no_dispatch": "[%s 正在进行]",
   "chat_bubbles.maid_storage_manager.secondary_crafting.status_sub": "子任务",
   "chat_bubbles.maid_storage_manager.secondary_crafting.work": "处理",
+  "chat_bubbles.maid_storage_manager.secondary_crafting.prefetch": "预备",
   "config.jade.plugin_maid_storage_manager.virtual_frame": "虚拟展示框",
   "config.maid_storage_manager.ai": "AI",
   "config.maid_storage_manager.ai.functions": "启用函数调用",

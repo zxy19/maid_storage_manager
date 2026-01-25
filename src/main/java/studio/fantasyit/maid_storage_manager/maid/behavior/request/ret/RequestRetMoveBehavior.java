@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -51,7 +52,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         //背包压根没东西，而且是要回去算合成的，那就别回去了，就地进行下一步即可
-        if (Conditions.isNothingToPlace(maid) && MemoryUtil.getRequestProgress(maid).isTryCrafting()) {
+        if (Conditions.isNothingToPlace(maid) && MemoryUtil.getRequestProgress(maid).isTryCrafting() && !MemoryUtil.getCrafting(maid).hasPlan()) {
             MemoryUtil.getRequestProgress(maid).setReturn(false);
             return;
         }
@@ -65,10 +66,10 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
 
             if (goal == null) {
-                DebugData.sendDebug("[REQUEST_RET] Unavailable target, waiting");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_RET] Unavailable target, waiting");
                 return;
             }
-            DebugData.sendDebug("[REQUEST_RET] Return target %s", storage);
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_RET] Return target %s", storage);
 
             MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
             MemoryUtil.getRequestProgress(maid).setReturn();
@@ -80,7 +81,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
         } else {
             //如果没有绑定存储位置，那么直接停止任务，扔掉或者存储清单，三十秒后进行日常工作
             if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) {
-                DebugData.sendDebug("[REQUEST_RET] No target");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_RET] No target");
                 RequestListItem.markAllDone(maid.getMainHandItem());
                 RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null, null);
                 MemoryUtil.setReturnToScheduleAt(maid, level.getServer().getTickCount() + 600);

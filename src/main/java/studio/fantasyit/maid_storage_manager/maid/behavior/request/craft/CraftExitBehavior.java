@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -34,7 +35,7 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
             MemoryUtil.getCrafting(maid).plan().handleStopAddingEvent(maid);
             return;
         }
-        DebugData.sendDebug("[REQUEST_CRAFT]Exit");
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "[REQUEST_CRAFT]Exit");
         RequestListItem.markAllDone(maid.getMainHandItem());
         MemoryUtil.getCrafting(maid).clearCraftGuides();
         MemoryUtil.getCrafting(maid).clearPlan();

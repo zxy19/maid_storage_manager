@@ -50,7 +50,7 @@ public record SolvedCraftLayer(int index,
         return slotInput + slotOutput;
     }
 
-    enum Progress {
+    public enum Progress {
         // 任务正在等待（前置任务未完成）
         WAITING,
         // 任务可以调度（前置任务已经全部开始）

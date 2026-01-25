@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -35,14 +36,14 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
 
         //整理消失
         if (target == null || storage == null) {
-            DebugData.sendDebug("[RESORT]No Target");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[RESORT]No Target");
             MemoryUtil.getResorting(maid).clearNeedToResort();
             MemoryUtil.getResorting(maid).clearTarget();
             return;
         }
 
         if (!storage.getType().equals(MemoryUtil.getResorting(maid).getTarget().getType())) {
-            DebugData.sendDebug("[RESORT]Target Changed");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[RESORT]Target Changed");
             MemoryUtil.getResorting(maid).clearNeedToResort();
             MemoryUtil.getResorting(maid).clearTarget();
             return;
@@ -54,7 +55,7 @@ public class ResortMoveBehavior extends Behavior<EntityMaid> {
             return;
         }
 
-        DebugData.sendDebug("[RESORT]Target %s", goal.toShortString());
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[RESORT]Target %s", goal.toShortString());
         MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
     }
 

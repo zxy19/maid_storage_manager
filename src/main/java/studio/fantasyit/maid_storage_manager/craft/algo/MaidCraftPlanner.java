@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.utils.ResultListOptimize
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugManager;
 import studio.fantasyit.maid_storage_manager.craft.generator.AutoGraphGenerator;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
@@ -86,6 +87,7 @@ public class MaidCraftPlanner implements IDebugContextSetter {
             initItems();
         }
         plan = new CraftLayerChain(maid);
+        ProgressDebugManager.getDebugContext(maid).ifPresent(debugContext -> debugContext.convey(plan));
     }
 
     protected boolean precheck() {

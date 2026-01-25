@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
@@ -48,7 +49,7 @@ public class ReturnOnVehicleBehavior extends Behavior<EntityMaid> {
                             layer.getItems().get(0).getHoverName()
                     ).withStyle(ChatFormatting.GREEN)
             );
-        DebugData.sendDebug("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK] Step Done. Set Success.");
         //根层
         for (int i = 0; i < layer.getItems().size(); i++) {
             ItemStack itemStack = layer.getItems().get(i);

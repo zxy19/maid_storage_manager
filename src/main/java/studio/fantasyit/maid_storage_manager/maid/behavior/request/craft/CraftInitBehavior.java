@@ -10,6 +10,7 @@ import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -86,7 +87,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
             RequestListItem.markAllDone(maid.getMainHandItem());
             MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
             MemoryUtil.getRequestProgress(maid).setReturn(true);
-            DebugData.sendDebug("[REQUEST_CRAFT] Failed to find recipe for any items");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "[REQUEST_CRAFT] Failed to find recipe for any items");
             ChatTexts.send(maid, ChatTexts.CHAT_CRAFT_CALCULATE_NO_RESULT);
             MemoryUtil.getCrafting(maid).calculatingProgress = 0;
             MemoryUtil.getCrafting(maid).calculatingTotal = 0;

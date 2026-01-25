@@ -22,6 +22,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugManager;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
 import studio.fantasyit.maid_storage_manager.items.HangUpItem;
@@ -32,6 +34,7 @@ import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.List;
+import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = MaidStorageManager.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerInteract {
@@ -53,6 +56,18 @@ public class PlayerInteract {
     public static void onPlayerInteractMaid(InteractMaidEvent event) {
         EntityMaid maid = event.getMaid();
         Player player = event.getPlayer();
+        if (ProgressDebugManager.getPreparedPlayer(player) != null) {
+            String target = ProgressDebugManager.getPreparedPlayer(player);
+            ProgressDebugManager.removePreparedPlayer(player);
+
+            if (ProgressDebugManager.getDebugContext(maid).isPresent()) {
+                ProgressDebugManager.remove(maid);
+                player.sendSystemMessage(Component.literal("Progress debug removed"));
+            } else {
+                ProgressDebugContext forMaid = ProgressDebugManager.createForMaid(maid, Objects.requireNonNull(target));
+                player.sendSystemMessage(Component.literal("Progress debug prepared with ID " + forMaid.id));
+            }
+        }
         if (Integrations.createStockManager())
             if (StockManagerInteract.onPlayerInteract(player, maid)) {
                 event.setCanceled(true);

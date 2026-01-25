@@ -10,6 +10,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -46,15 +47,15 @@ public class StockCheckMoveBehavior extends Behavior<EntityMaid> {
         @Nullable Target target = RequestListItem.getStorageBlock(maid.getMainHandItem());
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
         if (target == null || storage == null) {
-            DebugData.sendDebug("[STOCK_CHECK] No target");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[STOCK_CHECK] No target");
         } else {
             MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
             if (goal == null) {
-                DebugData.sendDebug("[STOCK_CHECK] Unavailable target, waiting");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[STOCK_CHECK] Unavailable target, waiting");
                 return;
             }
-            DebugData.sendDebug("[STOCK_CHECK] Return target %s", storage);
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[STOCK_CHECK] Return target %s", storage);
             MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
             MemoryUtil.getRequestProgress(maid).setCheckingStock(true);
             MemoryUtil.getRequestProgress(maid).setTarget(storage);

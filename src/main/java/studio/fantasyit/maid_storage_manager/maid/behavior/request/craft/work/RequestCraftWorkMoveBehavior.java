@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
@@ -72,7 +73,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
                                 layer.getItems().get(0).getHoverName()
                         ).withStyle(ChatFormatting.GREEN)
                 );
-            DebugData.sendDebug("[REQUEST_CRAFT_WORK] Step Done. Set Success.");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK] Step Done. Set Success.");
             //根层
             for (int i = 0; i < layer.getItems().size(); i++) {
                 ItemStack itemStack = layer.getItems().get(i);
@@ -109,7 +110,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         }
         Target storage = step.getStorage();
         DebugData.sendDebug(
-                String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
+                maid, ProgressDebugContext.TYPE.WORK, String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
                         layer.getStep(),
                         layer.getDoneCount(),
                         layer.getCount(),
@@ -130,7 +131,7 @@ public class RequestCraftWorkMoveBehavior extends Behavior<EntityMaid> {
             }
             if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
                 List<ItemStack> missing = layer.getCraftData().map(CraftGuideData::getOutput).orElse(List.of());
-                DebugData.sendDebug("[REQUEST_CRAFT_WORK]Path finding fail.");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_CRAFT_WORK]Path finding fail.");
                 plan.failCurrent(maid, missing, "tooltip.maid_storage_manager.request_list.fail_cannot_path_reach_crafting");
                 MemoryUtil.getCrafting(maid).resetPathFindingFailCount();
             }

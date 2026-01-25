@@ -74,8 +74,12 @@ public class MemoryUtil {
     }
 
     public static void setTarget(EntityMaid maid, Entity entity, float collectSpeed) {
+        setTarget(maid, entity, collectSpeed, 0);
+    }
+
+    public static void setTarget(EntityMaid maid, Entity entity, float collectSpeed, int closeEnough) {
         maid.getBrain().setMemory(InitEntities.TARGET_POS.get(), new EntityTracker(entity, true));
-        BehaviorUtils.setWalkAndLookTargetMemories(maid, entity, collectSpeed, 0);
+        BehaviorUtils.setWalkAndLookTargetMemories(maid, entity, collectSpeed, closeEnough);
     }
 
     public static ScheduleBehavior.Schedule getCurrentlyWorking(EntityMaid maid) {

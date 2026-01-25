@@ -26,7 +26,6 @@ import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -177,7 +176,6 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
             tag.putInt(TAG_COOLING_DOWN, tag.getInt(TAG_COOLING_DOWN) - 1);
             item.setTag(tag);
             if (tag.getInt(TAG_COOLING_DOWN) == 0) {
-                DebugData.sendDebug("Cooling Done(clear_repeat)");
                 clearItemProcess(item);
             }
         }

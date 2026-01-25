@@ -33,6 +33,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -119,7 +120,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
         this.chainConveyorBlockEntity = selected.getValue();
         this.connection = selectedConnection.getValue();
         if (chainConveyorBlockEntity != null && connection != null) {
-            DebugData.sendDebug("[Create Chain]Select Chain %s connection %s(%s)",
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[Create Chain]Select Chain %s connection %s(%s)",
                     selected.getValue().getBlockPos().toShortString(),
                     connection.toShortString(),
                     selected.getValue().getBlockPos().offset(connection).toShortString()
@@ -129,7 +130,7 @@ public class CreateCollectContext extends AbstractCreateContext implements IStor
             onChainPos = minPos.getValue();
             if (ChainRouterManager.isChanged(targetPackageName, chainConveyorBlockEntity.getBlockPos().offset(connection), connection)) {
                 nextStartUpdateAt = ChainRouterManager.getLastTick(targetPackageName) + ChainConveyorRoutingTable.ENTRY_TIMEOUT + 20;
-                DebugData.sendDebug("[Create Chain]Delayed for router updates");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[Create Chain]Delayed for router updates");
             }
             ChainRouterManager.set(targetPackageName, chainConveyorBlockEntity.getBlockPos().offset(connection), connection, maid.tickCount);
         }

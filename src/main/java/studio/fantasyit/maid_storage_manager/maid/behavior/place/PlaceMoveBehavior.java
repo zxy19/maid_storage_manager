@@ -12,6 +12,7 @@ import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -74,7 +75,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
 
                 //快速放置-保留全部记录模式，没有目标几次后重置所有suppressed
                 if (MemoryUtil.getPlacingInv(maid).getFailCount() >= 2 && MemoryUtil.getPlacingInv(maid).anySuppressed()) {
-                    DebugData.sendDebug("[PLACE]Suppress clear L ALL");
+                    DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Suppress clear L ALL");
                     MemoryUtil.getPlacingInv(maid).removeSuppressed();
                     MemoryUtil.getPlacingInv(maid).resetFailCount();
                 }
@@ -88,7 +89,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             MemoryUtil.getPlacingInv(maid).clearTarget();
             MemoryUtil.getPlacingInv(maid).resetAnySuccess();
             MemoryUtil.clearTarget(maid);
-            DebugData.sendDebug("[PLACE]Reset (Iter all)");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Reset (Iter all)");
         } else {
             if (chestPos != null) {
                 MemoryUtil.getPlacingInv(maid).setTarget(chestPos);
@@ -205,8 +206,8 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 return priorityTarget(level, maid);
             }
             MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
-            DebugData.sendDebug("[PLACE]Priority By Filter %s", targetFilter.toString());
-            targetFilterList.forEach(i -> DebugData.sendDebug("+ Arranged:%s", i.getItem().toString()));
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Priority By Filter %s", targetFilter.toString());
+            targetFilterList.forEach(i -> DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "+ Arranged:%s", i.getItem().toString()));
             return true;
         }
         if (StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_EACH
@@ -214,7 +215,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         ) {
 
             placingInv.removeSuppressed(suppressedFilterTarget);
-            DebugData.sendDebug("[PLACE]Suppress clear L Filter");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Suppress clear L Filter");
             return priorityTarget(level, maid);
         }
         if (targetContent != null) {
@@ -226,14 +227,14 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 return priorityTarget(level, maid);
             }
             MemoryUtil.setTarget(maid, nearestFromTargetList, (float) Config.placeSpeed);
-            DebugData.sendDebug("[PLACE]Priority By Content %s", targetContent);
-            targetContentList.forEach(i -> DebugData.sendDebug("+ Arranged:%s", i.getItem().toString()));
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Priority By Content %s", targetContent);
+            targetContentList.forEach(i -> DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "+ Arranged:%s", i.getItem().toString()));
             return true;
         }
         if ((StorageManagerConfigData.get(maid).suppressStrategy() == StorageManagerConfigData.SuppressStrategy.AFTER_EACH
                 || StorageManagerConfigData.get(maid).suppressStrategy() == SuppressStrategy.AFTER_PRIORITY)
                 && ((!suppressedFilterTarget.isEmpty()) || (!suppressedContentTarget.isEmpty()))) {
-            DebugData.sendDebug("[PLACE]Suppress clear L Match");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Suppress clear L Match");
             MemoryUtil.getPlacingInv(maid).removeSuppressed(suppressedContentTarget);
             MemoryUtil.getPlacingInv(maid).removeSuppressed(suppressedFilterTarget);
             return priorityTarget(level, maid);
@@ -256,7 +257,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         if (canTouchChest != null) {
             chestPos = canTouchChest;
             MemoryUtil.getPlacingInv(entityMaid).setArrangeItems(maidAvailableItems);
-            DebugData.sendDebug("[PLACE]Normal %s", canTouchChest);
+            DebugData.sendDebug(entityMaid, ProgressDebugContext.TYPE.MOVE, "[PLACE]Normal %s", canTouchChest);
             return true;
         }
         return false;

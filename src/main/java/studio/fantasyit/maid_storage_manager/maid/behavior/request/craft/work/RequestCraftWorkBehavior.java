@@ -10,6 +10,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.data.BoxTip;
@@ -196,7 +197,7 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
         if (skipped) return;
         if (!MemoryUtil.getCrafting(maid).hasPlan()) return;
         if (fail) {
-            DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting fail");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK]crafting fail");
             plan.failCurrent(maid, craftGuideStepData.getItems(), "tooltip.maid_storage_manager.request_list.fail_crafting");
             Network.INSTANCE.send(PacketDistributor.TRACKING_ENTITY.with(() -> maid),
                     new ShowCommonPacket(new BoxTip(
@@ -210,11 +211,11 @@ public class RequestCraftWorkBehavior extends Behavior<EntityMaid> {
                 plan1.dispatchedFail("tooltip.maid_storage_manager.request_list.fail_crafting");
             }
         } else {
-            DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             layer.nextStep();
             if (layer.isDone()) {
                 plan.removeOccupied(level, maid);
-                DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK]layer done");
                 plan.finishCurrentLayer(maid);
                 MemoryUtil.getCrafting(maid).resetAndMarkVis(level, maid);
                 plan.showCraftingProgress(maid);

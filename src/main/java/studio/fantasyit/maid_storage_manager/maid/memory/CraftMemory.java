@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
+import studio.fantasyit.maid_storage_manager.craft.work.SolvedCraftLayer;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -109,8 +110,12 @@ public class CraftMemory extends AbstractTargetMemory {
         this.isSwappingHandWhenCrafting = false;
     }
 
-    public boolean isGatheringDispatched() {
+    public boolean getIsGatheringDispatchedRaw() {
         return isGatheringDispatched;
+    }
+
+    public boolean isGatheringDispatched() {
+        return isGatheringDispatched && plan.hasCurrent() && plan.getCurrentNode().progress().getValue() == SolvedCraftLayer.Progress.GATHERING;
     }
 
     public void setGatheringDispatched(boolean isGatheringDispatched) {

@@ -71,7 +71,7 @@ public class RequestCraftPrefetchMoveBehavior extends AbstractGatherMoveBehavior
 
     @Override
     protected void noTarget(ServerLevel level, EntityMaid maid) {
-        plan.finishGathering(maid);
+        plan.finishPrefetching(maid);
     }
 
     @Override
