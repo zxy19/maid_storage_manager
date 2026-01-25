@@ -633,6 +633,11 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
         if (isDone() || !hasCurrent()) return false;
         return getCurrentNode().progress().getValue() == SolvedCraftLayer.Progress.WORKING;
     }
+
+    public boolean isCurrentStandBy() {
+        if (isDone() || !hasCurrent()) return false;
+        return getCurrentNode().progress().getValue() == SolvedCraftLayer.Progress.STANDBY;
+    }
     // endregion
 
     /// ////infos
@@ -660,8 +665,9 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
                 done,
                 total,
                 isCurrentGathering() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_GATHER) :
-                        isCurrentWorking() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_WORK) :
-                                Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_PREFETCH)
+                        isCurrentStandBy() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_STANDBY) :
+                                isCurrentWorking() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_WORK) :
+                                        Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_PREFETCH)
         );
         toShow.append("\n");
         if (!dispatchedTaskMapping.isEmpty()) {

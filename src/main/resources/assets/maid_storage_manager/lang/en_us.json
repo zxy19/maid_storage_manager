@@ -62,6 +62,7 @@
   "chat_bubbles.maid_storage_manager.secondary_crafting.status_sub": "SubTask",
   "chat_bubbles.maid_storage_manager.secondary_crafting.work": "Working",
   "chat_bubbles.maid_storage_manager.secondary_crafting.prefetch": "Prefetch",
+  "chat_bubbles.maid_storage_manager.secondary_crafting.standby": "Stand By",
   "config.jade.plugin_maid_storage_manager.virtual_frame": "Virtual Frame",
   "config.maid_storage_manager.ai": "AI",
   "config.maid_storage_manager.ai.functions": "Enable function calls",
