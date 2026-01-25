@@ -29,7 +29,7 @@ public class DispatchedGatherMoveBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
-        if (!MemoryUtil.getCrafting(owner).getIsGatheringDispatchedRaw()) return false;
+        if (!MemoryUtil.getCrafting(owner).isGatheringDispatched()) return false;
         return true;
     }
 
@@ -48,11 +48,9 @@ public class DispatchedGatherMoveBehavior extends Behavior<EntityMaid> {
             return;
         }
 
-        if(MemoryUtil.getCrafting(maid).isGatheringDispatched()) {
-            if (plan.getCurrentLayer().hasCollectedAll()) {
-                MemoryUtil.getCrafting(maid).setGatheringDispatched(false);
-                return;
-            }
+        if (plan.getCurrentLayer().hasCollectedAll()) {
+            MemoryUtil.getCrafting(maid).setGatheringDispatched(false);
+            return;
         }
 
         MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed, 1);
