@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -20,10 +21,13 @@ import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.data.InvConsumeSimulator;
+import studio.fantasyit.maid_storage_manager.craft.debug.IProgressDebugContextSetter;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
+import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
@@ -34,7 +38,7 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.*;
 
-public class CraftLayerChain {
+public class CraftLayerChain implements IProgressDebugContextSetter {
     public static final Codec<Pair<UUID, Pair<Integer, UUID>>>
             DISPATCHED_TASK_MAPPING_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -127,6 +131,13 @@ public class CraftLayerChain {
 
     private String toBeFailAddition;
     private Component statusMessage = Component.empty();
+
+    ProgressDebugContext debug = ProgressDebugContext.Dummy.INSTANCE;
+
+    @Override
+    public void setDebugContext(ProgressDebugContext context) {
+        this.debug = context;
+    }
 
 
     protected enum StoppingAdding {
@@ -478,15 +489,17 @@ public class CraftLayerChain {
      * @return
      */
     public boolean dispatchedDone(EntityMaid targetMaid, EntityMaid maid, int index, boolean allSuccess, ItemStack reqList) {
-        if (nodes.size() <= index)
+        if (nodes.size() <= index) {
             return false;
+        }
         SolvedCraftLayer node = nodes.get(index);
         CraftLayer layer = layers.get(index);
+        debug.log(ProgressDebugContext.TYPE.WORK, "dispatchedDone:%d", index);
         dispatchedTaskMapping.remove(targetMaid.getUUID());
         dispatchedTaskTickCount.remove(targetMaid.getUUID());
         if (node.progress().getValue() != SolvedCraftLayer.Progress.DISPATCHED) return false;
         if (allSuccess) {
-            finishLayer(node, layer);
+            finishLayer(node, layer, maid);
             checkAndSwitchGroup(maid);
             checkIsFullInv(maid);
         } else {
@@ -541,6 +554,14 @@ public class CraftLayerChain {
             } else {
                 dispatchedTaskTickCount.remove(p.getKey());
             }
+
+            if (!isMaster && dispatchedMaid != null) {
+                CraftLayerChain plan = MemoryUtil.getCrafting(dispatchedMaid).plan;
+                if (plan != null && plan.isStoppingAdding != isStoppingAdding) {
+                    clearAndStopAdding(plan.isStoppingAdding);
+                    handleStopAddingEvent(maid);
+                }
+            }
         }
     }
 
@@ -556,6 +577,28 @@ public class CraftLayerChain {
         else {
             clearAndStopAdding(StoppingAdding.FAIL);
         }
+    }
+
+    public void onDispatchedStarted(EntityMaid currentMaid, int idx) {
+        SolvedCraftLayer node = getNode(idx);
+        // 还需要处理后续节点的启动前置条件
+        onNodeStart(node);
+        DebugData.sendDebug(currentMaid, ProgressDebugContext.TYPE.STATUS, "Dispatched Started, %d[nonStart]", idx);
+    }
+
+    private void onNodeStart(SolvedCraftLayer node) {
+        debug.log(ProgressDebugContext.TYPE.WORK, "onNodeStart:%d", node.index());
+        node.nextIndex().forEach(index -> {
+            SolvedCraftLayer nextNode = nodes.get(index);
+            nextNode.nonStartPrev().decrement();
+            debug.log(ProgressDebugContext.TYPE.WORK, "onNodeStart:%d, next:%d, nonStartPrev:%d-->%d", node.index(), index, nextNode.nonStartPrev().getValue() + 1, nextNode.nonStartPrev().getValue());
+            // 如果当前节点的所有前置节点都已经进入【正常工作】状态，那么下一个节点可以开始预收集
+            if (nextNode.nonStartPrev().getValue() == 0 && !isStoppingAdding.value) {
+                workingQueue.add(nextNode);
+                nextNode.progress().setValue(SolvedCraftLayer.Progress.IDLE);
+            }
+        });
+        startAny();
     }
 
     public UUID getLayerTaker(int layerIndex) {
@@ -602,8 +645,9 @@ public class CraftLayerChain {
                 ChatTexts.CHAT_SECONDARY_CRAFTING,
                 done,
                 total,
-                isCurrentWorking() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_WORK) :
-                        Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_GATHER)
+                isCurrentGathering() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_GATHER) :
+                        isCurrentWorking() ? Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_WORK) :
+                                Component.translatable(ChatTexts.CHAT_SECONDARY_CRAFTING_PREFETCH)
         );
         toShow.append("\n");
         if (!dispatchedTaskMapping.isEmpty()) {
@@ -640,6 +684,7 @@ public class CraftLayerChain {
     }
 
     public void setStatusMessage(EntityMaid maid, Component message) {
+        debug.log(ProgressDebugContext.TYPE.COMMON, "[STATUS_MESSAGE] %s", message);
         setStatusMessage(message);
         showCraftingProgress(maid);
     }
@@ -692,6 +737,7 @@ public class CraftLayerChain {
             return;
         if (hasCurrent()) return;
         if (!dispatchedTaskMapping.isEmpty() && isMaster) return;
+        debug.log(ProgressDebugContext.TYPE.COMMON, "[STOP_ADDING] %s", isStoppingAdding.name());
         if (!isMaster) {
             //非主合成，这里直接标记失败，但是不要展示失败提示消息。
             failAllItem(maid);
@@ -818,16 +864,26 @@ public class CraftLayerChain {
      * @param maid
      */
     public void finishPrefetching(EntityMaid maid) {
+        if (!hasCurrent()) return;
         CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
         SolvedCraftLayer node = Objects.requireNonNull(this.getCurrentNode());
 
-        if (node.nonFinishPrev().getValue() == 0) {
-            tryStartLayer(node, layer);
+        debug.log(ProgressDebugContext.TYPE.STATUS, "Prefetch done, nonFinish=%d -> STANDBY", node.nonFinishPrev().getValue());
+        node.progress().setValue(SolvedCraftLayer.Progress.STANDBY);
+        if (node.nonFinishPrev().getValue() == 0 && tryStartLayer(node, layer)) {
+            debug.log(ProgressDebugContext.TYPE.STATUS, "now Started");
             showCraftingProgress(maid);
+            if (!isMaster && ((ServerLevel) maid.level()).getEntity(getMasterUUID()) instanceof EntityMaid master) {
+                CraftMemory crafting = MemoryUtil.getCrafting(master);
+                CompoundTag vd = RequestListItem.getVirtualData(maid.getMainHandItem());
+                if (crafting.hasPlan() && vd != null && vd.contains("index")) {
+                    crafting.plan.onDispatchedStarted(master, vd.getInt("index"));
+                }
+            }
         } else {
-            node.progress().setValue(SolvedCraftLayer.Progress.STANDBY);
-            startAny(true);
+            startAny();
         }
+        MemoryUtil.getCrafting(maid).resetAndMarkVis((ServerLevel) maid.level(), maid);
     }
 
     /**
@@ -844,6 +900,7 @@ public class CraftLayerChain {
         CraftLayer layer = Objects.requireNonNull(this.getCurrentLayer());
         SolvedCraftLayer node = Objects.requireNonNull(this.getCurrentNode());
         if (layer.hasCollectedAll()) {
+            debug.log(ProgressDebugContext.TYPE.WORK, "Gather done, all collected");
             //收集完了再次检查满足开始条件。如果否则开始前再次进行补齐
             if (!checkInputInbackpack(maid)) return;
             showCraftingProgress(maid);
@@ -857,8 +914,10 @@ public class CraftLayerChain {
                                     .orElse(Component.empty())
                     )
             );
+            debug.log(ProgressDebugContext.TYPE.STATUS, "Gather done, all collected -> WORKING");
             node.progress().setValue(SolvedCraftLayer.Progress.WORKING);
         } else {
+            debug.log(ProgressDebugContext.TYPE.STATUS, "Some not gathered");
             //如果不是最终步骤，而且没有收集成功，那么意味着记忆存在问题，重置记忆，并再次计算合成树
             if (getCurrentLayer().getCraftData().isPresent()) {
                 List<ItemStack> unCollectedItems = layer.getUnCollectedItems();
@@ -871,6 +930,7 @@ public class CraftLayerChain {
                         unCollectedItems.forEach(itemStack -> toVi.removeItemFromAllTargets(itemStack, i -> ItemStackUtil.isSameTagInCrafting(i, itemStack)));
                     }
                 }
+                debug.log(ProgressDebugContext.TYPE.STATUS, "Some not gathered -> Reschedule");
                 clearAndStopAdding(StoppingAdding.RESCHEDULE);
                 handleStopAddingEvent(maid);
             } else {
@@ -912,6 +972,7 @@ public class CraftLayerChain {
                     }
                 }
             }
+            debug.log(ProgressDebugContext.TYPE.WORK, "some items not in backpack, -> Gather");
             node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
             return false;
         }
@@ -964,13 +1025,14 @@ public class CraftLayerChain {
         SolvedCraftLayer node = getCurrentNode();
         CraftLayer layer = getCurrentLayer();
         workingQueue.poll();
-        finishLayer(node, layer);
+        finishLayer(node, layer, maid);
         checkAndSwitchGroup(maid);
         checkIsFullInv(maid);
     }
 
 
-    private void finishLayer(SolvedCraftLayer node, CraftLayer layer) {
+    private void finishLayer(SolvedCraftLayer node, CraftLayer layer, EntityMaid maid) {
+        debug.log(ProgressDebugContext.TYPE.STATUS, "Finish Layer");
         if (node.progress().getValue() != SolvedCraftLayer.Progress.DISPATCHED) {
             //如果非分发层完成，那么我们的必要输入此时应该已经全部完成了，移除这些层。
             invConsumeSimulator.removeLayerInput(layer);
@@ -991,10 +1053,18 @@ public class CraftLayerChain {
             SolvedCraftLayer nextNode = nodes.get(index);
             nextNode.inDegree().decrement();
             nextNode.lastTouch().setValue(Math.max(node.lastTouch().getValue() + 1, nextNode.lastTouch().getValue()));
-
-            if (nextNode.inDegree().getValue() == 0 && !isStoppingAdding.value) {
-                workingQueue.add(nextNode);
-                nextNode.progress().setValue(SolvedCraftLayer.Progress.IDLE);
+            //如果当前节点的后续节点被分发了，但是被分发的时候当前节点仍然有未完成的前置节点，那么现在前置节点完成后，应该同步给对方
+            if (nextNode.progress().getValue() == SolvedCraftLayer.Progress.DISPATCHED) {
+                if (((ServerLevel) maid.level()).getEntity(getLayerTaker(index)) instanceof EntityMaid taker) {
+                    CraftLayerChain dispatchedPlan = MemoryUtil.getCrafting(taker).plan();
+                    if (dispatchedPlan != null) {
+                        dispatchedPlan.getNode(0).nonFinishPrev().decrement();
+                        if (dispatchedPlan.getNode(0).nonFinishPrev().getValue() == 0) {
+                            dispatchedPlan.tryStartLayer(dispatchedPlan.getNode(0), dispatchedPlan.getLayer(0));
+                            onNodeStart(nextNode);
+                        }
+                    }
+                }
             }
         });
         startAny();
@@ -1025,7 +1095,9 @@ public class CraftLayerChain {
             return false;
         if (node.inDegree().getValue() > 0)
             return false;
-        if (currentParallel >= maxParallel)
+        if (layer.getCraftData().isEmpty() && node.nonFinishPrev().getValue() > 0)
+            return false;
+        if (currentParallel >= maxParallel && node.progress().getValue() == SolvedCraftLayer.Progress.IDLE)
             //最终层，允许启动
             if (maxParallel != 0 || layer.getCraftData().isPresent())
                 return false;
@@ -1045,6 +1117,7 @@ public class CraftLayerChain {
             invConsumeSimulator.removeLayerInput(layer);
             invConsumeSimulator.addLayer(layer);
             currentParallel++;
+            debug.log(ProgressDebugContext.TYPE.STATUS, "%d -> prefetch", node.index());
             node.progress().setValue(SolvedCraftLayer.Progress.PREFETCH);
 
             // 前置任务全部处于结束的状态，那么不需要进行预提取了，可以直接走正常获取流程
@@ -1070,21 +1143,10 @@ public class CraftLayerChain {
             }
 
             // 还需要处理后续节点的启动前置条件
-            node.nextIndex().forEach(index -> {
-                SolvedCraftLayer nextNode = nodes.get(index);
-                nextNode.nonStartPrev().decrement();
-                // 如果当前节点的所有前置节点都已经进入【正常工作】状态，那么下一个节点可以开始预收集
-                if (nextNode.nonStartPrev().getValue() == 0 && !isStoppingAdding.value) {
-                    workingQueue.add(nextNode);
-                    nextNode.progress().setValue(SolvedCraftLayer.Progress.IDLE);
-                }
-            });
+            debug.log(ProgressDebugContext.TYPE.STATUS, "%d -> gathering", node.index());
             node.progress().setValue(SolvedCraftLayer.Progress.GATHERING);
+            onNodeStart(node);
         }
-        DebugData.sendDebug(
-                "[CRAFT_CHAIN]Starting Layer,%s", layer.getCraftData().map(e -> "Normal").orElse("TreeRoot")
-        );
-        setChanged();
         return true;
     }
 
@@ -1093,6 +1155,7 @@ public class CraftLayerChain {
     }
 
     protected boolean startAny(boolean skipLast) {
+        debug.log(ProgressDebugContext.TYPE.WORK, "StartAny call");
         if (startAnyWithFilter(skipLast, true))
             return true;
         return startAnyWithFilter(skipLast, false);
@@ -1106,7 +1169,8 @@ public class CraftLayerChain {
             if (standByOnly && currentNode.progress().getValue() != SolvedCraftLayer.Progress.STANDBY)
                 continue;
             if (tryStartLayer(currentNode, layers.get(currentNode.index()))) {
-                setChanged();
+                if (i != 0 || skipLast) setChanged();
+                debug.log(ProgressDebugContext.TYPE.WORK, "Starting node %s", currentNode.index());
                 return true;
             }
             if (

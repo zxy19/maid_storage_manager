@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -37,7 +38,7 @@ public class FollowEnableBehavior extends MaidCheckRateTask {
     protected void start(ServerLevel p_22540_, EntityMaid maid, long p_22542_) {
         maid.getBrain().setMemory(MemoryModuleRegistry.CO_WORK_MODE.get(), true);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.COWORK);
-        DebugData.sendDebug("[CO_WORK]Enable");
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "[CO_WORK]Enable");
         ChatTexts.send(maid, ChatTexts.CHAT_COWORK_ENABLE);
     }
 

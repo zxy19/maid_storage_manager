@@ -7,8 +7,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.argument.CraftingDebugControlArgument;
+import studio.fantasyit.maid_storage_manager.argument.ProgressDebugControlArgument;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugManager;
 
 @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class CommandRegisterEvent {
@@ -27,6 +29,18 @@ public class CommandRegisterEvent {
                                 .executes(t -> {
                                     CraftingDebugContext d = CraftingDebugManager.prepareForPlayer(t.getSource().getPlayerOrException().getUUID(), "");
                                     t.getSource().sendSystemMessage(Component.literal("Crafting debug prepared with ID " + d.id));
+                                    return 1;
+                                }))
+                        .then(Commands.literal("debug_maid")
+                                .then(Commands.argument("control", new ProgressDebugControlArgument())
+                                        .executes(t -> {
+                                            ProgressDebugManager.preparePlayer(t.getSource().getPlayerOrException(), t.getArgument("control", String.class));
+                                            t.getSource().sendSystemMessage(Component.literal("Click at a maid to setup debug context"));
+                                            return 1;
+                                        }))
+                                .executes(t -> {
+                                    ProgressDebugManager.preparePlayer(t.getSource().getPlayerOrException(), "");
+                                    t.getSource().sendSystemMessage(Component.literal("Click at a maid to setup debug context"));
                                     return 1;
                                 }))
         );

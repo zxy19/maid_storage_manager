@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -58,12 +59,11 @@ public class LogisticCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         Target storage = step.getStorage();
 
         DebugData.sendDebug(
-                String.format("[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
-                        layer.getStep(),
-                        layer.getDoneCount(),
-                        layer.getCount(),
-                        storage
-                )
+                maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK]Step %d [%d/%d], %s",
+                layer.getStep(),
+                layer.getDoneCount(),
+                layer.getCount(),
+                storage
         );
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
         BlockPos blockPos = step.actionType.pathFindingTargetProvider().find(maid, layer.getCraftData().get(), step, layer, pathFinding);
@@ -75,7 +75,7 @@ public class LogisticCraftWorkMoveBehavior extends Behavior<EntityMaid> {
         } else {
             MemoryUtil.getCrafting(maid).addPathFindingFailCount();
             if (MemoryUtil.getCrafting(maid).getPathFindingFailCount() > 200) {
-                DebugData.sendDebug("[LOGISTIC_CRAFT_WORK]Path finding fail.");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[LOGISTIC_CRAFT_WORK]Path finding fail.");
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
                 MemoryUtil.getLogistics(maid).clearTarget();
                 MemoryUtil.clearTarget(maid);

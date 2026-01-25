@@ -9,6 +9,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
@@ -151,10 +152,10 @@ public class LogisticCraftWorkBehavior extends Behavior<EntityMaid> {
                     ),
                     (double) (layer.getDoneCount()) / layer.getCount()
             );
-            DebugData.sendDebug("[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK]crafting done %s", layer.getStep());
             layer.nextStep();
             if (layer.isDone()) {
-                DebugData.sendDebug("[REQUEST_CRAFT_WORK]layer done");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK]layer done");
                 MemoryUtil.getLogistics(maid).setStage(LogisticsMemory.Stage.OUTPUT);
             }
         }

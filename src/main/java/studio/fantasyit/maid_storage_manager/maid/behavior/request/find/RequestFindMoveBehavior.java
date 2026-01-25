@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -63,7 +64,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
             if (MemoryUtil.getRequestProgress(maid).confirmNoTarget()) {
-                DebugData.sendDebug("[REQUEST_FIND]No More Target");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_FIND]No More Target");
                 MemoryUtil.getRequestProgress(maid).setTryCrafting(true);
                 //立刻安排返回存储
                 MemoryUtil.getRequestProgress(maid).setReturn();
@@ -126,7 +127,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
 
             chestPos = storage;
             MemoryUtil.setTarget(maid, targetPos, (float) Config.placeSpeed);
-            DebugData.sendDebug("[REQUEST_FIND]Priority By Filter %s", storage);
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_FIND]Priority By Filter %s", storage);
             targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
             return true;
         }
@@ -143,7 +144,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         Target canTouchChest = MoveUtil.findTargetForPos(serverLevel, entityMaid, blockPos, requestProgress, false, StoragePredictor::isCollectable);
         if (canTouchChest != null) {
             chestPos = canTouchChest;
-            DebugData.sendDebug("[REQUEST_FIND]Target %s", canTouchChest);
+            DebugData.sendDebug(entityMaid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_FIND]Target %s", canTouchChest);
         }
         return canTouchChest != null;
     }

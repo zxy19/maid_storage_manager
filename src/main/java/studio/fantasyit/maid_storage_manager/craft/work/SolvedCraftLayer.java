@@ -43,13 +43,25 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
         return slotInput + slotOutput;
     }
 
-    enum Progress {
+
+    public enum Progress {
+        // 任务正在等待（前置任务未完成）
         WAITING,
+        // 任务可以调度（前置任务已经全部开始）
         IDLE,
+        // 任务开始预获取物品
+        PREFETCH,
+        // 任务等待前置任务结束
+        STANDBY,
+        // 获取物品中
         GATHERING,
+        // 合成中
         WORKING,
+        // 完成
         FINISHED,
+        // 失败
         FAILED,
+        // 分配到其他女仆进行
         DISPATCHED
     }
 

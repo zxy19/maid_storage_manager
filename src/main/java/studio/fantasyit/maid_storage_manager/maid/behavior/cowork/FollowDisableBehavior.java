@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -35,7 +36,7 @@ public class FollowDisableBehavior extends MaidCheckRateTask {
     @Override
     protected void start(ServerLevel p_22540_, EntityMaid maid, long p_22542_) {
         maid.getBrain().eraseMemory(MemoryModuleRegistry.CO_WORK_MODE.get());
-        DebugData.sendDebug("[CO_WORK]Disable");
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "[CO_WORK]Disable");
         ChatTexts.send(maid, ChatTexts.CHAT_COWORK_DISABLE);
     }
 

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
@@ -50,7 +51,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             if (MemoryUtil.getViewedInventory(maid).confirmNoTarget(2)) {
                 MemoryUtil.getViewedInventory(maid).removeUnvisited();
                 MemoryUtil.getViewedInventory(maid).resetVisitedPos();
-                DebugData.sendDebug("[VIEW]Reset, waiting");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[VIEW]Reset, waiting");
             }
         } else {
             MemoryUtil.getViewedInventory(maid).resetFailCount();
@@ -71,7 +72,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 if (target != null) {
                     chestPos = storage;
                     MemoryUtil.setTarget(maid, target, (float) Config.viewChangeSpeed);
-                    DebugData.sendDebug("[VIEW]Priority By Change %s", storage);
+                    DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[VIEW]Priority By Change %s", storage);
                     MemoryUtil.getViewedInventory(maid).resetMarkFailTime();
                     return true;
                 }
@@ -96,7 +97,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 StoragePredictor::isViewable
         );
         if (canTouchChest != null) {
-            DebugData.sendDebug("[VIEW]Target %s", canTouchChest);
+            DebugData.sendDebug(entityMaid, ProgressDebugContext.TYPE.MOVE, "[VIEW]Target %s", canTouchChest);
             chestPos = canTouchChest;
             return true;
         }

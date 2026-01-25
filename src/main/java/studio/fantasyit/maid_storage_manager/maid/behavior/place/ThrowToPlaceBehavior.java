@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -73,13 +74,13 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
 
         count++;
         if (count >= inv.getSlots())
-            DebugData.sendDebug("[THROW]Start waiting");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[THROW]Start waiting");
     }
 
 
     @Override
     protected void stop(ServerLevel level, EntityMaid maid, long p_22550_) {
-        DebugData.sendDebug("[THROW]done");
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[THROW]done");
         MemoryUtil.getViewedInventory(maid).clearWaitingAdd();
         MemoryUtil.setWorking(maid, false);
         MemoryUtil.getCrafting(maid).tryStartIfHasPlan();

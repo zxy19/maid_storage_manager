@@ -4,19 +4,21 @@ import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
-import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.Logger;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugManager;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
-import studio.fantasyit.maid_storage_manager.network.DebugDataPacket;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DebugData {
-    public static void sendDebug(String msg, Object... a) {
-        PacketDistributor.sendToAllPlayers(new DebugDataPacket(String.format(msg, a)));
+    public static void sendDebug(EntityMaid maid, ProgressDebugContext.TYPE type, String msg, Object... a) {
+        Optional<ProgressDebugContext> debugContext = ProgressDebugManager.getDebugContext(maid);
+        debugContext.ifPresent(progressDebugContext -> progressDebugContext.log(type, msg, a));
     }
 
     public static List<DebugTarget> commonTargets(EntityMaid maid) {

@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -165,7 +166,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
         if (!changed && anyMatched) {
             if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
                 MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);
-                DebugData.sendDebug("[PLACE]Suppress set at %s", target);
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[PLACE]Suppress set at %s", target);
             }
         }
         MemoryUtil.clearTarget(maid);

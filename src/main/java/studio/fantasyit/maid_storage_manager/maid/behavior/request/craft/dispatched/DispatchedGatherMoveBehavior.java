@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -28,7 +29,7 @@ public class DispatchedGatherMoveBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getCurrentlyWorking(owner) != ScheduleBehavior.Schedule.REQUEST) return false;
         if (MemoryUtil.getRequestProgress(owner).isReturning()) return false;
         if (!Conditions.takingRequestList(owner)) return false;
-        if (!MemoryUtil.getCrafting(owner).isGatheringDispatched()) return false;
+        if (!MemoryUtil.getCrafting(owner).getIsGatheringDispatchedRaw()) return false;
         return true;
     }
 
@@ -42,6 +43,18 @@ public class DispatchedGatherMoveBehavior extends Behavior<EntityMaid> {
         if (entity == null)
             return;
 
-        MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed);
+        CraftLayerChain plan = MemoryUtil.getCrafting(maid).plan;
+        if (plan == null || !plan.hasCurrent()) {
+            return;
+        }
+
+        if(MemoryUtil.getCrafting(maid).isGatheringDispatched()) {
+            if (plan.getCurrentLayer().hasCollectedAll()) {
+                MemoryUtil.getCrafting(maid).setGatheringDispatched(false);
+                return;
+            }
+        }
+
+        MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed, 1);
     }
 }

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.SortingMemory;
@@ -35,7 +36,7 @@ public class SortingMoveBehavior extends Behavior<EntityMaid> {
         @Nullable Target target = sorting.getNextNeedToSorting();
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.pos, target.side);
         if (target == null || storage == null) {
-            DebugData.sendDebug("[SORTING]Target not valid");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[SORTING]Target not valid");
             sorting.removeFirst();
             sorting.clearTarget();
             return;
@@ -53,7 +54,7 @@ public class SortingMoveBehavior extends Behavior<EntityMaid> {
         }
         sorting.resetFailCount();
         sorting.setTarget(target);
-        DebugData.sendDebug("[SORTING]Target %s", goal.toShortString());
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[SORTING]Target %s", goal.toShortString());
         MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
     }
 

@@ -9,11 +9,14 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.argument.CraftingDebugControlArgument;
+import studio.fantasyit.maid_storage_manager.argument.ProgressDebugControlArgument;
 
 public class ArgumentRegistry {
     static final DeferredRegister<ArgumentTypeInfo<?, ?>> REGISTRY = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, MaidStorageManager.MODID);
     static final Holder<ArgumentTypeInfo<?, ?>> DEBUG_ARG = REGISTRY.register("crafting_debug_control",
             () -> ArgumentTypeInfos.registerByClass(CraftingDebugControlArgument.class, SingletonArgumentInfo.contextFree(CraftingDebugControlArgument::new)));
+    static final RegistryObject<ArgumentTypeInfo<?, ?>> DEBUG_PROG_ARG = REGISTRY.register("progress_debug_control",
+            () -> ArgumentTypeInfos.registerByClass(ProgressDebugControlArgument.class, SingletonArgumentInfo.contextFree(ProgressDebugControlArgument::new)));
 
     public static void init(IEventBus eventBus) {
         REGISTRY.register(eventBus);

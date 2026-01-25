@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -33,7 +34,7 @@ public class MealMoveBehavior extends Behavior<EntityMaid> {
         @Nullable Target target = MemoryUtil.getMeal(maid).getTarget();
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.pos, target.side);
         if (target == null || storage == null) {
-            DebugData.sendDebug("[Meal]No Target");
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[Meal]No Target");
             MemoryUtil.getMeal(maid).clearTarget();
             return;
         }
@@ -42,7 +43,7 @@ public class MealMoveBehavior extends Behavior<EntityMaid> {
         if (goal == null) {
             return;
         }
-        DebugData.sendDebug("[Meal]Target %s", goal.toShortString());
+        DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[Meal]Target %s", goal.toShortString());
         MemoryUtil.setTarget(maid, goal, (float) Config.collectSpeed);
     }
 

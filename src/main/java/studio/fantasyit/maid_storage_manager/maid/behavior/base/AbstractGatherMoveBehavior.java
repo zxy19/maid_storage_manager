@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
@@ -69,7 +70,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
                     MemoryUtil.goRestrictCenterAndWait(maid, (float) Config.collectSpeed);
                     return;
                 }
-                DebugData.sendDebug("[GATHERING] No More Target");
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[GATHERING] No More Target");
                 noTarget(level, maid);
             }
         } else {
@@ -77,7 +78,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             if (chestPos != null) {
                 memory.setTarget(chestPos);
                 MemoryUtil.setLookAt(maid, chestPos.getPos());
-                DebugData.sendDebug("[GATHERING] Target %s", chestPos);
+                DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[GATHERING] Target %s", chestPos);
             }
             findTarget(level, maid, chestPos);
         }
@@ -122,7 +123,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
 
             chestPos = storage;
             MemoryUtil.setTarget(maid, targetPos, this.moveSpeed);
-            DebugData.sendDebug("[GATHERING]Priority By Content %s", storage);
+            DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[GATHERING]Priority By Content %s", storage);
             return true;
         }
         return false;
@@ -143,7 +144,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
         );
         if (canTouchChest != null) {
             chestPos = canTouchChest;
-            DebugData.sendDebug("[GATHERING]Target %s", canTouchChest);
+            DebugData.sendDebug(entityMaid, ProgressDebugContext.TYPE.MOVE, "[GATHERING]Target %s", canTouchChest);
         }
         return canTouchChest != null;
     }
