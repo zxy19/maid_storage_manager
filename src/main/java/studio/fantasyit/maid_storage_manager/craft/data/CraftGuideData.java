@@ -113,6 +113,10 @@ public class CraftGuideData {
             CraftGuideRenderData.recalculateItemStack(craftGuide);
             return data;
         }
+        return fromCompound(tag);
+    }
+
+    public static CraftGuideData fromCompound(CompoundTag tag) {
         ListTag inputs = tag.getList(CraftGuide.TAG_STEPS, Tag.TAG_COMPOUND);
         ResourceLocation type = null;
         ArrayList<CraftGuideStepData> step = new ArrayList<>();
@@ -220,6 +224,10 @@ public class CraftGuideData {
 
     public void saveToItemStack(ItemStack itemStack) {
         CompoundTag tag = itemStack.getOrCreateTag();
+        itemStack.setTag(toCompound(tag));
+    }
+
+    public CompoundTag toCompound(CompoundTag tag) {
         ListTag inputs = new ListTag();
         for (CraftGuideStepData step : steps) {
             inputs.add(step.toCompound());
@@ -230,7 +238,7 @@ public class CraftGuideData {
             tag.putInt(CraftGuide.TAG_SELECTING, selecting);
         tag.putBoolean(CraftGuide.TAG_MARK_MERGEABLE, mergeable);
         tag.putBoolean(CraftGuide.TAG_MARK_NO_OCCUPY, noOccupy);
-        itemStack.setTag(tag);
+        return tag;
     }
 
     public List<CraftGuideStepData> getSteps() {

@@ -129,6 +129,44 @@ public class CommonCraftAssets {
             BACKGROUND_OPT,
             45, 15, 15, 15
     );
+    public static ImageAsset SCROLL_BLOCK_GENERATOR = new ImageAsset(
+            BACKGROUND,
+            222, 50, 3, 3
+    );
+    public static ImageAsset SLOT_BACKGROUND_GENERATOR = new ImageAsset(
+            BACKGROUND,
+            216, 81, 10, 10
+    );
+    public static ImageAsset GENERATOR_SELECTOR_BOX_LEFT = ImageAsset.from4Point(
+            BACKGROUND,
+            226, 50, 255, 90
+    );
+    public static ImageAsset GENERATOR_SELECTOR_BOX_RIGHT = ImageAsset.from4Point(
+            BACKGROUND,
+            242, 115, 255, 155
+    );
+    public static ImageAsset GENERATOR_CONFIRM_BTN = ImageAsset.from4Point(
+            BACKGROUND,
+            232, 187, 255, 201
+    );
+    public static ImageAsset GENERATOR_CONFIRM_BTN_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            232, 202, 255, 216
+    );
+    public static ImageAsset GENERATOR_TIP = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 217, 245, 229
+    );
+    public static ImageAsset GENERATOR_TIP_HOVER = ImageAsset.from4Point(
+            BACKGROUND,
+            176, 230, 245, 242
+    );
+    public static ImageAsset GENERATOR_ALARM = ImageAsset.from4Point(
+            BACKGROUND,
+            242, 156, 253, 167
+    );
+
+
 
     public static Map<ResourceLocation, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();
 

@@ -492,5 +492,11 @@
   "maid_storage_manager.task.auto_detect": "Auto Detect",
   "maid_storage_manager.task.use_current_data": "Use Current",
   "item.maid_storage_manager.configurable_communicate_terminal":" Configurable Communicate Terminal",
-  "gui.maid_storage_manager.config.do_communicate": "Do Communicate"
+  "gui.maid_storage_manager.config.do_communicate": "Do Communicate",
+  "gui.maid_storage_manager.craft_guide.common.generator_tip": "Generator Available",
+  "gui.maid_storage_manager.craft_guide.common.generate_alarm": "WARN! All steps in this craft guide will be OVERWRITTEN!",
+  "gui.maid_storage_manager.craft_guide.common.generator_confirm_0": "Import",
+  "gui.maid_storage_manager.craft_guide.common.generator_confirm_1": "Confirm?",
+  "gui.maid_storage_manager.craft_guide.common.generator_input": "Input %s",
+  "gui.maid_storage_manager.craft_guide.common.generator_output": "Output %s"
 }

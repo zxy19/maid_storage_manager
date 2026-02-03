@@ -407,6 +407,18 @@ public class Network {
                 }
         );
 
+        Network.INSTANCE.registerMessage(16,
+                CraftGuideGeneratorUpdate.class,
+                CraftGuideGeneratorUpdate::toBytes,
+                CraftGuideGeneratorUpdate::new,
+                (p, c) -> {
+                    c.get().enqueueWork(() -> {
+                        CraftGuideGeneratorUpdate.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(Network::getLocalPlayer), p);
+                        c.get().setPacketHandled(true);
+                    });
+                }
+        );
+
     }
 
     @OnlyIn(Dist.CLIENT)

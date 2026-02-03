@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.menu;
 
-import me.towdium.jecharacters.utils.Match;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -10,12 +9,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.fml.ModList;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.integration.tour_guide.tours.InventoryListTour;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
+import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 import java.util.*;
@@ -227,23 +225,7 @@ public class InventoryListScreen extends Screen {
             list = originalList;
         else
             list = originalList.stream()
-                    .filter(inventoryItem -> {
-                        ItemStack itemStack = inventoryItem.itemStack;
-                        if (ModList.get().isLoaded("jecharacters")) {
-                            if (Match.matches(itemStack.getHoverName().getString(), search))
-                                return true;
-                            if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
-                                return true;
-                            if (itemStack.getTooltipLines(minecraft.player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
-                                return true;
-                            }
-                        }
-                        if (itemStack.getHoverName().getString().contains(search))
-                            return true;
-                        if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
-                            return true;
-                        return itemStack.getTooltipLines(minecraft.player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
-                    }).toList();
+                    .filter(inventoryItem -> InventoryListUtil.isMatchSearchStr(inventoryItem.itemStack, search)).toList();
 
         list = list.stream().filter(filterOption.predicate).sorted(sortingOption.comparator).toList();
     }
