@@ -106,6 +106,131 @@ public class CraftGuideData {
         }
     }
 
+    public static CraftGuideData fromCompound(CompoundTag tag) {
+        ListTag inputs = tag.getList(CraftGuide.TAG_STEPS, Tag.TAG_COMPOUND);
+        ResourceLocation type = null;
+        ArrayList<CraftGuideStepData> step = new ArrayList<>();
+        for (int i = 0; i < inputs.size(); i++) {
+            step.add(CraftGuideStepData.fromCompound(inputs.getCompound(i)));
+        }
+        if (tag.contains(CraftGuide.TAG_TYPE)) {
+            type = ResourceLocation.tryParse(tag.getString(CraftGuide.TAG_TYPE));
+        } else {
+            type = CommonType.TYPE;
+        }
+        boolean mergeable = false;
+        if (tag.contains(CraftGuide.TAG_MARK_MERGEABLE))
+            mergeable = tag.getBoolean(CraftGuide.TAG_MARK_MERGEABLE);
+        boolean noOccupy = false;
+        if (tag.contains(CraftGuide.TAG_MARK_NO_OCCUPY))
+            noOccupy = tag.getBoolean(CraftGuide.TAG_MARK_NO_OCCUPY);
+        CraftGuideData craftGuideData = new CraftGuideData(step, type, mergeable, noOccupy);
+        craftGuideData.selecting = 0;
+        if (tag.contains(CraftGuide.TAG_SELECTING))
+            craftGuideData.selecting = tag.getInt(CraftGuide.TAG_SELECTING);
+        if (craftGuideData.selecting > craftGuideData.steps.size())
+            craftGuideData.selecting = craftGuideData.steps.size();
+        return craftGuideData;
+    }
+
+    private static void compatibleToV1TypeAddStep(CompoundTag compound, CraftGuideData craftGuideData, boolean optional, ResourceLocation type, boolean output) {
+        if (compound.contains("side")) {
+            List<ItemStack> items = new ArrayList<>();
+            Target target = Target.fromNbt(compound.getCompound("side"));
+            ListTag list = compound.getList("items", Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                items.add(
+                        ItemStackUtil.parseStack(list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                                .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                );
+            }
+            if (output)
+                craftGuideData.steps.add(new CraftGuideStepData(target,
+                        new ArrayList<>(),
+                        items,
+                        type,
+                        ActionOptionSet.with(ActionOption.OPTIONAL, optional)));
+            else
+                craftGuideData.steps.add(new CraftGuideStepData(target,
+                        items,
+                        new ArrayList<>(),
+                        type,
+                        ActionOptionSet.with(ActionOption.OPTIONAL, optional)));
+        }
+    }
+
+    private static void compatibleToV1TypeAddCraftStep(CraftGuideData craftGuideData, CompoundTag input1, CompoundTag input2) {
+        if (input1.contains("side") && input2.contains("side")) {
+            List<ItemStack> inputs = new ArrayList<>();
+            List<ItemStack> outputs = new ArrayList<>();
+            Target target = Target.fromNbt(input1.getCompound("side"));
+            ListTag inputsList = input1.getList("items", Tag.TAG_COMPOUND);
+            for (int i = 0; i < inputsList.size(); i++) {
+                inputs.add(
+                        ItemStackUtil.parseStack(inputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                                .copyWithCount(inputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                );
+            }
+            ListTag outputsList = input2.getList("items", Tag.TAG_COMPOUND);
+            for (int i = 0; i < outputsList.size(); i++) {
+                outputs.add(
+                        ItemStackUtil.parseStack(outputsList.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
+                                .copyWithCount(outputsList.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                );
+            }
+            craftGuideData.type = CraftingType.TYPE;
+            craftGuideData.steps.add(new CraftGuideStepData(target,
+                    inputs,
+                    outputs,
+                    CraftingType.TYPE));
+        }
+    }
+
+    /**
+     * 旧版本数据兼容
+     */
+    private static CraftGuideData compatibleToV1Type(CompoundTag tag) {
+        CraftGuideData craftGuideData = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
+        if (tag.contains("input1")) {
+            if (tag.getCompound("input1").contains("side")) {
+                Target target = Target.fromNbt(tag.getCompound("input1").getCompound("side"));
+                if (target.getType().equals(new ResourceLocation(MaidStorageManager.MODID, "crafting"))) {
+                    compatibleToV1TypeAddCraftStep(craftGuideData, tag.getCompound("input1"), tag.getCompound("output"));
+                    return craftGuideData;
+                }
+            }
+        }
+        if (tag.contains("input1")) {
+            compatibleToV1TypeAddStep(tag.getCompound("input1"), craftGuideData, false, CommonPlaceItemAction.TYPE, false);
+        }
+        if (tag.contains("input2")) {
+            compatibleToV1TypeAddStep(tag.getCompound("input2"), craftGuideData, true, CommonPlaceItemAction.TYPE, false);
+        }
+        if (tag.contains("output")) {
+            compatibleToV1TypeAddStep(tag.getCompound("output"), craftGuideData, false, CommonTakeItemAction.TYPE, true);
+        }
+        return craftGuideData;
+    }
+
+    public void saveToItemStack(ItemStack itemStack) {
+        CompoundTag tag = itemStack.getOrCreateTag();
+        itemStack.setTag(toCompound(tag));
+    }
+
+    public CompoundTag toCompound(CompoundTag tag) {
+        ListTag inputs = new ListTag();
+        for (CraftGuideStepData step : steps) {
+            inputs.add(step.toCompound());
+        }
+        tag.put(CraftGuide.TAG_STEPS, inputs);
+        tag.putString(CraftGuide.TAG_TYPE, type.toString());
+        if (selecting != null)
+            tag.putInt(CraftGuide.TAG_SELECTING, selecting);
+        tag.putBoolean(CraftGuide.TAG_MARK_MERGEABLE, mergeable);
+        tag.putBoolean(CraftGuide.TAG_MARK_NO_OCCUPY, noOccupy);
+        return tag;
+    }
+
     public List<CraftGuideStepData> getSteps() {
         return steps;
     }

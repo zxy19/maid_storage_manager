@@ -1,8 +1,11 @@
 package studio.fantasyit.maid_storage_manager.util;
 
+import me.towdium.jecharacters.utils.Match;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +22,23 @@ import java.util.Optional;
 
 @OnlyIn(Dist.CLIENT)
 public class InventoryListUtil {
+    public static boolean isMatchSearchStr(ItemStack itemStack, String search){
+        if(search.isBlank()) return true;
+        if (ModList.get().isLoaded("jecharacters")) {
+            if (Match.matches(itemStack.getHoverName().getString(), search))
+                return true;
+            if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
+                return true;
+            if (itemStack.getTooltipLines(Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+                return true;
+            }
+        }
+        if (itemStack.getHoverName().getString().contains(search))
+            return true;
+        if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
+            return true;
+        return itemStack.getTooltipLines(Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
+    }
     /**
      * 获取玩家背包中的仓储列表UUID
      *

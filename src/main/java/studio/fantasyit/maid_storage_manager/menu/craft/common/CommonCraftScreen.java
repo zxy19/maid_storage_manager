@@ -4,12 +4,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Divisor;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -17,6 +19,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +40,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
@@ -49,6 +54,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     CommonActionSelectionWidget actionSelector;
     SelectButtonWidget<CraftAction> actionSelectorButton;
     SelectButtonWidget<?> sortButtonUp, sortButtonDown;
+    SelectButtonWidget<Integer> generatorButton;
     List<Pair<SelectButtonWidget<Integer>, EditBox>> options = new ArrayList<>();
 
     public CommonCraftScreen(CommonCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
@@ -66,6 +72,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         addOptionButtons();
         addSortButtons();
         addActionButtons();
+        addGeneratorButtons();
         actionSelector = new CommonActionSelectionWidget(0, 0, this);
         updateButtons();
     }
@@ -238,6 +245,51 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         ));
     }
 
+    private void addGeneratorButtons() {
+        generatorButton = addRenderableWidget(new SelectButtonWidget<Integer>(
+                126, 102, (value) -> {
+            if (value == null)
+                value = 0;
+            else {
+                value = value + 1;
+                if (value == 2) {
+                    if (menu.selectedGeneratorIndex >= getGeneratorOutputsWithFilter(searchFilterStr).size()) {
+                        menu.selectedGeneratorIndex = -1;
+                    }
+                    if (menu.selectedGeneratorIndex != -1) {
+                        int realId = getGeneratorOutputsWithFilter(searchFilterStr).get(menu.selectedGeneratorIndex).getA();
+                        List<ItemStack> list = menu.generatedRecipes.ingredients.get(realId).stream()
+                                .map(Ingredient::getItems)
+                                .map(i -> InventoryListUtil.getMatchingForPlayer(List.of(i)))
+                                .toList();
+
+                        CompoundTag tag = new CompoundTag();
+                        ListTag listTag = new ListTag();
+                        for (ItemStack itemStack : list) {
+                            listTag.add(ItemStackUtil.saveStack(itemStack));
+                        }
+                        tag.put("inputs", listTag);
+                        Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+                                CraftGuideGuiPacket.Type.GENERATOR,
+                                0,
+                                realId,
+                                tag
+                        ));
+                        generatorButton.visible = false;
+                        menu.selectedGeneratorIndex = -1;
+                    }
+                }
+            }
+            return new SelectButtonWidget.Option<>(
+                    value,
+                    CommonCraftAssets.GENERATOR_CONFIRM_BTN,
+                    CommonCraftAssets.GENERATOR_CONFIRM_BTN_HOVER,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.generate_alarm")
+            );
+        }, this
+        ));
+        generatorButton.visible = false;
+    }
     //endregion
 
     private void sendAndTriggerLocalPacket(CraftGuideGuiPacket packet) {
@@ -308,6 +360,28 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     }
                 }
             });
+            if (menu.selectedGenerator && (x - getGuiLeft() > GENERATOR_BOX_X && y - getGuiTop() > GENERATOR_BOX_Y
+                    && x - getGuiLeft() < GENERATOR_BOX_X + CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w
+                    && y - getGuiTop() < GENERATOR_BOX_Y + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.h
+            )) {
+                int sIdx = getSelectedGeneratorItem(x, y);
+                if (sIdx >= 0 && sIdx < cachedInputs.size() && sIdx < cachedGeneratorOutputs.size()) {
+                    List<Component> tooltips = new ArrayList<>();
+                    cachedInputs.get(sIdx).forEach(itemStack ->
+                            tooltips.add(
+                                    Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_input", itemStack.getDisplayName())
+                                            .withStyle(ChatFormatting.GREEN)
+                            )
+                    );
+                    cachedGeneratorOutputs.get(sIdx).getB().forEach(itemStack ->
+                            tooltips.add(
+                                    Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_output", itemStack.getDisplayName())
+                                            .withStyle(ChatFormatting.YELLOW)
+                            )
+                    );
+                    graphics.renderTooltip(this.font, tooltips, Optional.empty(), x, y);
+                }
+            }
         }
         super.renderTooltip(graphics, x, y);
         graphics.flush();
@@ -324,7 +398,10 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         renderArrow(graphics);
         renderScrollList(graphics, p_283661_, p_281248_);
         renderScrollBar(graphics, p_283661_, p_281248_);
+        renderGeneratorList(graphics, p_283661_, p_281248_);
+        renderGeneratorScrollBar(graphics, p_283661_, p_281248_);
         renderMiniBarInfo(graphics);
+        renderGeneratorDecorations(graphics);
         actionSelector.render(graphics, p_283661_, p_281248_, p_281886_);
         renderTooltip(graphics, p_283661_, p_281248_);
     }
@@ -434,7 +511,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             graphics.pose().popPose();
             return;
         }
-        NoPlaceFilterSlot bi = menu.blockIndicatorForSteps.get(menu.selectedIndex);
+        NoPlaceFilterSlot bi = menu.blockIndicator;
         graphics.pose().pushPose();
         graphics.pose().translate(getGuiLeft() + 28, getGuiTop() + 128, 0);
         graphics.pose().scale(0.7f, 0.7f, 1);
@@ -473,6 +550,42 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.pose().popPose();
     }
 
+    private void renderGeneratorDecorations(@NotNull GuiGraphics graphics) {
+        if (!menu.selectedGenerator) return;
+        if (generatorButton.visible) {
+            drawCenteredString(
+                    graphics,
+                    font,
+                    generatorButton.getData() == 1 ?
+                            Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_confirm_1") :
+                            Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_confirm_0"),
+                    generatorButton.getX() + 1,
+                    generatorButton.getY() + 5,
+                    generatorButton.getWidth() - 2,
+                    0xffffffff,
+                    false
+            );
+            CommonCraftAssets.GENERATOR_ALARM.blit(
+                    graphics,
+                    generatorButton.getX() - CommonCraftAssets.GENERATOR_ALARM.w - 5,
+                    generatorButton.getY()
+            );
+        }
+        if (menu.selectedGeneratorIndex != -1 && menu.selectedGeneratorIndex < getGeneratorOutputsWithFilter(searchFilterStr).size()) {
+            graphics.pose().pushPose();
+            float scale = 1.3f;
+            graphics.pose().scale(scale, scale, 1);
+            int idx = menu.player.tickCount / (Minecraft.getInstance().getFps() + 1);
+            Pair<Integer, List<ItemStack>> os = getGeneratorOutputsWithFilter(searchFilterStr).get(menu.selectedGeneratorIndex);
+            if (!os.getB().isEmpty())
+                graphics.renderItem(
+                        os.getB().get(idx % os.getB().size()),
+                        (int) ((getGuiLeft() + 122) / scale),
+                        (int) ((getGuiTop() + 72) / scale)
+                );
+            graphics.pose().popPose();
+        }
+    }
 
     @Override
     public boolean mouseScrolled(double x, double y, double dx, double p_94688_) {
@@ -510,6 +623,11 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
             scroll((float) -p_94688_ * 3);
         }
+        if (x - getGuiLeft() > GENERATOR_BOX_X && y - getGuiTop() > GENERATOR_BOX_Y
+                && x - getGuiLeft() < GENERATOR_BOX_X + CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w
+                && y - getGuiTop() < GENERATOR_BOX_Y + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.h
+        )
+            scrollGenerator((float) -p_94688_ * 3);
         return super.mouseScrolled(x, y, dx, p_94688_);
     }
 
@@ -580,24 +698,39 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (isInScrollBlockArea(x, y)) {
             mouseDraggingScrollingBar = y;
             mouseStartDraggingOffset = (double) scrollOffsetTop;
+            scrollingGeneratorList = false;
+        }
+        if (isInGeneratorScrollArea(x, y)) {
+            mouseDraggingScrollingBar = y;
+            mouseStartDraggingOffset = (double) generatorScrollOffsetTop;
+            scrollingGeneratorList = true;
         }
 
         if (x - getGuiLeft() > 26 && y - getGuiTop() > 26 && x - getGuiLeft() < 100 && y - getGuiTop() < 119) {
             clickInScrollList(x, y);
         }
+
+        if (x - getGuiLeft() > GENERATOR_BOX_X && y - getGuiTop() > GENERATOR_BOX_Y
+                && x - getGuiLeft() < GENERATOR_BOX_X + CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w
+                && y - getGuiTop() < GENERATOR_BOX_Y + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.h
+        )
+            clickInGeneratorScrollList(x, y);
         return super.mouseClicked(x, y, p_97750_);
     }
 
 
     //region scrolling control
     private static final int SCROLL_AREA_TOTAL_HEIGHT = 93;
+    private boolean scrollingGeneratorList = false;
     private float scrollOffsetTop = 0;
+    private float generatorScrollOffsetTop = 0;
     private Double mouseDraggingScrollingBar = null;
     private Double mouseStartDraggingOffset = null;
 
+
     private float getScrollBlockHeight() {
         return Math.max(
-                Math.min(2 * SCROLL_AREA_TOTAL_HEIGHT - menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1), SCROLL_AREA_TOTAL_HEIGHT + 6),
+                Math.min(2 * SCROLL_AREA_TOTAL_HEIGHT - (menu.craftGuideData.steps.size() + (menu.hasGeneratorResult ? 1 : 0)) * (CommonCraftAssets.ROW.h - 1), SCROLL_AREA_TOTAL_HEIGHT + 6),
                 10
         );
     }
@@ -609,16 +742,15 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private float getMaxScrollOffset() {
-        return menu.craftGuideData.steps.size() * (CommonCraftAssets.ROW.h - 1) - SCROLL_AREA_TOTAL_HEIGHT;
+        return (menu.craftGuideData.steps.size() + (menu.hasGeneratorResult ? 1 : 0)) * (CommonCraftAssets.ROW.h - 1) - SCROLL_AREA_TOTAL_HEIGHT;
     }
 
     private float getMaxListOffset() {
         return SCROLL_AREA_TOTAL_HEIGHT + 6 - getScrollBlockHeight();
     }
 
-
-    private void makeScreenScissor(GuiGraphics graphics) {
-        graphics.enableScissor(getGuiLeft() + 26, getGuiTop() + 26, getGuiLeft() + 100, getGuiTop() + 119);
+    private void makeScreenScissor(GuiGraphics graphics, int x, int y, int x1, int y1) {
+        graphics.enableScissor(getGuiLeft() + x, getGuiTop() + y, getGuiLeft() + x1, getGuiTop() + y1);
     }
 
     private void releaseScreenScissor(GuiGraphics graphics) {
@@ -657,7 +789,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void renderScrollList(GuiGraphics graphics, int x, int y) {
-        makeScreenScissor(graphics);
+        makeScreenScissor(graphics, 26, 26, 100, 119);
         int relX = (this.width - this.imageWidth) / 2 + 27;
         int relY = (this.height - this.imageHeight) / 2 + 27;
         int selected = getSelectedStep(x, y);
@@ -690,7 +822,6 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             }
             renderScrollListRow(graphics,
                     step,
-                    menu.blockIndicatorForSteps.get(i).getItem(),
                     selected == i,
                     i == menu.selectedIndex,
                     x - relX,
@@ -698,12 +829,26 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             );
             graphics.pose().translate(0, CommonCraftAssets.ROW.h - 1, 0);
         }
+        if (menu.hasGeneratorResult) {
+            CommonCraftAssets.GENERATOR_TIP.blit(graphics, 1, 1);
+            if (menu.selectedGenerator || selected == menu.craftGuideData.steps.size())
+                CommonCraftAssets.GENERATOR_TIP_HOVER.blit(graphics, 1, 1);
+            drawCenteredString(graphics, font,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_tip"),
+                    8,
+                    4,
+                    CommonCraftAssets.GENERATOR_TIP.w - 16,
+                    0xFFFFFFFF,
+                    true
+            );
+            graphics.pose().translate(0, CommonCraftAssets.GENERATOR_TIP.h - 1, 0);
+        }
         graphics.pose().popPose();
         graphics.flush();
         releaseScreenScissor(graphics);
     }
 
-    private void renderScrollListRow(GuiGraphics graphics, CraftGuideStepData step, ItemStack blockIndicator, boolean hover, boolean selected, int x, int y) {
+    private void renderScrollListRow(GuiGraphics graphics, CraftGuideStepData step, boolean hover, boolean selected, int x, int y) {
         graphics.pose().pushPose();
         graphics.pose().translate(47, 4, 0);
         graphics.pose().scale(0.7f, 0.7f, 1f);
@@ -745,6 +890,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         graphics.pose().pushPose();
         graphics.pose().translate(58, 2, 0);
         graphics.pose().scale(0.7f, 0.7f, 1f);
+        ItemStack blockIndicator = menu.player.level().getBlockState(step.storage.pos).getBlock().asItem().getDefaultInstance();
         graphics.renderItem(blockIndicator, 0, 0);
         graphics.pose().popPose();
 
@@ -766,7 +912,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void renderScrollBar(GuiGraphics graphics, int x, int y) {
-        boolean active = mouseDraggingScrollingBar != null;
+        boolean active = mouseDraggingScrollingBar != null && (!scrollingGeneratorList);
         ImageAsset base = active ? CommonCraftAssets.SCROLL_BASE_HOVER : CommonCraftAssets.SCROLL_BASE;
         blitNineSliced(
                 graphics,
@@ -789,13 +935,17 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         );
     }
 
-
     private void clickInScrollList(double x, double y) {
         int id = getSelectedStep(x, y);
-        if (id == -1 || id >= menu.craftGuideData.steps.size()) return;
-        if (isClickedOnDeleteBtn(x, y, id)) {
+        if (id == -1 || id > menu.craftGuideData.steps.size()) return;
+        if (id == menu.craftGuideData.steps.size() && !menu.hasGeneratorResult) return;
+        if (isClickedOnDeleteBtn(x, y, id) && menu.selectedIndex == id) {
             sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.REMOVE, id));
         } else {
+            if (id != menu.craftGuideData.steps.size()) {
+                generatorButton.visible = false;
+                menu.selectedGeneratorIndex = -1;
+            }
             sendAndTriggerLocalPacket(new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SELECT, id));
         }
     }
@@ -809,11 +959,169 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         return true;
     }
 
+
+    private static final int GENERATOR_BOX_X = 109;
+    private static final int GENERATOR_BOX_Y = 23;
+    private static final int GENERATOR_BOX_ROWS = 3;
+    private static final int GENERATOR_BOX_COLS = 4;
+
+    String searchFilterStr = "";
+    String cachedFilterStr = null;
+    List<Pair<Integer, List<ItemStack>>> cachedGeneratorOutputs = new ArrayList<>();
+    List<List<ItemStack>> cachedInputs = new ArrayList<>();
+
+    public List<Pair<Integer, List<ItemStack>>> getGeneratorOutputsWithFilter(String filterStr) {
+        if (menu.generatedUpdated) {
+            cachedFilterStr = null;
+            menu.generatedUpdated = false;
+        }
+        if (cachedFilterStr != null && cachedFilterStr.equals(filterStr))
+            return cachedGeneratorOutputs;
+        cachedFilterStr = filterStr;
+        cachedInputs.clear();
+        cachedGeneratorOutputs.clear();
+        for (int i = 0; i < menu.generatedRecipes.outputs.size(); i++) {
+            List<ItemStack> itemStacks = menu.generatedRecipes.outputs.get(i);
+            List<Ingredient> inputs = menu.generatedRecipes.ingredients.get(i);
+            if (itemStacks.stream().anyMatch(ii -> InventoryListUtil.isMatchSearchStr(ii, filterStr))) {
+                cachedGeneratorOutputs.add(new Pair<>(i, itemStacks));
+                cachedInputs.add(inputs.stream().map(Ingredient::getItems).map(ii -> InventoryListUtil.getMatchingForPlayer(List.of(ii))).toList());
+            }
+        }
+        return cachedGeneratorOutputs;
+    }
+
+    private int getSelectedGeneratorItem(double x, double y) {
+        int rh = CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.h;
+        int cw = CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.w;
+
+        if (x - getGuiLeft() > GENERATOR_BOX_X && y - getGuiTop() > GENERATOR_BOX_Y && x - getGuiLeft() < GENERATOR_BOX_X + cw * GENERATOR_BOX_COLS && y - getGuiTop() < GENERATOR_BOX_Y + rh * GENERATOR_BOX_ROWS) {
+            int offsetY = (int) ((int) (y - getGuiTop() - GENERATOR_BOX_Y));
+            int offsetX = (int) (x - getGuiLeft() - GENERATOR_BOX_X);
+            int rid = (int) ((offsetY + generatorScrollOffsetTop) / rh);
+            int cid = offsetX / cw;
+            return rid * 4 + cid;
+        }
+        return -1;
+    }
+
+    private void renderGeneratorList(GuiGraphics graphics, int x, int y) {
+        if (!menu.selectedGenerator) return;
+        int rh = CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.h;
+        int cw = CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.w;
+        int selected = getSelectedGeneratorItem(x, y);
+        graphics.pose().pushPose();
+        graphics.pose().translate(getGuiLeft() + GENERATOR_BOX_X, getGuiTop() + GENERATOR_BOX_Y, 0);
+        CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.blit(graphics, 0, 0);
+        CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.blit(graphics, CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w, 0);
+        makeScreenScissor(graphics, GENERATOR_BOX_X + 1, GENERATOR_BOX_Y + 1, GENERATOR_BOX_X + GENERATOR_BOX_COLS * cw - 1, GENERATOR_BOX_Y + GENERATOR_BOX_ROWS * rh);
+        graphics.pose().translate(2, -generatorScrollOffsetTop, 0);
+        for (int i = 0; i < getGeneratorOutputsWithFilter(searchFilterStr).size(); i++) {
+            if (i == selected)
+                CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.blit(graphics, 0, 0);
+            graphics.pose().pushPose();
+            graphics.pose().translate(1, 1, 0);
+            graphics.pose().scale((cw - 2) / 16.0f, (rh - 2) / 16.0f, 1);
+            if (getGeneratorOutputsWithFilter(searchFilterStr).get(i).getB().isEmpty())
+                graphics.renderItem(Items.BARRIER.getDefaultInstance(), 0, 0);
+            else {
+                int idx = menu.player.tickCount / (Minecraft.getInstance().getFps() + 1);
+                graphics.renderItem(getGeneratorOutputsWithFilter(searchFilterStr).get(i).getB().get(idx % getGeneratorOutputsWithFilter(searchFilterStr).get(i).getB().size()), 0, 0);
+            }
+            graphics.pose().popPose();
+            if ((i + 1) % GENERATOR_BOX_COLS == 0) {
+                graphics.pose().translate(-(cw - 1) * 3, rh, 0);
+            } else {
+                graphics.pose().translate(cw - 1, 0, 0);
+            }
+        }
+        graphics.pose().popPose();
+        releaseScreenScissor(graphics);
+    }
+
+    private static final int GENERATOR_SCROLL_AREA_TOTAL_HEIGHT = 30;
+
+    private float getGeneratorScrollBlockHeight() {
+        int cw = CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.w;
+        return Math.max(
+                Math.min(2 * GENERATOR_SCROLL_AREA_TOTAL_HEIGHT - getGeneratorOutputsWithFilter(searchFilterStr).size() / 4 * cw, GENERATOR_SCROLL_AREA_TOTAL_HEIGHT),
+                10
+        );
+    }
+
+    private float getGeneratorScrollBlockOffset() {
+        float scrollableHeight = getMaxGeneratorListOffset();
+        float totalMaxHeight = getMaxGeneratorScrollOffset();
+        return generatorScrollOffsetTop * scrollableHeight / totalMaxHeight;
+    }
+
+    private float getMaxGeneratorScrollOffset() {
+        int cw = CommonCraftAssets.SLOT_BACKGROUND_GENERATOR.w;
+        return ((int) (getGeneratorOutputsWithFilter(searchFilterStr).size() / 4) * cw - GENERATOR_SCROLL_AREA_TOTAL_HEIGHT);
+    }
+
+    private float getMaxGeneratorListOffset() {
+        return GENERATOR_SCROLL_AREA_TOTAL_HEIGHT - getGeneratorScrollBlockHeight();
+    }
+
+    private boolean isInGeneratorScrollArea(double x, double y) {
+        double rx = x - getGuiLeft() - GENERATOR_BOX_X - (CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w);
+        double ry = y - getGuiTop() - 23;
+        if (rx < -3 || rx > 0)
+            return false;
+        if (ry < getGeneratorScrollBlockOffset()) return false;
+        if (ry > getGeneratorScrollBlockOffset() + getGeneratorScrollBlockHeight()) return false;
+        return true;
+    }
+
+    private void scrollGenerator(float delta) {
+        generatorScrollOffsetTop += delta;
+        if (generatorScrollOffsetTop > getMaxGeneratorScrollOffset()) {
+            generatorScrollOffsetTop = getMaxGeneratorScrollOffset();
+        }
+        if (generatorScrollOffsetTop < 0) {
+            generatorScrollOffsetTop = 0;
+        }
+    }
+
+
+    private void renderGeneratorScrollBar(GuiGraphics graphics, int x, int y) {
+        if (!menu.selectedGenerator) return;
+        boolean active = mouseDraggingScrollingBar != null && scrollingGeneratorList;
+        ImageAsset base = active ? CommonCraftAssets.SCROLL_BLOCK_GENERATOR : CommonCraftAssets.SCROLL_BLOCK_GENERATOR;
+        graphics.blitNineSliced(
+                CommonCraftAssets.BACKGROUND,
+                getGuiLeft() + GENERATOR_BOX_X + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w - 3,
+                getGuiTop() + GENERATOR_BOX_Y + (int) getGeneratorScrollBlockOffset() + 1,
+                base.w,
+                (int) getGeneratorScrollBlockHeight(),
+                1,
+                base.w,
+                base.h,
+                base.u,
+                base.v
+        );
+    }
+
+    private void clickInGeneratorScrollList(double x, double y) {
+        int id = getSelectedGeneratorItem(x, y);
+        if (id == -1 || id > getGeneratorOutputsWithFilter(searchFilterStr).size()) return;
+        menu.selectedGeneratorIndex = id;
+        generatorButton.visible = true;
+        generatorButton.setOption(null);
+    }
+
+
     @Override
     public boolean mouseDragged(double x, double y, int p_97754_, double p_97755_, double p_97756_) {
         if (mouseDraggingScrollingBar != null && mouseStartDraggingOffset != null) {
-            scrollOffsetTop = (float) (mouseStartDraggingOffset + (y - mouseDraggingScrollingBar) / getMaxListOffset() * getMaxScrollOffset());
-            scroll(0);
+            if (scrollingGeneratorList) {
+                generatorScrollOffsetTop = (float) (mouseStartDraggingOffset + (y - mouseDraggingScrollingBar) / getMaxGeneratorListOffset() * getMaxGeneratorScrollOffset());
+                scrollGenerator(0);
+            } else {
+                scrollOffsetTop = (float) (mouseStartDraggingOffset + (y - mouseDraggingScrollingBar) / getMaxListOffset() * getMaxScrollOffset());
+                scroll(0);
+            }
         }
         return super.mouseDragged(x, y, p_97754_, p_97755_, p_97756_);
     }
