@@ -500,6 +500,5 @@
   "gui.maid_storage_manager.craft_guide.common.generator_input": "Input %s",
   "gui.maid_storage_manager.craft_guide.common.generator_output": "Output %s",
   "gui.maid_storage_manager.craft_guide.common.generator_filter": "Filter",
-  "This Craft Guide cannot fillin here": "gui.maid_storage_manager.craft_guide.common.generator_error",
   "gui.maid_storage_manager.craft_guide.common.generator_error": "Unsupported Craft Guide"
 }
