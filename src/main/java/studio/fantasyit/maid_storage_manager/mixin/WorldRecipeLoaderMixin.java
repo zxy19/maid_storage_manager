@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import studio.fantasyit.maid_storage_manager.communicate.data.TaskDefaultCommunicate;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.GraphCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 
@@ -21,6 +20,5 @@ public abstract class WorldRecipeLoaderMixin {
     private void load(RegistryAccess p_206869_, CallbackInfo ci) {
         RecipeIngredientCache.preFetchCache(this.getRecipeManager());
         GraphCache.invalidateAll();
-        TaskDefaultCommunicate.init();
     }
 }

@@ -284,6 +284,8 @@ dependencies {
 //    runtimeOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
 //    runtimeOnly fg.deobf("org.anti_ad.mc:libIPN-forge-1.20:4.0.2")
 //    runtimeOnly fg.deobf("curse.maven:kotlin-for-forge-351264:5402061")
+    runtimeOnly fg.deobf("curse.maven:kaleidoscope-cookery-1309203:7473809")
+    runtimeOnly fg.deobf("curse.maven:maidsoul-kitchen-1162577:7285798")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -401,7 +401,7 @@ public class Network {
                 CommunicateMarkGuiPacket::new,
                 (p, c) -> {
                     c.get().enqueueWork(() -> {
-                        CommunicateMarkGuiPacket.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(Network::getLocalPlayer), p);
+                        CommunicateMarkGuiPacket.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(()->Network.getLocalPlayer()), p);
                         c.get().setPacketHandled(true);
                     });
                 }
@@ -413,7 +413,7 @@ public class Network {
                 CraftGuideGeneratorUpdate::new,
                 (p, c) -> {
                     c.get().enqueueWork(() -> {
-                        CraftGuideGeneratorUpdate.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(Network::getLocalPlayer), p);
+                        CraftGuideGeneratorUpdate.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(()->Network.getLocalPlayer()), p);
                         c.get().setPacketHandled(true);
                     });
                 }

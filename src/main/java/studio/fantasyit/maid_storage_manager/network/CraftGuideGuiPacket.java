@@ -10,7 +10,7 @@ public class CraftGuideGuiPacket {
         COUNT,
         SET_MODE,
         SYNC,
-        SYNC_ALL,
+        GENERATOR_RESULT,
         UP,
         DOWN,
         REMOVE,
@@ -23,7 +23,7 @@ public class CraftGuideGuiPacket {
         PAGE_UP,
         PAGE_DOWN,
         SIDE,
-        GENERATOR,
+        GENERATOR
     }
 
     public final Type type;

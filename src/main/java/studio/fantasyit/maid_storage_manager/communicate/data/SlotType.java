@@ -3,12 +3,13 @@ package studio.fantasyit.maid_storage_manager.communicate.data;
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.items.wrapper.RangedWrapper;
@@ -195,7 +196,8 @@ public enum SlotType {
         return Component.translatable("slot.maid_storage_manager.communicate." + this.name().toLowerCase());
     }
 
-    public void drawGold(GuiGraphics graphics, int x, int y) {
+    @OnlyIn(Dist.CLIENT)
+    public void drawGold(net.minecraft.client.gui.GuiGraphics graphics, int x, int y) {
         if (icon == null) return;
         graphics.flush();
         graphics.setColor(1.69f, 1.69f, 0.04f, 1.0f);
