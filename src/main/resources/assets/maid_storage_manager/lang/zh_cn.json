@@ -494,5 +494,13 @@
   "maid_storage_manager.task.auto_detect": "自动检测",
   "maid_storage_manager.task.use_current_data": "使用当前",
   "item.maid_storage_manager.configurable_communicate_terminal": "可配置交流终端",
-  "gui.maid_storage_manager.config.do_communicate": "进行交流"
+  "gui.maid_storage_manager.config.do_communicate": "进行交流",
+  "gui.maid_storage_manager.craft_guide.common.generator_tip": "有可用的生成器",
+  "gui.maid_storage_manager.craft_guide.common.generate_alarm": "警告，所有的现存步骤都会被【覆盖】",
+  "gui.maid_storage_manager.craft_guide.common.generator_confirm_0": "导入",
+  "gui.maid_storage_manager.craft_guide.common.generator_confirm_1": "确认?",
+  "gui.maid_storage_manager.craft_guide.common.generator_input": "输入 %s",
+  "gui.maid_storage_manager.craft_guide.common.generator_output": "输出 %s",
+  "gui.maid_storage_manager.craft_guide.common.generator_filter": "过滤",
+  "gui.maid_storage_manager.craft_guide.common.generator_error": "不支持此合成指南"
 }
