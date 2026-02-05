@@ -52,6 +52,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
 
 
     public DummyCollector generatedRecipes;
+    public boolean generatorError = false;
     public boolean generatedUpdated = false;
     public boolean hasGeneratorResult = false;
     public boolean selectedGenerator = false;
@@ -355,10 +356,13 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 if (data != null)
                     craftGuideData.steps.set(key, CraftGuideStepData.fromCompound(player.registryAccess(), data));
             }
-            case SYNC_ALL -> {
-                currentEditingItems.clearStep();
-                if (data != null) {
-                    craftGuideData = CraftGuideData.fromCompound(data);
+            case GENERATOR_RESULT -> {
+                generatorError = value != 0;
+                if(!generatorError) {
+                    currentEditingItems.clearStep();
+                    if (data != null) {
+                        craftGuideData = CraftGuideData.fromCompound(data);
+                    }
                 }
             }
             case GLOBAL -> {
@@ -379,6 +383,8 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                         inputsList.add(ItemStackUtil.parseStack(inputs.getCompound(i)).copyWithCount(counts.get(i)));
                     }
                     CraftGuideData apply = generatedRecipes.craftGuideSuppliers.get(value).apply(inputsList);
+                    if (apply != null && apply.steps.stream().anyMatch(s -> !s.actionType.canBeCommon()))
+                        apply = null;
                     if (apply != null) {
                         currentEditingItems.clearStep();
                         craftGuideData = apply;
@@ -387,11 +393,16 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                         recalcSlots();
                         Network.INSTANCE.send(
                                 PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
-                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC_ALL, 0, 0, apply.toCompound(new CompoundTag()))
+                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GENERATOR_RESULT, 0, 0, apply.toCompound(new CompoundTag()))
+                        );
+                    }else{
+                        Network.INSTANCE.send(
+                                PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
+                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GENERATOR_RESULT, 0, 1)
                         );
                     }
+                    save();
                 }
-                save();
             }
         }
     }

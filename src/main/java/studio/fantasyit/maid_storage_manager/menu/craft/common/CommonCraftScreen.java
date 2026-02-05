@@ -246,7 +246,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     }
 
     private void addGeneratorButtons() {
-        generatorButton = addRenderableWidget(new SelectButtonWidget<Integer>(
+        generatorButton = addRenderableWidget(new SelectButtonWidget<>(
                 126, 102, (value) -> {
             if (value == null)
                 value = 0;
@@ -289,6 +289,18 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         }, this
         ));
         generatorButton.visible = false;
+
+        EditBox editBox = addRenderableWidget(new EditBox(
+                this.font,
+                getGuiLeft() + GENERATOR_BOX_X + 1,
+                getGuiTop() + GENERATOR_BOX_Y + 32,
+                CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w,
+                10,
+                Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_filter")
+        ));
+        editBox.setTextColor(0x000000FF);
+        editBox.setBordered(false);
+        editBox.setResponder(v -> this.searchFilterStr = v);
     }
     //endregion
 
@@ -552,6 +564,19 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     private void renderGeneratorDecorations(@NotNull GuiGraphics graphics) {
         if (!menu.selectedGenerator) return;
+        if (menu.generatorError) {
+            graphics.pose().pushPose();
+            graphics.pose().translate(getGuiLeft() + 113, getGuiTop() + 72, 0);
+            graphics.pose().scale(0.5f, 0.5f, 1);
+            graphics.drawWordWrap(font,
+                    Component.translatable("gui.maid_storage_manager.craft_guide.common.generator_error").withStyle(ChatFormatting.RED),
+                    0,
+                    0,
+                    90,
+                    0xffffffff
+            );
+            graphics.pose().popPose();
+        }
         if (generatorButton.visible) {
             drawCenteredString(
                     graphics,
@@ -571,7 +596,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                     generatorButton.getY()
             );
         }
-        if (menu.selectedGeneratorIndex != -1 && menu.selectedGeneratorIndex < getGeneratorOutputsWithFilter(searchFilterStr).size()) {
+        if (menu.selectedGeneratorIndex != -1 && menu.selectedGeneratorIndex < getGeneratorOutputsWithFilter(searchFilterStr).size() && !menu.generatorError) {
             graphics.pose().pushPose();
             float scale = 1.3f;
             graphics.pose().scale(scale, scale, 1);
@@ -1109,6 +1134,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         menu.selectedGeneratorIndex = id;
         generatorButton.visible = true;
         generatorButton.setOption(null);
+        menu.generatorError = false;
     }
 
 

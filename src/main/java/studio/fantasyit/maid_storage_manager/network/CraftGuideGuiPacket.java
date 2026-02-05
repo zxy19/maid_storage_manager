@@ -36,7 +36,7 @@ public class CraftGuideGuiPacket implements CustomPacketPayload {
         COUNT,
         SET_MODE,
         SYNC,
-        SYNC_ALL,
+        GENERATOR_RESULT,
         UP,
         DOWN,
         REMOVE,
@@ -49,7 +49,7 @@ public class CraftGuideGuiPacket implements CustomPacketPayload {
         PAGE_UP,
         PAGE_DOWN,
         SIDE,
-        GENERATOR,
+        GENERATOR
     }
 
     public final Type type;
