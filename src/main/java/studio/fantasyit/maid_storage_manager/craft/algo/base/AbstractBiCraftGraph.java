@@ -296,6 +296,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
             }
         }
         loopSolver = new LoopSolver(this, itemNodeId);
+        this.debugContext.convey(loopSolver);
     }
 
     @Override
@@ -319,5 +320,6 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
     @Override
     public void setDebugContext(CraftingDebugContext context) {
         debugContext = context;
+        context.convey(this.loopSolver);
     }
 }
