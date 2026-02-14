@@ -266,10 +266,10 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
                         CompoundTag tag = new CompoundTag();
                         ListTag listTag = new ListTag();
                         for (ItemStack itemStack : list) {
-                            listTag.add(ItemStackUtil.saveStack(itemStack));
+                            listTag.add(ItemStackUtil.saveStack(menu.player.registryAccess(), itemStack));
                         }
                         tag.put("inputs", listTag);
-                        Network.INSTANCE.sendToServer(new CraftGuideGuiPacket(
+                        PacketDistributor.sendToServer(new CraftGuideGuiPacket(
                                 CraftGuideGuiPacket.Type.GENERATOR,
                                 0,
                                 realId,
@@ -1114,7 +1114,8 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (!menu.selectedGenerator) return;
         boolean active = mouseDraggingScrollingBar != null && scrollingGeneratorList;
         ImageAsset base = active ? CommonCraftAssets.SCROLL_BLOCK_GENERATOR : CommonCraftAssets.SCROLL_BLOCK_GENERATOR;
-        graphics.blitNineSliced(
+        blitNineSliced(
+                graphics,
                 CommonCraftAssets.BACKGROUND,
                 getGuiLeft() + GENERATOR_BOX_X + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w - 3,
                 getGuiTop() + GENERATOR_BOX_Y + (int) getGeneratorScrollBlockOffset() + 1,
@@ -1177,6 +1178,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
     public void blitNineSliced(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pSliceSize, int pUOffset, int pVOffset, int pTextureWidth, int pTextureHeight) {
         this.blitNineSliced(graphics, pAtlasLocation, pX, pY, pWidth, pHeight, pSliceSize, pSliceSize, pSliceSize, pSliceSize, pUOffset, pVOffset, pTextureWidth, pTextureHeight);
     }
+
     public void blitNineSliced(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pLeftSliceWidth, int pTopSliceHeight, int pRightSliceWidth, int pBottomSliceHeight, int pUWidth, int pVHeight, int pTextureX, int pTextureY) {
         pLeftSliceWidth = Math.min(pLeftSliceWidth, pWidth / 2);
         pRightSliceWidth = Math.min(pRightSliceWidth, pWidth / 2);
@@ -1204,6 +1206,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
             blitRepeating(graphics, pAtlasLocation, pX + pWidth - pRightSliceWidth, pY + pTopSliceHeight, pLeftSliceWidth, pHeight - pBottomSliceHeight - pTopSliceHeight, pTextureX + pUWidth - pRightSliceWidth, pTextureY + pTopSliceHeight, pRightSliceWidth, pVHeight - pBottomSliceHeight - pTopSliceHeight);
         }
     }
+
     public void blitRepeating(GuiGraphics graphics, ResourceLocation pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pUOffset, int pVOffset, int pSourceWidth, int pSourceHeight) {
         blitRepeating(graphics, pAtlasLocation, pX, pY, pWidth, pHeight, pUOffset, pVOffset, pSourceWidth, pSourceHeight, 256, 256);
     }
@@ -1226,6 +1229,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         }
 
     }
+
     private static IntIterator slices(int pTarget, int pTotal) {
         int i = Mth.positiveCeilDiv(pTarget, pTotal);
         return new Divisor(pTarget, i);

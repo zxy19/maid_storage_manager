@@ -2,17 +2,24 @@ package studio.fantasyit.maid_storage_manager.craft.work;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutput, List<Integer> nextIndex,
-                               MutableInt inDegree,
+public record SolvedCraftLayer(int index,
+                               int group,
+                               int slotInput,
+                               int slotOutput,
+                               List<Integer> nextIndex,
+                               MutableInt nonFinishPrev,
+                               MutableInt nonStartPrev,
                                MutableInt lastTouch,
-                               MutableObject<Progress> progress) {
+                               MutableObject<Progress> progress,
+                               List<ItemStack> prefetchable
+) {
     public static Codec<SolvedCraftLayer> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.INT.fieldOf("index")
@@ -33,8 +40,8 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
                     Codec.INT.fieldOf("lastTouch").orElse(0)
                             .forGetter(t -> t.lastTouch.getValue()),
                     Codec.STRING.fieldOf("progress")
-                    .forGetter(t -> t.progress.getValue().name()),
-                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("prefetchable")
+                            .forGetter(t -> t.progress.getValue().name()),
+                    ItemStack.CODEC.listOf().fieldOf("prefetchable")
                             .forGetter(t -> t.prefetchable)
             ).apply(instance, SolvedCraftLayer::new)
     );
@@ -42,7 +49,6 @@ public record SolvedCraftLayer(int index, int group, int slotInput, int slotOutp
     public int slotConsume() {
         return slotInput + slotOutput;
     }
-
 
     public enum Progress {
         // 任务正在等待（前置任务未完成）

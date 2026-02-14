@@ -15,7 +15,7 @@ public class ArgumentRegistry {
     static final DeferredRegister<ArgumentTypeInfo<?, ?>> REGISTRY = DeferredRegister.create(BuiltInRegistries.COMMAND_ARGUMENT_TYPE, MaidStorageManager.MODID);
     static final Holder<ArgumentTypeInfo<?, ?>> DEBUG_ARG = REGISTRY.register("crafting_debug_control",
             () -> ArgumentTypeInfos.registerByClass(CraftingDebugControlArgument.class, SingletonArgumentInfo.contextFree(CraftingDebugControlArgument::new)));
-    static final RegistryObject<ArgumentTypeInfo<?, ?>> DEBUG_PROG_ARG = REGISTRY.register("progress_debug_control",
+    static final Holder<ArgumentTypeInfo<?, ?>> DEBUG_PROG_ARG = REGISTRY.register("progress_debug_control",
             () -> ArgumentTypeInfos.registerByClass(ProgressDebugControlArgument.class, SingletonArgumentInfo.contextFree(ProgressDebugControlArgument::new)));
 
     public static void init(IEventBus eventBus) {

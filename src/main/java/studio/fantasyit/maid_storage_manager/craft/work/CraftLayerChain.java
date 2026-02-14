@@ -51,7 +51,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             instance.group(
                     CraftLayer.CODEC.listOf().fieldOf("layers").forGetter(t -> t.layers),
                     SolvedCraftLayer.CODEC.listOf().fieldOf("nodes").forGetter(t -> t.nodes),
-                    ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.listOf().fieldOf("remainMaterials").forGetter(t -> t.remainMaterials),
+                    ItemStack.CODEC.listOf().fieldOf("remainMaterials").forGetter(t -> t.remainMaterials),
                     Codec.INT.fieldOf("freeSlots").forGetter(t -> t.freeSlots),
                     Codec.INT.fieldOf("group").forGetter(t -> t.group),
                     Codec.BOOL.fieldOf("freeze").forGetter(t -> t.freeze),
@@ -249,7 +249,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
                 if (node.progress().getValue() == SolvedCraftLayer.Progress.GATHERING || node.progress().getValue() == SolvedCraftLayer.Progress.WORKING || node.progress().getValue() == SolvedCraftLayer.Progress.IDLE)
                     this.workingQueue.add(node);
                 else if (node.progress().getValue() == SolvedCraftLayer.Progress.WAITING) {
-                    if (node.inDegree().getValue() == 0) {
+                    if (node.nonFinishPrev().getValue() == 0) {
                         this.workingQueue.add(node);
                         node.progress().setValue(SolvedCraftLayer.Progress.IDLE);
                     }
@@ -308,7 +308,9 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
                     new ArrayList<>(),
                     new MutableInt(0),
                     new MutableInt(0),
-                    new MutableObject<>(SolvedCraftLayer.Progress.WAITING)
+                    new MutableInt(0),
+                    new MutableObject<>(SolvedCraftLayer.Progress.WAITING),
+                    new ArrayList<>()
             ));
 
             for (ItemStack item : layer.getItems()) {
@@ -325,13 +327,20 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
                         count -= consumeCound;
                         //将当前节点加入前一节点的后续节点
                         nodes.get(pair.getA()).nextIndex().add(i);
-                        nodes.get(i).inDegree().add(1);
+                        nodes.get(i).nonFinishPrev().add(1);
+                        nodes.get(i).nonStartPrev().add(1);
                         if (count <= 0) {
                             break;
                         }
                     }
                 }
+
+                //未被前序节点覆盖的输入物品，其实可以脱离前序节点进行预提取（Prefetch）
+                if (count > 0) {
+                    nodes.get(i).prefetchable().add(item.copyWithCount(count));
+                }
             }
+
 
             int finalI = i;
             if (layer.getCraftData().isPresent()) {
@@ -610,6 +619,11 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
 
 
     // region 当前工作状态
+    public boolean isCurrentPrefetching() {
+        if (isDone() || !hasCurrent()) return false;
+        return getCurrentNode().progress().getValue() == SolvedCraftLayer.Progress.PREFETCH;
+    }
+
     public boolean isCurrentGathering() {
         if (isDone() || !hasCurrent()) return false;
         return getCurrentNode().progress().getValue() == SolvedCraftLayer.Progress.GATHERING;
@@ -1057,7 +1071,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
 
         node.nextIndex().forEach(index -> {
             SolvedCraftLayer nextNode = nodes.get(index);
-            nextNode.inDegree().decrement();
+            nextNode.nonFinishPrev().decrement();
             nextNode.lastTouch().setValue(Math.max(node.lastTouch().getValue() + 1, nextNode.lastTouch().getValue()));
             //如果当前节点的后续节点被分发了，但是被分发的时候当前节点仍然有未完成的前置节点，那么现在前置节点完成后，应该同步给对方
             if (nextNode.progress().getValue() == SolvedCraftLayer.Progress.DISPATCHED) {
@@ -1078,6 +1092,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
 
     /**
      * 尝试开始一个节点。
+     * 按照目前的设计，一个节点是可以开始两次的。一次是Prefetch（IDLE->PREFETCH)，一次是正式开始(STANDBY->GATHERING)
      * <li>如果当前节点已经开始/失败或结束，则返回成功/失败</li>
      * <li>如果当前节点已经被分发，则失败</li>
      * <li>如果当前节点有未完成的依赖，则返回失败</li>
@@ -1097,9 +1112,13 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             return true;
         if (node.progress().getValue() == SolvedCraftLayer.Progress.GATHERING && !isStoppingAdding.value)
             return true;
+        if (node.progress().getValue() == SolvedCraftLayer.Progress.PREFETCH && !isStoppingAdding.value)
+            return true;
         if (isStoppingAdding.value)
             return false;
-        if (node.inDegree().getValue() > 0)
+        if (node.nonStartPrev().getValue() > 0)
+            return false;
+        if (node.progress().getValue() == SolvedCraftLayer.Progress.STANDBY && node.nonFinishPrev().getValue() > 0)
             return false;
         if (layer.getCraftData().isEmpty() && node.nonFinishPrev().getValue() > 0)
             return false;
@@ -1251,6 +1270,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
     }
 
     // endregion
+
 
     //region 方块占用控制
     public boolean tryUseAnotherCraftGuide(ServerLevel level, EntityMaid maid) {

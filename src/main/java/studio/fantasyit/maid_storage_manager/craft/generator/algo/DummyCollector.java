@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -61,31 +62,31 @@ public class DummyCollector implements ICachableGeneratorGraph {
     }
 
     @Override
-    public void addRecipe(Recipe<?> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        List<Integer> ingredientCounts = recipe.getIngredients()
+    public void addRecipe(RecipeHolder<? extends Recipe<?>> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        List<Integer> ingredientCounts = recipe.value().getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
                 .toList();
         addRecipe(
-                recipe.getId(),
-                recipe.getIngredients(),
+                recipe.id(),
+                recipe.value().getIngredients(),
                 ingredientCounts,
-                recipe.getResultItem(registryAccess),
+                recipe.value().getResultItem(registryAccess),
                 craftGuideSupplier
         );
     }
 
     @Override
-    public void addRecipeWrapId(Recipe<?> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        List<Integer> ingredientCounts = recipe.getIngredients()
+    public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        List<Integer> ingredientCounts = recipe.value().getIngredients()
                 .stream()
                 .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
                 .toList();
         addRecipe(
-                RecipeUtil.wrapLocation(generator, recipe.getId()),
-                recipe.getIngredients(),
+                RecipeUtil.wrapLocation(generator, recipe.id()),
+                recipe.value().getIngredients(),
                 ingredientCounts,
-                recipe.getResultItem(registryAccess),
+                recipe.value().getResultItem(registryAccess),
                 craftGuideSupplier
         );
     }

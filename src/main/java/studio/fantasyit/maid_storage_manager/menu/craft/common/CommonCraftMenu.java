@@ -315,40 +315,40 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 save();
             }
             case SET_ALL_INPUT -> {
-                if(player instanceof ServerPlayer sp) {
-                ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
-                ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
-                int inputId = 0;
-                int outputId = 0;
-                CommonStepDataContainer _tmp = new CommonStepDataContainer(this);
-                for (int id = 0; id < craftGuideData.steps.size(); id++) {
-                    CommonStepDataContainer step = id == selectedIndex ? currentEditingItems : _tmp;
-                    if (id != selectedIndex)
-                        step.setStep(craftGuideData.steps.get(id));
-                    for (int i = 0; i < step.step.actionType.inputCount(); i++) {
-                        if (inputId < inputTag.size()) {
-                            ItemStack tmp = ItemStackUtil.parseStack(player.registryAccess(), inputTag.getCompound(inputId));
-                            step.setItemNoTrigger(i, tmp);
-                            step.setCount(i, tmp.getCount());
-                            inputId++;
+                if (player instanceof ServerPlayer sp) {
+                    ListTag inputTag = data.getList("inputs", Tag.TAG_COMPOUND);
+                    ListTag outputTag = data.getList("outputs", Tag.TAG_COMPOUND);
+                    int inputId = 0;
+                    int outputId = 0;
+                    CommonStepDataContainer _tmp = new CommonStepDataContainer(this);
+                    for (int id = 0; id < craftGuideData.steps.size(); id++) {
+                        CommonStepDataContainer step = id == selectedIndex ? currentEditingItems : _tmp;
+                        if (id != selectedIndex)
+                            step.setStep(craftGuideData.steps.get(id));
+                        for (int i = 0; i < step.step.actionType.inputCount(); i++) {
+                            if (inputId < inputTag.size()) {
+                                ItemStack tmp = ItemStackUtil.parseStack(player.registryAccess(), inputTag.getCompound(inputId));
+                                step.setItemNoTrigger(i, tmp);
+                                step.setCount(i, tmp.getCount());
+                                inputId++;
+                            }
+                        }
+                        for (int i = 0; i < step.step.actionType.outputCount(); i++) {
+                            if (outputId < outputTag.size()) {
+                                int inputOffset = step.padCount + step.inputCount;
+                                ItemStack tmp = ItemStackUtil.parseStack(player.registryAccess(), outputTag.getCompound(outputId));
+                                step.setItemNoTrigger(inputOffset + i, tmp);
+                                step.setCount(inputOffset + i, tmp.getCount());
+                                outputId++;
+                            }
+                        }
+                        if (id != selectedIndex) {
+                            step.save();
+                            PacketDistributor.sendToPlayer(sp,
+                                    new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, id, 0, step.step.toCompound(player.registryAccess()))
+                            );
                         }
                     }
-                    for (int i = 0; i < step.step.actionType.outputCount(); i++) {
-                        if (outputId < outputTag.size()) {
-                            int inputOffset = step.padCount + step.inputCount;
-                            ItemStack tmp = ItemStackUtil.parseStack(player.registryAccess(), outputTag.getCompound(outputId));
-                            step.setItemNoTrigger(inputOffset + i, tmp);
-                            step.setCount(inputOffset + i, tmp.getCount());
-                            outputId++;
-                        }
-                    }
-                    if (id != selectedIndex) {
-                        step.save();
-                        PacketDistributor.sendToPlayer(sp,
-                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.SYNC, id, 0, step.step.toCompound(player.registryAccess()))
-                        );
-                    }
-                }
                 }
                 save();
             }
@@ -358,10 +358,10 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
             }
             case GENERATOR_RESULT -> {
                 generatorError = value != 0;
-                if(!generatorError) {
+                if (!generatorError) {
                     currentEditingItems.clearStep();
                     if (data != null) {
-                        craftGuideData = CraftGuideData.fromCompound(data);
+                        craftGuideData = CraftGuideData.fromCompound(data, player.registryAccess());
                     }
                 }
             }
@@ -380,7 +380,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                     ListTag inputs = data.getList("inputs", Tag.TAG_COMPOUND);
                     List<ItemStack> inputsList = new ArrayList<>();
                     for (int i = 0; i < inputs.size(); i++) {
-                        inputsList.add(ItemStackUtil.parseStack(inputs.getCompound(i)).copyWithCount(counts.get(i)));
+                        inputsList.add(ItemStackUtil.parseStack(player.registryAccess(), inputs.getCompound(i)).copyWithCount(counts.get(i)));
                     }
                     CraftGuideData apply = generatedRecipes.craftGuideSuppliers.get(value).apply(inputsList);
                     if (apply != null && apply.steps.stream().anyMatch(s -> !s.actionType.canBeCommon()))
@@ -391,13 +391,12 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                         this.selectedIndex = -1;
                         this.selectedGenerator = false;
                         recalcSlots();
-                        Network.INSTANCE.send(
-                                PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
-                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GENERATOR_RESULT, 0, 0, apply.toCompound(new CompoundTag()))
+                        PacketDistributor.sendToPlayer(
+                                (ServerPlayer) player,
+                                new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GENERATOR_RESULT, 0, 0, apply.toCompound(new CompoundTag(), player.registryAccess()))
                         );
-                    }else{
-                        Network.INSTANCE.send(
-                                PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
+                    } else {
+                        PacketDistributor.sendToPlayer((ServerPlayer) player,
                                 new CraftGuideGuiPacket(CraftGuideGuiPacket.Type.GENERATOR_RESULT, 0, 1)
                         );
                     }
@@ -444,8 +443,7 @@ public class CommonCraftMenu extends AbstractContainerMenu implements ISaveFilte
                 );
             }
         }
-        Network.INSTANCE.send(
-                PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
+        PacketDistributor.sendToPlayer((ServerPlayer) player,
                 new CraftGuideGeneratorUpdate(generatedRecipes)
         );
     }

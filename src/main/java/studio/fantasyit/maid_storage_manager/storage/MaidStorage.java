@@ -82,8 +82,11 @@ public class MaidStorage {
         BlockEntity blockEntity = level.getBlockEntity(target.pos);
         ResourceLocation type = target.getType();
         for (IMaidStorage storage : storages) {
-            if (storage.getType().equals(type) && storage.isValidTarget(level, maid, target.pos, target.side, blockState, blockEntity))
-                return target;
+            if (storage.isValidTarget(level, maid, target.pos, target.side, blockState, blockEntity)) {
+                if (storage.getType().equals(type))
+                    return target;
+                return new Target(storage.getType(), target.pos, target.side);
+            }
         }
         return null;
     }

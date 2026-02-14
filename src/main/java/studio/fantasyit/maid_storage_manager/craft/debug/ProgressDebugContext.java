@@ -1,8 +1,8 @@
 package studio.fantasyit.maid_storage_manager.craft.debug;
 
 
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,7 +16,6 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import studio.fantasyit.maid_storage_manager.network.DebugDataPacket;
-import studio.fantasyit.maid_storage_manager.network.Network;
 
 import java.util.Arrays;
 
@@ -165,7 +164,7 @@ public class ProgressDebugContext {
         if (isDummy()) return;
         if (disable[type.ordinal()]) return;
         logger.debug(name(type) + String.format("[%6d]", ++iid) + String.format(message, a));
-        Network.INSTANCE.send(PacketDistributor.ALL.noArg(), new DebugDataPacket(String.format("[%s][%6d]", id, ++iid) + String.format(message, a)));
+        PacketDistributor.sendToAllPlayers(new DebugDataPacket(String.format("[%s][%6d]", id, ++iid) + String.format(message, a)));
     }
 
     public String name(TYPE type) {

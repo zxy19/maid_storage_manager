@@ -355,19 +355,15 @@ public class Network {
                     });
                 }
         );
-
-        Network.INSTANCE.registerMessage(16,
-                CraftGuideGeneratorUpdate.class,
-                CraftGuideGeneratorUpdate::toBytes,
-                CraftGuideGeneratorUpdate::new,
+        registrar.playBidirectional(
+                CraftGuideGeneratorUpdate.TYPE,
+                CraftGuideGeneratorUpdate.STREAM_CODEC,
                 (p, c) -> {
-                    c.get().enqueueWork(() -> {
-                        CraftGuideGeneratorUpdate.handle(Optional.ofNullable((Player) c.get().getSender()).orElseGet(Network::getLocalPlayer), p);
-                        c.get().setPacketHandled(true);
+                    c.enqueueWork(() -> {
+                        CraftGuideGeneratorUpdate.handle(c.player(), p);
                     });
                 }
         );
-
     }
 
     @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD)
