@@ -46,9 +46,11 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         //CASE:物品数量够用：直接返回不需要计算方案
         if (node.getCurrentRemain() >= maxRequire) {
             if (!node.isLoopedIngredient || node.hasKeepIngredient || node.loopInputIngredientCount == 0) {
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for enough");
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
                 return maxRequire;
             } else if (node.getCurrentRemain() - node.loopInputIngredientCount >= maxRequire) {
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for enough");
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, maxRequire);
                 return maxRequire;
             }
@@ -56,14 +58,14 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
         //CASE:物品完全不能合成。此时的物品剩余数量就是可用数量，将其对齐到stepCount返回即可
         if (node.edges.isEmpty()) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for no plan");
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
-            if (maxRequire > alignedRequire)
-                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             return alignedRequire;
         }
         //CASE: 这次合成比当前合成链上上次请求合成的要多，说明是正权环，最终节点值无法到达0，直接断开。
         if (maxRequire >= visit.minStepRequire(node)) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for increasing circle");
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
             if (maxRequire > alignedRequire)
                 node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
@@ -76,9 +78,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         }
         //超过最大深度，直接退出
         if (addInStack(node) > maxDepthAllow || addDepAndCheckIsTooDeep()) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for depth limitation reached");
             int alignedRequire = (node.getCurrentRemain() / stepCount) * stepCount;
-            if (maxRequire > alignedRequire)
-                node.maxLack = Math.max(node.maxLack, maxRequire - alignedRequire);
             pushHistory(node, HistoryRecord.RECORD_REQUIRED, alignedRequire);
             removeInStack(node);
             return alignedRequire;
@@ -123,7 +124,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 maxRequiredForCurrentCraftNode = Math.min((node.singleTimeCount + weight - 1) / weight, maxRequiredForCurrentCraftNode);
             debugContext.logEntryNewLevel(CraftingDebugContext.TYPE.CRAFT, "%s * %d", toNode, maxRequiredForCurrentCraftNode);
             int available = dfsCalcCraftNode(toNode, maxRequiredForCurrentCraftNode, visit, estimating);
-            debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Craft Finish=%d", available);
+            debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Craft %s Finish * %d", toNode, available);
             int collect = Math.min(available * weight, remainToCraft.getValue());
             if (available > 0) {
                 //当前层是保留物品层。需要计算保留物品。即保证本层扣除结束后，至少剩余LoopInput的数量
@@ -132,7 +133,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                     if (collect < 0) collect = 0;
                     debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item keep loop toTake=%d in totalSuccess=%d", collect, available * weight);
                 }
-                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item use -= available %d", collect);
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item use (after crafted) -= %d", collect);
                 pushHistory(node, HistoryRecord.RECORD_REQUIRED, collect);
                 _i--;
             }
@@ -174,11 +175,15 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
         if (node.bestRecipeStartAt != -1) return node.bestRecipeStartAt;
         //估算循环，直接返回数值并清空优化缓存
         if (node.bestRecipeStartAtCalculating) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Loop In Estimating");
             node.clearMaxSuccessAfter = true;
             return 0;
         }
         if (node.edges.size() <= 1) return 0;
-        if (addDepAndCheckIsTooDeep()) return 0;
+        if (addDepAndCheckIsTooDeep()) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for too deep");
+            return 0;
+        }
         node.bestRecipeStartAtCalculating = true;
         int historyId = this.historyId.getValue();
         int resultId = results.size();
@@ -231,18 +236,23 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
 
     public int dfsCalcCraftNode(CraftNodeBasic node, int maxRequire, VisitRecorder visit, boolean estimating) {
         if (addInStack(node) > maxDepthAllow) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for too deep");
             removeInStack(node);
             return 0;
         }
-        if (addDepAndCheckIsTooDeep())
+        if (addDepAndCheckIsTooDeep()) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for too deep");
             return 0;
+        }
         if (results.size() >= Config.craftingMaxLayerLimit) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Return for too many steps");
             removeInStack(node);
             return 0;
         }
         int restRequire = maxRequire;
-        if (node.maxSuccess < restRequire)
+        if (node.maxSuccess < restRequire) {
             restRequire = node.maxSuccess;
+        }
         int simulateRequire = maxRequire;
         int totalSuccess = 0;
         //无原料合成，直接返回全部成功
@@ -255,6 +265,7 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 Node toNode = getNode(toNodePair.getA());
                 if (simulateRequire * toNodePair.getB() > toNode.maxSuccess) {
                     simulateRequire = toNode.maxSuccess / toNodePair.getB();
+                    debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Craft max count -> %d because %s maxSuccess = %d", simulateRequire, toNode, toNode.maxSuccess);
                 }
             }
         }
@@ -275,18 +286,18 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                         edge.getB(),
                         visit,
                         estimating);
-                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item Finish=%d", currentRequire);
+                debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item %s Finish=%d", toNode, currentRequire);
                 currentRequire /= edge.getB();
-                debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Co Craft Finish=%d", currentRequire);
+                debugContext.logExitLevel(CraftingDebugContext.TYPE.CRAFT, "Craft Finish *%d", currentRequire);
                 //如果当前物品获取数量小于模拟数量，说明模拟数量不能顺利完成。此时可以直接回溯
                 if (currentRequire < simulateRequire) {
+                    debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Craft change try size %d->%d because %s not enough", simulateRequire, currentRequire, toNode);
                     //至少对于当前物品，这个数量是可以获取到的
                     simulateRequire = currentRequire;
                     //回溯
                     popHistoryAt(historyId);
                     while (resultId < results.size()) results.removeLast();
                     anyFail = true;
-                    debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Craft lack C:%d,%d", currentRequire, simulateRequire);
                     break;
                 }
             }
@@ -309,10 +320,13 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
                 debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Item %s crafted += %d", cn, to.getB() * totalSuccess);
                 pushHistory(cn, HistoryRecord.RECORD_CRAFTED, to.getB() * totalSuccess);
             }
+        } else {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Craft fail %s", node);
         }
         pushHistory(node, HistoryRecord.RECORD_SCHEDULED, totalSuccess);
         if (totalSuccess < maxRequire) {
             node.maxSuccess = totalSuccess;
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "%s maxSuccess -> %d", node, totalSuccess);
             if (node.maxSuccess == node.lastMaxSuccess) {
                 node.maxSuccessCount++;
             } else {
@@ -329,6 +343,8 @@ public class SimpleSearchGraph extends HistoryAndResultGraph {
     public boolean process() {
         ItemNodeBasic itemNode = (ItemNodeBasic) getNode(targetItemNodeId);
         for (int i = 10; i < 61; i += 10) {
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "[CONTEXT START]");
+            debugContext.log(CraftingDebugContext.TYPE.CRAFT, "Crafting depth  %d", i);
             dfsDepth = 0;
             maxDepthAllow = i;
             targetAvailable = dfsCalcItemNodeRequired(itemNode, targetCount, targetCount, new VisitRecorder(getNodeCount()), false);

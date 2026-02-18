@@ -71,6 +71,11 @@ public class CraftingCalculationTester {
         for (CraftResultNode craftLayer : results) {
             Logger.info(" + > " + graph.getNode(craftLayer.index));
         }
+        Logger.info("Fail list:");
+        List<Pair<ItemNodeBasic, Integer>> fails = graph.getFailsRaw();
+        for (Pair<ItemNodeBasic, Integer> fail : fails) {
+            Logger.info(" + > " + fail.getA() + " * " + fail.getB());
+        }
     }
 
     public static void exportTo(AbstractBiCraftGraph graph, ItemStack targetItem, int count, String path) {
