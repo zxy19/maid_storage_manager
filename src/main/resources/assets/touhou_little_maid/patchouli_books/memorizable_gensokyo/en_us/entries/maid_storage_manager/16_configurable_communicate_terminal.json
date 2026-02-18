@@ -1,0 +1,17 @@
+{
+  "sortnum": 16,
+  "name": "Configurable Communicate Terminal",
+  "icon": "maid_storage_manager:configurable_communicate_terminal",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:configurable_communicate_terminal",
+      "text": "The Configurable Communicate Terminal can be used to allow storage manager maids to transport items to maids in other work modes. It can store items that cannot fit on the maid's person back home or replenish depleted tools for the maid.$(br2)Place work cards in the upper right slot to specify which storage manager maids to interact with. If none are placed, it defaults to interacting with all storage manager maids within range that have communication enabled."
+    },
+    {
+      "type": "text",
+      "text": "The upper left provides several preset modes, with the default automatically adapting based on the maid's current work status.$(br)Select the slot to configure on the left side$(br)After selecting the slot on the maid's person on the right side, you can set the item rules for that slot$(br)After placing the target item in the item slot below, you can set the upper and lower limits for reserved items. If the maid holds fewer items than the lower limit, the storage manager maid will restock it; if the maid holds more items than the upper limit, the storage manager maid will store the excess in the warehouse. You can also set that items will no longer be stored if they exceed the upper limit in the warehouse.$(br)You can also check whether to match the item's NBT tags and choose to use whitelist or blacklist mode."
+    }
+  ]
+}

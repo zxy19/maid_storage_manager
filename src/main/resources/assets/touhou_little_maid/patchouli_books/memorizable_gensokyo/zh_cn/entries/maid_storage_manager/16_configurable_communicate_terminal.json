@@ -1,0 +1,17 @@
+{
+  "sortnum": 16,
+  "name": "可配置交流终端",
+  "icon": "maid_storage_manager:configurable_communicate_terminal",
+  "category": "touhou_little_maid:maid_storage_manager",
+  "pages": [
+    {
+      "type": "spotlight",
+      "item": "maid_storage_manager:configurable_communicate_terminal",
+      "text": "可配置交流终端可用于让仓管女仆向其他工作模式的女仆运输物品，可以将女仆身上塞不下的物品存放回家中或者为女仆补充损耗了的工具。$(br2)在右上角放入工牌，可指定与哪些仓管女仆交互。若不放置，则默认与范围内所有开启了交流的仓管女仆互动。"
+    },
+    {
+      "type": "text",
+      "text": "左上角提供几种预设模式，默认会根据女仆当前工作状态自动适配。$(br)在左侧选择要配置的栏位$(br)在右侧选择女仆身上的栏位后即可设置该栏位的物品规则$(br)在下方的物品槽中放入目标物品后，可以设置保留物品的上下限，若女仆持有数量低于下限，仓管女仆会为其补货，若女仆持有数量高于上限，仓管女仆会将多余物品存入仓库。同时也可设置当仓库中物品超过上限则不再存入。$(br)同时可勾选是否匹配物品的NBT标签，并选择使用白名单或黑名单模式"
+    }
+  ]
+}

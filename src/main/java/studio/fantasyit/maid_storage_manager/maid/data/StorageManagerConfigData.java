@@ -55,7 +55,7 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
                     8,
                     true,
                     -1,
-                    false
+                    true
             );
         }
 

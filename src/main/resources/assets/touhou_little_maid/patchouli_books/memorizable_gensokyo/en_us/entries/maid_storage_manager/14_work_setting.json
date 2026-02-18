@@ -61,8 +61,23 @@
     },
     {
       "type": "text",
-      "title": "Always Single Crafting",
-      "text": "Once enabled, maids will separately craft multiple identical items one by one starting from obtaining the raw materials (previously, they would obtain the raw materials and craft all items at once). $(br2) When multiple maids are working together, maids with this option enabled will distribute the crafting of multiple identical items one by one to different maids, increasing the number of parallel tasks."
+      "title": "Max Craft Layer Repeat",
+      "text": "This setting configures the maximum number of item crafts that maids will batch together. For example, if the value is 8, the maid will smelt 8 iron ingots in a single step. Operations within the same step cannot be split among other maids, setting an appropriate value allows multiple maids to coordinate effectively."
+    },
+    {
+      "type": "text",
+      "title": "Auto Sorting Items",
+      "text": "When enabled, maids will place items of the same type into adjacent slots within supported containers."
+    },
+    {
+      "type": "text",
+      "title": "Max Item Type per Container",
+      "text": "Sets how maids control the number of different item types placed in containers. When set to [Keep Content], maids will not attempt to place any items into a chest that weren't already in it. When set to 1, if the chest already has one or more types of items, the maid will no longer place new items (similar to copper golems)."
+    },
+    {
+      "type": "text",
+      "title": "Do Communicate",
+      "text": "See $(l:maid_storage_manager/16_configurable_communicate_terminal)Configurable Communicate Terminal$(/l)"
     }
   ]
 }
