@@ -19,16 +19,18 @@ public class ChestMultiBlockProcessor implements IMultiBlockProcessor {
 
     @Override
     public void process(Level level, BlockPos pos, Consumer<BlockPos> processor) {
+        if (!level.getBlockState(pos).hasProperty(ChestBlock.TYPE))
+            return;
         ChestType value = level.getBlockState(pos).getValue(ChestBlock.TYPE);
         if (value == ChestType.SINGLE)
             return;
         ChestType opposite = value.getOpposite();
         Direction dir = level.getBlockState(pos).getValue(ChestBlock.FACING);
-        if(opposite == ChestType.RIGHT)
+        if (opposite == ChestType.RIGHT)
             dir = dir.getClockWise();
         else
             dir = dir.getCounterClockWise();
-        if(level.getBlockState(pos.relative(dir)).getBlock() instanceof AbstractChestBlock<?>)
+        if (level.getBlockState(pos.relative(dir)).getBlock() instanceof AbstractChestBlock<?>)
             processor.accept(pos.relative(dir));
     }
 }
