@@ -160,6 +160,15 @@ abstract public class HistoryAndResultGraph extends AbstractBiCraftGraph {
                 .map(node -> new Pair<>(node.itemStack, node.maxLack))
                 .toList();
     }
+    public List<Pair<ItemNodeBasic, Integer>> getFailsRaw() {
+        return nodes
+                .stream()
+                .filter(node -> node instanceof ItemNodeBasic)
+                .map(node -> (ItemNodeBasic) node)
+                .filter(node -> node.maxLack > 0)
+                .map(node -> new Pair<>(node, node.maxLack))
+                .toList();
+    }
 
     @Override
     public void setSpeed(int i) {

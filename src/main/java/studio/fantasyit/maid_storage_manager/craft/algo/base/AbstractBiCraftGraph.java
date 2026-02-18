@@ -6,10 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.CraftNode;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.ItemNode;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.Node;
-import studio.fantasyit.maid_storage_manager.craft.algo.base.node.SimCraftNode;
+import studio.fantasyit.maid_storage_manager.craft.algo.base.node.*;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.LoopSolver;
 import studio.fantasyit.maid_storage_manager.craft.algo.misc.PrefilterByChunk;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -266,12 +263,12 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
             node.maxSuccessCount = 0;
             node.listed = false;
             node.clearMaxSuccessAfter = false;
-            if (node instanceof ItemNode itemNode) {
+            if (node instanceof ItemNodeBasic itemNode) {
                 itemNode.required = 0;
                 itemNode.crafted = 0;
                 itemNode.bestRecipeStartAtCalculating = false;
                 itemNode.bestRecipeStartAt = -1;
-            } else if (node instanceof CraftNode craftNode) {
+            } else if (node instanceof CraftNodeBasic craftNode) {
                 craftNode.scheduled = 0;
                 craftNode.hasLoopIngredient = false;
             }
