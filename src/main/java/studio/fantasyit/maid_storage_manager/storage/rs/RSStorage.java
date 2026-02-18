@@ -1,14 +1,13 @@
 package studio.fantasyit.maid_storage_manager.storage.rs;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.refinedmods.refinedstorage.common.grid.CraftingGridBlockEntity;
+import com.refinedmods.refinedstorage.common.grid.GridBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +18,6 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 public class RSStorage implements IMaidStorage {
     public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "rs");
-    public static final TagKey<Block> GRID = BlockTags.create(ResourceLocation.fromNamespaceAndPath("refinedstorage", "grid"));
-    public static final TagKey<Block> CRAFTING_GRID = BlockTags.create(ResourceLocation.fromNamespaceAndPath("refinedstorage", "crafting_grid"));
 
     @Override
     public ResourceLocation getType() {
@@ -29,7 +26,7 @@ public class RSStorage implements IMaidStorage {
 
     @Override
     public boolean isValidTarget(ServerLevel level, LivingEntity maid, BlockPos block, @Nullable Direction side, BlockState blockState, BlockEntity blockEntity) {
-        return blockState.is(GRID) || blockState.is(CRAFTING_GRID);
+        return level.getBlockEntity(block) instanceof GridBlockEntity || level.getBlockEntity(block) instanceof CraftingGridBlockEntity;
     }
 
     @Override
