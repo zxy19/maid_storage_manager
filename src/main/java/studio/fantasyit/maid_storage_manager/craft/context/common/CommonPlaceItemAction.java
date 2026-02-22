@@ -20,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageSplitInsertableContext;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
@@ -92,9 +93,15 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
         if (allDone()) return Result.SUCCESS;
         boolean hasChange = false;
         boolean reTryStart = false;
+        boolean split = craftGuideStepData.getOptionSelection(OPTION_SPLIT).orElse(false);
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
-        if (storageContext instanceof IStorageInsertableContext isic) {
+        boolean valid;
+        if (split)
+            valid = storageContext instanceof IStorageSplitInsertableContext;
+        else
+            valid = storageContext instanceof IStorageInsertableContext;
+        if (valid) {
             boolean shouldDoPlace = false;
             int count = 0;
             for (; slot < inv.getSlots(); slot++) {
@@ -118,7 +125,11 @@ public class CommonPlaceItemAction extends AbstractCraftActionContext {
                         item.getCount()
                 );
                 ItemStack copy = item.copyWithCount(pick);
-                ItemStack rest = isic.insert(copy);
+                ItemStack rest;
+                if (split)
+                    rest = ((IStorageSplitInsertableContext) (storageContext)).splitInsert(copy);
+                else
+                    rest = ((IStorageInsertableContext) (storageContext)).insert(copy);
                 item.shrink(pick - rest.getCount());
                 craftLayer.addCurrentStepPlacedCounts(ingredientIndex, pick - rest.getCount());
                 if (pick - rest.getCount() != 0) {
