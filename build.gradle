@@ -13,8 +13,30 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
+publishMods {
+    type = BETA
+    file = layout.buildDirectory.file("libs/${minecraft_version}-${mod_id}-${mod_version}-all.jar")
+    modLoaders.add("forge")
+    changelog = file("changelog").text
+
+    curseforge {
+        projectId = "1210244"
+        accessToken = CURSEFORGE_TOKEN
+        minecraftVersions.add("1.20.1")
+        optional("applied-energistics-2","ars-nouveau","botania","cloth-config","create","emi","jei","kubejs","mekanism","patchouli","refined-storage")
+        requires("touhou-little-maid")
+    }
+    modrinth {
+        projectId = "5sIJPqAj"
+        accessToken = MODRINTH_TOKEN
+        minecraftVersions.add("1.20.1")
+        optional("kubejs","emi","jei","refined-storage","patchouli","cloth-config","ars-nouveau","ae2","create","mekanism")
+        requires("touhou-little-maid")
+    }
+}
 apply plugin: 'org.spongepowered.mixin'
 
 group = mod_group_id
@@ -328,4 +350,13 @@ tasks.named('jar', Jar).configure {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+tasks.named("publishMods").configure {
+    dependsOn("build")
+}
+tasks.named("publishCurseforge").configure {
+    dependsOn("build")
+}
+tasks.named("publishModrinth").configure {
+    dependsOn("build")
 }

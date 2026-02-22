@@ -1,5 +1,1 @@
-Add a button in craft guide to allow player use Craft Guide Generator to easily "write" a craft guide.
-Fix the bug that maid will visit end chest and crash the game.
-Update Patchouli.
-Add "Prefetch" and "StandBy" to decrease wait time in crafting.
-Fix RS compat(1.21)
+Fix autoload and fix jar file
