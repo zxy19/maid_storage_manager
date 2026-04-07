@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.capability.InventoryListDataProvider;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
@@ -418,7 +419,28 @@ public class Network {
                     });
                 }
         );
-
+        Network.INSTANCE.registerMessage(17,
+                AIMatchLocalizedItemS2CPacket.class,
+                AIMatchLocalizedItemS2CPacket::toBytes,
+                AIMatchLocalizedItemS2CPacket::new,
+                (p, c) -> {
+                    c.get().enqueueWork(() -> {
+                        AIMatchLocalizedItemS2CPacket.handle(p);
+                        c.get().setPacketHandled(true);
+                    });
+                }
+        );
+        Network.INSTANCE.registerMessage(18,
+                AIMatchLocalizedItemC2SPacket.class,
+                AIMatchLocalizedItemC2SPacket::toBytes,
+                AIMatchLocalizedItemC2SPacket::new,
+                (p, c) -> {
+                    c.get().enqueueWork(() -> {
+                        GetStorageFunction.handleRPC(p.rpcId, p.data);
+                        c.get().setPacketHandled(true);
+                    });
+                }
+        );
     }
 
     @OnlyIn(Dist.CLIENT)

@@ -223,12 +223,6 @@ public class ClothEntry {
                         .setSaveConsumer(t -> Config.saveAfter(() -> Config.aiFunctions = t))
                         .build()
         );
-        builder.add(
-                entryBuilder.startBooleanToggle(Component.translatable("config.maid_storage_manager.ai.two_step_ai_response"), Config.twoStepAiResponse)
-                        .setTooltip(Component.translatable("config.maid_storage_manager.ai.two_step_ai_response.tooltip"))
-                        .setSaveConsumer(t -> Config.saveAfter(() -> Config.twoStepAiResponse = t))
-                        .build()
-        );
     }
 
     private static void addEntryUtility(SubCategoryBuilder builder, ConfigEntryBuilder entryBuilder) {

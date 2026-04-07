@@ -1,17 +1,6 @@
 package studio.fantasyit.maid_storage_manager.util;
 
-import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
-import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
-import com.github.tartaricacid.touhoulittlemaid.ai.manager.setting.papi.PapiReplacer;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMConfig;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.FunctionToolCall;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.ToolCall;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.util.CappedQueue;
-import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -22,14 +11,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
-import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.ai.AiUtils;
+import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
+import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEvent;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.communicate.step.RequestItemStep;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
@@ -43,7 +31,6 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class RequestItemUtil {
@@ -70,9 +57,10 @@ public class RequestItemUtil {
         Level level = maid.level();
         ItemStack reqList = maid.getMainHandItem();
         CompoundTag tag = reqList.getOrCreateTag();
+        MinecraftForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.END, maid, tag.getUUID(RequestListItem.TAG_UUID) , reqList));
         if (tag.getBoolean(RequestListItem.TAG_VIRTUAL)) {
             if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("AI")) {
-                sendToolResponseB(maid, reqList);
+                StorageFetchFunction.ends(maid, reqList);
             } else if (tag.getString(RequestListItem.TAG_VIRTUAL_SOURCE).equals("JEI")) {
                 if (maid.getOwner() instanceof ServerPlayer player)
                     Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
@@ -90,8 +78,6 @@ public class RequestItemUtil {
                 if (communicateRequest != null && communicateRequest.getCurrentStep() instanceof RequestItemStep requestItemStep)
                     requestItemStep.onRequestDone(RequestListItem.isAllSuccess(reqList));
             }
-            //虚拟的，不用额外处理
-            //TODO 事件处理
         }
         //1.1 尝试扔给目标实体
         else if (tag.getInt(RequestListItem.TAG_REPEAT_INTERVAL) <= 0 && targetEntity != null) {
@@ -119,81 +105,6 @@ public class RequestItemUtil {
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.getRequestProgress(maid).stopWork();
         maid.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-    }
-
-    /**
-     * 工具AI回调2
-     *
-     * @param maid
-     * @param reqList
-     */
-    private static void sendToolResponseB(EntityMaid maid, ItemStack reqList) {
-        if (!Config.twoStepAiResponse) return;
-        MaidAIChatManager aiChatManager = maid.getAiChatManager();
-        LLMSite llmSite = aiChatManager.getLLMSite();
-        ServerPlayer owner = (ServerPlayer) maid.getOwner();
-        if (llmSite == null || owner == null) return;
-        LLMClient client = llmSite.client();
-        StringBuilder sb = new StringBuilder();
-        CompoundTag tag = reqList.getOrCreateTag();
-        ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            CompoundTag itemTag = list.getCompound(i);
-            if (!itemTag.contains(RequestListItem.TAG_ITEMS_ITEM)) continue;
-
-            ItemStack itemstack = ItemStackUtil.parseStack(itemTag.getCompound(RequestListItem.TAG_ITEMS_ITEM));
-            if (itemstack.isEmpty()) continue;
-
-            int collected = itemTag.getInt(RequestListItem.TAG_ITEMS_COLLECTED);
-            int requested = itemTag.getInt(RequestListItem.TAG_ITEMS_REQUESTED);
-
-
-            if (itemTag.getBoolean(RequestListItem.TAG_ITEMS_DONE)) {
-                sb.append("[Finished]");
-            } else {
-                sb.append("[Processing]");
-            }
-
-            sb.append(itemstack.getHoverName().getString());
-            sb.append(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemstack.getItem())));
-            sb.append(" has collected ");
-            sb.append(collected);
-            sb.append(" and plans to get ");
-            sb.append(requested == -1 ? "any amount" : requested);
-            sb.append(".");
-            sb.append("\n");
-        }
-        FunctionToolCall functionToolCall = new FunctionToolCall("stock", "{}");
-        String id = UUID.randomUUID().toString();
-        ToolCall toolCall = new ToolCall(id, functionToolCall);
-        List<LLMMessage> llmMessages = aiChatManager.getSetting().map(s -> {
-            String setting = s.getSetting(maid, AiUtils.transformLanguage(owner.getLanguage()));
-            CappedQueue<LLMMessage> history = aiChatManager.getHistory();
-            List<LLMMessage> chatList = Lists.newArrayList();
-            chatList.add(LLMMessage.systemChat(maid, setting));
-            // 倒序遍历，将历史对话加载进去
-            history.getDeque().descendingIterator().forEachRemaining(chatList::add);
-            return chatList;
-        }).orElseGet(() -> {
-            if (StringUtils.isNotBlank(aiChatManager.customSetting)) {
-                String setting = PapiReplacer.replace(aiChatManager.customSetting, maid, AiUtils.transformLanguage(owner.getLanguage()));
-                CappedQueue<LLMMessage> history = aiChatManager.getHistory();
-                List<LLMMessage> chatList = Lists.newArrayList();
-                chatList.add(LLMMessage.systemChat(maid, setting));
-                // 倒序遍历，将历史对话加载进去
-                history.getDeque().descendingIterator().forEachRemaining(chatList::add);
-                return chatList;
-            }
-            return Lists.newArrayList();
-        });
-        llmMessages.add(LLMMessage.userChat(maid, "Please query and tell me the situation of last task."));
-        llmMessages.add(LLMMessage.assistantChat(maid, "Query task progress.", List.of(toolCall)));
-        llmMessages.add(LLMMessage.toolChat(maid, sb.toString(), id));
-        LLMCallback callback = new LLMCallback(aiChatManager,
-                "Please query and tell me the situation of last task.",
-                0);
-        LLMConfig config = LLMConfig.normalChat(aiChatManager.getLLMModel(), maid);
-        client.chat(llmMessages, config, callback);
     }
 
     private static void dispatchedTaskDone(EntityMaid maid, ItemStack reqList) {

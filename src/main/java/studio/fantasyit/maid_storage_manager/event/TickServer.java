@@ -5,6 +5,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
 import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
@@ -16,6 +17,7 @@ public class TickServer {
         if (event.phase == TickEvent.Phase.END) {
             SimulateTargetInteractHelper.removeInvalid();
             StorageVisitLock.invalidateInvalidedLock();
+            StorageFetchFunction.tick(event.getServer());
         }
     }
 

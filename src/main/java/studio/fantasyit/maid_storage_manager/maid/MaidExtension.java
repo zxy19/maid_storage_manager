@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid;
 
-import com.github.tartaricacid.touhoulittlemaid.ai.service.function.FunctionCallRegister;
+import com.github.tartaricacid.touhoulittlemaid.ai.agent.tool.ToolRegister;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
@@ -87,12 +87,13 @@ public class MaidExtension implements ILittleMaid {
     }
 
     @Override
-    public void registerAIFunctionCall(FunctionCallRegister register) {
+    public void registerAITool(ToolRegister register) {
         register.register(new StorageFetchFunction());
         register.register(new GetStorageFunction());
         register.register(new CoWorkSwitchFunction());
         register.register(new FindAndMarkStorageFunction());
     }
+
 
     @Override
     public void addMaidTips(MaidTipsOverlay maidTipsOverlay) {

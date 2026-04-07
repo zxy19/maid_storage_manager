@@ -5,9 +5,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEvent;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
@@ -62,8 +64,6 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
                         @NotNull ItemStack itemstack = maidInv.extractItem(i, 1, false);
                         maidInv.insertItem(i, maid.getMainHandItem(), false);
                         maid.setItemInHand(InteractionHand.MAIN_HAND, itemstack);
-                        //if(maid.getOwner() instanceof ServerPlayer sp)
-                        //TODO bind Trigger
                         break;
                     }
                 }
@@ -76,6 +76,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         }
 
         //记忆：开始新的工作
+        MinecraftForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.START, maid, RequestListItem.getUUID(maid.getMainHandItem()), maid.getMainHandItem()));
         MemoryUtil.getRequestProgress(maid).newWork(RequestListItem.getUUID(maid.getMainHandItem()));
         MemoryUtil.clearReturnWorkSchedule(maid);
         MemoryUtil.getCrafting(maid).clearCraftGuides();
