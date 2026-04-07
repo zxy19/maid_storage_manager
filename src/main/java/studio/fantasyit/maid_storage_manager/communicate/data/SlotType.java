@@ -68,12 +68,12 @@ public enum SlotType {
                 }
             }
             case FLOWER -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
+                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
                 if (inv.getSlots() > 5)
                     list.add(inv.getStackInSlot(5));
             }
             case ETA -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
+                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
                 for (int i = 0; i < inv.getSlots(); i++) {
                     if (i != 5)
                         list.add(inv.getStackInSlot(i));
@@ -103,12 +103,12 @@ public enum SlotType {
                 return resetSlotItemWithProcessAndCheckIfAnyChanged(process, bauble, startIndex);
             }
             case FLOWER -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
+                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
                 if (inv.getSlots() > 5)
                     inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5), 0));
             }
             case ETA -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
+                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
                 IItemHandlerModifiable noLast = inv.getSlots() == 6 ?
                         new RangedWrapper(inv, 0, 5) :
                         new CombinedInvWrapper(
@@ -154,7 +154,7 @@ public enum SlotType {
             case OFF_HAND -> placeArmorSlot(itemStack, maid, EquipmentSlot.OFFHAND);
             case BAUBLE -> InvUtil.tryPlace(maid.getMaidBauble(), itemStack);
             case FLOWER -> {
-                RangedWrapper backpackInv = maid.getAvailableBackpackInv();
+                CombinedInvWrapper backpackInv = maid.getAvailableBackpackInv();
                 if (backpackInv.getSlots() > 5) {
                     ItemStack stackInSlot = backpackInv.getStackInSlot(5);
                     if (stackInSlot.isEmpty()) {
@@ -170,7 +170,7 @@ public enum SlotType {
                 yield itemStack;
             }
             case ETA -> {
-                RangedWrapper inv = maid.getAvailableBackpackInv();
+                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
                 CombinedInvWrapper noLast = new CombinedInvWrapper(
                         new RangedWrapper(inv, 0, 5),
                         new RangedWrapper(inv, 6, inv.getSlots())

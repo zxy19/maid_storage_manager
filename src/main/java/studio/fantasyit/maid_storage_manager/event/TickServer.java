@@ -16,6 +16,7 @@ public class TickServer {
     public static void onTick(ServerTickEvent.Post event) {
         SimulateTargetInteractHelper.removeInvalid();
         StorageVisitLock.invalidateInvalidedLock();
+        StorageFetchFunction.tick(event.getServer());
     }
 
     @SubscribeEvent

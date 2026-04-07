@@ -154,10 +154,6 @@ public class Config {
             .comment("Disable the 'shortest path limitation' to gain faster path finding.")
             .define("performance.fast_path_schedule", false);
     //AI
-    private static final ModConfigSpec.BooleanValue TWO_STEP_AI_RESPONSE = BUILDER
-            .comment("Allow Maid call AI two times when doing some request.")
-            .define("ai.two_step_ai_response", true);
-
     private static final ModConfigSpec.BooleanValue AI_FUNCTIONS = BUILDER
             .comment("Enable function calls from this mod")
             .define("ai.functions", true);
@@ -260,7 +256,6 @@ public class Config {
     public static VirtualItemFrameRender virtualItemFrameRender;
     public static boolean renderMaidWhenIngredientRequest;
     public static boolean usingBetterLightOnItems;
-    public static boolean twoStepAiResponse;
     public static double pickupRequireWhenPlace;
     public static boolean fastPathSchedule;
     public static boolean realWorkSim;
@@ -326,7 +321,6 @@ public class Config {
         useAllStorageByDefault = USE_ALL_STORAGE_BY_DEFAULT.get();
         viewChangeSpeed = VIEW_CHANGE_SPEED.get();
         followSpeed = FOLLOW_SPEED.get();
-        twoStepAiResponse = TWO_STEP_AI_RESPONSE.get();
         pickupRequireWhenPlace = PICKUP_REQUIRE_WHEN_PLACE.get();
         fastPathSchedule = FAST_PATH_SCHEDULE.get();
         realWorkSim = REAL_WORK_SIM.get();
@@ -391,7 +385,6 @@ public class Config {
         USE_ALL_STORAGE_BY_DEFAULT.set(useAllStorageByDefault);
         VIEW_CHANGE_SPEED.set(viewChangeSpeed);
         FOLLOW_SPEED.set(followSpeed);
-        TWO_STEP_AI_RESPONSE.set(twoStepAiResponse);
         PICKUP_REQUIRE_WHEN_PLACE.set(pickupRequireWhenPlace);
         FAST_PATH_SCHEDULE.set(fastPathSchedule);
         REAL_WORK_SIM.set(realWorkSim);
