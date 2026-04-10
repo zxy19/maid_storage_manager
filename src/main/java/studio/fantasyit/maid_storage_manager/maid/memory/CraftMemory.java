@@ -149,6 +149,7 @@ public class CraftMemory extends AbstractTargetMemory {
                 if (storage == null) return;
                 IStorageContext iStorageContext = storage.onPreviewFilter((ServerLevel) maid.level(), maid, key);
                 if (iStorageContext instanceof IStorageCraftDataProvider iscdp) {
+                    iStorageContext.start(maid, (ServerLevel) maid.level(), key);
                     this.craftGuides.addAll(iscdp.getCraftGuideData());
                 }
             }
