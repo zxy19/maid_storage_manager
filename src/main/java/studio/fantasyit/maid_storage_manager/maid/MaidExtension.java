@@ -16,10 +16,7 @@ import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.Items;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.ai.CoWorkSwitchFunction;
-import studio.fantasyit.maid_storage_manager.ai.FindAndMarkStorageFunction;
-import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
-import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
+import studio.fantasyit.maid_storage_manager.ai.*;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.items.MaidInteractItem;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -92,6 +89,7 @@ public class MaidExtension implements ILittleMaid {
         register.register(new GetStorageFunction());
         register.register(new CoWorkSwitchFunction());
         register.register(new FindAndMarkStorageFunction());
+        register.register(new SimulateCraftingFunction());
     }
 
 

@@ -500,5 +500,13 @@
   "gui.maid_storage_manager.craft_guide.common.generator_input": "Input %s",
   "gui.maid_storage_manager.craft_guide.common.generator_output": "Output %s",
   "gui.maid_storage_manager.craft_guide.common.generator_filter": "Filter",
-  "gui.maid_storage_manager.craft_guide.common.generator_error": "Unsupported Craft Guide"
+  "gui.maid_storage_manager.craft_guide.common.generator_error": "Unsupported Craft Guide",
+  "chat_bubbles.maid_storage_manager.ai.simulating": "Simulate Crafting [%s]",
+  "chat_bubbles.maid_storage_manager.ai.get_storage.all": "Querying all items",
+  "chat_bubbles.maid_storage_manager.ai.get_storage.filter_all": "Querying item [%s]",
+  "chat_bubbles.maid_storage_manager.ai.get_storage.filter": "Querying storage [%s]",
+  "chat_bubbles.maid_storage_manager.ai.find_mark_storage": "Locating %s",
+  "chat_bubbles.maid_storage_manager.ai.storage_fetch": "Fetching %s",
+  "chat_bubbles.maid_storage_manager.ai.find_mark_storage_etc": "and %d more item",
+  "chat_bubbles.maid_storage_manager.ai.storage_fetch_etc": "and %d more item"
 }

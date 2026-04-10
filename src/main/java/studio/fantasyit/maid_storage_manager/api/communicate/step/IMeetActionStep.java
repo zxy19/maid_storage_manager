@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -29,7 +30,9 @@ public interface IMeetActionStep extends IActionStep {
         ServerLevel level = (ServerLevel) wisher.level();
         float restrictRadiusOwner = wisher.hasRestriction() ? wisher.getRestrictRadius() : 5;
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(wisher.getNavigation().getNodeEvaluator(), level, wisher, restrictRadiusOwner + 2, (int) (restrictRadiusOwner + 2));
-        return PosUtil.pickMeetingPosPair(wisher, handler, pathFinding);
+        @Nullable Pair<BlockPos, BlockPos> result = PosUtil.pickMeetingPosPair(wisher, handler, pathFinding);
+        pathFinding.finish();
+        return result;
     }
 
     @Override

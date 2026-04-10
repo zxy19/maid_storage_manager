@@ -29,6 +29,7 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -56,17 +57,27 @@ public class MaidCraftPlanner implements IDebugContextSetter {
     AutoGraphGenerator autoGraphGenerator;
     private List<CraftGuideData> craftGuides;
     private CraftingDebugContext debugContext = CraftingDebugContext.Dummy.INSTANCE;
+    private final List<Pair<ItemStack, Integer>> missings = new ArrayList<Pair<ItemStack, Integer>>();
+    private final List<String> extraFailMessage = new ArrayList<>();
 
     CraftLayerChain plan;
 
-    public MaidCraftPlanner(ServerLevel level, EntityMaid maid) {
+    public MaidCraftPlanner(ServerLevel level, EntityMaid maid){
+        this(level, maid,null);
+    }
+    public MaidCraftPlanner(ServerLevel level, EntityMaid maid,List<Pair<ItemStack, Integer>> notDoneList) {
+        notDone = notDoneList;
         this.craftingMemory = MemoryUtil.getCrafting(maid);
         this.maid = maid;
         this.level = level;
         this.count = 0;
-        if (!precheck()) {
-            done = true;
-            return;
+        if(maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            if(notDoneList ==  null)
+                notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
+            if (!precheck()) {
+                done = true;
+                return;
+            }
         }
         for (ICraftGraphLike.CraftAlgorithmInit<?> craftAlgorithmInit : initGraphList()) {
             craftJobs.add(new Pair<>(
@@ -75,7 +86,6 @@ public class MaidCraftPlanner implements IDebugContextSetter {
             ));
         }
         craftGuides = new ArrayList<>(MemoryUtil.getCrafting(maid).getCraftGuides());
-        notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
         if (Config.craftingGenerateCraftGuide) {
             autoGraphGenerator = new AutoGraphGenerator(
                     maid,
@@ -89,7 +99,6 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         plan = new CraftLayerChain(maid);
         ProgressDebugManager.getDebugContext(maid).ifPresent(debugContext -> debugContext.convey(plan));
     }
-
     protected boolean precheck() {
         if (PortableCraftCalculatorBauble.getCalculator(maid).isEmpty()) {
             if (!Config.craftingNoCalculator) {
@@ -270,6 +279,9 @@ public class MaidCraftPlanner implements IDebugContextSetter {
                 RequestListItem.setFailAddition(maid.getMainHandItem(),
                         currentWork.getA(),
                         "tooltip.maid_storage_manager.request_list.fail_backpack_full");
+                extraFailMessage.add(
+                        "tooltip.maid_storage_manager.request_list.fail_backpack_full"
+                );
             }
             RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
         } else {
@@ -288,12 +300,14 @@ public class MaidCraftPlanner implements IDebugContextSetter {
             success += 1;
         }
         List<Pair<ItemStack, Integer>> fails = biCalc.getFails();
-        if (!fails.isEmpty())
+        if (!fails.isEmpty()) {
             RequestListItem.setMissingItem(
                     maid.getMainHandItem(),
                     currentWork.getA(),
                     fails.stream().map(e -> e.getA().copyWithCount(e.getB())).toList()
             );
+            missings.addAll(fails);
+        }
         int restCount = biCalc.getNotCraftedCount();
         tmpNextJob.add(new Pair<>(currentWork.getA(), restCount));
         biCalc = null;
@@ -329,6 +343,13 @@ public class MaidCraftPlanner implements IDebugContextSetter {
 
     public CraftLayerChain getPlan() {
         return plan;
+    }
+
+    public List<String> getExtraFailMessage() {
+        return extraFailMessage;
+    }
+    public List<Pair<ItemStack, Integer>> getMissings() {
+        return missings;
     }
 
     @Override

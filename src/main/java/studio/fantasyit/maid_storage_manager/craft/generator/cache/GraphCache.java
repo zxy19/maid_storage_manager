@@ -52,6 +52,7 @@ public class GraphCache {
                 }
             }
         }
+        pathFinding.finish();
         cacheRecord.graph.clearStates();
         for (IAutoCraftGuideGenerator iAutoCraftGuideGenerator : iAutoCraftGuideGenerators) {
             if (!iAutoCraftGuideGenerator.canCacheGraph()) {

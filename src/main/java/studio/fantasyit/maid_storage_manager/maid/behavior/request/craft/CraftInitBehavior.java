@@ -7,7 +7,6 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.capability.CraftBlockOccupyDataProvider;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
-import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
@@ -16,8 +15,6 @@ import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
@@ -56,15 +53,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearPlan();
         MemoryUtil.getCrafting(maid).resetVisitedPos();
         if (StorageManagerConfigData.get(maid).useMemorizedCraftGuide()) {
-            CraftMemory crafting = MemoryUtil.getCrafting(maid);
-            MemoryUtil.getViewedInventory(maid).flatten().forEach(item -> {
-                if (item.itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
-                    CraftGuideData craftGuideData = CraftGuideData.fromItemStack(item.itemStack);
-                    if (craftGuideData.available()) {
-                        crafting.addCraftGuide(craftGuideData);
-                    }
-                }
-            });
+            MemoryUtil.getCrafting(maid).addAllFromViewed(maid);
         }
         planner = new MaidCraftPlanner(level, maid);
         CraftingDebugManager.getDebugContext(maid.getOwnerUUID())

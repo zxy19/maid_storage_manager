@@ -131,6 +131,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             targetItem.ifPresent(itemCount -> this.checkItem = itemCount.getFirst());
             return true;
         }
+        pathFinding.finish();
         return false;
     }
 

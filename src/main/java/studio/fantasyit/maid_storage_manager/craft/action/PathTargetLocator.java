@@ -138,8 +138,6 @@ public class PathTargetLocator {
                         return null;
                     }
                 });
-        ;
-        pathFinding.finish();
         return MoveUtil.getNearestFromTargetList(level, maid, posListToEval);
     }
 }

@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.stock;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -49,7 +48,6 @@ public class StockCheckMoveBehavior extends Behavior<EntityMaid> {
         if (target == null || storage == null) {
             DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[STOCK_CHECK] No target");
         } else {
-            MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
             BlockPos goal = MoveUtil.selectPosForTarget(level, maid, target.pos);
             if (goal == null) {
                 DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[STOCK_CHECK] Unavailable target, waiting");

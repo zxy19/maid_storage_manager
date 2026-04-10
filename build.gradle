@@ -251,8 +251,8 @@ dependencies {
 //    runtimeOnly fg.deobf("curse.maven:oculus-581495:6020952")
 //    runtimeOnly fg.deobf("curse.maven:embeddium-908741:5681725")
 //    runtimeOnly fg.deobf("curse.maven:reforgedplay-mod-1018692:5637596")
-    compileOnly fg.deobf("libs:touhoulittlemaid:1.5.1-forge+mc1.20.1-snapshot")
-    runtimeOnly fg.deobf("libs:touhoulittlemaid:1.5.1-forge+mc1.20.1-snapshot")
+    compileOnly fg.deobf("libs:touhoulittlemaid:1.5.2-forge+mc1.20.1-snapshot")
+    runtimeOnly fg.deobf("libs:touhoulittlemaid:1.5.2-forge+mc1.20.1-snapshot")
 
 
     compileOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")

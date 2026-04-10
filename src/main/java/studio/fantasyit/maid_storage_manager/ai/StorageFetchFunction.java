@@ -2,14 +2,17 @@ package studio.fantasyit.maid_storage_manager.ai;
 
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.parameter.*;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -18,10 +21,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import net.minecraftforge.registries.ForgeRegistries;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
+import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
-import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 
 import java.util.*;
@@ -57,7 +59,7 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
         for (Map.Entry<UUID, CompletableFuture<String>> entry : RUNNING_FETCH.entrySet()) {
             for(ServerLevel l:server.getAllLevels()){
                 if(l.getEntity(entry.getKey()) instanceof EntityMaid maid){
-                    if(MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST){
+                    if(!Conditions.takingRequestList(maid)){
                         entry.getValue().complete(AiUtils.commonFailJson("Request task was canceled unexpectedly"));
                     }
                 }
@@ -73,7 +75,7 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
 
     @Override
     public String summary(EntityMaid maid) {
-        return "Get or craft some item. If you are asked to get something for user, use this tool. Read skill `fetch_item` before using this tool.";
+        return AiUtils.toolDenyTemplate("fetch_item_manual");
     }
 
     @Override
@@ -91,8 +93,17 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
     }
 
     @Override
-    public String invocationSummary(StorageFetchFunctionDataList result) {
-        return "Fetching " + result.list.size() + " items.";
+    public Component invocationSummaryComponent(StorageFetchFunctionDataList result) {
+
+        if(result.list().isEmpty())
+            return Component.empty();
+        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(result.list().get(0).itemId));
+        if(item == null)
+            return Component.empty();
+        Component displayItemName = item.getDefaultInstance().getHoverName();
+        if(result.list().size() > 1)
+            displayItemName = Component.literal("").append(displayItemName).append(Component.translatable("chat_bubbles.maid_storage_manager.ai.storage_fetch_etc", result.list().size()));
+        return Component.translatable("chat_bubbles.maid_storage_manager.ai.storage_fetch", displayItemName).withStyle(ChatFormatting.GRAY);
     }
 
     @Override
@@ -101,7 +112,7 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
     }
 
     @Override
-    public CompletableFuture<LLMCallback> onCallAsync(String toolCallId, StorageFetchFunctionDataList data, LLMCallback callback) {
+    public CompletableFuture<LLMCallback> onCallAsync(String toolCallId, StorageFetchFunctionDataList data, LLMCallback callback, LLMClient client) {
         EntityMaid maid = callback.getMaid();
         List<StorageFetchFunctionData> storageFetchFunctionData = data.list;
 

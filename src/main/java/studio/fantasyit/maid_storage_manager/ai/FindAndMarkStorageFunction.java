@@ -11,6 +11,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -37,7 +39,7 @@ public class FindAndMarkStorageFunction extends AbstractTool<FindAndMarkStorageF
 
     @Override
     public String summary(EntityMaid maid) {
-        return "Use this tool if you want to find the storage location of an item. You MUST read skill `find_storage` before using this tool.";
+        return AiUtils.toolDenyTemplate("find_storage_manual");
     }
 
     @Override
@@ -90,8 +92,16 @@ public class FindAndMarkStorageFunction extends AbstractTool<FindAndMarkStorageF
     }
 
     @Override
-    public String invocationSummary(ItemIdData result) {
-        return "Queried %d items".formatted(result.itemId.size());
+    public Component invocationSummaryComponent(ItemIdData result) {
+        if(result.itemId().isEmpty())
+            return Component.empty();
+        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(result.itemId().get(0)));
+        if(item == null)
+            return Component.empty();
+        Component displayItemName = item.getDefaultInstance().getHoverName();
+        if(result.itemId().size() > 1)
+            displayItemName = Component.literal("").append(displayItemName).append(Component.translatable("chat_bubbles.maid_storage_manager.ai.find_mark_storage_etc", result.itemId().size()));
+        return Component.translatable("chat_bubbles.maid_storage_manager.ai.find_mark_storage", displayItemName).withStyle(ChatFormatting.GRAY);
     }
 
     public record ItemIdData(List<String> itemId) {

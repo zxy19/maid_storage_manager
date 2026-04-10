@@ -62,6 +62,11 @@ public class Ae2Storage implements IMaidStorage {
     }
 
     @Override
+    public @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Target storage) {
+        return new Ae2ViewContext();
+    }
+
+    @Override
     public boolean isCraftGuideProvider(List<ViewedInventoryMemory.ItemCount> blockPos) {
         return true;
     }
