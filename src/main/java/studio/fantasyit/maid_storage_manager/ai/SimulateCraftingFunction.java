@@ -13,13 +13,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
@@ -42,7 +42,7 @@ public class SimulateCraftingFunction extends AbstractTool<StorageFetchFunction.
     public CompletableFuture<LLMCallback> onCallAsync(String toolCallId, StorageFetchFunction.StorageFetchFunctionData data, LLMCallback callback, LLMClient client) {
 
         List<Pair<ItemStack, Integer>> items = new ArrayList<>();
-        @Nullable Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(data.itemId()));
+        @Nullable Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(data.itemId()));
         if (item == null) {
             return CompletableFuture.completedFuture(callback.addToolResult(AiUtils.commonFailJson("Item" + data.itemId() + " not found"), toolCallId));
         }
@@ -69,7 +69,7 @@ public class SimulateCraftingFunction extends AbstractTool<StorageFetchFunction.
                 JsonArray consumes = new JsonArray();
                 for(ItemStack itemStack : planner.getPlan().getConsumes()) {
                     JsonObject itemConsumed = new JsonObject();
-                    itemConsumed.addProperty("id", Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemStack.getItem())).toString());
+                    itemConsumed.addProperty("id", Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(itemStack.getItem())).toString());
                     itemConsumed.addProperty("count", itemStack.getCount());
                     consumes.add(itemConsumed);
                 }
@@ -84,7 +84,7 @@ public class SimulateCraftingFunction extends AbstractTool<StorageFetchFunction.
                 JsonArray missings = new JsonArray();
                 for(Pair<ItemStack, Integer> missing : planner.getMissings()) {
                     JsonObject missingItem = new JsonObject();
-                    missingItem.addProperty("id", Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(missing.getA().getItem())).toString());
+                    missingItem.addProperty("id", Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(missing.getA().getItem())).toString());
                     missingItem.addProperty("count", missing.getB());
                     missings.add(missingItem);
                 }
@@ -114,7 +114,7 @@ public class SimulateCraftingFunction extends AbstractTool<StorageFetchFunction.
 
     @Override
     public Component invocationSummaryComponent(StorageFetchFunction.StorageFetchFunctionData result) {
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(result.itemId()));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(result.itemId()));
         return Component.translatable("chat_bubbles.maid_storage_manager.ai.simulating",item == null? Component.literal("?"): item.getDefaultInstance().getHoverName()).withStyle(ChatFormatting.GRAY);
     }
 

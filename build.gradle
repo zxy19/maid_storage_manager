@@ -143,9 +143,11 @@ repositories {
 }
 
 dependencies {
-    implementation jarJar("libs:1.21.1-tour_guide:1.0.2")
-    compileOnly "curse.maven:touhou-little-maid-355044:6911706"
-    runtimeOnly "curse.maven:touhou-little-maid-355044:6911706"
+//    implementation jarJar("libs:1.21.1-tour_guide:1.0.2")
+//    compileOnly "curse.maven:touhou-little-maid-355044:6911706"
+//    runtimeOnly "curse.maven:touhou-little-maid-355044:6911706"
+    compileOnly "libs:touhoulittlemaid:1.5.2-neoforge+mc1.21.1-snapshot"
+    runtimeOnly "libs:touhoulittlemaid:1.5.2-neoforge+mc1.21.1-snapshot"
 
     runtimeOnly "curse.maven:accelerated-rendering-1314021:6839175"
 

@@ -7,16 +7,13 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
-import studio.fantasyit.maid_storage_manager.integration.tour_guide.tours.InventoryListTour;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
-import studio.fantasyit.tour_guide.api.TourGuideTrigger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -320,7 +317,7 @@ public class InventoryListScreen extends Screen {
                     minecraft.setScreen(toSelectTarget);
                 } else {
                     InventoryListDataClient.setShowingInv(list.get(idx), 400);
-                    TourGuideTrigger.triggerClient(InventoryListTour.TRIGGER_CLICK_INV,new CompoundTag());
+//                    TourGuideTrigger.triggerClient(InventoryListTour.TRIGGER_CLICK_INV,new CompoundTag());
                     minecraft.setScreen(null);
                 }
             }

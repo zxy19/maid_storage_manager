@@ -10,20 +10,18 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RequestItemUtil;
 
 import java.util.*;
@@ -37,19 +35,15 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
         if(future == null)
             return;
         JsonArray result = new JsonArray();
-        CompoundTag tag = reqList.getOrCreateTag();
-        ListTag list = tag.getList(RequestListItem.TAG_ITEMS, ListTag.TAG_COMPOUND);
+        RequestItemStackList.Immutable requests = RequestListItem.getImmutableRequestData(reqList);
+        List<RequestItemStackList.ImmutableItem> list = requests.list();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag itemTag = list.getCompound(i);
-            if (!itemTag.contains(RequestListItem.TAG_ITEMS_ITEM)) continue;
-            JsonObject item = new JsonObject();
-            ItemStack itemstack = ItemStackUtil.parseStack(itemTag.getCompound(RequestListItem.TAG_ITEMS_ITEM));
+            ItemStack itemstack = list.get(i).item();
             if (itemstack.isEmpty()) continue;
-
-            int collected = itemTag.getInt(RequestListItem.TAG_ITEMS_COLLECTED);
-
+            JsonObject item = new JsonObject();
+            int collected = list.get(i).collected();
             item.addProperty("collected", collected);
-            item.addProperty("id", Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(itemstack.getItem())).toString());
+            item.addProperty("id", Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(itemstack.getItem())).toString());
             result.add(item);
         }
         future.complete(new Gson().toJson(result));
@@ -97,7 +91,7 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
 
         if(result.list().isEmpty())
             return Component.empty();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(result.list().get(0).itemId));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(result.list().get(0).itemId));
         if(item == null)
             return Component.empty();
         Component displayItemName = item.getDefaultInstance().getHoverName();
@@ -118,8 +112,8 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
 
         List<ItemStack> list = new ArrayList<>();
         for(StorageFetchFunctionData i: storageFetchFunctionData){
-            ResourceLocation resourceLocation = new ResourceLocation(i.itemId);
-            Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
+            ResourceLocation resourceLocation = ResourceLocation.tryParse(i.itemId);
+            Item item = BuiltInRegistries.ITEM.get(resourceLocation);
             if(item == null)
                 return CompletableFuture.completedFuture( callback.addToolResult(AiUtils.commonFailJson(i.itemId+" is not a valid item."), id()));
             ItemStack itemStack = item.getDefaultInstance();

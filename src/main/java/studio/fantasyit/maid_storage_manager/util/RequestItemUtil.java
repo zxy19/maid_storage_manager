@@ -10,10 +10,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.MinecraftForge;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEvent;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
@@ -55,11 +56,11 @@ public class RequestItemUtil {
     public static void stopJobAndStoreOrThrowItem(EntityMaid maid, @Nullable IStorageContext storeTo, @Nullable Entity targetEntity) {
         Level level = maid.level();
         ItemStack reqList = maid.getMainHandItem();
-        MinecraftForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.END, maid, tag.getUUID(RequestListItem.TAG_UUID) , reqList));
+        NeoForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.END, maid, reqList.get(DataComponentRegistry.REQUEST_WORK_UUID) , reqList));
         if (reqList.getOrDefault(DataComponentRegistry.REQUEST_VIRTUAL, false)) {
             String source = reqList.getOrDefault(DataComponentRegistry.REQUEST_VIRTUAL_SOURCE, "");
             if (source.equals("AI")) {
-                sendToolResponseB(maid, reqList);
+                StorageFetchFunction.ends(maid, reqList);
             } else if (source.equals("JEI")) {
                 if (maid.getOwner() instanceof ServerPlayer player)
                     PacketDistributor.sendToPlayer(player,

@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
@@ -75,7 +76,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         }
 
         //记忆：开始新的工作
-        MinecraftForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.START, maid, RequestListItem.getUUID(maid.getMainHandItem()), maid.getMainHandItem()));
+        NeoForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.START, maid, RequestListItem.getUUID(maid.getMainHandItem()), maid.getMainHandItem()));
         MemoryUtil.getRequestProgress(maid).newWork(RequestListItem.getUUID(maid.getMainHandItem()));
         MemoryUtil.clearReturnWorkSchedule(maid);
         MemoryUtil.getCrafting(maid).clearCraftGuides();

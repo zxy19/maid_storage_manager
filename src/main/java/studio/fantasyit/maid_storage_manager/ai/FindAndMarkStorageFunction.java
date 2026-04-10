@@ -12,6 +12,7 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
+import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -55,11 +57,11 @@ public class FindAndMarkStorageFunction extends AbstractTool<FindAndMarkStorageF
     @Override
     public String call(ItemIdData itemIdData, EntityMaid maid, LLMCallback callback) {
 
-        Map<Target, List<ViewedInventoryMemory.ItemCount>> itemKeys = MemoryUtil.getViewedInventory(callback.getMaid()).positionFlatten();
+        Map<Target, List<ItemCount>> itemKeys = MemoryUtil.getViewedInventory(callback.getMaid()).positionFlatten();
         JsonArray result = new JsonArray();
         for (String itemId : itemIdData.itemId()) {
             ResourceLocation resourceLocation = ResourceLocation.tryParse(itemId);
-            Item item = entityMaid.registryAccess().registry(Registries.ITEM).get().get(resourceLocation);
+            Item item = maid.registryAccess().registry(Registries.ITEM).get().get(resourceLocation);
             if (item == null) {
                 return AiUtils.commonFailJson(itemId+" is not a valid item.");
             }
@@ -94,7 +96,7 @@ public class FindAndMarkStorageFunction extends AbstractTool<FindAndMarkStorageF
     public Component invocationSummaryComponent(ItemIdData result) {
         if(result.itemId().isEmpty())
             return Component.empty();
-        Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(result.itemId().get(0)));
+        Item item = BuiltInRegistries.ITEM.get( ResourceLocation.tryParse(result.itemId().get(0)));
         if(item == null)
             return Component.empty();
         Component displayItemName = item.getDefaultInstance().getHoverName();

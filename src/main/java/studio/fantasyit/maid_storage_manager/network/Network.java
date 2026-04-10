@@ -16,6 +16,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.apache.commons.lang3.tuple.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -362,6 +363,22 @@ public class Network {
                     c.enqueueWork(() -> {
                         CraftGuideGeneratorUpdate.handle(c.player(), p);
                     });
+                }
+        );
+        registrar.playToServer(
+                AIMatchLocalizedItemC2SPacket.TYPE,
+                AIMatchLocalizedItemC2SPacket.STREAM_CODEC,
+                (p, c) -> {
+                    c.enqueueWork(() -> {
+                        GetStorageFunction.handleRPC(p.rpcId,p.data);
+                    });
+                }
+        );
+        registrar.playToClient(
+                AIMatchLocalizedItemS2CPacket.TYPE,
+                AIMatchLocalizedItemS2CPacket.STREAM_CODEC,
+                (p, c) -> {
+                    c.enqueueWork(() -> AIMatchLocalizedItemS2CPacket.handle(p));
                 }
         );
     }
