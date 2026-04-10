@@ -1,6 +1,6 @@
 ---
-name: find_storage
-description: Find and mark item in storage for user. When user ask for the LOCATION of something, use this skill.
+name: find_storage_manual
+description: Find and mark item in storage for user. When user ask for the LOCATION of something, use this skill. The guidance of tool find_mark_storage.
 ---
 
 When asked to provide the location of some item, please follow these steps.

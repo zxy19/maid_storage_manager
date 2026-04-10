@@ -10,7 +10,11 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.craft.work.SolvedCraftLayer;
 import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
+import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
+import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageContext;
+import studio.fantasyit.maid_storage_manager.storage.base.IStorageCraftDataProvider;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
@@ -136,6 +140,19 @@ public class CraftMemory extends AbstractTargetMemory {
 
     public void clearCraftGuides() {
         this.craftGuides.clear();
+    }
+
+    public void addAllFromViewed(EntityMaid maid){
+        MemoryUtil.getViewedInventory(maid).positionFlatten().forEach((key, item) -> {
+            if (MaidStorage.getInstance().isCraftGuideProvider(key, item)) {
+                IMaidStorage storage = MaidStorage.getInstance().getStorage(key.getType());
+                if (storage == null) return;
+                IStorageContext iStorageContext = storage.onPreviewFilter((ServerLevel) maid.level(), maid, key);
+                if (iStorageContext instanceof IStorageCraftDataProvider iscdp) {
+                    this.craftGuides.addAll(iscdp.getCraftGuideData());
+                }
+            }
+        });
     }
 
     /// 继续合成前进行放置物品相关的控制选项

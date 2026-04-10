@@ -27,4 +27,7 @@ public class AiUtils {
         p.add(pos.getZ());
         return p;
     }
+    public static String toolDenyTemplate(String skillName){
+        return "Access denied. Call skill '"+skillName+"' to unlock the parameter first. Action required before each call.";
+    }
 }

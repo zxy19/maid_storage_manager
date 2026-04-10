@@ -53,6 +53,13 @@ public class AutoGraphGenerator implements IDebugContextSetter {
 
     protected void updatePathfinding() {
         int distance = (int) Math.ceil(maid.hasRestriction() ? maid.getRestrictRadius() : 5);
+        new MaidPathFindingBFS(
+                maid.getNavigation().getNodeEvaluator(),
+                (ServerLevel) maid.level(),
+                maid,
+                distance,
+                7
+        ).finish();
         this.pathfindingBFS = new MaidPathFindingBFS(
                 maid.getNavigation().getNodeEvaluator(),
                 (ServerLevel) maid.level(),

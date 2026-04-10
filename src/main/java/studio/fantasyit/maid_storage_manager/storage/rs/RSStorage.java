@@ -43,4 +43,9 @@ public class RSStorage implements IMaidStorage {
     public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target storage) {
         return new RSViewContext();
     }
+
+    @Override
+    public @Nullable IStorageContext onPreviewFilter(ServerLevel level, EntityMaid maid, Target storage) {
+        return new RSViewContext();
+    }
 }

@@ -5,18 +5,22 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.param
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.parameter.ObjectParameter;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.parameter.Parameter;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.function.schema.parameter.StringParameter;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -41,41 +45,72 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
         LivingEntity owner = maid.getOwner();
         int id = ++rpcId;
         String pattern = data.filter;
-        RPC_CALLS.put(id, c);
         @NotNull LazyOptional<InventoryListDataProvider.InventoryListData> capp = maid.getServer().overworld().getCapability(InventoryListDataProvider.INVENTORY_LIST_DATA_CAPABILITY);
 
         CompletableFuture<LLMCallback> cb = new CompletableFuture<>();
-        c.completeOnTimeout(List.of(),3, TimeUnit.SECONDS).thenAccept(l->{
+        c = c.completeOnTimeout(List.of(),3, TimeUnit.SECONDS);
+        RPC_CALLS.put(id, c);
+        c.thenAccept(l->{
             RPC_CALLS.remove(id);
             callback.runOnServerThread(()->{
-                JsonArray results = new JsonArray();
                 Set<ItemInfo> itemKeys = getItemKeys(MemoryUtil.getViewedInventory(maid).flatten());
                 JsonArray result = new JsonArray();
                 MutableBoolean anyMatch = new MutableBoolean(false);
                 Map<String,ItemStackI18N> itemMap = new HashMap<>();
                 for(ItemStackI18N itemStackI18N : l)
                     itemMap.put(itemStackI18N.id(),itemStackI18N);
-                itemKeys.forEach(ik -> {
-                    ItemStackI18N itemStackI18N = itemMap.getOrDefault(ik.id(),ItemStackI18N.INVALID);
-                    boolean valid =StringUtil.isNullOrEmpty(data.filter);
-                    valid |= itemStackI18N.name.contains(pattern) || ik.id().contains(pattern);
-                    if(data.queryTooltip)
-                        valid |= itemStackI18N.tooltip.contains( pattern);
-                    if (valid) {
-                        JsonObject item = new JsonObject();
-                        item.addProperty("id", ik.id());
-                        item.addProperty("name", itemStackI18N.name());
-                        item.addProperty("count", ik.count().getValue());
-                        item.addProperty("craftable", ik.craftable().getValue());
+
+                if(!data.all) {
+                    itemKeys.forEach(ik -> {
+                        if(result.size() > 100)
+                            return;
+                        ItemStackI18N itemStackI18N = itemMap.getOrDefault(ik.id(),ItemStackI18N.INVALID);
+                        boolean valid =StringUtil.isNullOrEmpty(data.filter);
+                        valid |= itemStackI18N.name.contains(pattern) || ik.id().contains(pattern);
                         if(data.queryTooltip)
-                            item.addProperty("tooltip", itemStackI18N.tooltip());
-                        result.add(item);
-                        anyMatch.setTrue();
+                            valid |= itemStackI18N.tooltip.contains( pattern);
+                        if (valid) {
+                            JsonObject item = new JsonObject();
+                            item.addProperty("id", ik.id());
+                            item.addProperty("name", itemStackI18N.name());
+                            item.addProperty("count", ik.count().getValue());
+                            item.addProperty("craftable", ik.craftable().getValue());
+                            if(data.queryTooltip)
+                                item.addProperty("tooltip", itemStackI18N.tooltip());
+                            result.add(item);
+                            anyMatch.setTrue();
+                        }
+                    });
+                }else{
+                    for(Item ii : ForgeRegistries.ITEMS){
+                        String itemId = ForgeRegistries.ITEMS.getKey(ii).toString();
+                        ItemStackI18N itemStackI18N = itemMap.getOrDefault(itemId,ItemStackI18N.INVALID);
+                        boolean valid =StringUtil.isNullOrEmpty(data.filter);
+                        valid |= itemStackI18N.name.contains(pattern) || itemId.contains(pattern);
+                        if(data.queryTooltip)
+                            valid |= itemStackI18N.tooltip.contains( pattern);
+                        if (valid) {
+                            JsonObject item = new JsonObject();
+                            item.addProperty("id", itemId);
+                            item.addProperty("name", itemStackI18N.name());
+                            if(data.queryTooltip)
+                                item.addProperty("tooltip", itemStackI18N.tooltip());
+                            result.add(item);
+                            anyMatch.setTrue();
+
+                            if(result.size() > 100)
+                                break;
+                        }
                     }
-                });
+                }
                 String rString;
                 if (!anyMatch.getValue()) {
-                    rString = AiUtils.commonFailJson("No result that matches the filter.");
+                    if(data.all)
+                        rString = AiUtils.commonFailJson("No result that matches the filter.");
+                    else
+                        rString = AiUtils.commonFailJson("No result that matches the filter. Try use `all` parameter.");
+                }else if(result.size() > 150){
+                    rString = AiUtils.commonFailJson("Too many results, please narrow down your filter.");
                 }else {
                     rString = new Gson().toJson(result);
                 }
@@ -88,7 +123,7 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
             List<InventoryItem> flatten = MemoryUtil.getViewedInventory(maid).flatten();
             inventoryListData.addWithCraftable(uuid, flatten);
             inventoryListData.sendTo(uuid, player);
-            Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new AIMatchLocalizedItemS2CPacket(id,uuid, pattern));
+            Network.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new AIMatchLocalizedItemS2CPacket(id,uuid, pattern,data.queryTooltip,data.all));
             inventoryListData.remove(uuid);
         }else{
             c.complete(List.of());
@@ -139,7 +174,7 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
 
     @Override
     public String summary(EntityMaid maid) {
-        return "When need to get item in storage or need to search for names, use this tool. Read skill `get_storage` before using this tool.";
+        return AiUtils.toolDenyTemplate("get_storage_manual");
     }
 
     @Override
@@ -147,6 +182,7 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
         root.addProperties("filter", StringParameter.create());
         root.addProperties("queryTooltip", BoolParameter.create().setDefaultValue("false"));
         root.addProperties("showTooltip", BoolParameter.create().setDefaultValue("false"));
+        root.addProperties("all", BoolParameter.create().setDefaultValue("false"));
         return root;
     }
 
@@ -156,8 +192,14 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
     }
 
     @Override
-    public String invocationSummary(FilterData result) {
-        return "Finding %s...".formatted(result.filter);
+    public Component invocationSummaryComponent(FilterData result) {
+        if(result.filter.isEmpty()){
+            return Component.translatable("chat_bubbles.maid_storage_manager.ai.get_storage.all").withStyle(ChatFormatting.GRAY);
+        }else if(result.all){
+            return Component.translatable("chat_bubbles.maid_storage_manager.ai.get_storage.filter_all",result.filter).withStyle(ChatFormatting.GRAY);
+        }else{
+            return Component.translatable("chat_bubbles.maid_storage_manager.ai.get_storage.filter",result.filter).withStyle(ChatFormatting.GRAY);
+        }
     }
 
     @Override
@@ -166,7 +208,7 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
     }
 
     @Override
-    public CompletableFuture<LLMCallback> onCallAsync(String toolCallId, FilterData result, LLMCallback callback) {
+    public CompletableFuture<LLMCallback> onCallAsync(String toolCallId, FilterData result, LLMCallback callback, LLMClient client) {
         CompletableFuture<List<ItemStackI18N>> res = new CompletableFuture<>();
         return sendQueryItemPatternRPC(callback.getMaid(), result, res, callback,toolCallId);
     }
@@ -174,12 +216,13 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
     protected record ItemInfo(String id, MutableInt count, MutableBoolean craftable) {
     }
 
-    public record FilterData(String filter,Boolean queryTooltip,Boolean showTooltip) {
+    public record FilterData(String filter,Boolean queryTooltip,Boolean showTooltip,Boolean all) {
         public static Codec<FilterData> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
                         Codec.STRING.fieldOf("filter").forGetter(FilterData::filter),
-                        Codec.BOOL.fieldOf("queryTooltip").forGetter(FilterData::queryTooltip),
-                        Codec.BOOL.fieldOf("showTooltip").forGetter(FilterData::showTooltip)
+                        Codec.BOOL.fieldOf("queryTooltip").orElse(false).forGetter(FilterData::queryTooltip),
+                        Codec.BOOL.fieldOf("showTooltip").orElse(false).forGetter(FilterData::showTooltip),
+                        Codec.BOOL.fieldOf("all").orElse(false).forGetter(FilterData::showTooltip)
                 ).apply(instance, FilterData::new));
     }
     public record ItemStackI18N(String id, String name,String tooltip){

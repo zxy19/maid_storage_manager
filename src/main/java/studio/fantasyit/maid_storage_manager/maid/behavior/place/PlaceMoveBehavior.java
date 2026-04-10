@@ -193,7 +193,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
                 targetContent = validTarget;
             }
         }
-
+        pathFinding.finish();
 
         PlacingInventoryMemory placingInv = MemoryUtil.getPlacingInv(maid);
         if (targetFilter != null) {

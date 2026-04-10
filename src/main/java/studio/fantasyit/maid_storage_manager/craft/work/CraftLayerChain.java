@@ -1317,4 +1317,22 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
         craftBlockOccupy.removeOccupyFor(maid, getCurrentNode().index());
     }
     // endregion
+    public List<ItemStack> getConsumes() {
+        List<ItemStack> requiredExternally = new ArrayList<>();
+        List<ItemStack> inventory = new ArrayList<>();
+
+        for (int i = 0; i < getLayerCount(); i++) {
+            CraftLayer layer = getLayer(i);
+            for (ItemStack required : layer.getItems()) {
+                ItemStack remain = ItemStackUtil.removeIsMatchInList(inventory, required, ItemStackUtil.MATCH_TYPE.AUTO);
+                ItemStackUtil.addToList(requiredExternally, remain, ItemStackUtil.MATCH_TYPE.AUTO);
+            }
+            layer.getCraftData().ifPresent(craftData -> {
+                for (ItemStack output : craftData.getOutput()) {
+                    ItemStackUtil.addToList(inventory, output, ItemStackUtil.MATCH_TYPE.AUTO);
+                }
+            });
+        }
+        return requiredExternally;
+    }
 }

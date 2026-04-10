@@ -221,6 +221,8 @@ public class PosUtil {
                                     continue;
                                 if (!pathFindingBFSTarget.canPathReach(targetT))
                                     continue;
+                                pathFindingBFSTarget.finish();
+                                if(ownerPathfinding ==  null) pathFindingBFSOwner.finish();
                                 return new Pair<>(targetO.immutable(), targetT.immutable());
                             }
                         }
@@ -228,6 +230,8 @@ public class PosUtil {
                 }
             }
         }
+        pathFindingBFSTarget.finish();
+        if(ownerPathfinding ==  null) pathFindingBFSOwner.finish();
         return null;
     }
 }

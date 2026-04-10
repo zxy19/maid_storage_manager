@@ -109,5 +109,6 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             MemoryUtil.setTarget(maid, bbp.getA(), (float) Config.collectSpeed);
             MemoryUtil.setTarget(entityMaid, bbp.getB(), (float) Config.collectSpeed);
         }
+        pathFinding.finish();
     }
 }

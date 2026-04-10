@@ -112,7 +112,8 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             if (possiblePos.isEmpty()) {
                 continue;
             }
-
+            //这里即将创建新的nodeEvaluator，所以这里要结束旧的
+            pathFinding.finish();
             @Nullable BlockPos targetPos = MoveUtil.getNearestFromTargetList(level, maid, possiblePos);
             if (targetPos == null) {
                 //因为getAvailablePos会破坏nodeEvaluator，所以重新创建一次
@@ -126,6 +127,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[GATHERING]Priority By Content %s", storage);
             return true;
         }
+        pathFinding.finish();
         return false;
     }
 

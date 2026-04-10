@@ -502,5 +502,13 @@
   "gui.maid_storage_manager.craft_guide.common.generator_input": "输入 %s",
   "gui.maid_storage_manager.craft_guide.common.generator_output": "输出 %s",
   "gui.maid_storage_manager.craft_guide.common.generator_filter": "过滤",
-  "gui.maid_storage_manager.craft_guide.common.generator_error": "不支持此合成指南"
+  "gui.maid_storage_manager.craft_guide.common.generator_error": "不支持此合成指南",
+  "chat_bubbles.maid_storage_manager.ai.simulating": "模拟合成 [%s]",
+  "chat_bubbles.maid_storage_manager.ai.get_storage.all": "查询所有物品",
+  "chat_bubbles.maid_storage_manager.ai.get_storage.filter": "查询仓库 [%s]",
+  "chat_bubbles.maid_storage_manager.ai.get_storage.filter_all": "查询物品 [%s]",
+  "chat_bubbles.maid_storage_manager.ai.find_mark_storage": "定位 %s",
+  "chat_bubbles.maid_storage_manager.ai.storage_fetch": "请求 %s",
+  "chat_bubbles.maid_storage_manager.ai.find_mark_storage_etc": "等 %d 个物品",
+  "chat_bubbles.maid_storage_manager.ai.storage_fetch_etc": "等 %d 个物品"
 }
