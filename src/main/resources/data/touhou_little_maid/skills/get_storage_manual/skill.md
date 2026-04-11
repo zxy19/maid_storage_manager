@@ -1,6 +1,6 @@
 ---
 name: get_storage_manual
-description: Get the item in maid storage memory. Use this skill when you need to query items maid has viewed or when you want to search item by name. The guidance of tool get_storage.
+description: Use this when answering any question about item and storage. The guidance of tool get_storage.
 ---
 Call `get_storage` tool to query the item storage.
 This tool accepts an optional string as filter pattern. If not provided, all items will be returned.

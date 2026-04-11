@@ -1,6 +1,6 @@
 ---
 name: fetch_item_manual
-description: Generate a request list to get item for player. If you want to get some item for player, use this skill.  The guidance of tool storage_fetch.
+description: Use this when user ask you to find or craft some item for them.  The guidance of tool storage_fetch.
 ---
 Call `storage_fetch` tool to generate a request list. After that, this task will continue to collect or craft the item in this list and give them to player after done.
 
