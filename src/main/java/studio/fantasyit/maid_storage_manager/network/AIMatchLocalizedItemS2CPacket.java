@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.network;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -10,6 +9,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
+import studio.fantasyit.maid_storage_manager.util.ClientOps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +53,7 @@ public class AIMatchLocalizedItemS2CPacket {
         if (packet.all) {
             for(Item item : ForgeRegistries.ITEMS){
                 ItemStack itemStack = item.getDefaultInstance();
-                String tooltip = String.join("\n",itemStack.getTooltipLines(Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().map(Component::getString).toList());
+                String tooltip = String.join("\n",itemStack.getTooltipLines(ClientOps.getPlayer(), TooltipFlag.ADVANCED).stream().map(Component::getString).toList());
                 String name = itemStack.getHoverName().getString();
                 String id = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item)).toString();
                 if (id.contains(packet.patten) || name.contains(packet.patten) || (tooltip.contains(packet.patten) && packet.queryTooltip)) {
@@ -64,7 +64,7 @@ public class AIMatchLocalizedItemS2CPacket {
             }
         } else {
             for (InventoryItem inventoryItem : inventoryItems) {
-                String tooltip = String.join("\n", inventoryItem.itemStack.getTooltipLines(Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().map(Component::getString).toList());
+                String tooltip = String.join("\n", inventoryItem.itemStack.getTooltipLines(ClientOps.getPlayer(), TooltipFlag.ADVANCED).stream().map(Component::getString).toList());
                 String name = inventoryItem.itemStack.getHoverName().getString();
                 String id = Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(inventoryItem.itemStack.getItem())).toString();
                 if (id.contains(packet.patten) || name.contains(packet.patten) || (tooltip.contains(packet.patten) && packet.queryTooltip)) {
