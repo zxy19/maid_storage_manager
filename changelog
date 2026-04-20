@@ -1,2 +1,1 @@
-Fix serverside classload bugs.
-Update some prompt
+Fix the bug of missing dep tour-guide
