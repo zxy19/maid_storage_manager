@@ -50,7 +50,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         if (MemoryUtil.getRequestProgress(maid).getTargetEntityUUID().isPresent()) {
             Entity targetEntity1 = MemoryUtil.getRequestProgress(maid).getTargetEntity(p_22538_);
-            if (!targetEntity1.isAlive() || !maid.isWithinRestriction(targetEntity1.blockPosition())) {
+            if (targetEntity1 == null || !targetEntity1.isAlive() || !maid.isWithinRestriction(targetEntity1.blockPosition())) {
                 MemoryUtil.clearTarget(maid);
                 return false;
             }
