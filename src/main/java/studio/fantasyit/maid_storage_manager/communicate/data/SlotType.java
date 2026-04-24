@@ -109,12 +109,14 @@ public enum SlotType {
             }
             case ETA -> {
                 CombinedInvWrapper inv = maid.getAvailableBackpackInv();
-                IItemHandlerModifiable noLast = inv.getSlots() == 6 ?
-                        new RangedWrapper(inv, 0, 5) :
-                        new CombinedInvWrapper(
-                                new RangedWrapper(inv, 0, 5),
-                                new RangedWrapper(inv, 6, inv.getSlots())
-                        );
+                IItemHandlerModifiable noLast;
+                if (inv.getSlots() <= 6)
+                    noLast = new RangedWrapper(inv, 0, Math.max(0, Math.min(inv.getSlots(), 5)));
+                else
+                    noLast = new CombinedInvWrapper(
+                            new RangedWrapper(inv, 0, 5),
+                            new RangedWrapper(inv, 6, inv.getSlots())
+                    );
                 return resetSlotItemWithProcessAndCheckIfAnyChanged(process, noLast, startIndex);
             }
         }
