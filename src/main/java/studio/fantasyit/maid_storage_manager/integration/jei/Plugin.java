@@ -10,6 +10,7 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
@@ -78,7 +79,8 @@ public class Plugin implements IModPlugin {
                         GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get()
                 ), RecipeTypes.SMITHING);
         registration.addRecipeTransferHandler(new JeiStoneCutterRecipeHandler(), RecipeTypes.STONECUTTING);
-        registration.addUniversalRecipeTransferHandler(new JEITaczRecipeTransfer());
+        if(Integrations.tacz())
+            registration.addUniversalRecipeTransferHandler(new JEITaczRecipeTransfer());
     }
 
     @Override
