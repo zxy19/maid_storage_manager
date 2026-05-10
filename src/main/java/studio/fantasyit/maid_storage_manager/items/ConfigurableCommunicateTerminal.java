@@ -60,6 +60,7 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
                 Pair<UUID, Boolean> lastResult = CommunicateUtil.getLastResult(maid);
                 if (lastResult.getA().equals(tag.getUUID("last_task")) && lastResult.getB()) {
                     tag.putInt("cd", Config.communicateCDFinish);
+                    cd = Config.communicateCDFinish;
                 }
                 CommunicateUtil.clearLastResult(maid);
             }
