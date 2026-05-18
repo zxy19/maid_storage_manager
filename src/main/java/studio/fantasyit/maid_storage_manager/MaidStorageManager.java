@@ -4,6 +4,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
+import studio.fantasyit.maid_storage_manager.items.handler.DefaultRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.registry.*;
 
 @Mod(MaidStorageManager.MODID)
@@ -23,5 +26,14 @@ public class MaidStorageManager {
         DataComponentRegistry.register(modEventBus);
         DataAttachmentRegistry.register(modEventBus);
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        modEventBus.addListener(RegisterCapabilitiesEvent.class, event -> {
+            event.registerItem(
+                    IRequestTaskHandler.CAPABILITY,
+                    (stack, ctx) -> DefaultRequestTaskHandler.INSTANCE,
+                    ItemRegistry.REQUEST_LIST_ITEM.get(),
+                    ItemRegistry.VIRTUAL_REQUEST_LIST_ITEM.get()
+            );
+        });
     }
 }

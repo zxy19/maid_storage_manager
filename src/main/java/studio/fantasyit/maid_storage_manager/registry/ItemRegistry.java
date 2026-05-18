@@ -32,6 +32,7 @@ public class ItemRegistry {
     }
 
     public static final DeferredHolder<Item, RequestListItem> REQUEST_LIST_ITEM = item("request_list", RequestListItem::new);
+    public static final DeferredHolder<Item, VirtualRequestListItem> VIRTUAL_REQUEST_LIST_ITEM = item("virtual_request_list", VirtualRequestListItem::new);
     public static final DeferredHolder<Item, MaidInteractItem> INVENTORY_LIST = item("inventory_list", MaidInteractItem::new);
     public static final DeferredHolder<Item, WrittenInvListItem> WRITTEN_INVENTORY_LIST = item("written_inventory_list", WrittenInvListItem::new);
     public static final DeferredHolder<Item, FilterListItem> FILTER_LIST = item("filter_list", FilterListItem::new);
