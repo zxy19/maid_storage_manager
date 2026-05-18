@@ -11,7 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.TargetList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -37,7 +37,8 @@ public class ListClearRecipe extends ShapelessRecipe {
             ItemStack stack = inv.getItem(i);
             if (stack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
                 ItemStack tmp = stack.copy();
-                RequestListItem.clearItemProcess(tmp);
+                IRequestTaskHandler handler = IRequestTaskHandler.of(tmp);
+                if (handler != null) handler.clearItemProcess(tmp);
                 return tmp;
             }
             if (stack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {

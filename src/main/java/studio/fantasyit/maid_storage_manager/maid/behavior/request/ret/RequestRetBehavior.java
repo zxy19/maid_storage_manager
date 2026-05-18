@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
@@ -140,9 +140,11 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         }
         CombinedInvWrapper inv = maid.getAvailableInv(false);
         Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.getPosition(0));
+        ItemStack mainHand = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(mainHand);
         for (int i = 0; i < 5 && targetEntity != null && inv.getSlots() > currentSlot; i++) {
             @NotNull ItemStack item = inv.getStackInSlot(currentSlot++);
-            int restCount = RequestListItem.updateStored(maid.getMainHandItem(), item, false, inCrafting);
+            int restCount = handler != null ? handler.updateStored(mainHand, item, false, inCrafting) : item.getCount();
             ItemStack toThrowStack = item.copy();
             toThrowStack.shrink(restCount);
             if (!toThrowStack.isEmpty()) {
@@ -171,11 +173,13 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             ItemStack stack = availableInv.getStackInSlot(currentSlot);
             if (!stack.isEmpty())
                 if (context instanceof IStorageInsertableContext isic) {
-                    int i = RequestListItem.updateStored(maid.getMainHandItem(), stack, true, inCrafting);
+                    ItemStack mainHand = maid.getMainHandItem();
+                    IRequestTaskHandler handler = IRequestTaskHandler.of(mainHand);
+                    int i = handler != null ? handler.updateStored(mainHand, stack, true, inCrafting) : stack.getCount();
                     int canStoreCount = stack.getCount() - i;
                     ItemStack notInserted = isic.insert(stack.copyWithCount(canStoreCount));
                     ItemStack toStoreItemStack = stack.copyWithCount(canStoreCount - notInserted.getCount());
-                    RequestListItem.updateStored(maid.getMainHandItem(), toStoreItemStack, false, inCrafting);
+                    if (handler != null) handler.updateStored(mainHand, toStoreItemStack, false, inCrafting);
                     availableInv.setStackInSlot(currentSlot, stack.copyWithCount(stack.getCount() - toStoreItemStack.getCount()));
                 }
             currentSlot++;
@@ -208,7 +212,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             return;
         }
         if ((Conditions.listAllStored(maid) || Conditions.triesReach(maid)) && Conditions.listAllDone(maid)) {
-            if (RequestListItem.isAllSuccess(maid.getMainHandItem()))
+            ItemStack stack = maid.getMainHandItem();
+            IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+            if (handler != null && handler.isAllSuccess(stack))
                 ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_SUCCESS);
             else
                 ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_FAIL);
@@ -219,7 +225,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                 MemoryUtil.setInteractPos(maid, target.getPos().above());
             }
         }
-        RequestListItem.updateCollectedNotStored(maid.getMainHandItem(), maid.getAvailableInv(false));
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler != null) handler.updateCollectedNotStored(stack, maid.getAvailableInv(false));
         MemoryUtil.getRequestProgress(maid).setReturn(false);
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.getCrafting(maid).clearTarget();

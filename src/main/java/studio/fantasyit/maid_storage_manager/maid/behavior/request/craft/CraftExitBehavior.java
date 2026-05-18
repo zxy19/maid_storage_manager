@@ -2,10 +2,11 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -36,7 +37,9 @@ public class CraftExitBehavior extends Behavior<EntityMaid> {
             return;
         }
         DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "[REQUEST_CRAFT]Exit");
-        RequestListItem.markAllDone(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler != null) handler.markAllDone(stack);
         MemoryUtil.getCrafting(maid).clearCraftGuides();
         MemoryUtil.getCrafting(maid).clearPlan();
         ChatTexts.removeSecondary(maid);

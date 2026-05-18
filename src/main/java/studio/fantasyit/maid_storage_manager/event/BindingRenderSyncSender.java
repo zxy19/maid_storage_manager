@@ -12,6 +12,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
@@ -38,7 +39,9 @@ public class BindingRenderSyncSender {
     public static void syncEntitySelector(ServerPlayer player) {
         if (BindingData.isDifferentAndUpdateItemOnHand(player)) {
             if (player.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                UUID entityId = RequestListItem.getStorageEntity(player.getMainHandItem());
+                ItemStack stack = player.getMainHandItem();
+                IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+                UUID entityId = handler != null ? handler.getStorageEntity(stack) : null;
                 if (entityId != null) {
                     Entity entity = ((ServerLevel) player.level()).getEntity(entityId);
                     if (entity != null && entity.isAlive()) {

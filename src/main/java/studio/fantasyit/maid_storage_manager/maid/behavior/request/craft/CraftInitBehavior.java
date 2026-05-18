@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
@@ -11,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -73,7 +74,9 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
     protected void stop(ServerLevel p_22548_, EntityMaid maid, long p_22550_) {
         if (!planner.anySuccess()) {
             // 没有成功合成，就直接返回
-            RequestListItem.markAllDone(maid.getMainHandItem());
+            ItemStack stack = maid.getMainHandItem();
+            IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+            if (handler != null) handler.markAllDone(stack);
             MemoryUtil.getRequestProgress(maid).setTryCrafting(false);
             MemoryUtil.getRequestProgress(maid).setReturn(true);
             DebugData.sendDebug(maid, ProgressDebugContext.TYPE.STATUS, "[REQUEST_CRAFT] Failed to find recipe for any items");

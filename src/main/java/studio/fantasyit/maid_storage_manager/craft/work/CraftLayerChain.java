@@ -24,7 +24,7 @@ import studio.fantasyit.maid_storage_manager.craft.data.InvConsumeSimulator;
 import studio.fantasyit.maid_storage_manager.craft.debug.IProgressDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -815,15 +815,17 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             if (craftLayer.getCraftData().isEmpty()) {
                 List<ItemStack> targets = craftLayer.getItems();
                 // 为其他物品设置缺少信息
+                ItemStack mainHand = maid.getMainHandItem();
+                IRequestTaskHandler reqHandler = IRequestTaskHandler.of(mainHand);
                 for (ItemStack target : targets) {
-                    RequestListItem.setMissingItem(
-                            maid.getMainHandItem(),
+                    if (reqHandler != null) reqHandler.setMissingItem(
+                            mainHand,
                             target,
                             missing
                     );
-                    RequestListItem.markDone(maid.getMainHandItem(), target);
+                    if (reqHandler != null) reqHandler.markDone(mainHand, target);
                     if (additional != null) {
-                        RequestListItem.setFailAddition(maid.getMainHandItem(), target, additional);
+                        if (reqHandler != null) reqHandler.setFailAddition(mainHand, target, additional);
                     }
                 }
                 break;
@@ -853,13 +855,15 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
         if (targets != null) {
             //检测是否存在目标物品，如果是，那么优先进行存放，标记已收集
             CombinedInvWrapper inv = maid.getAvailableInv(true);
+            ItemStack mainHand = maid.getMainHandItem();
+            IRequestTaskHandler reqHandler = IRequestTaskHandler.of(mainHand);
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
-                RequestListItem.updateCollectedItem(maid.getMainHandItem(), stack, stack.getCount(), true);
+                if (reqHandler != null) reqHandler.updateCollectedItem(mainHand, stack, stack.getCount(), true);
             }
             if (!toBeFailAddition.isBlank()) {
                 for (ItemStack target : targets)
-                    RequestListItem.setFailAddition(maid.getMainHandItem(), target, toBeFailAddition);
+                    if (reqHandler != null) reqHandler.setFailAddition(mainHand, target, toBeFailAddition);
                 toBeFailAddition = "";
             }
             MemoryUtil.getRequestProgress(maid).setReturn();
@@ -895,7 +899,9 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             showCraftingProgress(maid);
             if (!isMaster && ((ServerLevel) maid.level()).getEntity(getMasterUUID()) instanceof EntityMaid master) {
                 CraftMemory crafting = MemoryUtil.getCrafting(master);
-                CompoundTag vd = RequestListItem.getVirtualData(maid.getMainHandItem());
+                ItemStack mainHand = maid.getMainHandItem();
+                IRequestTaskHandler reqHandler = IRequestTaskHandler.of(mainHand);
+                CompoundTag vd = reqHandler != null ? reqHandler.getVirtualData(mainHand) : null;
                 if (crafting.hasPlan() && vd != null && vd.contains("index")) {
                     crafting.plan.onDispatchedStarted(master, vd.getInt("index"));
                 }

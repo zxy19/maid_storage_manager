@@ -8,7 +8,7 @@ import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
@@ -103,7 +103,8 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                 List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
                 if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
                     if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                        if (RequestListItem.isIgnored(item)) {
+                        IRequestTaskHandler handler = IRequestTaskHandler.of(item);
+                        if (handler != null && handler.isIgnored(item)) {
                             item.remove(DataComponentRegistry.REQUEST_IGNORE);
                             ItemStack insert = isic.insert(item);
                             ViewedInventoryUtil.ambitiousAddItemAndSync(maid, p_22551_, target, item.copyWithCount(oCount - insert.getCount()));

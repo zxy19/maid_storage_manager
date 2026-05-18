@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.menu.container.CountSlot;
@@ -40,7 +40,8 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         super(GuiRegistry.ITEM_SELECTOR_MENU.get(), p_38852_);
         this.player = player;
         target = player.getMainHandItem();
-        matching = RequestListItem.getMatchType(target);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(target);
+        matching = handler != null ? handler.getMatchType(target) : ItemStackUtil.MATCH_TYPE.AUTO;
         filteredItems = new FilterContainer(10, this);
         RequestItemStackList.Immutable requestData = target.getOrDefault(DataComponentRegistry.REQUEST_ITEMS, RequestItemStackList.EMPTY);
         filteredItems.loadFromRequestData(requestData);
@@ -64,14 +65,16 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
     }
 
     public void clear() {
-        RequestListItem.clearItemProcess(target);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(target);
+        if (handler != null) handler.clearItemProcess(target);
         filteredItems.reset();
         this.broadcastChanges();
     }
 
     public void save() {
         if (player.level().isClientSide) return;
-        RequestItemStackList data = RequestListItem.getMutableRequestData(target);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(target);
+        RequestItemStackList data = handler != null ? handler.getMutableRequestData(target) : new RequestItemStackList();
         List<RequestItemStackList.ListItem> list = data.getList();
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {
             ItemStack itemStack = filteredItems.getItem(i);

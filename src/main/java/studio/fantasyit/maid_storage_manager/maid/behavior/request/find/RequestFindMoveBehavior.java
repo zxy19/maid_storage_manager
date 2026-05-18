@@ -15,7 +15,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -58,8 +58,10 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         super.start(level, maid, p_22542_);
         MemoryUtil.getRequestProgress(maid).clearCheckItem();
         checkItem = null;
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
         if (!priorityTarget(level, maid))
-            if (Conditions.useScanTarget(maid) || RequestListItem.isBlackMode(maid.getMainHandItem()))
+            if (Conditions.useScanTarget(maid) || (handler != null && handler.isBlackMode(stack)))
                 this.searchForDestination(level, maid);
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
         if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
@@ -86,9 +88,11 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
 
     private boolean priorityTarget(ServerLevel level, EntityMaid maid) {
         if (!Conditions.usePriorityTarget(maid)) return false;
-        if (RequestListItem.isBlackMode(maid.getMainHandItem())) return false;
-        List<Pair<ItemStack, Integer>> notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
-        ItemStackUtil.MATCH_TYPE matchTag = RequestListItem.getMatchType(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler != null && handler.isBlackMode(stack)) return false;
+        List<Pair<ItemStack, Integer>> notDone = handler != null ? handler.getItemStacksNotDone(stack, true) : List.of();
+        ItemStackUtil.MATCH_TYPE matchTag = handler != null ? handler.getMatchType(stack) : ItemStackUtil.MATCH_TYPE.NOT_MATCHING;
         Map<Target, List<ItemCount>> viewed = MemoryUtil.getViewedInventory(maid).positionFlatten();
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid);
         for (Map.Entry<Target, List<ItemCount>> blockPos : viewed.entrySet()) {

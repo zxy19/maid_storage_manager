@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
@@ -97,6 +97,8 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
 
     private void tickGather(ServerLevel level, EntityMaid maid, long p22553) {
         if (!breath.breathTick(maid)) return;
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
         Function<ItemStack, ItemStack> takeItem = (itemStack) -> {
             if (checkItem != null && ItemStackUtil.isSame(itemStack, checkItem, true))
                 checkItem = null;
@@ -104,7 +106,7 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             int maxStore = InvUtil.maxCanPlace(maid.getAvailableInv(false), itemStack);
             if (maxStore > 0) {
                 ItemStack copy = itemStack.copy();
-                ItemStack tmp = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack, maxStore, false);
+                ItemStack tmp = handler != null ? handler.updateCollectedItem(stack, itemStack, maxStore, false) : itemStack;
                 copy.shrink(tmp.getCount());
                 ViewedInventoryUtil.ambitiousRemoveItemAndSync(maid, level, target, itemStack, copy.getCount());
                 InvUtil.tryPlace(maid.getAvailableInv(false), copy);
@@ -118,8 +120,8 @@ public class RequestFindBehavior extends Behavior<EntityMaid> {
             if (isec.hasTask())
                 isec.tick(takeItem);
             else {
-                List<Pair<ItemStack, Integer>> itemStacksNotDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem(), true);
-                isec.setExtract(itemStacksNotDone.stream().map(c -> c.getA().copyWithCount(c.getB() == -1 ? Integer.MAX_VALUE : c.getB())).toList(), RequestListItem.getMatchType(maid.getMainHandItem()));
+                List<Pair<ItemStack, Integer>> itemStacksNotDone = handler != null ? handler.getItemStacksNotDone(stack, true) : List.of();
+                isec.setExtract(itemStacksNotDone.stream().map(c -> c.getA().copyWithCount(c.getB() == -1 ? Integer.MAX_VALUE : c.getB())).toList(), handler != null ? handler.getMatchType(stack) : ItemStackUtil.MATCH_TYPE.NOT_MATCHING);
             }
         }
     }

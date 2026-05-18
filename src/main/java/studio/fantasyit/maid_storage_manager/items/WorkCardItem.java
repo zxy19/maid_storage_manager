@@ -14,6 +14,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
@@ -104,7 +105,8 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                     CompoundTag data = new CompoundTag();
                     data.putUUID("master", maid.getUUID());
                     data.putInt("index", node.index());
-                    RequestListItem.setVirtualData(dispatchedRequest, data);
+                    IRequestTaskHandler disHandler = IRequestTaskHandler.of(dispatchedRequest);
+                    if (disHandler != null) disHandler.setVirtualData(dispatchedRequest, data);
 
                     //构建记忆，直接开始合成，跳过寻找阶段
                     MemoryUtil.getCrafting(toMaid).setGatheringDispatched(true);
@@ -113,12 +115,12 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                     newPlan.getNode(0).nonFinishPrev().setValue(node.nonFinishPrev().getValue());
                     if (node.nonFinishPrev().getValue() != 0)
                         newPlan.getNode(0).progress().setValue(SolvedCraftLayer.Progress.PREFETCH);
-                    MemoryUtil.getRequestProgress(toMaid).newWork(RequestListItem.getUUID(dispatchedRequest));
+                    MemoryUtil.getRequestProgress(toMaid).newWork(disHandler != null ? disHandler.getWorkUUID(dispatchedRequest) : UUID.randomUUID());
                     MemoryUtil.getRequestProgress(toMaid).setTryCrafting(true);
                     toMaid.setItemInHand(InteractionHand.MAIN_HAND, dispatchedRequest);
 
                     //执行分发，标记为已分发的任务。
-                    plan.doDispatchLayer(node, toMaid.getUUID(), RequestListItem.getUUID(dispatchedRequest));
+                    plan.doDispatchLayer(node, toMaid.getUUID(), disHandler != null ? disHandler.getWorkUUID(dispatchedRequest) : UUID.randomUUID());
                     plan.showCraftingProgress(maid);
                     newPlan.showCraftingProgress(toMaid);
 
@@ -147,7 +149,8 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 ItemStack itemStack = RequestItemUtil.makeVirtualItemStack(maid.getMainHandItem(), "DISPATCH_FIND");
                 CompoundTag data = new CompoundTag();
                 data.putUUID("master", maid.getUUID());
-                RequestListItem.setVirtualData(itemStack, data);
+                IRequestTaskHandler disHandler = IRequestTaskHandler.of(itemStack);
+                if (disHandler != null) disHandler.setVirtualData(itemStack, data);
 
                 toMaid.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
                 maid.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);

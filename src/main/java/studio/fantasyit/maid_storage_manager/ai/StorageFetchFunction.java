@@ -18,7 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -35,7 +35,8 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
         if(future == null)
             return;
         JsonArray result = new JsonArray();
-        RequestItemStackList.Immutable requests = RequestListItem.getImmutableRequestData(reqList);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(reqList);
+        RequestItemStackList.Immutable requests = handler != null ? handler.getImmutableRequestData(reqList) : RequestItemStackList.EMPTY;
         List<RequestItemStackList.ImmutableItem> list = requests.list();
         for (int i = 0; i < list.size(); i++) {
             ItemStack itemstack = list.get(i).item();

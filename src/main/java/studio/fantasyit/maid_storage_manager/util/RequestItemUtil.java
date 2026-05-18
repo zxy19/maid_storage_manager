@@ -20,7 +20,7 @@ import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEv
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.communicate.step.RequestItemStep;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -35,7 +35,8 @@ import java.util.UUID;
 
 public class RequestItemUtil {
     public static boolean isRequestTarget(ServerLevel level, EntityMaid maid, Target target) {
-        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        IRequestTaskHandler handler = IRequestTaskHandler.of(maid.getMainHandItem());
+        Target storageBlock = handler != null ? handler.getStorageBlock(maid.getMainHandItem()) : null;
         if (storageBlock == null || target == null)
             return false;
         if (storageBlock.equals(target))
@@ -55,6 +56,7 @@ public class RequestItemUtil {
 
     public static void stopJobAndStoreOrThrowItem(EntityMaid maid, @Nullable IStorageContext storeTo, @Nullable Entity targetEntity) {
         Level level = maid.level();
+        IRequestTaskHandler reqHandler = IRequestTaskHandler.of(maid.getMainHandItem());
         ItemStack reqList = maid.getMainHandItem();
         NeoForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.END, maid, reqList.get(DataComponentRegistry.REQUEST_WORK_UUID) , reqList));
         if (reqList.getOrDefault(DataComponentRegistry.REQUEST_VIRTUAL, false)) {
@@ -75,24 +77,24 @@ public class RequestItemUtil {
             } else if (source.equals("COMMUNICATE")) {
                 CommunicateRequest communicateRequest = CommunicateUtil.getCommunicateRequest(maid);
                 if (communicateRequest != null && communicateRequest.getCurrentStep() instanceof RequestItemStep requestItemStep)
-                    requestItemStep.onRequestDone(RequestListItem.isAllSuccess(reqList));
+                    requestItemStep.onRequestDone(reqHandler.isAllSuccess(reqList));
             }
         }
         //1.1 尝试扔给目标实体
-        else if (RequestListItem.getRepeatInterval(reqList) <= 0 && targetEntity != null) {
+        else if (reqHandler.getRepeatInterval(reqList) <= 0 && targetEntity != null) {
             Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.position());
-            RequestListItem.setIgnore(reqList);
+            reqHandler.setIgnore(reqList);
             InvUtil.throwItem(maid, reqList, targetDir, true);
             //因为扔出去会被女仆秒捡起，添加一个CD
             MemoryUtil.setReturnToScheduleAt(maid, level.getServer().getTickCount() + 80);
         }
         //1.2 尝试放入指定位置。例外：如果有循环请求任务，那么不会存入目标容器.
-        else if (RequestListItem.getRepeatInterval(reqList) > 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
+        else if (reqHandler.getRepeatInterval(reqList) > 0 || storeTo == null || !InvUtil.tryPlace(storeTo, reqList).isEmpty()) {
             //没能成功，尝试背包
-            if (RequestListItem.getRepeatInterval(reqList) > 0) {
-                reqList.set(DataComponentRegistry.REQUEST_CD, RequestListItem.getRepeatInterval(reqList));
+            if (reqHandler.getRepeatInterval(reqList) > 0) {
+                reqList.set(DataComponentRegistry.REQUEST_CD, reqHandler.getRepeatInterval(reqList));
             } else {
-                RequestListItem.setIgnore(reqList);
+                reqHandler.setIgnore(reqList);
             }
             if (!InvUtil.tryPlace(maid.getAvailableInv(false), reqList).isEmpty()) {
                 //背包也没空。。扔地上站未来
@@ -105,7 +107,8 @@ public class RequestItemUtil {
     }
 
     private static void dispatchedTaskDone(EntityMaid maid, ItemStack reqList) {
-        CompoundTag data = RequestListItem.getVirtualData(reqList);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(reqList);
+        CompoundTag data = handler != null ? handler.getVirtualData(reqList) : null;
         if (data == null) return;
         UUID masterUUID = data.getUUID("master");
         int index = data.getInt("index");
@@ -117,26 +120,28 @@ public class RequestItemUtil {
         targetPlan.dispatchedDone(maid,
                 toMaid,
                 index,
-                RequestListItem.isAllSuccess(reqList),
+                handler.isAllSuccess(reqList),
                 reqList
         );
         targetPlan.showCraftingProgress(toMaid);
     }
 
     private static void dispatchFindTaskDone(EntityMaid maid, ItemStack reqList) {
-        CompoundTag data = RequestListItem.getVirtualData(reqList);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(reqList);
+        CompoundTag data = handler != null ? handler.getVirtualData(reqList) : null;
         if (data == null) return;
         UUID masterUUID = data.getUUID("master");
         Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
         ItemStack toItem = reqList.copy();
-        RequestListItem.clearAllNonSuccess(toItem);
+        IRequestTaskHandler toHandler = IRequestTaskHandler.of(toItem);
+        if (toHandler != null) toHandler.clearAllNonSuccess(toItem);
         //生成一个非虚拟请求列表
         toItem.remove(DataComponentRegistry.REQUEST_VIRTUAL);
         toItem.remove(DataComponentRegistry.REQUEST_VIRTUAL_SOURCE);
         if (targetEntity instanceof EntityMaid toMaid) {
             ItemStack restItem = InvUtil.tryPlace(toMaid.getAvailableInv(true), toItem);
             if (restItem.isEmpty()) {
-                MemoryUtil.getRequestProgress(toMaid).newWork(RequestListItem.getUUID(toItem));
+                MemoryUtil.getRequestProgress(toMaid).newWork(toHandler.getWorkUUID(toItem));
                 MemoryUtil.getRequestProgress(toMaid).setTryCrafting(true);
             }
             toItem = restItem;
@@ -169,7 +174,7 @@ public class RequestItemUtil {
      * @return 虚拟物品
      */
     public static ItemStack makeVirtualItemStack(List<ItemStack> list, @Nullable Target target, @Nullable Entity targetEntity, String virtual_source, ItemStackUtil.MATCH_TYPE match) {
-        ItemStack itemStack = ItemRegistry.REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
+        ItemStack itemStack = ItemRegistry.VIRTUAL_REQUEST_LIST_ITEM.get().getDefaultInstance().copy();
         RequestItemStackList data = new RequestItemStackList();
         for (int i = 0; i < Math.max(list.size(), 10); i++) {
             ItemStack item = i < list.size() ? list.get(i) : ItemStack.EMPTY;
@@ -210,7 +215,8 @@ public class RequestItemUtil {
      * @param target
      */
     public static void markVisForCurrentRequestList(ServerLevel level, EntityMaid maid, AbstractTargetMemory target) {
-        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        IRequestTaskHandler handler = IRequestTaskHandler.of(maid.getMainHandItem());
+        Target storageBlock = handler != null ? handler.getStorageBlock(maid.getMainHandItem()) : null;
         if (storageBlock != null) {
             target.addVisitedPos(storageBlock);
             StorageAccessUtil.checkNearByContainers(level, storageBlock.getPos(), pos -> {

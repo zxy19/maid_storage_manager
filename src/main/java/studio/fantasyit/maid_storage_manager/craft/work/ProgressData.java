@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -271,7 +271,8 @@ public class ProgressData {
     }
 
     public static ProgressData fromRequest(EntityMaid maid, ServerLevel level, ItemStack requestList, ProgressPad.Viewing viewing, ProgressPad.Merge merge, int maxSz) {
-        RequestItemStackList.Immutable requestData = RequestListItem.getImmutableRequestData(requestList);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(requestList);
+        RequestItemStackList.Immutable requestData = handler != null ? handler.getImmutableRequestData(requestList) : RequestItemStackList.EMPTY;
         List<RequestItemStackList.ImmutableItem> list = requestData.list();
         MutableInt total = new MutableInt(0);
         MutableInt done = new MutableInt(0);

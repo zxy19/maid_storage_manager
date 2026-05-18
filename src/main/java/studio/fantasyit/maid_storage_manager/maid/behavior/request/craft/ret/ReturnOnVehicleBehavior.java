@@ -10,7 +10,7 @@ import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -51,10 +51,12 @@ public class ReturnOnVehicleBehavior extends Behavior<EntityMaid> {
             );
         DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST_CRAFT_WORK] Step Done. Set Success.");
         //根层
+        ItemStack mainHand = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(mainHand);
         for (int i = 0; i < layer.getItems().size(); i++) {
             ItemStack itemStack = layer.getItems().get(i);
             if (itemStack.isEmpty()) continue;
-            RequestListItem.updateCollectedItem(maid.getMainHandItem(),
+            if (handler != null) handler.updateCollectedItem(mainHand,
                     itemStack,
                     itemStack.getCount(),
                     true

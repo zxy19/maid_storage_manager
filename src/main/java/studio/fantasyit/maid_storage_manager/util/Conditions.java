@@ -9,9 +9,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import studio.fantasyit.maid_storage_manager.Config;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 
 import java.util.Optional;
@@ -23,9 +22,11 @@ public class Conditions {
     public static boolean takingRequestList(EntityMaid maid) {
         if (MemoryUtil.getCrafting(maid).isSwappingHandWhenCrafting() && MemoryUtil.getCrafting(maid).hasPlan())
             return true;
-        if (!maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get()))
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler == null)
             return false;
-        if (RequestListItem.isIgnored(maid.getMainHandItem()) || RequestListItem.isCoolingDown(maid.getMainHandItem()))
+        if (handler.isIgnored(stack) || handler.isCoolingDown(stack))
             return false;
         return true;
     }
@@ -48,16 +49,20 @@ public class Conditions {
      * 当前请求列表是否有绑定存储方块
      */
     public static boolean hasStorageBlock(EntityMaid maid) {
-        return RequestListItem.getStorageBlock(maid.getMainHandItem()) != null;
+        IRequestTaskHandler handler = IRequestTaskHandler.of(maid.getMainHandItem());
+        return handler != null && handler.getStorageBlock(maid.getMainHandItem()) != null;
     }
 
     /**
      * 请求列表是否未完成
      */
     public static boolean listNotDone(EntityMaid maid) {
-        if (RequestListItem.isBlackMode(maid.getMainHandItem()))
-            return !RequestListItem.isBlackModeDone(maid.getMainHandItem());
-        return RequestListItem.getItemStacksNotDone(maid.getMainHandItem()).size() != 0;
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler == null) return true;
+        if (handler.isBlackMode(stack))
+            return !handler.isBlackModeDone(stack);
+        return handler.getItemStacksNotDone(stack).size() != 0;
     }
 
     /**
@@ -71,9 +76,12 @@ public class Conditions {
      * 请求列表是否存储完毕
      */
     public static boolean listAllStored(EntityMaid maid) {
-        if (RequestListItem.isBlackMode(maid.getMainHandItem()))
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler == null) return true;
+        if (handler.isBlackMode(stack))
             return false;
-        return RequestListItem.isAllStored(maid.getMainHandItem());
+        return handler.isAllStored(stack);
     }
 
     /**
@@ -119,10 +127,8 @@ public class Conditions {
                 maid.getAvailableInv(false),
                 //请求列表如果不处在忽略工作状态，则说明可以进行
                 slot -> {
-                    if (slot.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                        return RequestListItem.isIgnored(slot);
-                    }
-                    return true;
+                    IRequestTaskHandler h = IRequestTaskHandler.of(slot);
+                    return h == null || h.isIgnored(slot);
                 }
         ).stream().allMatch(stack -> stack.isEmpty());
     }
@@ -179,8 +185,10 @@ public class Conditions {
      */
     public static boolean shouldCheckStock(EntityMaid maid) {
         ItemStack mainHandItem = maid.getMainHandItem();
-        if (RequestListItem.getStorageBlock(mainHandItem) == null) return false;
-        if (!RequestListItem.isStockMode(mainHandItem)) return false;
-        return !RequestListItem.hasCheckedStock(mainHandItem);
+        IRequestTaskHandler handler = IRequestTaskHandler.of(mainHandItem);
+        if (handler == null) return false;
+        if (handler.getStorageBlock(mainHandItem) == null) return false;
+        if (!handler.isStockMode(mainHandItem)) return false;
+        return !handler.hasCheckedStock(mainHandItem);
     }
 }

@@ -12,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
 import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEvent;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -38,14 +38,17 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
             return false;
         if (Conditions.takingRequestList(maid)) {
             UUID lastWorkUUID = MemoryUtil.getRequestProgress(maid).getWorkUUID();
-            return !lastWorkUUID.equals(RequestListItem.getUUID(maid.getMainHandItem()));
+            ItemStack stack = maid.getMainHandItem();
+            IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+            return handler == null || !lastWorkUUID.equals(handler.getWorkUUID(stack));
         }
         IItemHandler maidInv = maid.getAvailableInv(false);
         for (int i = 0; i < maidInv.getSlots(); i++) {
             ItemStack item = maidInv.getStackInSlot(i);
             if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                RequestListItem.tickCoolingDown(item);
-                if (!RequestListItem.isIgnored(item) && !RequestListItem.isCoolingDown(item))
+                IRequestTaskHandler itemHandler = IRequestTaskHandler.of(item);
+                if (itemHandler != null) itemHandler.tickCoolingDown(item);
+                if (itemHandler != null && !itemHandler.isIgnored(item) && !itemHandler.isCoolingDown(item))
                     return true;
             }
         }
@@ -60,7 +63,8 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
             for (int i = 0; i < maidInv.getSlots(); i++) {
                 ItemStack item = maidInv.getStackInSlot(i);
                 if (maidInv.getStackInSlot(i).is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                    if (!RequestListItem.isIgnored(item) && !RequestListItem.isCoolingDown(item)) {
+                    IRequestTaskHandler itemHandler = IRequestTaskHandler.of(item);
+                    if (itemHandler != null && !itemHandler.isIgnored(item) && !itemHandler.isCoolingDown(item)) {
                         @NotNull ItemStack itemstack = maidInv.extractItem(i, 1, false);
                         maidInv.insertItem(i, maid.getMainHandItem(), false);
                         maid.setItemInHand(InteractionHand.MAIN_HAND, itemstack);
@@ -75,15 +79,20 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
             return;
         }
 
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+
         //记忆：开始新的工作
-        NeoForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.START, maid, RequestListItem.getUUID(maid.getMainHandItem()), maid.getMainHandItem()));
-        MemoryUtil.getRequestProgress(maid).newWork(RequestListItem.getUUID(maid.getMainHandItem()));
+        if (handler != null) {
+            NeoForge.EVENT_BUS.post(new RequestListStatusChangeEvent(RequestListStatusChangeEvent.Status.START, maid, handler.getWorkUUID(stack), stack));
+            MemoryUtil.getRequestProgress(maid).newWork(handler.getWorkUUID(stack));
+        }
         MemoryUtil.clearReturnWorkSchedule(maid);
         MemoryUtil.getCrafting(maid).clearCraftGuides();
         MemoryUtil.getCrafting(maid).clearPlan();
 
         //标黑存储箱子相连的所有箱子
-        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        Target storageBlock = handler != null ? handler.getStorageBlock(stack) : null;
         if (storageBlock != null) {
             MemoryUtil.getRequestProgress(maid).addVisitedPos(storageBlock);
             DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[REQUEST]initial vis %s", storageBlock);
@@ -95,7 +104,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
 
         ChatTexts.send(maid, ChatTexts.CHAT_REQUEST_START);
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_GOT);
-        if (RequestListItem.getRepeatInterval(maid.getMainHandItem()) > 0) {
+        if (handler != null && handler.getRepeatInterval(stack) > 0) {
             AdvancementTypes.triggerForMaid(maid, AdvancementTypes.REQUEST_LIST_REPEAT_GOT);
         }
         MemoryUtil.resetParallelWorking(maid);

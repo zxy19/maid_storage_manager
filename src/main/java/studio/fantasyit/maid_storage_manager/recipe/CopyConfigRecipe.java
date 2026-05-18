@@ -14,7 +14,7 @@ import net.minecraft.world.item.crafting.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 public class CopyConfigRecipe extends ShapelessRecipe {
@@ -83,11 +83,14 @@ public class CopyConfigRecipe extends ShapelessRecipe {
             if (!newStack.is(toCopy.getItem())) return ItemStack.EMPTY;
             return toCopy.copy();
         } else if (newStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            if (!toCopy.is(ItemRegistry.REQUEST_LIST_ITEM.get()) || RequestListItem.isVirtual(toCopy) || RequestListItem.isVirtual(newStack)) {
+            IRequestTaskHandler toCopyHandler = IRequestTaskHandler.of(toCopy);
+            IRequestTaskHandler newStackHandler = IRequestTaskHandler.of(newStack);
+            if (toCopyHandler == null || newStackHandler == null ||
+                    toCopyHandler.isVirtual(toCopy) || newStackHandler.isVirtual(newStack)) {
                 return ItemStack.EMPTY;
             }
             newStack = toCopy.copy();
-            RequestListItem.clearItemProcess(newStack);
+            newStackHandler.clearItemProcess(newStack);
             return newStack;
         } else if (newStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
             if (toCopy.is(newStack.getItem())) {

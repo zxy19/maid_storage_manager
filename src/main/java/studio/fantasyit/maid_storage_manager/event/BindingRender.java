@@ -17,6 +17,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.BoxTip;
@@ -104,7 +105,7 @@ public final class BindingRender {
         if (mainStack.getItem() != ItemRegistry.REQUEST_LIST_ITEM.get()) {
             return;
         }
-        Target storage = RequestListItem.getStorageBlock(mainStack);
+        Target storage = IRequestTaskHandler.of(mainStack) != null ? IRequestTaskHandler.of(mainStack).getStorageBlock(mainStack) : null;
         if (storage != null) {
             BoxRenderUtil.renderStorage(storage, colors_p, event, Component.translatable("maid_storage_manager.request_list_binding_render").getString(),
                     floating);

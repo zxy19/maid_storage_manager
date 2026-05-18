@@ -4,11 +4,12 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.craft.work.SolvedCraftLayer;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -222,7 +223,9 @@ public class CraftMemory extends AbstractTargetMemory {
     }
 
     public void addIgnoreTargetFromRequest(EntityMaid maid, ServerLevel level) {
-        Target storageBlock = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        Target storageBlock = handler != null ? handler.getStorageBlock(stack) : null;
         if (storageBlock != null) {
             clearIgnoreTargets();
             addIgnoreTargets(storageBlock);

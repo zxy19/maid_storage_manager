@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBF
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -14,7 +15,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -57,9 +58,12 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             return;
         }
 
-        @Nullable Target target = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+
+        @Nullable Target target = handler != null ? handler.getStorageBlock(stack) : null;
         @Nullable Target storage = target == null ? null : MaidStorage.getInstance().isValidTarget(level, maid, target.getPos(), target.side);
-        @Nullable UUID uuid = RequestListItem.getStorageEntity(maid.getMainHandItem());
+        @Nullable UUID uuid = handler != null ? handler.getStorageEntity(stack) : null;
         @Nullable Entity entity = uuid == null ? null : level.getEntity(uuid);
         if (target != null && storage != null) {
             //寻找落脚点
@@ -82,7 +86,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             //如果没有绑定存储位置，那么直接停止任务，扔掉或者存储清单，三十秒后进行日常工作
             if (!MemoryUtil.getRequestProgress(maid).isTryCrafting()) {
                 DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_RET] No target");
-                RequestListItem.markAllDone(maid.getMainHandItem());
+                handler.markAllDone(stack);
                 RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null, null);
                 MemoryUtil.setReturnToScheduleAt(maid, level.getServer().getTickCount() + 600);
             } else {

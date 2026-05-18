@@ -17,7 +17,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.util.*;
@@ -40,7 +40,9 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
         if (MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         if (!Conditions.takingRequestList(maid)) return false;
         if (!MemoryUtil.getCrafting(maid).isGatheringDispatched()) return false;
-        @Nullable UUID entityUU = RequestListItem.getStorageEntity(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        @Nullable UUID entityUU = handler != null ? handler.getStorageEntity(stack) : null;
         if (entityUU == null)
             return false;
         @Nullable Entity entity = level.getEntity(entityUU);
@@ -70,7 +72,9 @@ public class DispatchedGatherBehavior extends Behavior<EntityMaid> {
         target = null;
         thrown = null;
         breath.reset();
-        @Nullable UUID entityUU = RequestListItem.getStorageEntity(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        @Nullable UUID entityUU = handler != null ? handler.getStorageEntity(stack) : null;
         if (entityUU == null)
             return;
         @Nullable Entity entity = level.getEntity(entityUU);

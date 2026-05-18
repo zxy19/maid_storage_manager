@@ -25,7 +25,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -72,8 +72,10 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         this.level = level;
         this.count = 0;
         if(maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            ItemStack stack = maid.getMainHandItem();
+            IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
             if(notDoneList ==  null)
-                notDone = RequestListItem.getItemStacksNotDone(maid.getMainHandItem());
+                notDone = handler != null ? handler.getItemStacksNotDone(stack) : List.of();
             if (!precheck()) {
                 done = true;
                 return;
@@ -106,7 +108,9 @@ public class MaidCraftPlanner implements IDebugContextSetter {
                 return false;
             }
         }
-        if (RequestListItem.isBlackMode(maid.getMainHandItem())) {
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler != null && handler.isBlackMode(stack)) {
             debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER, "Black list, no crafting");
             return false;
         }
@@ -129,7 +133,9 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         if (notDone.isEmpty()) {
             return false;
         }
-        Target storage = RequestListItem.getStorageBlock(maid.getMainHandItem());
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        Target storage = handler != null ? handler.getStorageBlock(stack) : null;
         List<Pair<ItemStack, Integer>> items = new ArrayList<>();
         MemoryUtil.getViewedInventory(maid).positionFlatten()
                 .forEach((pos, itemStacks) -> {
@@ -269,6 +275,8 @@ public class MaidCraftPlanner implements IDebugContextSetter {
 
     protected void handleResult() {
         List<CraftLayer> results = biCalc.getResults();
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
 
         if (results.isEmpty()) {
             debugContext.logNoLevel(CraftingDebugContext.TYPE.PLANNER,
@@ -276,14 +284,14 @@ public class MaidCraftPlanner implements IDebugContextSetter {
                     currentWork.getA().getHoverName().getString()
             );
             if (biCalc.hasAnySuccessCraftingCalc()) {
-                RequestListItem.setFailAddition(maid.getMainHandItem(),
+                if (handler != null) handler.setFailAddition(stack,
                         currentWork.getA(),
                         "tooltip.maid_storage_manager.request_list.fail_backpack_full");
                 extraFailMessage.add(
                         "tooltip.maid_storage_manager.request_list.fail_backpack_full"
                 );
             }
-            RequestListItem.markDone(maid.getMainHandItem(), currentWork.getA());
+            if (handler != null) handler.markDone(stack, currentWork.getA());
         } else {
             List<CraftLayer> optimize = ResultListOptimizer.optimize(results);
             optimize = RequestListSplitter.splitLayerMax(optimize, StorageManagerConfigData.get(maid).maxCraftingLayerRepeatCount());
@@ -301,8 +309,8 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         }
         List<Pair<ItemStack, Integer>> fails = biCalc.getFails();
         if (!fails.isEmpty()) {
-            RequestListItem.setMissingItem(
-                    maid.getMainHandItem(),
+            if (handler != null) handler.setMissingItem(
+                    stack,
                     currentWork.getA(),
                     fails.stream().map(e -> e.getA().copyWithCount(e.getB())).toList()
             );

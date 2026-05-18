@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
@@ -62,10 +62,12 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
         if (!breath.breathTick(maid)) return;
         super.tick(p_22551_, maid, p_22553_);
         if (context instanceof IStorageInteractContext isic) {
+            ItemStack mainHand = maid.getMainHandItem();
+            IRequestTaskHandler handler = IRequestTaskHandler.of(mainHand);
             isic.tick(itemStack -> {
-                ItemStack rest = RequestListItem.updateCollectedItem(maid.getMainHandItem(), itemStack.copy(), itemStack.getCount(), false);
+                ItemStack rest = handler != null ? handler.updateCollectedItem(mainHand, itemStack.copy(), itemStack.getCount(), false) : itemStack;
                 if (rest.getCount() != itemStack.getCount()) {
-                    RequestListItem.updateStored(maid.getMainHandItem(),
+                    if (handler != null) handler.updateStored(mainHand,
                             itemStack.copyWithCount(itemStack.getCount() - rest.getCount()),
                             false, false);
                 }
@@ -85,6 +87,8 @@ public class StockCheckBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getRequestProgress(maid).setCheckingStock(false);
         MemoryUtil.getViewedInventory(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
-        RequestListItem.setHasCheckedStock(maid.getMainHandItem(), true);
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler != null) handler.setHasCheckedStock(stack, true);
     }
 }
