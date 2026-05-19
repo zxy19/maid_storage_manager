@@ -1,2 +1,1 @@
-Fix bug of communicate terminal & request list
-Try fix bug with tacz & emi
+Fix the bug when querying tooltip from certain items.

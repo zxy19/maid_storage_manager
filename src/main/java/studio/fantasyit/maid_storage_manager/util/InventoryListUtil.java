@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.fml.ModList;
@@ -26,12 +27,13 @@ import java.util.Optional;
 public class InventoryListUtil {
     public static boolean isMatchSearchStr(ItemStack itemStack, String search){
         if(search.isBlank()) return true;
+        Level level = Minecraft.getInstance().level;
         if (ModList.get().isLoaded("jecharacters")) {
             if (Match.matches(itemStack.getHoverName().getString(), search))
                 return true;
             if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
                 return true;
-            if (itemStack.getTooltipLines(Item.TooltipContext.EMPTY,Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+            if (itemStack.getTooltipLines(Item.TooltipContext.of(level),Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
                 return true;
             }
         }
@@ -39,7 +41,7 @@ public class InventoryListUtil {
             return true;
         if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
             return true;
-        return itemStack.getTooltipLines(Item.TooltipContext.EMPTY,Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
+        return itemStack.getTooltipLines(Item.TooltipContext.of(level),Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
     }
     /**
      * 获取玩家背包中的仓储列表UUID
