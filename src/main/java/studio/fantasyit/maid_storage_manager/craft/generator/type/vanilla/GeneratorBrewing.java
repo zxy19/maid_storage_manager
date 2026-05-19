@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -19,7 +20,6 @@ import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
-import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
@@ -64,10 +64,6 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
         if (brewingData == null) {
             brewingData = new ArrayList<>();
             forEachRecipeIO(level, (data) -> {
-                RecipeIngredientCache.addRecipeCache(
-                        ResourceLocation.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
-                        List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient)
-                );
                 brewingData.add(data);
             });
         }
@@ -133,15 +129,19 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                 }
             }
             for (PotionBrewing.Mix<Item> containerMix : potionBrewing.containerMixes) {
-                ItemStack[] ingredients = containerMix.ingredient().getItems();
-                if (ingredients.length == 0) continue;
                 if (container2ItemStack.containsKey(containerMix.from().value()) && !container2ItemStack.containsKey(containerMix.to().value())) {
                     ItemStack t1 = container2ItemStack.get(containerMix.from().value()).copy();
-                    ItemStack t2 = potionBrewing.mix(ingredients[0], t1);
-                    if (t2 != t1) {
+                    PotionContents contents = t1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+                    contents.potion().ifPresent(potion -> {
+                        ItemStack t2 = PotionContents.createItemStack(containerMix.to().value(), potion);
                         container2ItemStack.put(containerMix.to().value(), t2);
-                        io.accept(new BrewingData(index.getAndIncrement(), Ingredient.of(t1), containerMix.ingredient(), t2.copyWithCount(COUNT.getValue())));
-                    }
+                        io.accept(new BrewingData(
+                                index.getAndIncrement(),
+                                Ingredient.of(t1),
+                                containerMix.ingredient(),
+                                t2.copyWithCount(COUNT.getValue())
+                        ));
+                    });
                 }
             }
         });

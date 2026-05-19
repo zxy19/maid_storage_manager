@@ -14,8 +14,8 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.IDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.*;
-import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -132,45 +132,48 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         if (!itemNodeMap.containsKey(id))
             itemNodeMap.put(id, new ArrayList<>());
         itemNodeMap.get(id).add(itemNode);
+
+        for (Node n : nodes) {
+            if (n instanceof IngredientNode in && in.test(itemStack)) {
+                in.addPossibleItem(itemNode);
+                itemNode.addEdge(in, 1);
+                if (available) {
+                    addToQueueIfNotIn(in);
+                }
+            }
+        }
         return itemNode;
     }
 
     /// ///////////////原料节点处理///////
     public IngredientNode addOrGetIngredientNode(Ingredient ingredient) {
         for (Node node : nodes) {
-            if (node instanceof IngredientNode in) {
-                if (in.isEqualTo(ingredient)) {
-                    return in;
-                }
+            if (node instanceof IngredientNode in && in.ingredient.equals(ingredient)) {
+                return in;
             }
         }
-
         return addIngredientNode(ingredient);
     }
 
     public IngredientNode addOrGetCahcedIngredientNode(Ingredient ingredient, UUID uuid) {
-        if (ingredient.isEmpty()) {
-            return addOrGetIngredientNode(ingredient);
-        }
-        if (cachedIngredients.containsKey(uuid)) {
-            return cachedIngredients.get(uuid);
-        } else {
-            IngredientNode ingredientNode = addIngredientNode(ingredient);
-            cachedIngredients.put(uuid, ingredientNode);
-            return ingredientNode;
-        }
+        return addOrGetIngredientNode(ingredient);
     }
 
     private IngredientNode addIngredientNode(Ingredient ingredient) {
-        List<ItemNode> possibleItems = Arrays
-                .stream(ingredient.getItems())
-                .map(t -> this.getItemNodeOrCreate(t, false))
-                .toList();
-        IngredientNode ingredientNode = new IngredientNode(nodes.size(), possibleItems);
+        List<ItemNode> matched = new ArrayList<>();
+        for (Node n : nodes) {
+            if (n instanceof ItemNode itemNode && ingredient.test(itemNode.itemStack)) {
+                matched.add(itemNode);
+            }
+        }
+        IngredientNode ingredientNode = new IngredientNode(nodes.size(), ingredient, matched);
         nodes.add(ingredientNode);
 
-        for (ItemNode itemNode : possibleItems) {
+        for (ItemNode itemNode : matched) {
             itemNode.addEdge(ingredientNode, 1);
+            if (itemNode.isAvailable) {
+                addToQueueIfNotIn(ingredientNode);
+            }
         }
         return ingredientNode;
     }
@@ -196,7 +199,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         Recipe<?> recipe = holder.value();
         List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
-                .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
+                .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
         addRecipe(
                 holder.id(),
@@ -212,7 +215,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         Recipe<?> recipe = holder.value();
         List<Integer> ingredientCounts = recipe.getIngredients()
                 .stream()
-                .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
+                .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
         addRecipe(
                 RecipeUtil.wrapLocation(generator, holder.id()),
@@ -297,16 +300,13 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         }
         debugContext.logNoLevel(CraftingDebugContext.TYPE.GENERATOR_RECIPE, "recipe add %s", id);
         processedSteps++;
-        int affectFactor = ingredients.size() + 1;
-        if (RecipeIngredientCache.isCached(id)) {
-            if (RecipeIngredientCache.addCahcedRecipeToGraph(this, id, ingredients, ingredientCounts, output, craftGuideSupplier, type, isOneTime))
-                return affectFactor;
-        }
-        affectFactor += (ingredients.size() + 1) + RecipeIngredientCache.getUncachedRecipeIngredient(id, ingredients, this) * 5;
-        RecipeIngredientCache.addRecipeCache(id, ingredients);
-        RecipeIngredientCache.addCahcedRecipeToGraph(this, id, ingredients, ingredientCounts, output, craftGuideSupplier, type, isOneTime);
 
-        return affectFactor;
+        List<IngredientNode> ingredientNodes = ingredients.stream()
+                .map(this::addOrGetIngredientNode)
+                .toList();
+        addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier, type, isOneTime);
+
+        return ingredients.size() + 1;
     }
 
     public void addRecipeWithIngredients(ResourceLocation id,
@@ -382,15 +382,30 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
 
     public void processAddRecipe() {
         int c = 0;
-        while (!addRecipeQueue.isEmpty() && c++ < MAX_PRE_TICK * 20) {
-            AddRecipeData addRecipeData = addRecipeQueue.poll();
-            c += _addRecipe(addRecipeData.id,
-                    addRecipeData.ingredients,
-                    addRecipeData.ingredientCounts,
-                    addRecipeData.output,
-                    addRecipeData.craftGuideSupplier,
-                    addRecipeData.currentType,
-                    addRecipeData.oneTime
+        List<AddRecipeData> batch = new ArrayList<>();
+        while (!addRecipeQueue.isEmpty() && c++ < MAX_PRE_TICK * 10) {
+            batch.add(addRecipeQueue.poll());
+        }
+
+        // Phase 1: pre-create all IngredientNodes
+        for (AddRecipeData data : batch) {
+            if (notToAddRecipe.contains(data.id) || notToAddType.contains(data.currentType))
+                continue;
+            for (Ingredient ingredient : data.ingredients) {
+                addOrGetIngredientNode(ingredient);
+            }
+        }
+
+        // Phase 2: create CraftNodes
+        c = 0;
+        for (AddRecipeData data : batch) {
+            c += _addRecipe(data.id,
+                    data.ingredients,
+                    data.ingredientCounts,
+                    data.output,
+                    data.craftGuideSupplier,
+                    data.currentType,
+                    data.oneTime
             );
         }
     }

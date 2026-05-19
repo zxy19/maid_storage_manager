@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -48,5 +49,13 @@ public class GenerateIngredientUtil {
             List<ItemStack> itemStackList1 = itemStackList.subList(i, Math.min(itemStackList.size(), i + 3));
             consumer.accept(itemStackList1);
         }
+    }
+
+    public static List<ItemStack> getIngredientItems(Ingredient ingredient) {
+        return Arrays.stream(ingredient.getItems()).toList();
+    }
+
+    public static int getIngredientCount(Ingredient ingredient) {
+        return 1;
     }
 }

@@ -171,9 +171,8 @@ public abstract class GeneratorCreate<T extends ProcessingRecipe<C, P>, P extend
 
                     //计算输入原材料数量序列
                     List<Integer> counts = new ArrayList<>();
-                    itemIngredients.forEach(ingredient ->
-                            counts.add(Arrays.stream(ingredient.getItems()).findFirst().map(ItemStack::getCount).orElse(0) * multiplier)
-                    );
+                    //TODO 验证正确性
+                    itemIngredients.forEach(ingredient -> counts.add((GenerateIngredientUtil.getIngredientCount(ingredient)) * multiplier));
                     recipe.getFluidIngredients().forEach(ingredient -> counts.add(ingredient.amount() * multiplier / 1000));
 
                     transformAllIngredients(recipe, all, counts);

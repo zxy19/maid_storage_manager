@@ -14,10 +14,10 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.ItemNode;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.Node;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.SpecialCraftNode;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.RecipeUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -41,12 +41,14 @@ public class DummyCollector implements ICachableGeneratorGraph {
         this.ingredients = ingredients;
         this.outputs = outputs;
     }
-    public void clear(){
+
+    public void clear() {
         this.ingredients.clear();
         this.outputs.clear();
         this.counts.clear();
         this.craftGuideSuppliers.clear();
     }
+
     @Override
     public void setItems(List<ItemStack> list, List<ItemStack> itemList) {
     }
@@ -63,10 +65,7 @@ public class DummyCollector implements ICachableGeneratorGraph {
 
     @Override
     public void addRecipe(RecipeHolder<? extends Recipe<?>> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        List<Integer> ingredientCounts = recipe.value().getIngredients()
-                .stream()
-                .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
-                .toList();
+        List<Integer> ingredientCounts = recipe.value().getIngredients().stream().map(GenerateIngredientUtil::getIngredientCount).toList();
         addRecipe(
                 recipe.id(),
                 recipe.value().getIngredients(),
@@ -80,7 +79,7 @@ public class DummyCollector implements ICachableGeneratorGraph {
     public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         List<Integer> ingredientCounts = recipe.value().getIngredients()
                 .stream()
-                .map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1))
+                .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
         addRecipe(
                 RecipeUtil.wrapLocation(generator, recipe.id()),

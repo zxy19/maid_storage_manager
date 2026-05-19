@@ -30,13 +30,13 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.integration.mekanism.MekanismIntegration;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +51,7 @@ public abstract class GeneratorMek<T extends MekanismRecipe<I>, I extends Recipe
     abstract List<Ingredient> getRecipeIngredients(T recipe, RecipeManager level, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions);
 
     public List<Integer> getIngredientCounts(T recipe, List<Ingredient> ingredients) {
-        return ingredients.stream().map(t -> Arrays.stream(t.getItems()).findFirst().map(ItemStack::getCount).orElse(1)).toList();
+        return ingredients.stream().map(GenerateIngredientUtil::getIngredientCount).toList();
     }
 
     public List<ItemStack> getRecipeOutputs(T recipe, RegistryAccess registryAccess) {

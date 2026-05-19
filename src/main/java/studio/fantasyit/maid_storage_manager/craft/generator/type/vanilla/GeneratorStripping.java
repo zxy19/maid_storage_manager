@@ -3,10 +3,8 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
@@ -25,8 +23,8 @@ import studio.fantasyit.maid_storage_manager.craft.context.common.CommonUseActio
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
-import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -36,11 +34,12 @@ import studio.fantasyit.maid_storage_manager.util.PosUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class GeneratorStripping implements IAutoCraftGuideGenerator {
+    List<ItemStack> strippingItemStacks = new ArrayList<>();
+
     @Override
     public @NotNull ResourceLocation getType() {
         return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "stripping");
@@ -49,7 +48,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
         if (level.getBlockState(pos).isCollisionShapeFullBlock(level, pos)) {
-            if (StorageAccessUtil.getMarksForPosSet((ServerLevel) level, Target.virtual(pos, null), List.of(pos.east(), pos.west(), pos.north(), pos.south()))
+            if (StorageAccessUtil.getMarksForPosSet(level, Target.virtual(pos, null), List.of(pos.east(), pos.west(), pos.north(), pos.south()))
                     .stream()
                     .map(Pair::getB)
                     .anyMatch(t -> t.is(ItemRegistry.ALLOW_ACCESS.get()))) {
@@ -63,8 +62,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
 
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
-        Arrays.stream(Ingredient.of(ItemTags.LOGS)
-                        .getItems())
+        strippingItemStacks
                 .forEach(itemStack -> {
                     if (itemStack.getItem() instanceof BlockItem blockItem) {
                         BlockState axeStrippingState = AxeItem.getAxeStrippingState(blockItem.getBlock().defaultBlockState());
@@ -118,22 +116,10 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        Arrays.stream(Ingredient.of(ItemTags.LOGS)
-                        .getItems())
-                .forEach(itemStack -> {
-                    if (itemStack.getItem() instanceof BlockItem blockItem) {
-                        BlockState axeStrippingState = AxeItem.getAxeStrippingState(blockItem.getBlock().defaultBlockState());
-                        if (axeStrippingState == null) return;
-                        ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
-                        @Nullable ResourceLocation _key = BuiltInRegistries.ITEM.getKey(strippedItem.getItem());
-                        ResourceLocation key = ResourceLocation.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
-                        RecipeIngredientCache.addRecipeCache(
-                                key,
-                                List.of(Ingredient.of(itemStack), Ingredient.of(ItemTags.AXES))
-                        );
-                    }
-                });
+        strippingItemStacks.clear();
+        this.strippingItemStacks.addAll(GenerateIngredientUtil.getIngredientItems(Ingredient.of(ItemTags.LOGS)));
     }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.stripping");

@@ -6,12 +6,9 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
-import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
-import studio.fantasyit.maid_storage_manager.craft.generator.algo.node.IngredientNode;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +30,7 @@ public class RecipeIngredientCache {
     }
 
     public static boolean isCached(ResourceLocation recipeId) {
-        return CACHE.containsKey(recipeId);
+        return false;
     }
 
     public static boolean addCahcedRecipeToGraph(ICachableGeneratorGraph graph,
@@ -42,24 +39,6 @@ public class RecipeIngredientCache {
                                                  List<Integer> ingredientCounts,
                                                  List<ItemStack> output,
                                                  Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
-        if (CACHE.containsKey(id) && CACHE.get(id).size() == ingredients.size()) {
-            List<IngredientNode> ingredientNodes = new ArrayList<>();
-            for (int i = 0; i < ingredients.size(); i++) {
-                Ingredient ingredient = ingredients.get(i);
-                UUID uuid = CACHE.get(id).get(i);
-                IngredientNode ingredientNode = graph.addOrGetCahcedIngredientNode(ingredient, uuid);
-                ingredientNodes.add(ingredientNode);
-            }
-            graph.addRecipeWithIngredients(id, ingredients, ingredientCounts, output, ingredientNodes, craftGuideSupplier, type, isOneTime);
-            return true;
-        }
-        if (CACHE.containsKey(id))
-            Logger.error(
-                    "Recipe %s was cached with incorrect ingredient count [%d cached and %d added]",
-                    id,
-                    CACHE.get(id).size(),
-                    ingredients.size()
-            );
         return false;
     }
 
@@ -68,17 +47,6 @@ public class RecipeIngredientCache {
     }
 
     public static void addRecipeCache(ResourceLocation id, List<Ingredient> ingredients) {
-        if (CACHE.containsKey(id)) {
-            Logger.error(
-                    "Recipe %s has been added for twice",
-                    id
-            );
-        }
-        List<UUID> cachedIngredientNodeUUID = new ArrayList<>();
-        for (Ingredient ingredient : ingredients) {
-            cachedIngredientNodeUUID.add(cacheIngredient(ingredient));
-        }
-        CACHE.put(id, cachedIngredientNodeUUID);
     }
 
     public static int getUncachedRecipeIngredient(ResourceLocation id, List<Ingredient> ingredients, ICachableGeneratorGraph generatorGraph) {
@@ -98,43 +66,14 @@ public class RecipeIngredientCache {
     }
 
     public static UUID cacheIngredient(Ingredient ingredient) {
-        UUID uuid = null;
-        LOCK.readLock().lock();
-        for (CachedIngredient ingredientNode : cachedNode) {
-            if (ingredientNode.isEqualTo(ingredient)) {
-                uuid = ingredientNode.cachedUUID;
-                break;
-            }
-        }
-        LOCK.readLock().unlock();
-        if (uuid == null) {
-            LOCK.writeLock().lock();
-            uuid = UUID.randomUUID();
-            cachedNode.add(new CachedIngredient(ingredient.getItems(), uuid));
-            LOCK.writeLock().unlock();
-        }
-        return uuid;
+        return UUID.randomUUID();
     }
 
     public static class CachedIngredient {
-        public ItemStack[] possibleItems;
         public UUID cachedUUID;
 
         public CachedIngredient(ItemStack[] possibleItems, UUID cachedUUID) {
-            this.possibleItems = possibleItems;
             this.cachedUUID = cachedUUID;
-        }
-
-        public boolean isEqualTo(Ingredient ingredient) {
-            ItemStack[] items = ingredient.getItems();
-            if (items.length != possibleItems.length)
-                return false;
-            for (int i = 0; i < items.length; i++) {
-                if (!ItemStackUtil.isSameInCrafting(items[i], possibleItems[i])) {
-                    return false;
-                }
-            }
-            return true;
         }
     }
 }

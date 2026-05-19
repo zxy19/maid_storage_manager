@@ -24,6 +24,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGener
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
+import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
 import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
@@ -31,7 +32,6 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -121,8 +121,7 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                                     ingredients,
                                     ingredients
                                             .stream()
-                                            .map(Ingredient::getItems)
-                                            .map(items -> Arrays.stream(items).findFirst().map(ItemStack::getCount).orElse(0))
+                                            .map(GenerateIngredientUtil::getIngredientCount)
                                             .toList(),
                                     result,
                                     (List<ItemStack> items) -> {

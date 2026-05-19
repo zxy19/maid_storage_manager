@@ -24,10 +24,8 @@ import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.MathUtil;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRecipe, ProcessingRecipeParams, RecipeType<AbstractCrushingRecipe>, RecipeInput, GeneratorCreateCrushing.CrushingPositionState> {
     ConfigTypes.ConfigType<Integer> COUNT = new ConfigTypes.ConfigType<>(
@@ -68,10 +66,7 @@ public class GeneratorCreateCrushing extends GeneratorCreate<AbstractCrushingRec
                 .value()
                 .getIngredients()
                 .stream()
-                .map(Ingredient::getItems)
-                .map(Arrays::stream)
-                .map(Stream::findFirst)
-                .noneMatch(t1 -> t1.orElse(ItemStack.EMPTY).isEmpty())
+                .noneMatch(Ingredient::isEmpty)
         );
     }
 
