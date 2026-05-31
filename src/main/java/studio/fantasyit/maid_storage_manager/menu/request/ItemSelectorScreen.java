@@ -9,7 +9,6 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -33,6 +32,7 @@ import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.GuiTools;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -318,15 +318,13 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
-        guiGraphics.blit(RenderPipelines.GUI, background,
+        GuiTools.guiBlit(guiGraphics, background,
                 relX,
                 relY,
-                0.0f,
-                0.0f,
+                0,
+                0,
                 this.imageWidth,
-                this.imageHeight,
-                256,
-                256);
+                this.imageHeight);
 
         // guiGraphics.setColor removed in MC 26.1
         guiGraphics.item(
@@ -424,22 +422,20 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
 
                     if (done.getValue() != 0) {
                         if (collected.getValue() < count.getValue() && count.getValue() != -1 && !menu.blackmode) {
-                            graphics.blit(RenderPipelines.GUI, background,
+                            GuiTools.guiBlit(graphics, background,
                                     relX + filterSlot.x + 20,
                                     relY + filterSlot.y + 4,
-                                    179.0f,
-                                    83.0f,
-                                    10, 10,
-                                    256, 256
+                                    179,
+                                    83,
+                                    10, 10
                             );
                         } else {
-                            graphics.blit(RenderPipelines.GUI, background,
+                            GuiTools.guiBlit(graphics, background,
                                     relX + filterSlot.x + 20,
                                     relY + filterSlot.y + 4,
-                                    179.0f,
-                                    67.0f,
-                                    10, 10,
-                                    256, 256
+                                    179,
+                                    67,
+                                    10, 10
                             );
                         }
                     }

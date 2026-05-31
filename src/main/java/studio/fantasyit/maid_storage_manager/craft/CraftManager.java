@@ -14,20 +14,20 @@ import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
+import studio.fantasyit.maid_storage_manager.craft.context.VirtualAction;
 import studio.fantasyit.maid_storage_manager.craft.context.common.*;
-import studio.fantasyit.maid_storage_manager.craft.context.special.CraftingRecipeAction;
+import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla.*;
-import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
+import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.*;
 import java.util.function.BiPredicate;
-
-//import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
 
 public class CraftManager {
 
@@ -72,14 +72,14 @@ public class CraftManager {
     }
 
     private void fireInternal(CollectCraftEvent event) {
-//        event.addCraftType(new CommonType());
-//        event.addCraftType(new CraftingType());
-//        event.addCraftType(new AltarType());
-//        event.addCraftType(new FurnaceType());
-//        event.addCraftType(new BrewingType());
-//        event.addCraftType(new SmithingType());
-//        event.addCraftType(new AnvilType());
-//        event.addCraftType(new StoneCuttingType());
+        event.addCraftType(new CommonType());
+        event.addCraftType(new CraftingType());
+        event.addCraftType(new AltarType());
+        event.addCraftType(new FurnaceType());
+        event.addCraftType(new BrewingType());
+        event.addCraftType(new SmithingType());
+        event.addCraftType(new AnvilType());
+        event.addCraftType(new StoneCuttingType());
         event.addAction(
                 CommonPlaceItemAction.TYPE,
                 CommonPlaceItemAction::new,
@@ -162,72 +162,72 @@ public class CraftManager {
                 10,
                 List.of()
         );
-//        event.addAction(
-//                AltarType.TYPE,
-//                AltarRecipeAction::new,
-//                PathTargetLocator::commonNearestAvailablePos,
-//                CraftAction.PathEnoughLevel.NORMAL.value,
-//                false, false,
-//                6,
-//                1,
-//                List.of()
-//        );
-//        event.addAction(
-//                FurnaceType.TYPE,
-//                VirtualAction::new,
-//                PathTargetLocator::commonNearestAvailablePos,
-//                CraftAction.PathEnoughLevel.NORMAL.value,
-//                false, false,
-//                2,
-//                1,
-//                List.of()
-//        );
-//        event.addAction(
-//                BrewingType.TYPE,
-//                VirtualAction::new,
-//                PathTargetLocator::commonNearestAvailablePos,
-//                CraftAction.PathEnoughLevel.NORMAL.value,
-//                false, false,
-//                3,
-//                1,
-//                List.of()
-//        );
-//        event.addAction(
-//                SmithingType.TYPE,
-//                SmithingRecipeAction::new,
-//                PathTargetLocator::commonNearestAvailablePos,
-//                CraftAction.PathEnoughLevel.NORMAL.value,
-//                false, true,
-//                3,
-//                1,
-//                List.of()
-//        );
-//        event.addAction(
-//                AnvilType.TYPE,
-//                AnvilRecipeAction::new,
-//                PathTargetLocator::commonNearestAvailablePos,
-//                CraftAction.PathEnoughLevel.NORMAL.value,
-//                false, false,
-//                2,
-//                3,
-//                List.of()
-//        );
-//        event.addAction(
-//                StoneCuttingType.TYPE,
-//                StoneCuttingRecipeAction::new,
-//                PathTargetLocator::commonNearestAvailablePos,
-//                CraftAction.PathEnoughLevel.NORMAL.value,
-//                false, true,
-//                1,
-//                1,
-//                List.of()
-//        );
+        event.addAction(
+                AltarType.TYPE,
+                AltarRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false, false,
+                6,
+                1,
+                List.of()
+        );
+        event.addAction(
+                FurnaceType.TYPE,
+                VirtualAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false, false,
+                2,
+                1,
+                List.of()
+        );
+        event.addAction(
+                BrewingType.TYPE,
+                VirtualAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false, false,
+                3,
+                1,
+                List.of()
+        );
+        event.addAction(
+                SmithingType.TYPE,
+                SmithingRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false, true,
+                3,
+                1,
+                List.of()
+        );
+        event.addAction(
+                AnvilType.TYPE,
+                AnvilRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false, false,
+                2,
+                3,
+                List.of()
+        );
+        event.addAction(
+                StoneCuttingType.TYPE,
+                StoneCuttingRecipeAction::new,
+                PathTargetLocator::commonNearestAvailablePos,
+                CraftAction.PathEnoughLevel.NORMAL.value,
+                false, true,
+                1,
+                1,
+                List.of()
+        );
 
         event.addAutoCraftGuideGenerator(new GeneratorCraftingTable());
         event.addAutoCraftGuideGenerator(new GeneratorSmithingTable());
         event.addAutoCraftGuideGenerator(new GeneratorFurnace());
         event.addAutoCraftGuideGenerator(new GeneratorStoneCutter());
-//        event.addAutoCraftGuideGenerator(new GeneratorAltar());
+        event.addAutoCraftGuideGenerator(new GeneratorAltar());
         event.addAutoCraftGuideGenerator(new GeneratorBrewing());
         event.addAutoCraftGuideGenerator(new GeneratorWatering());
         event.addAutoCraftGuideGenerator(new GeneratorStripping());

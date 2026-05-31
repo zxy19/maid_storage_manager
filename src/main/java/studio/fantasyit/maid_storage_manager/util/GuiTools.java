@@ -3,11 +3,26 @@ package studio.fantasyit.maid_storage_manager.util;
 import com.mojang.math.Divisor;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public final class GuiTools {
+    public static void blit(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset) {
+        blit(graphics, atlasLocation, x, y, width, height, uOffset, vOffset, 256, 256);
+    }
+
+    public static void blit(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset, int textureWidth, int textureHeight) {
+        blit(graphics, atlasLocation, x, y, width, height, uOffset, vOffset, width, height, textureWidth, textureHeight);
+    }
+
+    public static void blit(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset, int uWidth, int vHeight, int imageWidth, int imageHeight) {
+        float u0 = (float) uOffset / imageWidth;
+        float u1 = (float) (uOffset + uWidth) / imageWidth;
+        float v0 = (float) vOffset / imageHeight;
+        float v1 = (float) (vOffset + vHeight) / imageHeight;
+        graphics.blit(atlasLocation, x, y, x + width, y + height, u0, u1, v0, v1);
+    }
+
     public static void guiBlit(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int uOffset, int vOffset, int width, int height) {
         guiBlit(graphics, atlasLocation, x, y, uOffset, vOffset, width, height, 256, 256);
     }
@@ -17,7 +32,7 @@ public final class GuiTools {
     }
 
     public static void guiBlit(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset, int uWidth, int vHeight, int textureWidth, int textureHeight) {
-        graphics.blitSprite(RenderPipelines.GUI, atlasLocation, textureWidth, textureHeight, uOffset, vOffset, x, y, width, height);
+        blit(graphics, atlasLocation, x, y, width, height, uOffset, vOffset, uWidth, vHeight, textureWidth, textureHeight);
     }
 
     public static void blitNineSliced(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int width, int height, int sliceWidth, int sliceHeight, int uWidth, int vHeight, int textureX, int textureY) {

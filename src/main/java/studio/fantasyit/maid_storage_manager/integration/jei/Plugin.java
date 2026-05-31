@@ -10,7 +10,6 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
@@ -21,7 +20,6 @@ import studio.fantasyit.maid_storage_manager.menu.craft.crafting_table.CraftingT
 import studio.fantasyit.maid_storage_manager.menu.craft.furnace.FurnaceCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.smithing.SmithingCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.stone_cutter.JeiStoneCutterRecipeHandler;
-import studio.fantasyit.maid_storage_manager.menu.craft.tacz.JEITaczRecipeTransfer;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
 
 @JeiPlugin
@@ -69,9 +67,9 @@ public class Plugin implements IModPlugin {
         registration.addRecipeTransferHandler(
                 new JEIRecipeHandler<>(
                         AltarCraftMenu.class,
-                        AltarRecipeCategory.ALTAR,
+                        AltarRecipeCategory.TYPE,
                         GuiRegistry.CRAFT_GUIDE_MENU_ALTAR.get()
-                ), AltarRecipeCategory.ALTAR);
+                ), AltarRecipeCategory.TYPE);
         registration.addRecipeTransferHandler(
                 new JEIRecipeHandler<>(
                         SmithingCraftMenu.class,
@@ -79,8 +77,7 @@ public class Plugin implements IModPlugin {
                         GuiRegistry.CRAFT_GUIDE_MENU_SMITHING.get()
                 ), RecipeTypes.SMITHING);
         registration.addRecipeTransferHandler(new JeiStoneCutterRecipeHandler(), RecipeTypes.STONECUTTING);
-        if(Integrations.tacz())
-            registration.addUniversalRecipeTransferHandler(new JEITaczRecipeTransfer());
+
     }
 
     @Override

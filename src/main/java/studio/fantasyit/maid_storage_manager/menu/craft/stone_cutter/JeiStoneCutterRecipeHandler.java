@@ -4,9 +4,9 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.api.recipe.types.IRecipeHolderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +14,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.registry.GuiRegistry;
@@ -35,7 +35,7 @@ public class JeiStoneCutterRecipeHandler implements IRecipeTransferHandler<Stone
     }
 
     @Override
-    public RecipeType<RecipeHolder<StonecutterRecipe>> getRecipeType() {
+    public IRecipeHolderType<StonecutterRecipe> getRecipeType() {
         return RecipeTypes.STONECUTTING;
     }
 
@@ -54,7 +54,7 @@ public class JeiStoneCutterRecipeHandler implements IRecipeTransferHandler<Stone
                     .stream()
                     .map(IRecipeSlotView::getItemStacks)
                     .map(l -> l.findFirst().orElse(ItemStack.EMPTY))
-                    .map(t -> t.save(player.registryAccess()))
+                    .map(t -> ItemStackUtil.saveStack(player.registryAccess(), t))
                     .forEach(inputs::add);
             CompoundTag data = new CompoundTag();
             data.put("inputs", inputs);

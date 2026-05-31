@@ -1,8 +1,6 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.math.Divisor;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -15,7 +13,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -1103,7 +1100,7 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
         if (!menu.selectedGenerator) return;
         boolean active = mouseDraggingScrollingBar != null && scrollingGeneratorList;
         ImageAsset base = active ? CommonCraftAssets.SCROLL_BLOCK_GENERATOR : CommonCraftAssets.SCROLL_BLOCK_GENERATOR;
-        blitNineSliced(
+        GuiTools.blitNineSliced(
                 graphics,
                 CommonCraftAssets.BACKGROUND,
                 getGuiLeft() + GENERATOR_BOX_X + CommonCraftAssets.GENERATOR_SELECTOR_BOX_RIGHT.w + CommonCraftAssets.GENERATOR_SELECTOR_BOX_LEFT.w - 3,
@@ -1173,18 +1170,5 @@ public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> imp
 
     public static List<FormattedCharSequence> convertComponentList(List<Component> components) {
         return components.stream().map(Component::getVisualOrderText).toList();
-    }
-
-    public void blitNineSliced(GuiGraphicsExtractor graphics, Identifier pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pSliceWidth, int pSliceHeight, int pUWidth, int pVHeight, int pTextureX, int pTextureY) {
-        GuiTools.blitNineSliced(graphics, pAtlasLocation, pX, pY, pWidth, pHeight, pSliceWidth, pSliceHeight, pUWidth, pVHeight, pTextureX, pTextureY);
-    }
-
-    public void blitNineSliced(GuiGraphicsExtractor graphics, Identifier pAtlasLocation, int pX, int pY, int pWidth, int pHeight, int pLeftSliceWidth, int pTopSliceHeight, int pRightSliceWidth, int pBottomSliceHeight, int pUWidth, int pVHeight, int pTextureX, int pTextureY) {
-        GuiTools.blitNineSliced(graphics, pAtlasLocation, pX, pY, pWidth, pHeight, pLeftSliceWidth, pTopSliceHeight, pRightSliceWidth, pBottomSliceHeight, pUWidth, pVHeight, pTextureX, pTextureY);
-    }
-
-    private static IntIterator slices(int pTarget, int pTotal) {
-        int i = Mth.positiveCeilDiv(pTarget, pTotal);
-        return new Divisor(pTarget, i);
     }
 }

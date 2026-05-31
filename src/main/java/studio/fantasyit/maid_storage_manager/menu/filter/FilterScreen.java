@@ -3,7 +3,6 @@ package studio.fantasyit.maid_storage_manager.menu.filter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,6 +17,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.InventorySelectButton;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
+import studio.fantasyit.maid_storage_manager.util.GuiTools;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 
 import java.util.List;
@@ -106,15 +106,13 @@ public class FilterScreen extends AbstractFilterScreen<FilterMenu> implements II
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
-        guiGraphics.blit(RenderPipelines.GUI, background,
+        GuiTools.guiBlit(guiGraphics, background,
                 relX,
                 relY,
-                0.0f,
-                0.0f,
+                0,
+                0,
                 this.imageWidth,
-                this.imageHeight,
-                256,
-                256);
+                this.imageHeight);
     }
 
     @Override

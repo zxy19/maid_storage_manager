@@ -16,12 +16,14 @@ public class GhostIngredientHandler implements IGhostIngredientHandler<AbstractF
 
     @Override
     public <I> @NotNull List<Target<I>> getTargetsTyped(AbstractFilterScreen gui, ITypedIngredient<I> ingredient, boolean doStart) {
+        if (!(gui instanceof IFilterScreen filterScreen))
+            return List.of();
         if (!(ingredient.getType() == VanillaTypes.ITEM_STACK))
             return List.of();
         List<Target<I>> result = new ArrayList<>();
-        List<FilterSlot> slots = gui.getSlots();
+        List<FilterSlot> slots = filterScreen.getSlots();
         for (FilterSlot slot : slots) {
-            result.add(new GhostTarget<>(gui, slot));
+            result.add(new GhostTarget<>(gui, filterScreen, slot));
         }
         return result;
     }
@@ -34,11 +36,11 @@ public class GhostIngredientHandler implements IGhostIngredientHandler<AbstractF
     private static class GhostTarget<I> implements Target<I> {
 
         private final Rect2i area;
-        private final AbstractFilterScreen<?> gui;
+        private final IFilterScreen filterScreen;
         private final FilterSlot slot;
 
-        public GhostTarget(AbstractFilterScreen<?> gui, FilterSlot slot) {
-            this.gui = gui;
+        public GhostTarget(AbstractFilterScreen<?> gui, IFilterScreen filterScreen, FilterSlot slot) {
+            this.filterScreen = filterScreen;
             this.slot = slot;
             this.area = new Rect2i(gui.getGuiLeft() + slot.x, gui.getGuiTop() + slot.y, 16, 16);
         }
@@ -52,7 +54,7 @@ public class GhostIngredientHandler implements IGhostIngredientHandler<AbstractF
         public void accept(@NotNull I ingredient) {
             ItemStack stack = ((ItemStack) ingredient).copy();
             stack.setCount(1);
-            gui.accept(slot, stack);
+            filterScreen.accept(slot, stack);
         }
     }
 }

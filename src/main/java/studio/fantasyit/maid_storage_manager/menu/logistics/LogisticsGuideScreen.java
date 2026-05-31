@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.menu.logistics;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,6 +14,7 @@ import studio.fantasyit.maid_storage_manager.menu.container.NoPlaceFilterSlot;
 import studio.fantasyit.maid_storage_manager.network.ItemSelectorGuiPacket;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
+import studio.fantasyit.maid_storage_manager.util.GuiTools;
 
 public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuideMenu> {
     private static final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/logistics_guide.png");
@@ -63,15 +63,13 @@ public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuide
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
-        guiGraphics.blit(RenderPipelines.GUI, background,
+        GuiTools.guiBlit(guiGraphics, background,
                 relX,
                 relY,
-                0.0f,
-                0.0f,
+                0,
+                0,
                 this.imageWidth,
-                this.imageHeight,
-                256,
-                256);
+                this.imageHeight);
 
         guiGraphics.pose().pushMatrix();
         float scale = 1.3f;
