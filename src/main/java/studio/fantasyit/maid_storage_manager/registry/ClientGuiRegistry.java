@@ -5,7 +5,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
+//import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
 import studio.fantasyit.maid_storage_manager.menu.communicate.CommunicateMarkScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftScreen;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftScreen;
@@ -26,7 +26,7 @@ public class ClientGuiRegistry {
     public static void init(RegisterMenuScreensEvent event) {
         event.register(GuiRegistry.ITEM_SELECTOR_MENU.get(), ItemSelectorScreen::new);
         event.register(GuiRegistry.FILTER_MENU.get(), FilterScreen::new);
-        event.register(GuiRegistry.STORAGE_MANAGER_MAID_CONFIG_GUI.get(), StorageManagerMaidConfigGui::new);
+//        event.register(GuiRegistry.STORAGE_MANAGER_MAID_CONFIG_GUI.get(), StorageManagerMaidConfigGui::new);FIXME
         event.register(GuiRegistry.LOGISTICS_GUIDE_MENU.get(), LogisticsGuideScreen::new);
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_COMMON.get(), CommonCraftScreen::new);
         event.register(GuiRegistry.CRAFT_GUIDE_MENU_CRAFTING_TABLE.get(), CraftingTableCraftScreen::new);

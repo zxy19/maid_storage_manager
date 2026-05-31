@@ -114,6 +114,6 @@ public class GeneratingConfig {
     @SubscribeEvent
     static void regReload(AddServerReloadListenersEvent event) {
         event.addListener(RELOAD_LISTENER_ID, (PreparableReloadListener) (sharedState, backgroundExecutor, barrier, gameExecutor) ->
-                CompletableFuture.runAsync(GeneratingConfig::load));
+                CompletableFuture.runAsync(GeneratingConfig::load, backgroundExecutor).thenCompose(barrier::wait));
     }
 }
