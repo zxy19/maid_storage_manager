@@ -5,11 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CraftGuideStepData {
-    public static final ResourceLocation SPECIAL_ACTION = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "special");
+    public static final Identifier SPECIAL_ACTION = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "special");
     public static Codec<CraftGuideStepData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Target.CODEC.fieldOf(CraftGuide.TAG_OP_STORAGE)
@@ -36,7 +35,7 @@ public class CraftGuideStepData {
                     Codec.list(ItemStackUtil.OPTIONAL_CODEC_UNLIMITED)
                             .fieldOf(CraftGuide.TAG_OP_OUTPUT)
                             .forGetter(CraftGuideStepData::getOutput),
-                    ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_OP_ACTION)
+                    Identifier.CODEC.fieldOf(CraftGuide.TAG_OP_ACTION)
                             .forGetter(CraftGuideStepData::getActionType),
                     Codec.BOOL.optionalFieldOf(CraftGuide.TAG_OP_OPTIONAL)
                             .forGetter(t -> Optional.empty()),
@@ -49,21 +48,21 @@ public class CraftGuideStepData {
                 Target.STREAM_CODEC.encode(t, c.storage);
                 t.writeCollection(c.input, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
                 t.writeCollection(c.output, (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC);
-                t.writeResourceLocation(c.action);
+                t.writeIdentifier(c.action);
                 t.writeNbt(c.extraData);
             },
             (c) -> new CraftGuideStepData(
                     Target.STREAM_CODEC.decode(c),
                     c.readCollection(ArrayList::new, (StreamCodec<FriendlyByteBuf, ItemStack>) (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
                     c.readCollection(ArrayList::new, (StreamCodec<FriendlyByteBuf, ItemStack>) (StreamCodec) ItemStackUtil.OPTIONAL_STREAM_CODEC),
-                    c.readResourceLocation(),
+                    c.readIdentifier(),
                     c.readNbt()
             )
     );
     public Target storage;
     public List<ItemStack> input;
     public List<ItemStack> output;
-    public ResourceLocation action;
+    public Identifier action;
     public CraftAction actionType;
     public CompoundTag extraData;
 
@@ -71,7 +70,7 @@ public class CraftGuideStepData {
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
-                              ResourceLocation action,
+                              Identifier action,
                               Optional<Boolean> optional,
                               CompoundTag extraData) {
         this(storage, input, output, action, extraData);
@@ -85,7 +84,7 @@ public class CraftGuideStepData {
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
-                              ResourceLocation action,
+                              Identifier action,
                               CompoundTag extraData) {
         this.storage = storage;
         this.action = action;
@@ -112,7 +111,7 @@ public class CraftGuideStepData {
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
-                              ResourceLocation action
+                              Identifier action
     ) {
         this(storage, input, output, action, new CompoundTag());
     }
@@ -120,7 +119,7 @@ public class CraftGuideStepData {
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
-                              ResourceLocation action,
+                              Identifier action,
                               ActionOptionSet options
     ) {
         this(storage, input, output, action, new CompoundTag());
@@ -131,7 +130,7 @@ public class CraftGuideStepData {
     public CraftGuideStepData(Target storage,
                               List<ItemStack> input,
                               List<ItemStack> output,
-                              ResourceLocation action,
+                              Identifier action,
                               boolean optional,
                               CompoundTag extraData) {
         this(storage, input, output, action, extraData);
@@ -141,7 +140,7 @@ public class CraftGuideStepData {
         }
     }
 
-    public static CraftGuideStepData createFromTypeStorage(Target storage, ResourceLocation action) {
+    public static CraftGuideStepData createFromTypeStorage(Target storage, Identifier action) {
         CraftAction action1 = CraftManager.getInstance().getAction(action);
         List<ItemStack> inputs = new ArrayList<>();
         for (int i = 0; i < action1.inputCount(); i++)
@@ -154,39 +153,39 @@ public class CraftGuideStepData {
 
     public static CraftGuideStepData fromCompound(RegistryAccess registryAccess, CompoundTag tag) {
         Target storage = null;
-        ResourceLocation action = null;
+        Identifier action = null;
         CompoundTag extraData = new CompoundTag();
         if (tag.contains(CraftGuide.TAG_OP_STORAGE))
-            storage = Target.fromNbt(tag.getCompound(CraftGuide.TAG_OP_STORAGE));
+            storage = Target.fromNbt(tag.getCompound(CraftGuide.TAG_OP_STORAGE).get());
         List<ItemStack> inputs = new ArrayList<>();
         if (storage != null && tag.contains(CraftGuide.TAG_OP_INPUT)) {
-            ListTag list = tag.getList(CraftGuide.TAG_OP_INPUT, Tag.TAG_COMPOUND);
+            ListTag list = tag.getList(CraftGuide.TAG_OP_INPUT).get();
             for (int i = 0; i < list.size(); i++) {
                 inputs.add(
-                        ItemStackUtil.parseStack(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
-                                .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                        ItemStackUtil.parseStack(registryAccess, list.getCompound(i).get().getCompound(CraftGuide.TAG_ITEMS_ITEM).get())
+                                .copyWithCount(list.getCompound(i).get().getInt(CraftGuide.TAG_ITEMS_COUNT).get())
                 );
             }
         }
         List<ItemStack> outputs = new ArrayList<>();
         if (storage != null && tag.contains(CraftGuide.TAG_OP_OUTPUT)) {
-            ListTag list = tag.getList(CraftGuide.TAG_OP_OUTPUT, Tag.TAG_COMPOUND);
+            ListTag list = tag.getList(CraftGuide.TAG_OP_OUTPUT).get();
             for (int i = 0; i < list.size(); i++) {
                 outputs.add(
-                        ItemStackUtil.parseStack(registryAccess, list.getCompound(i).getCompound(CraftGuide.TAG_ITEMS_ITEM))
-                                .copyWithCount(list.getCompound(i).getInt(CraftGuide.TAG_ITEMS_COUNT))
+                        ItemStackUtil.parseStack(registryAccess, list.getCompound(i).get().getCompound(CraftGuide.TAG_ITEMS_ITEM).get())
+                                .copyWithCount(list.getCompound(i).get().getInt(CraftGuide.TAG_ITEMS_COUNT).get())
                 );
             }
         }
         if (tag.contains(CraftGuide.TAG_OP_ACTION))
-            action = ResourceLocation.tryParse(tag.getString(CraftGuide.TAG_OP_ACTION));
+            action = Identifier.tryParse(tag.getString(CraftGuide.TAG_OP_ACTION).get());
         if (tag.contains(CraftGuide.TAG_OP_EXTRA))
-            extraData = tag.getCompound(CraftGuide.TAG_OP_EXTRA);
+            extraData = tag.getCompound(CraftGuide.TAG_OP_EXTRA).get();
         //旧版本兼容
         if (tag.contains(CraftGuide.TAG_OP_OPTIONAL)) {
             extraData.put(ActionOption.OPTIONAL.id().toString(), new CompoundTag());
-            extraData.getCompound(ActionOption.OPTIONAL.id().toString()).putInt(ActionOption.OPTIONAL.id().toString(), tag.getBoolean(CraftGuide.TAG_OP_OPTIONAL) ? 1 : 0);
-            extraData.getCompound(ActionOption.OPTIONAL.id().toString()).putString(ActionOption.OPTIONAL.id().toString(), "type");
+            extraData.getCompound(ActionOption.OPTIONAL.id().toString()).get().putInt(ActionOption.OPTIONAL.id().toString(), tag.getBoolean(CraftGuide.TAG_OP_OPTIONAL).get() ? 1 : 0);
+            extraData.getCompound(ActionOption.OPTIONAL.id().toString()).get().putString(ActionOption.OPTIONAL.id().toString(), "type");
         }
         return new CraftGuideStepData(storage, inputs, outputs, action, extraData);
     }
@@ -223,7 +222,7 @@ public class CraftGuideStepData {
         return storage;
     }
 
-    public ResourceLocation getActionType() {
+    public Identifier getActionType() {
         return action;
     }
 
@@ -302,7 +301,7 @@ public class CraftGuideStepData {
     }
 
 
-    public void setAction(ResourceLocation action) {
+    public void setAction(Identifier action) {
         this.action = action;
         this.actionType = CraftManager.getInstance().getAction(action);
         if (input.size() < actionType.inputCount()) {

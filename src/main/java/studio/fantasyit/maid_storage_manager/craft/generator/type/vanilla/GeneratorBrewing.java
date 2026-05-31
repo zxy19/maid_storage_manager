@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.brewing.BrewingRecipe;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -23,8 +24,8 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGener
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateCondition;
-import studio.fantasyit.maid_storage_manager.craft.type.BrewingType;
-import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
+//import studio.fantasyit.maid_storage_manager.craft.type.BrewingType;
+//import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
@@ -36,6 +37,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class GeneratorBrewing implements IAutoCraftGuideGenerator {
+    public static final Identifier BREWING_TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "brewing");
+    public static final Identifier CRAFTING_TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "crafting");
     protected record BrewingData(int index, Ingredient input, Ingredient ingredient, ItemStack output) {
     }
 
@@ -48,8 +51,8 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     List<BrewingData> brewingData = null;
 
     @Override
-    public @NotNull ResourceLocation getType() {
-        return BrewingType.TYPE;
+    public @NotNull Identifier getType() {
+        return BREWING_TYPE;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<Identifier, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
 
         if (brewingData == null) {
@@ -70,20 +73,20 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
         brewingData.forEach(data -> {
             if (!posFilter.isAvailable(data.output))
                 return;
-            graph.addRecipe(ResourceLocation.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
-                    List.of(Ingredient.of(Items.BLAZE_POWDER.getDefaultInstance()), data.input, data.ingredient),
+            graph.addRecipe(Identifier.fromNamespaceAndPath("brewing", String.format("recipe_%d", data.index)),
+                    List.of(Ingredient.of(Items.BLAZE_POWDER), data.input, data.ingredient),
                     List.of(1, COUNT.getValue(), 1),
                     data.output,
                     (items) -> {
                         CraftGuideStepData step = new CraftGuideStepData(
-                                new Target(CraftingType.TYPE, pos),
+                                new Target(CRAFTING_TYPE, pos),
                                 items,
                                 List.of(data.output),
-                                BrewingType.TYPE
+                                BREWING_TYPE
                         );
                         return new CraftGuideData(
                                 List.of(step),
-                                BrewingType.TYPE
+                                BREWING_TYPE
                         );
                     });
         });
@@ -108,7 +111,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                 if (!container2ItemStack.containsKey(container1)) {
                     io.accept(new BrewingData(
                             index.getAndIncrement(),
-                            Ingredient.of(from1),
+                            Ingredient.of(from1.getItem()),
                             potionMix.ingredient(),
                             to1.copyWithCount(COUNT.getValue())
                     ));
@@ -121,7 +124,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                 if (!container2ItemStack.containsKey(container2)) {
                     io.accept(new BrewingData(
                             index.getAndIncrement(),
-                            Ingredient.of(from2),
+                            Ingredient.of(from2.getItem()),
                             potionMix.ingredient(),
                             to2.copyWithCount(COUNT.getValue())
                     ));
@@ -137,7 +140,7 @@ public class GeneratorBrewing implements IAutoCraftGuideGenerator {
                         container2ItemStack.put(containerMix.to().value(), t2);
                         io.accept(new BrewingData(
                                 index.getAndIncrement(),
-                                Ingredient.of(t1),
+                                Ingredient.of(t1.getItem()),
                                 containerMix.ingredient(),
                                 t2.copyWithCount(COUNT.getValue())
                         ));

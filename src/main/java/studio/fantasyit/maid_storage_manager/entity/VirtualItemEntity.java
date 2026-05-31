@@ -5,13 +5,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.registry.EntityRegistry;
@@ -38,15 +42,16 @@ public class VirtualItemEntity extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag p_20052_) {
-        this.setItem(ItemStackUtil.parseStack(registryAccess(), p_20052_.getCompound("item")));
-        this.ttl = p_20052_.getInt("ttl");
+    protected void readAdditionalSaveData(ValueInput input) {
+        input.read("Item", CompoundTag.CODEC).ifPresent(tag ->
+                this.setItem(ItemStackUtil.parseStack(registryAccess(), tag)));
+        this.ttl = input.getIntOr("TTL", 400);
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag p_20139_) {
-        p_20139_.put("Item", ItemStackUtil.saveStack(registryAccess(), this.getItem()));
-        p_20139_.putInt("TTL", ttl);
+    public void addAdditionalSaveData(ValueOutput output) {
+        output.store("Item", CompoundTag.CODEC, ItemStackUtil.saveStack(registryAccess(), this.getItem()));
+        output.putInt("TTL", ttl);
     }
 
     public ItemStack getItem() {
@@ -82,10 +87,10 @@ public class VirtualItemEntity extends Entity {
             } else if (this.isInLava() && this.getFluidHeight(FluidTags.LAVA) > (double) f) {
                 this.setUnderLavaMovement();
             } else if (!this.isNoGravity()) {
-                this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
+                this.applyGravity();
             }
 
-            if (this.level().isClientSide) {
+            if (this.level().isClientSide()) {
                 this.noPhysics = false;
             } else {
                 this.noPhysics = !this.level().noCollision(this, this.getBoundingBox().deflate(1.0E-7D));
@@ -111,15 +116,15 @@ public class VirtualItemEntity extends Entity {
                 }
             }
 
-            this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
-            if (!this.level().isClientSide) {
+            this.needsSync |= this.updateFluidInteraction();
+            if (!this.level().isClientSide()) {
                 double d0 = this.getDeltaMovement().subtract(vec3).lengthSqr();
                 if (d0 > 0.01D) {
-                    this.hasImpulse = true;
+                    this.needsSync = true;
                 }
             }
 
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 if (--this.ttl <= 0 && this.isAlive()) {
                     this.level().addFreshEntity(
                             new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), this.getItem())
@@ -142,5 +147,10 @@ public class VirtualItemEntity extends Entity {
     private void setUnderLavaMovement() {
         Vec3 vec3 = this.getDeltaMovement();
         this.setDeltaMovement(vec3.x * (double) 0.95F, vec3.y + (double) (vec3.y < (double) 0.06F ? 5.0E-4F : 0.0F), vec3.z * (double) 0.95F);
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        return false;
     }
 }

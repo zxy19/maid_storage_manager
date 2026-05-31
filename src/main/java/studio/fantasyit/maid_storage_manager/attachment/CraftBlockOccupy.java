@@ -2,12 +2,11 @@ package studio.fantasyit.maid_storage_manager.attachment;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import org.apache.commons.lang3.mutable.MutableInt;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 
@@ -16,7 +15,7 @@ import java.util.function.Predicate;
 
 import static studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry.CRAFT_BLOCK_OCCUPY;
 
-public class CraftBlockOccupy implements INBTSerializable<CompoundTag> {
+public class CraftBlockOccupy implements ValueIOSerializable {
     public record OccupiedRecord(UUID uuid, BlockPos pos, int index) {
         @Override
         public int hashCode() {
@@ -99,27 +98,24 @@ public class CraftBlockOccupy implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider var1) {
-        CompoundTag tag = new CompoundTag();
-        ListTag listTag = new ListTag();
-        List<OccupiedRecord> keys = new ArrayList<>(occupiedPos.keySet());
-        for (int i = 0; i < keys.size(); i++) {
-            CompoundTag tmp = new CompoundTag();
-            tmp.putLong("pos", keys.get(i).pos.asLong());
-            tmp.putInt("index", keys.get(i).index);
-            tmp.putUUID("maidUUID", keys.get(i).uuid);
-            listTag.add(tmp);
+    public void serialize(ValueOutput output) {
+        ValueOutput.ValueOutputList list = output.childrenList("occupied");
+        for (OccupiedRecord key : occupiedPos.keySet()) {
+            ValueOutput child = list.addChild();
+            child.putString("maidUUID", key.uuid.toString());
+            child.putLong("pos", key.pos.asLong());
+            child.putInt("index", key.index);
         }
-        tag.put("occupied", listTag);
-        return tag;
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider var1, CompoundTag nbt) {
-        ListTag listTag = nbt.getList("occupied", ListTag.TAG_COMPOUND);
-        for (int i = 0; i < listTag.size(); i++) {
-            CompoundTag tmp = listTag.getCompound(i);
-            addOccupy(tmp.getUUID("maidUUID"), tmp.getInt("index"), BlockPos.of(tmp.getLong("pos")));
+    public void deserialize(ValueInput input) {
+        for (ValueInput child : input.childrenListOrEmpty("occupied")) {
+            addOccupy(
+                    UUID.fromString(child.getStringOr("maidUUID", "")),
+                    child.getIntOr("index", 0),
+                    BlockPos.of(child.getLongOr("pos", 0))
+            );
         }
     }
 

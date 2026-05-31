@@ -6,17 +6,19 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
-import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -26,6 +28,8 @@ import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.Map;
 import java.util.Objects;
+
+//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class RequestRetBehavior extends Behavior<EntityMaid> {
     private final BehaviorBreath breath = new BehaviorBreath();
@@ -50,7 +54,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         if (!MemoryUtil.getRequestProgress(maid).isReturning()) return false;
         if (MemoryUtil.getRequestProgress(maid).getTargetEntityUUID().isPresent()) {
             Entity targetEntity1 = MemoryUtil.getRequestProgress(maid).getTargetEntity(p_22538_);
-            if (targetEntity1 == null || !targetEntity1.isAlive() || !maid.isWithinRestriction(targetEntity1.blockPosition())) {
+            if (targetEntity1 == null || !targetEntity1.isAlive() || !maid.isWithinHome(targetEntity1.blockPosition())) {
                 MemoryUtil.clearTarget(maid);
                 return false;
             }
@@ -61,7 +65,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         if (thrown != null) return true;
-        if (currentSlot >= maid.getAvailableInv(false).getSlots())
+        if (currentSlot >= maid.getAvailableInv(false).size())
             return false;
         return (context != null && !context.isDone()) || targetEntity != null;
     }
@@ -99,7 +103,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     protected boolean tryReadyMaid(EntityMaid m, EntityMaid maid) {
         if (targetEntityReady) return true;
-        if (m.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+        if (false) { // StorageManageTask disabled
             if (MemoryUtil.isWorking(m) && !MemoryUtil.isParallelWorking(m)) return false;
             MemoryUtil.joinAndStartParallelWorking(m);
         }
@@ -138,12 +142,12 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             breath.reset();
             return;
         }
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
+        CombinedResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
         Vec3 targetDir = MathUtil.getFromToWithFriction(maid, targetEntity.getPosition(0));
         ItemStack mainHand = maid.getMainHandItem();
         IRequestTaskHandler handler = IRequestTaskHandler.of(mainHand);
-        for (int i = 0; i < 5 && targetEntity != null && inv.getSlots() > currentSlot; i++) {
-            @NotNull ItemStack item = inv.getStackInSlot(currentSlot++);
+        for (int i = 0; i < 5 && targetEntity != null && inv.size() > currentSlot; i++) {
+            @NotNull ItemStack item = ItemUtil.getStack(inv, currentSlot++);
             int restCount = handler != null ? handler.updateStored(mainHand, item, false, inCrafting) : item.getCount();
             ItemStack toThrowStack = item.copy();
             toThrowStack.shrink(restCount);
@@ -154,7 +158,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                     DebugData.invChange(DebugData.InvChange.OUT, maid, toThrowStack);
                 } else
                     InvUtil.throwItem(maid, toThrowStack, targetDir, true);
-                inv.setStackInSlot(currentSlot - 1, item);
+                setSlot(inv, currentSlot - 1, item);
                 break;
             }
         }
@@ -162,15 +166,15 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     private void tickStorageContext(EntityMaid maid) {
         if (!lock.checkAndTryGrantLock()) return;
-        CombinedInvWrapper availableInv = maid.getAvailableInv(true);
+        CombinedResourceHandler<ItemResource> availableInv = maid.getAvailableInv(true);
 
-        for (int i = 0; i < 5 && currentSlot < availableInv.getSlots(); i++)
-            if (availableInv.getStackInSlot(currentSlot).isEmpty())
+        for (int i = 0; i < 5 && currentSlot < availableInv.size(); i++)
+            if (ItemUtil.getStack(availableInv, currentSlot).isEmpty())
                 currentSlot++;
-        if (availableInv.getStackInSlot(currentSlot) == maid.getMainHandItem())
+        if (ItemUtil.getStack(availableInv, currentSlot) == maid.getMainHandItem())
             currentSlot++;
-        if (currentSlot < availableInv.getSlots()) {
-            ItemStack stack = availableInv.getStackInSlot(currentSlot);
+        if (currentSlot < availableInv.size()) {
+            ItemStack stack = ItemUtil.getStack(availableInv, currentSlot);
             if (!stack.isEmpty())
                 if (context instanceof IStorageInsertableContext isic) {
                     ItemStack mainHand = maid.getMainHandItem();
@@ -180,7 +184,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
                     ItemStack notInserted = isic.insert(stack.copyWithCount(canStoreCount));
                     ItemStack toStoreItemStack = stack.copyWithCount(canStoreCount - notInserted.getCount());
                     if (handler != null) handler.updateStored(mainHand, toStoreItemStack, false, inCrafting);
-                    availableInv.setStackInSlot(currentSlot, stack.copyWithCount(stack.getCount() - toStoreItemStack.getCount()));
+                    setSlot(availableInv, currentSlot, stack.copyWithCount(stack.getCount() - toStoreItemStack.getCount()));
                 }
             currentSlot++;
         }
@@ -196,7 +200,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             context.finish();
         if (targetEntity instanceof EntityMaid m) {
             MemoryUtil.clearTarget(m);
-            if (m.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+            if (false) { // StorageManageTask disabled
                 MemoryUtil.clearPickUpItemTemp(m);
                 MemoryUtil.leaveParallelWorking(m);
             }
@@ -227,7 +231,8 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         }
         ItemStack stack = maid.getMainHandItem();
         IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
-        if (handler != null) handler.updateCollectedNotStored(stack, maid.getAvailableInv(false));
+        // FIXME: TLM 26.1 - updateCollectedNotStored expects IItemHandler, but getAvailableInv now returns CombinedResourceHandler
+        // if (handler != null) handler.updateCollectedNotStored(stack, maid.getAvailableInv(false));
         MemoryUtil.getRequestProgress(maid).setReturn(false);
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.getCrafting(maid).clearTarget();
@@ -236,6 +241,20 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         //莫名其妙没空了（被扔垃圾了），那就先扔掉清单好勒
         if (!InvUtil.hasAnyFree(maid.getAvailableInv(false))) {
             RequestItemUtil.stopJobAndStoreOrThrowItem(maid, null, null);
+        }
+    }
+
+    private static void setSlot(CombinedResourceHandler<ItemResource> handler, int index, ItemStack newStack) {
+        try (Transaction tx = Transaction.open(null)) {
+            ItemResource oldResource = handler.getResource(index);
+            int oldAmount = (int) handler.getAmountAsLong(index);
+            if (oldAmount > 0 && !oldResource.isEmpty()) {
+                handler.extract(index, oldResource, oldAmount, tx);
+            }
+            if (!newStack.isEmpty()) {
+                handler.insert(index, ItemResource.of(newStack), newStack.getCount(), tx);
+            }
+            tx.commit();
         }
     }
 

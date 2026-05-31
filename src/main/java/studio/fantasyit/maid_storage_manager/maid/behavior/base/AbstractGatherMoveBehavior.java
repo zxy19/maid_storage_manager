@@ -2,7 +2,6 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.base;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -64,9 +63,9 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             if (Conditions.useScanTarget(maid))
                 this.searchForDestination(level, maid);
 
-        if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
+        if (!maid.getNavigation().isInProgress()) {
             if (memory.confirmNoTarget()) {
-                if (hasAnyFailPathing && maid.hasRestriction() && maid.distanceToSqr(maid.getRestrictCenter().getCenter()) > 9) {
+                if (hasAnyFailPathing && maid.hasHome() && maid.distanceToSqr(maid.getHomePosition().getCenter()) > 9) {
                     MemoryUtil.goRestrictCenterAndWait(maid, (float) Config.collectSpeed);
                     return;
                 }

@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.action;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -11,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 
 import java.util.List;
 
-public record CraftAction(ResourceLocation type, CraftActionProvider provider,
+public record CraftAction(Identifier type, CraftActionProvider provider,
                           CraftActionPathFindingTargetProvider pathFindingTargetProvider,
                           double pathCloseEnoughThreshold,
                           boolean canBeCommon,

@@ -1,14 +1,15 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
@@ -27,8 +28,7 @@ public class LogisticsRecycleMoveBehavior extends Behavior<EntityMaid> {
 
     public LogisticsRecycleMoveBehavior() {
         super(Map.of(
-                MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
-                InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
+                MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT
         ));
     }
 
@@ -41,12 +41,12 @@ public class LogisticsRecycleMoveBehavior extends Behavior<EntityMaid> {
     @Override
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         List<ItemStack> items = MemoryUtil.getLogistics(maid).getCraftLayer().getItems();
-        CombinedInvWrapper availableInv = maid.getAvailableInv(true);
+        CombinedResourceHandler<ItemResource> availableInv = maid.getAvailableInv(true);
         boolean found = false;
-        for (int i = 0; i < availableInv.getSlots(); i++) {
+        for (int i = 0; i < availableInv.size(); i++) {
             int finalI = i;
-            if (!availableInv.getStackInSlot(i).isEmpty())
-                if (items.stream().anyMatch(ii -> ItemStackUtil.isSame(ii, availableInv.getStackInSlot(finalI), false)))
+            if (!ItemUtil.getStack(availableInv, i).isEmpty())
+                if (items.stream().anyMatch(ii -> ItemStackUtil.isSame(ii, ItemUtil.getStack(availableInv, finalI), false)))
                     found = true;
         }
         if (!found) {

@@ -7,18 +7,20 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class PortableCraftCalculatorBauble extends MaidInteractItem implements IMaidBauble {
     public static ItemStack getCalculator(EntityMaid maid) {
         BaubleItemHandler inv = maid.getMaidBauble();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            ItemStack stack = inv.getStackInSlot(i);
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = ItemUtil.getStack(inv, i);
             if (stack.is(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get())) {
                 return stack;
             }
@@ -41,25 +43,25 @@ public class PortableCraftCalculatorBauble extends MaidInteractItem implements I
 
     @Override
     public void onTick(EntityMaid maid, ItemStack baubleItem) {
-        if (maid.level().isClientSide) return;
+        if (maid.level().isClientSide()) return;
         update(maid, baubleItem);
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.desc").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, toolTip, p_41424_);
+        toolTip.accept(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.desc").withStyle(ChatFormatting.GRAY));
 
         if (itemStack.has(DataComponentRegistry.PCC_RECIPES)) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.stored_recipe", itemStack.get(DataComponentRegistry.PCC_RECIPES)));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.stored_recipe", itemStack.get(DataComponentRegistry.PCC_RECIPES)));
         } else {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.waiting_for_request"));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.waiting_for_request"));
         }
 
         if (itemStack.has(DataComponentRegistry.PCC_LAYERS) && itemStack.getOrDefault(DataComponentRegistry.PCC_LAYERS, 0) != 0) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.stored_layers", itemStack.get(DataComponentRegistry.PCC_LAYERS)));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.stored_layers", itemStack.get(DataComponentRegistry.PCC_LAYERS)));
             if (itemStack.has(DataComponentRegistry.PCC_PROGRESS)) {
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.progress", itemStack.get(DataComponentRegistry.PCC_PROGRESS)));
+                toolTip.accept(Component.translatable("tooltip.maid_storage_manager.portable_craft_calculator.progress", itemStack.get(DataComponentRegistry.PCC_PROGRESS)));
             }
         }
 

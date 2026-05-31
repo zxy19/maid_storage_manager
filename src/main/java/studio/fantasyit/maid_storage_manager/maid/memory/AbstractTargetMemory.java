@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.maid.memory;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -30,7 +30,7 @@ public abstract class AbstractTargetMemory {
                         ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.optionalFieldOf("check")
                                 .forGetter(TargetData::getCheckItem)
                 ).apply(instance, TargetData::new));
-        public static ResourceLocation NO_TARGET = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_target");
+        public static Identifier NO_TARGET = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "no_target");
         public List<Target> visitedPos;
         public Target target;
         @Nullable

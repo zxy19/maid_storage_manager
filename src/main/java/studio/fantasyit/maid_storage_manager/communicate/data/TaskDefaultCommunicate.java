@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.communicate.data;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.*;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.NeoForge;
@@ -17,11 +17,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class TaskDefaultCommunicate {
-    public static final ResourceLocation DUMMY_AUTO_DETECT_TASK = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "auto_detect");
-    public static final ResourceLocation DUMMY_USE_CURRENT_DATA = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "current");
+    public static final Identifier DUMMY_AUTO_DETECT_TASK = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "auto_detect");
+    public static final Identifier DUMMY_USE_CURRENT_DATA = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "current");
 
-    private static final Map<ResourceLocation, Component> translations = new HashMap<>();
-    private static final Map<ResourceLocation, ConfigurableCommunicateData> taskDefaultCommunicateData = new HashMap<>();
+    private static final Map<Identifier, Component> translations = new HashMap<>();
+    private static final Map<Identifier, ConfigurableCommunicateData> taskDefaultCommunicateData = new HashMap<>();
 
     public static void init() {
         taskDefaultCommunicateData.clear();
@@ -158,17 +158,17 @@ public class TaskDefaultCommunicate {
         );
     }
 
-    public static ConfigurableCommunicateData get(ResourceLocation id) {
+    public static ConfigurableCommunicateData get(Identifier id) {
         return taskDefaultCommunicateData.get(id);
     }
 
-    public static Component getTranslate(ResourceLocation id) {
+    public static Component getTranslate(Identifier id) {
         if (translations.containsKey(id))
             return translations.get(id);
         return Component.literal(id.toLanguageKey());
     }
 
-    public static void each(Consumer<ResourceLocation> consumer) {
+    public static void each(Consumer<Identifier> consumer) {
         taskDefaultCommunicateData.keySet().forEach(consumer);
     }
 }

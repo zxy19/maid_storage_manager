@@ -10,13 +10,16 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -24,19 +27,18 @@ import studio.fantasyit.maid_storage_manager.craft.data.InvConsumeSimulator;
 import studio.fantasyit.maid_storage_manager.craft.debug.IProgressDebugContextSetter;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
-import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
-import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.*;
+
+//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class CraftLayerChain implements IProgressDebugContextSetter {
     public static final Codec<Pair<UUID, Pair<Integer, UUID>>>
@@ -431,7 +433,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             if (layer.getCraftData().isEmpty())
                 continue;
 
-            if (layer.steps.stream().anyMatch(t -> !toMaid.isWithinRestriction(t.storage.pos)))
+            if (layer.steps.stream().anyMatch(t -> !toMaid.isWithinHome(t.storage.pos)))
                 continue;
             if (resultIndex == -1 || nodes.get(resultIndex).lastTouch().getValue() < node.lastTouch().getValue())
                 resultIndex = i;
@@ -539,18 +541,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             EntityMaid dispatchedMaid = null;
             if (level.getEntity(p.getKey()) instanceof EntityMaid _dispatchedMaid) {
                 dispatchedMaid = _dispatchedMaid;
-                if (!dispatchedMaid.getTask().getUid().equals(StorageManageTask.TASK_ID))
-                    valid = false;
-                else {
-                    //获取已被分发的女仆的当前工作状态
-                    RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(dispatchedMaid);
-
-                    //如果工作ID和记录的不同，或者不在工作状态，那么认为分发任务失败。
-                    if (!Conditions.takingRequestList(dispatchedMaid))
-                        valid = false;
-                    else if (!requestProgress.getWorkUUID().equals(p.getValue().getB()))
-                        valid = false;
-                }
+                valid = false; // StorageManageTask disabled
             } else valid = false;
             if (!valid) {
                 if (dispatchedTaskTickCount.get(p.getKey()).incrementAndGet() < 20)
@@ -854,11 +845,11 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
         //对于已有树根的合成（即处理当前合成目标以及标记失败物品）
         if (targets != null) {
             //检测是否存在目标物品，如果是，那么优先进行存放，标记已收集
-            CombinedInvWrapper inv = maid.getAvailableInv(true);
+            ResourceHandler<ItemResource> inv = maid.getAvailableInv(true);
             ItemStack mainHand = maid.getMainHandItem();
             IRequestTaskHandler reqHandler = IRequestTaskHandler.of(mainHand);
-            for (int i = 0; i < inv.getSlots(); i++) {
-                ItemStack stack = inv.getStackInSlot(i);
+            for (int i = 0; i < inv.size(); i++) {
+                ItemStack stack = ItemUtil.getStack(inv, i);
                 if (reqHandler != null) reqHandler.updateCollectedItem(mainHand, stack, stack.getCount(), true);
             }
             if (!toBeFailAddition.isBlank()) {
@@ -903,7 +894,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
                 IRequestTaskHandler reqHandler = IRequestTaskHandler.of(mainHand);
                 CompoundTag vd = reqHandler != null ? reqHandler.getVirtualData(mainHand) : null;
                 if (crafting.hasPlan() && vd != null && vd.contains("index")) {
-                    crafting.plan.onDispatchedStarted(master, vd.getInt("index"));
+                    crafting.plan.onDispatchedStarted(master, vd.getIntOr("index", -1));
                 }
             }
         } else {
@@ -977,10 +968,10 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             if (itemStack.isEmpty()) continue;
             ItemStackUtil.addToList(inputs, itemStack, false);
         }
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        ResourceHandler<ItemResource> inv = maid.getAvailableInv(true);
         for (ItemStack itemStack : inputs) {
-            for (int i = 0; i < inv.getSlots(); i++) {
-                ItemStack item = inv.getStackInSlot(i);
+            for (int i = 0; i < inv.size(); i++) {
+                ItemStack item = ItemUtil.getStack(inv, i);
                 if (ItemStackUtil.isSameInCrafting(item, itemStack)) {
                     itemStack.shrink(Math.min(itemStack.getCount(), item.getCount()));
                     if (itemStack.isEmpty()) break;
@@ -1016,10 +1007,10 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             if (itemStack.isEmpty()) continue;
             ItemStackUtil.addToList(inputs, itemStack, false);
         }
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        ResourceHandler<ItemResource> inv = maid.getAvailableInv(true);
         for (ItemStack itemStack : inputs) {
-            for (int i = 0; i < inv.getSlots(); i++) {
-                ItemStack item = inv.getStackInSlot(i);
+            for (int i = 0; i < inv.size(); i++) {
+                ItemStack item = ItemUtil.getStack(inv, i);
                 if (ItemStackUtil.isSameInCrafting(item, itemStack)) {
                     itemStack.shrink(Math.min(itemStack.getCount(), item.getCount()));
                     if (itemStack.isEmpty()) break;

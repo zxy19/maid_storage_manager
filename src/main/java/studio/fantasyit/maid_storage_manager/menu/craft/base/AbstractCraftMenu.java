@@ -4,7 +4,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
-abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
+abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends AbstractContainerMenu implements ISaveFilter/*, ICraftGuiPacketReceiver disabled*/ {
     ItemStack target;
     protected Player player;
     protected CraftGuideData craftGuideData;
@@ -37,7 +37,7 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
         addFilterSlots();
         addPlayerSlots();
         addSpecialSlots();
-        if (!player.level().isClientSide)
+        if (!player.level().isClientSide())
             recalculateRecipe();
     }
 
@@ -76,15 +76,15 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
     }
 
     @Override
-    public void clicked(int slotId, int dragType, ClickType clickTypeIn, Player player) {
+    public void clicked(int slotId, int dragType, ContainerInput clickTypeIn, Player player) {
         if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs && fs.container instanceof StepDataContainer container) {
             if (fs.readonly) return;
             int slot = fs.getContainerSlot();
-            if (clickTypeIn == ClickType.THROW)
+            if (clickTypeIn == ContainerInput.THROW)
                 return;
 
             ItemStack held = getCarried();
-            if (clickTypeIn == ClickType.CLONE) {
+            if (clickTypeIn == ContainerInput.CLONE) {
                 if (player.isCreative() && held.isEmpty()) {
                     ItemStack stackInSlot = container.getItem(slot)
                             .copy();
@@ -105,7 +105,7 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
             }
             if (!isValidFor(slot, insert))
                 return;
-            if (!player.level().isClientSide) {
+            if (!player.level().isClientSide()) {
                 container.setItem(slot, insert);
                 container.setCount(slot, 1);
                 getSlot(slotId).setChanged();
@@ -177,7 +177,7 @@ abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends 
     @Override
     public void save() {
         if (stepDataContainer == null) return;
-        if (player.level().isClientSide) return;
+        if (player.level().isClientSide()) return;
         this.broadcastChanges();
         recalculateRecipe();
         stepDataContainer.save();

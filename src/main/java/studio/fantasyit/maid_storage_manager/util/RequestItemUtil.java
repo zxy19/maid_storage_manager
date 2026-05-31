@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,12 +16,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
 import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEvent;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.communicate.step.RequestItemStep;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
@@ -110,8 +111,8 @@ public class RequestItemUtil {
         IRequestTaskHandler handler = IRequestTaskHandler.of(reqList);
         CompoundTag data = handler != null ? handler.getVirtualData(reqList) : null;
         if (data == null) return;
-        UUID masterUUID = data.getUUID("master");
-        int index = data.getInt("index");
+        UUID masterUUID = data.read("master", UUIDUtil.CODEC).orElse(null);
+        int index = data.getIntOr("index", -1);
         Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
         if (!(targetEntity instanceof EntityMaid toMaid)) return;
         CraftMemory targetCraftingMemory = MemoryUtil.getCrafting(toMaid);
@@ -130,7 +131,7 @@ public class RequestItemUtil {
         IRequestTaskHandler handler = IRequestTaskHandler.of(reqList);
         CompoundTag data = handler != null ? handler.getVirtualData(reqList) : null;
         if (data == null) return;
-        UUID masterUUID = data.getUUID("master");
+        UUID masterUUID = data.read("master", UUIDUtil.CODEC).orElse(null);
         Entity targetEntity = ((ServerLevel) maid.level()).getEntity(masterUUID);
         ItemStack toItem = reqList.copy();
         IRequestTaskHandler toHandler = IRequestTaskHandler.of(toItem);

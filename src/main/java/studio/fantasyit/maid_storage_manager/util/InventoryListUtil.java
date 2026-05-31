@@ -1,6 +1,5 @@
 package studio.fantasyit.maid_storage_manager.util;
 
-import me.towdium.jecharacters.utils.Match;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -10,7 +9,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -28,18 +26,19 @@ public class InventoryListUtil {
     public static boolean isMatchSearchStr(ItemStack itemStack, String search){
         if(search.isBlank()) return true;
         Level level = Minecraft.getInstance().level;
-        if (ModList.get().isLoaded("jecharacters")) {
-            if (Match.matches(itemStack.getHoverName().getString(), search))
-                return true;
-            if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
-                return true;
-            if (itemStack.getTooltipLines(Item.TooltipContext.of(level),Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
-                return true;
-            }
-        }
+        // JECCharacters not available, using simple contains matching
+        //if (ModList.get().isLoaded("jecharacters")) {
+        //    if (Match.matches(itemStack.getHoverName().getString(), search))
+        //        return true;
+        //    if (Match.matches(Component.translatable(itemStack.getDescriptionId()).getString(), search))
+        //        return true;
+        //    if (itemStack.getTooltipLines(Item.TooltipContext.of(level),Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> Match.matches(component.getString(), search))) {
+        //        return true;
+        //    }
+        //}
         if (itemStack.getHoverName().getString().contains(search))
             return true;
-        if (Component.translatable(itemStack.getDescriptionId()).getString().contains(search))
+        if (Component.translatable(itemStack.getItem().getDescriptionId()).getString().contains(search))
             return true;
         return itemStack.getTooltipLines(Item.TooltipContext.of(level),Minecraft.getInstance().player, TooltipFlag.ADVANCED).stream().anyMatch(component -> component.getString().contains(search));
     }
@@ -112,7 +111,7 @@ public class InventoryListUtil {
     public static ItemStack getMatchingForPlayerOrFirst(LocalPlayer player, List<ItemStack> itemStack) {
         if (itemStack.isEmpty())
             return ItemStack.EMPTY;
-        Object uuid = getInventoryListUUIDFromPlayerInv(player.getInventory().items);
+        Object uuid = getInventoryListUUIDFromPlayerInv(player.getInventory().getNonEquipmentItems());
         if (uuid == null)
             return itemStack.get(0);
         ItemStack matchingFromInventory = getMatchingFromInventory(uuid, itemStack);

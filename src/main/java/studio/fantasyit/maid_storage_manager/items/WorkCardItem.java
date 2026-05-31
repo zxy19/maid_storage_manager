@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
@@ -36,7 +38,7 @@ import java.util.*;
 public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     @Override
     public void onTick(EntityMaid maid, ItemStack baubleItem) {
-        if (maid.level().isClientSide) return;
+        if (maid.level().isClientSide()) return;
         checkTask(maid, baubleItem);
         syncTaskWorkPos(maid, baubleItem);
         tryDispatch(maid, baubleItem);
@@ -103,7 +105,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                             "DISPATCHED"
                     );
                     CompoundTag data = new CompoundTag();
-                    data.putUUID("master", maid.getUUID());
+                    data.store("master", UUIDUtil.CODEC, maid.getUUID());
                     data.putInt("index", node.index());
                     IRequestTaskHandler disHandler = IRequestTaskHandler.of(dispatchedRequest);
                     if (disHandler != null) disHandler.setVirtualData(dispatchedRequest, data);
@@ -148,7 +150,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
 
                 ItemStack itemStack = RequestItemUtil.makeVirtualItemStack(maid.getMainHandItem(), "DISPATCH_FIND");
                 CompoundTag data = new CompoundTag();
-                data.putUUID("master", maid.getUUID());
+                data.store("master", UUIDUtil.CODEC, maid.getUUID());
                 IRequestTaskHandler disHandler = IRequestTaskHandler.of(itemStack);
                 if (disHandler != null) disHandler.setVirtualData(itemStack, data);
 
@@ -184,15 +186,15 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
             if (!Conditions.isNothingToPlace(maid)) return false;
         }
         BaubleItemHandler t = maid.getMaidBauble();
-        for (int i = 0; i < t.getSlots(); i++)
-            if (t.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
+        for (int i = 0; i < t.size(); i++)
+            if (ItemUtil.getStack(t, i).is(ItemRegistry.WORK_CARD.get())) {
                 //如果当前物品存在名字，而且目标物品也存在名字，而且不一样，那么跳过
                 if (reversed) {
-                    if (!matches(source, t.getStackInSlot(i))) {
+                    if (!matches(source, ItemUtil.getStack(t, i))) {
                         continue;
                     }
                 } else {
-                    if (!matches(t.getStackInSlot(i), source)) {
+                    if (!matches(ItemUtil.getStack(t, i), source)) {
                         continue;
                     }
                 }
@@ -204,9 +206,9 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     public static List<Component> getAllWorkCards(EntityMaid maid) {
         List<Component> workCards = new ArrayList<>();
         BaubleItemHandler inv = maid.getMaidBauble();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            if (inv.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
-                workCards.add(inv.getStackInSlot(i).getHoverName());
+        for (int i = 0; i < inv.size(); i++) {
+            if (ItemUtil.getStack(inv, i).is(ItemRegistry.WORK_CARD.get())) {
+                workCards.add(ItemUtil.getStack(inv, i).getHoverName());
             }
         }
         return workCards;
@@ -221,13 +223,13 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
         Set<Component> hasChecked = new HashSet<>();
         Queue<ItemStack> queue = new LinkedList<>();
         BaubleItemHandler inv = maid.getMaidBauble();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            if (inv.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) {
-                queue.add(inv.getStackInSlot(i));
+        for (int i = 0; i < inv.size(); i++) {
+            if (ItemUtil.getStack(inv, i).is(ItemRegistry.WORK_CARD.get())) {
+                queue.add(ItemUtil.getStack(inv, i));
                 // 空名字天然匹配一切，可以直接跳过
-                if (!inv.getStackInSlot(i).has(DataComponents.CUSTOM_NAME) && reversed)
-                    return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable,reversed);
-                hasChecked.add(inv.getStackInSlot(i).getHoverName());
+                if (!ItemUtil.getStack(inv, i).has(DataComponents.CUSTOM_NAME) && reversed)
+                    return getNearbyMaidsSameGroup(maid, ItemUtil.getStack(inv, i), requireAvailable,reversed);
+                hasChecked.add(ItemUtil.getStack(inv, i).getHoverName());
             }
         }
         // 如果匹配到空的名字，那么可以直接退出。所有的相关的都能被匹配
@@ -240,13 +242,13 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 }
                 if (!propagate) continue;
                 BaubleItemHandler tt = nearbyMaid.getMaidBauble();
-                for (int i = 0; i < tt.getSlots(); i++) {
-                    if (!tt.getStackInSlot(i).is(ItemRegistry.WORK_CARD.get())) continue;
-                    if (!tt.getStackInSlot(i).has(DataComponents.CUSTOM_NAME))
-                        return getNearbyMaidsSameGroup(maid, inv.getStackInSlot(i), requireAvailable,reversed);
-                    if (!hasChecked.contains(tt.getStackInSlot(i).getHoverName())) {
-                        queue.add(tt.getStackInSlot(i));
-                        hasChecked.add(tt.getStackInSlot(i).getHoverName());
+                for (int i = 0; i < tt.size(); i++) {
+                    if (!ItemUtil.getStack(tt, i).is(ItemRegistry.WORK_CARD.get())) continue;
+                    if (!ItemUtil.getStack(tt, i).has(DataComponents.CUSTOM_NAME))
+                        return getNearbyMaidsSameGroup(maid, ItemUtil.getStack(inv, i), requireAvailable,reversed);
+                    if (!hasChecked.contains(ItemUtil.getStack(tt, i).getHoverName())) {
+                        queue.add(ItemUtil.getStack(tt, i));
+                        hasChecked.add(ItemUtil.getStack(tt, i).getHoverName());
                     }
                 }
             }
@@ -264,8 +266,6 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
     private static AABB getMaidFindingBBox(EntityMaid maid) {
-        if (maid.hasRestriction())
-            return new AABB(maid.getRestrictCenter()).inflate(maid.getRestrictRadius());
         return new AABB(maid.blockPosition()).inflate(7);
     }
 

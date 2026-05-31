@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.network;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
@@ -11,7 +11,7 @@ import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
 public class ProgressPadUpdatePacket implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<ProgressPadUpdatePacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(
+            Identifier.fromNamespaceAndPath(
                     MaidStorageManager.MODID, "progress_pad_update"
             )
     );

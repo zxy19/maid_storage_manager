@@ -35,12 +35,12 @@ public class CompoundTagUtil {
             return new CompoundTag();
         }
         if (tag.contains(k)) {
-            tag.put(k, removeKeyFrom(tag.getCompound(k), key, depth + 1));
+            tag.put(k, removeKeyFrom(tag.getCompound(k).get(), key, depth + 1));
             return tag;
         }
         if (k.equals("*")) {
-            for (String kk : tag.getAllKeys()) {
-                tag.put(kk, removeKeyFrom(tag.getCompound(kk), key, depth + 1));
+            for (String kk : tag.keySet()) {
+                tag.put(kk, removeKeyFrom(tag.getCompound(kk).get(), key, depth + 1));
             }
         }
         return tag;

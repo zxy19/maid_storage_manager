@@ -92,10 +92,12 @@ public class InventoryListDataClient {
     public void tickRequest() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            for (ItemStack i : player.getInventory().items)
+            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+                ItemStack i = player.getInventory().getItem(slot);
                 if (i.is(ItemRegistry.WRITTEN_INVENTORY_LIST.get()) &&
                         i.has(DataComponentRegistry.INVENTORY_UUID))
                     requestForDataIfFirstTime(i.get(DataComponentRegistry.INVENTORY_UUID));
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.decoration.ItemFrame;
@@ -17,7 +17,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -119,8 +122,8 @@ public class StorageAccessUtil {
     }
 
 
-    public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "default_storage_blocks"));
-    public static TagKey<Block> multiblockTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "mb_chests"));
+    public static TagKey<Block> allowTag = TagKey.create(BuiltInRegistries.BLOCK.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "default_storage_blocks"));
+    public static TagKey<Block> multiblockTag = TagKey.create(BuiltInRegistries.BLOCK.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "mb_chests"));
 
     /**
      * 重写目标列表。对于特定的目标，根据允许访问和禁止访问，将其重写为新的列表。
@@ -134,9 +137,10 @@ public class StorageAccessUtil {
     public static List<Target> findTargetRewrite(ServerLevel level, EntityMaid maid, Target target, boolean bypassNoAccess) {
         BaubleItemHandler maidBauble = maid.getMaidBauble();
         List<ItemStack> itemStack = new ArrayList<>();
-        for (int i = 0; i < maidBauble.getSlots(); i++) {
-            if (maidBauble.getStackInSlot(i).is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {
-                itemStack.add(maidBauble.getStackInSlot(i));
+        for (int i = 0; i < maidBauble.size(); i++) {
+            ItemStack stackInSlot = ItemUtil.getStack(maidBauble, i);
+            if (stackInSlot.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {
+                itemStack.add(stackInSlot);
             }
         }
         if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
@@ -243,23 +247,34 @@ public class StorageAccessUtil {
 
         BlockEntity blockEntity1 = level.getBlockEntity(pos);
         if (blockEntity1 == null) return;
-        IItemHandler inv = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, blockState, blockEntity1, null);
+        ResourceHandler<ItemResource> inv = level.getCapability(Capabilities.Item.BLOCK, pos, blockState, blockEntity1, null);
         if (inv == null) return;
-        if (inv.getStackInSlot(0).getCount() > 1e9)
+        if (ItemUtil.getStack(inv, 0).getCount() > 1e9)
             return;
-        //确保清空第一个格子，再放入物品
         Queue<ItemStack> tmpExtracted = new LinkedList<>();
-        while (inv.getStackInSlot(0).getCount() > 0 && !inv.extractItem(0, inv.getStackInSlot(0).getCount(), true).isEmpty())
-            tmpExtracted.add(inv.extractItem(0, inv.getStackInSlot(0).getCount(), false));
+        while (ItemUtil.getStack(inv, 0).getCount() > 0) {
+            ItemStack current = ItemUtil.getStack(inv, 0);
+            ItemResource resource = inv.getResource(0);
+            int count = current.getCount();
+            try (Transaction tx = Transaction.openRoot()) {
+                int extracted = inv.extract(0, resource, count, tx);
+                if (extracted == 0) break;
+                tx.commit();
+                tmpExtracted.add(current.copyWithCount(extracted));
+            }
+        }
         ItemStack markItem = Items.STICK.getDefaultInstance().copyWithCount(1);
         markItem.set(DataComponentRegistry.MARK, UUID.randomUUID());
-        inv.insertItem(0, markItem.copy(), false);
+        try (Transaction tx = Transaction.openRoot()) {
+            inv.insert(0, ItemResource.of(markItem.copy()), 1, tx);
+            tx.commit();
+        }
         PosUtil.findAroundUpAndDown(pos, blockPos -> {
             if (blockPos.equals(pos)) return null;
-            IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, null);
+            ResourceHandler<ItemResource> itemHandler = level.getCapability(Capabilities.Item.BLOCK, blockPos, null);
             if (itemHandler != null)
-                for (int i = 0; i < itemHandler.getSlots(); i++) {
-                    if (ItemStack.isSameItemSameComponents(itemHandler.getStackInSlot(i), markItem)) {
+                for (int i = 0; i < itemHandler.size(); i++) {
+                    if (ItemStack.isSameItemSameComponents(ItemUtil.getStack(itemHandler, i), markItem)) {
                         consumer.accept(blockPos);
                         list.add(blockPos);
                     }
@@ -267,16 +282,31 @@ public class StorageAccessUtil {
             return null;
         }, 1);
 
-        //第一格有可能拿到的不是MarkItem？判断。如果存在问题，扫描容器查找MarkItem
-        ItemStack itemStack = inv.extractItem(0, markItem.getCount(), true);
+        ItemStack itemStack = ItemUtil.getStack(inv, 0);
         if (itemStack.isEmpty() || !ItemStackUtil.isSame(itemStack, markItem, true)) {
-            tmpExtracted.add(itemStack);
-            InvUtil.tryExtract(inv, markItem, ItemStackUtil.MATCH_TYPE.MATCHING);
+            tmpExtracted.add(itemStack.copy());
+            try (Transaction tx = Transaction.openRoot()) {
+                ItemResource markResource = ItemResource.of(markItem);
+                for (int i = 0; i < inv.size(); i++) {
+                    ItemStack slot = ItemUtil.getStack(inv, i);
+                    if (ItemStackUtil.isSame(slot, markItem, true)) {
+                        inv.extract(i, markResource, slot.getCount(), tx);
+                    }
+                }
+                tx.commit();
+            }
         } else {
-            inv.extractItem(0, markItem.getCount(), false);
+            try (Transaction tx = Transaction.openRoot()) {
+                inv.extract(0, ItemResource.of(itemStack), markItem.getCount(), tx);
+                tx.commit();
+            }
         }
         while (!tmpExtracted.isEmpty()) {
-            inv.insertItem(0, tmpExtracted.poll(), false);
+            ItemStack stack = tmpExtracted.poll();
+            try (Transaction tx = Transaction.openRoot()) {
+                inv.insert(0, ItemResource.of(stack), stack.getCount(), tx);
+                tx.commit();
+            }
         }
 
         list.forEach(blockPos -> {

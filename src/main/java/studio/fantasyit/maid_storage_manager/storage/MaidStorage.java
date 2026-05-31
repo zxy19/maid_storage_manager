@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.storage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -12,22 +12,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
-import studio.fantasyit.maid_storage_manager.integration.Integrations;
-import studio.fantasyit.maid_storage_manager.integration.create.CreateMultiBlockVault;
-import studio.fantasyit.maid_storage_manager.integration.sophisticated_storage.SophisticatedStorageMultiBlock;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ChestMultiBlockProcessor;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
-import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMultiBlockProcessor;
-import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
-import studio.fantasyit.maid_storage_manager.storage.create.stock.CreateStockTickerStorage;
-import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
-import studio.fantasyit.maid_storage_manager.storage.rs.RSStorage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+//import studio.fantasyit.maid_storage_manager.integration.create.CreateMultiBlockVault;
+//import studio.fantasyit.maid_storage_manager.integration.sophisticated_storage.SophisticatedStorageMultiBlock;
+//import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
+//import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
+//import studio.fantasyit.maid_storage_manager.storage.create.stock.CreateStockTickerStorage;
+//import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
+//import studio.fantasyit.maid_storage_manager.storage.rs.RSStorage;
 
 public class MaidStorage {
     public static MaidStorage instance = null;
@@ -45,7 +45,7 @@ public class MaidStorage {
         ArrayList<IMaidStorage> list = new ArrayList<>();
         List<IMultiBlockProcessor> processorList = new ArrayList<>();
 
-        if (Integrations.ae2Storage()) {
+        /*if (Integrations.ae2Storage()) {
             list.add(new Ae2Storage());
         }
         if (Integrations.rsStorage()) {
@@ -57,17 +57,17 @@ public class MaidStorage {
         }
         if (Integrations.mekanismStorage()) {
             list.add(new QIOStorage());
-        }
+        }*/
         list.add(new ItemHandlerStorage());
 
         processorList.add(new ChestMultiBlockProcessor());
 
-        if (Integrations.create()) {
+        /*if (Integrations.create()) {
             processorList.add(new CreateMultiBlockVault());
         }
         if (Integrations.sophisticatedStorage()) {
             processorList.add(new SophisticatedStorageMultiBlock());
-        }
+        }*/
 
         CollectStorageEvent event = new CollectStorageEvent(list, processorList);
 
@@ -80,7 +80,7 @@ public class MaidStorage {
         BlockState blockState = level.getBlockState(target.pos);
         if (blockState.is(Blocks.AIR)) return null;
         BlockEntity blockEntity = level.getBlockEntity(target.pos);
-        ResourceLocation type = target.getType();
+        Identifier type = target.getType();
         for (IMaidStorage storage : storages) {
             if (storage.isValidTarget(level, maid, target.pos, target.side, blockState, blockEntity)) {
                 if (storage.getType().equals(type))
@@ -107,7 +107,7 @@ public class MaidStorage {
         return null;
     }
 
-    public @Nullable IMaidStorage getStorage(ResourceLocation type) {
+    public @Nullable IMaidStorage getStorage(Identifier type) {
         for (IMaidStorage storage : storages) {
             if (storage.getType().equals(type)) {
                 return storage;

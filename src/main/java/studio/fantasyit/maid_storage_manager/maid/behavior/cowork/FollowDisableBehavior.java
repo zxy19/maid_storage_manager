@@ -22,11 +22,11 @@ public class FollowDisableBehavior extends MaidCheckRateTask {
     @Override
     protected boolean checkExtraStartConditions(ServerLevel worldIn, EntityMaid maid) {
         if (!super.checkExtraStartConditions(worldIn, maid)) return false;
-        if (!maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).coWorkMode())
+        if (!StorageManagerConfigData.get(maid).coWorkMode())
             return true;
         if (!ownerStateConditions(maid.getOwner()))
             return true;
-        if (!maid.isWithinRestriction(maid.getOwner().blockPosition()))
+        if (!maid.isWithinHome(maid.getOwner().blockPosition()))
             return true;
         if (maid.distanceTo(maid.getOwner()) > 8 && !maid.hasLineOfSight(maid.getOwner()))
             return true;

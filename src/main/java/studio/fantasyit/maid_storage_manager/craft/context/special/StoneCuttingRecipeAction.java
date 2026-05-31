@@ -1,14 +1,16 @@
 package studio.fantasyit.maid_storage_manager.craft.context.special;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class StoneCuttingRecipeAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "stone_cutting");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "stone_cutting");
 
     public StoneCuttingRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -41,17 +43,17 @@ public class StoneCuttingRecipeAction extends AbstractCraftActionContext {
         Level level = maid.level();
         if (!level.getBlockState(craftGuideStepData.storage.pos).is(WorkBlockTags.STONE_CUTTER))
             return Result.NOT_DONE;
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
+        ResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
         ItemStack input = craftGuideStepData.getInput().get(0);
         ItemStack output = craftGuideStepData.getOutput().get(0);
         ItemStack t1 = InvUtil.tryExtractForCrafting(inv, input);
         if (ItemStackUtil.isSameInCrafting(t1, input)) {
             List<RecipeHolder<StonecutterRecipe>> stonecuttingRecipe = RecipeUtil.getStonecuttingRecipe(level, t1);
             Optional<RecipeHolder<StonecutterRecipe>> first = stonecuttingRecipe.stream().filter(recipe ->
-                    ItemStackUtil.isSameInCrafting(recipe.value().getResultItem(level.registryAccess()), output)
+                    ItemStackUtil.isSameInCrafting(recipe.value().assemble(new SingleRecipeInput(t1)), output)
             ).findFirst();
             if (first.isPresent()) {
-                ItemStack tmpResult = first.get().value().getResultItem(level.registryAccess());
+                ItemStack tmpResult = first.get().value().assemble(new SingleRecipeInput(t1));
                 ItemStack result = tmpResult.copyWithCount(tmpResult.getCount() * input.getCount());
                 if (ItemStackUtil.isSameInCrafting(result, output)) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());

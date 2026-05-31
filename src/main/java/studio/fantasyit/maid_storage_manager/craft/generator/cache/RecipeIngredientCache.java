@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.cache;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
 public class RecipeIngredientCache {
-    public static final ConcurrentHashMap<ResourceLocation, List<UUID>> CACHE = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Identifier, List<UUID>> CACHE = new ConcurrentHashMap<>();
     public static final List<CachedIngredient> cachedNode = new ArrayList<>();
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 
@@ -29,27 +29,27 @@ public class RecipeIngredientCache {
         LOCK.writeLock().unlock();
     }
 
-    public static boolean isCached(ResourceLocation recipeId) {
+    public static boolean isCached(Identifier recipeId) {
         return false;
     }
 
     public static boolean addCahcedRecipeToGraph(ICachableGeneratorGraph graph,
-                                                 ResourceLocation id,
+                                                 Identifier id,
                                                  List<Ingredient> ingredients,
                                                  List<Integer> ingredientCounts,
                                                  List<ItemStack> output,
-                                                 Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
+                                                 Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, Identifier type, boolean isOneTime) {
         return false;
     }
 
     public static void addRecipeCache(RecipeHolder<? extends Recipe<?>> holder) {
-        RecipeIngredientCache.addRecipeCache(holder.id(), holder.value().getIngredients());
+        RecipeIngredientCache.addRecipeCache(holder.id().identifier(), holder.value().placementInfo().ingredients());
     }
 
-    public static void addRecipeCache(ResourceLocation id, List<Ingredient> ingredients) {
+    public static void addRecipeCache(Identifier id, List<Ingredient> ingredients) {
     }
 
-    public static int getUncachedRecipeIngredient(ResourceLocation id, List<Ingredient> ingredients, ICachableGeneratorGraph generatorGraph) {
+    public static int getUncachedRecipeIngredient(Identifier id, List<Ingredient> ingredients, ICachableGeneratorGraph generatorGraph) {
         if (!isCached(id)) return ingredients.size();
         int c = 0;
         for (UUID ingredient : CACHE.get(id)) {

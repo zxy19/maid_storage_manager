@@ -13,9 +13,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -60,8 +59,8 @@ public class FindAndMarkStorageFunction extends AbstractTool<FindAndMarkStorageF
         Map<Target, List<ItemCount>> itemKeys = MemoryUtil.getViewedInventory(callback.getMaid()).positionFlatten();
         JsonArray result = new JsonArray();
         for (String itemId : itemIdData.itemId()) {
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(itemId);
-            Item item = maid.registryAccess().registry(Registries.ITEM).get().get(resourceLocation);
+            Identifier resourceLocation = Identifier.tryParse(itemId);
+            Item item = BuiltInRegistries.ITEM.get(resourceLocation).map(r -> r.value()).orElse(null);
             if (item == null) {
                 return AiUtils.commonFailJson(itemId+" is not a valid item.");
             }
@@ -96,7 +95,7 @@ public class FindAndMarkStorageFunction extends AbstractTool<FindAndMarkStorageF
     public Component invocationSummaryComponent(ItemIdData result) {
         if(result.itemId().isEmpty())
             return Component.empty();
-        Item item = BuiltInRegistries.ITEM.get( ResourceLocation.tryParse(result.itemId().get(0)));
+        Item item = BuiltInRegistries.ITEM.get(Identifier.tryParse(result.itemId().get(0))).orElse(null).value();
         if(item == null)
             return Component.empty();
         Component displayItemName = item.getDefaultInstance().getHoverName();

@@ -2,20 +2,22 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.place;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
@@ -57,19 +59,18 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
     protected void start(ServerLevel level, EntityMaid maid, long p_22542_) {
         super.start(level, maid, p_22542_);
 
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
+        CombinedResourceHandler<ItemResource> inv = maid.getAvailableInv(true);
         maidAvailableItems = new ArrayList<>();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            if (!inv.getStackInSlot(i).isEmpty())
-                //如果是激活的请求列表，则不进行放置，也不参与后续判断
-                if (!inv.getStackInSlot(i).is(ItemRegistry.REQUEST_LIST_ITEM.get())
-                        || (IRequestTaskHandler.of(inv.getStackInSlot(i)) != null && IRequestTaskHandler.of(inv.getStackInSlot(i)).isIgnored(inv.getStackInSlot(i))))
-                    maidAvailableItems.add(inv.getStackInSlot(i).copy());
+        for (int i = 0; i < inv.size(); i++) {
+            if (!ItemUtil.getStack(inv, i).isEmpty())
+                if (!ItemUtil.getStack(inv, i).is(ItemRegistry.REQUEST_LIST_ITEM.get())
+                        || (IRequestTaskHandler.of(ItemUtil.getStack(inv, i)) != null && IRequestTaskHandler.of(ItemUtil.getStack(inv, i)).isIgnored(ItemUtil.getStack(inv, i))))
+                    maidAvailableItems.add(ItemUtil.getStack(inv, i).copy());
         }
         if (!this.priorityTarget(level, maid))
             this.searchForDestination(level, maid);
 
-        if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
+        if (!maid.getBrain().hasMemoryValue(InitBrains.TARGET_POS.get())) {
             if (!MemoryUtil.getPlacingInv(maid).isAnySuccess()) {
                 MemoryUtil.getPlacingInv(maid).addFailCount();
 

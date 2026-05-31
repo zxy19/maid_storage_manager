@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
@@ -19,7 +19,7 @@ public class MemoryUtil {
     public static BlockPos getTargetPos(EntityMaid maid) {
         return maid
                 .getBrain()
-                .getMemory(InitEntities.TARGET_POS.get())
+                .getMemory(InitBrains.TARGET_POS.get())
                 .filter(t -> t instanceof BlockPosTracker)
                 .map(t -> (BlockPosTracker) t)
                 .map(BlockPosTracker::currentBlockPosition)
@@ -52,7 +52,7 @@ public class MemoryUtil {
     }
 
     public static void clearTarget(EntityMaid maid) {
-        maid.getBrain().eraseMemory(InitEntities.TARGET_POS.get());
+        maid.getBrain().eraseMemory(InitBrains.TARGET_POS.get());
         maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
@@ -69,7 +69,7 @@ public class MemoryUtil {
     }
 
     public static void setTarget(EntityMaid maid, BlockPos goal, float collectSpeed) {
-        maid.getBrain().setMemory(InitEntities.TARGET_POS.get(), new BlockPosTracker(goal));
+        maid.getBrain().setMemory(InitBrains.TARGET_POS.get(), new BlockPosTracker(goal));
         BehaviorUtils.setWalkAndLookTargetMemories(maid, goal, collectSpeed, 0);
     }
 
@@ -78,7 +78,7 @@ public class MemoryUtil {
     }
 
     public static void setTarget(EntityMaid maid, Entity entity, float collectSpeed, int closeEnough) {
-        maid.getBrain().setMemory(InitEntities.TARGET_POS.get(), new EntityTracker(entity, true));
+        maid.getBrain().setMemory(InitBrains.TARGET_POS.get(), new EntityTracker(entity, true));
         BehaviorUtils.setWalkAndLookTargetMemories(maid, entity, collectSpeed, closeEnough);
     }
 
@@ -192,7 +192,7 @@ public class MemoryUtil {
 
     public static void goRestrictCenterAndWait(EntityMaid maid, float speed) {
 
-        if (!maid.hasRestriction()) return;
+        if (!maid.hasHome()) return;
         BlockPos restrictCenter = maid.getSchedulePos().getWorkPos();
         if (maid.distanceToSqr(restrictCenter.getCenter()) < 9) return;
         setTarget(maid, restrictCenter, speed);

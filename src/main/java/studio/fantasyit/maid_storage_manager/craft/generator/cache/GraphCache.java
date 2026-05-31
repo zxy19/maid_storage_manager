@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.cache;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GraphCache {
-    public record CacheRecord(UUID maid, BlockPos restrictCenter, Map<ResourceLocation, List<BlockPos>> targets,
+    public record CacheRecord(UUID maid, BlockPos restrictCenter, Map<Identifier, List<BlockPos>> targets,
                               ICachableGeneratorGraph graph) {
     }
 
@@ -33,9 +33,9 @@ public class GraphCache {
         CacheRecord cacheRecord = get(maid.getUUID());
         if (cacheRecord == null) return null;
         if (cacheRecord.restrictCenter == null) {
-            if (maid.getRestrictCenter() != null)
+            if (maid.getHomePosition() != null)
                 return null;
-        } else if (!cacheRecord.restrictCenter.equals(maid.getRestrictCenter())) {
+        } else if (!cacheRecord.restrictCenter.equals(maid.getHomePosition())) {
             return null;
         }
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), (ServerLevel) level, maid);
@@ -63,8 +63,8 @@ public class GraphCache {
         return cacheRecord;
     }
 
-    public static void putCache(EntityMaid maid, Map<ResourceLocation, List<BlockPos>> targets, ICachableGeneratorGraph generatorGraph) {
-        CacheRecord cacheRecord = new CacheRecord(maid.getUUID(), maid.getRestrictCenter(), targets, generatorGraph);
+    public static void putCache(EntityMaid maid, Map<Identifier, List<BlockPos>> targets, ICachableGeneratorGraph generatorGraph) {
+        CacheRecord cacheRecord = new CacheRecord(maid.getUUID(), maid.getHomePosition(), targets, generatorGraph);
         CACHE.put(maid.getUUID(), cacheRecord);
     }
 

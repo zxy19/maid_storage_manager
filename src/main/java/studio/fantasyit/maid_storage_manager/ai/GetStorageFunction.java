@@ -18,13 +18,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +31,6 @@ import studio.fantasyit.maid_storage_manager.attachment.InventoryListData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
-import studio.fantasyit.maid_storage_manager.network.AIMatchLocalizedItemS2CPacket;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -41,6 +39,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.ObjIntConsumer;
+
+//import studio.fantasyit.maid_storage_manager.network.AIMatchLocalizedItemS2CPacket;
 
 public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterData> {
     private static final Map<Integer,CompletableFuture<List<ItemStackI18N>>> RPC_CALLS = new HashMap<>();
@@ -126,7 +126,8 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
             List<InventoryItem> flatten = MemoryUtil.getViewedInventory(maid).flatten();
             inventoryListData.addWithCraftable(player.registryAccess(),uuid, flatten);
             inventoryListData.sendTo(uuid, player);
-            PacketDistributor.sendToPlayer(player, new AIMatchLocalizedItemS2CPacket(id,uuid, pattern,data.queryTooltip,data.all));
+            // AIMatchLocalizedItemS2CPacket disabled
+            // PacketDistributor.sendToPlayer(player, new AIMatchLocalizedItemS2CPacket(id,uuid, pattern,data.queryTooltip,data.all));
             inventoryListData.remove(uuid);
         }else{
             c.complete(List.of());
@@ -146,7 +147,7 @@ public class GetStorageFunction extends AbstractTool<GetStorageFunction.FilterDa
     protected static Set<ItemInfo> getItemKeys(List<InventoryItem> list) {
         Set<ItemInfo> keys = new HashSet<>();
         ObjIntConsumer<ItemStack> add = (ItemStack item, int count) -> {
-            @Nullable ResourceLocation key = BuiltInRegistries.ITEM.getKey(item.getItem());
+            @Nullable Identifier key = BuiltInRegistries.ITEM.getKey(item.getItem());
             if (key != null) {
                 keys.stream().filter(k -> k.id().equals(key.toString())).findFirst()
                         .ifPresentOrElse(

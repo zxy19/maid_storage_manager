@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.special;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.inventory.AnvilMenu;
@@ -27,7 +27,7 @@ import java.util.function.BiFunction;
 
 public class AnvilRecipeAction extends AbstractCraftActionContext {
     public static final ActionOption<Boolean> OPTION_ANVIL_NAME = ActionOption.valueOnly(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "anvil_name"), ""
+            Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "anvil_name"), ""
     );
 
     protected static class Access implements ContainerLevelAccess {
@@ -110,7 +110,7 @@ public class AnvilRecipeAction extends AbstractCraftActionContext {
         }
         anvilMenu.setItem(0, 0, t1);
         anvilMenu.setItem(1, 0, t2);
-        anvilMenu.setItemName(craftGuideStepData.getExtraData().getString("name"));
+        anvilMenu.setItemName(craftGuideStepData.getExtraData().getStringOr("name", ""));
         anvilMenu.createResult();
         ItemStack result = anvilMenu.getSlot(2).getItem();
         int cost = anvilMenu.getCost();

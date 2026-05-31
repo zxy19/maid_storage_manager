@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.communicate.ICommunicatable;
@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 
 public class CommunicateUtil {
     public static Optional<CommunicatePlan> sendCommunicateWishAndGetPlan(EntityMaid wisher, CommunicateWish wish, Predicate<CommunicatePlan> planPredicate) {
-        List<ResourceLocation> requestTypes = wish.wishes().stream().map(IActionWish::getType).toList();
+        List<Identifier> requestTypes = wish.wishes().stream().map(IActionWish::getType).toList();
         List<EntityMaid> maids = wisher.level().getEntities(
                 EntityTypeTest.forClass(EntityMaid.class),
                 wisher.getBoundingBox().inflate(32.0D, 32.0D, 32.0D),

@@ -2,10 +2,12 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -23,7 +25,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.List;
 
 public class CommonSplitItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "split");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "split");
     protected IStorageContext storageContext;
     int slot = 0;
     int ingredientIndex = 0;
@@ -34,8 +36,8 @@ public class CommonSplitItemAction extends AbstractCraftActionContext {
 
     @Override
     public void loadEnv(CompoundTag env) {
-        slot = env.contains("slot") ? env.getInt("slot") : 0;
-        ingredientIndex = env.contains("ingredientIndex") ? env.getInt("ingredientIndex") : 0;
+        slot = env.getIntOr("slot", 0);
+        ingredientIndex = env.getIntOr("ingredientIndex", 0);
     }
 
     @Override
@@ -70,14 +72,14 @@ public class CommonSplitItemAction extends AbstractCraftActionContext {
         if (allDone()) return Result.SUCCESS;
         boolean hasChange = false;
         boolean reTryStart = false;
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
+        ResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
         ItemStack stepItem = craftGuideStepData.getNonEmptyInput().get(ingredientIndex);
         if (storageContext instanceof IStorageSplitInsertableContext issic) {
             boolean shouldDoPlace = false;
             int count = 0;
-            for (; slot < inv.getSlots(); slot++) {
+            for (; slot < inv.size(); slot++) {
                 //物品匹配且还需继续放入
-                @NotNull ItemStack item = inv.getStackInSlot(slot);
+                @NotNull ItemStack item = ItemUtil.getStack(inv, slot);
                 if (item.isEmpty()) continue;
                 if (count++ > 10) break;
                 if (ItemStackUtil.isSameInCrafting(stepItem, item)) {
@@ -88,7 +90,7 @@ public class CommonSplitItemAction extends AbstractCraftActionContext {
                 }
             }
             if (shouldDoPlace) {
-                @NotNull ItemStack item = inv.getStackInSlot(slot);
+                @NotNull ItemStack item = ItemUtil.getStack(inv, slot);
                 int placed = craftLayer.getCurrentStepCount(ingredientIndex);
                 int required = stepItem.getCount();
                 int pick = Math.min(
@@ -108,7 +110,7 @@ public class CommonSplitItemAction extends AbstractCraftActionContext {
             if (craftLayer.getCurrentStepCount(ingredientIndex) >= stepItem.getCount()) {
                 ingredientIndex++;
                 slot = 0;
-            } else if (slot >= inv.getSlots()) {
+            } else if (slot >= inv.size()) {
                 if (craftGuideStepData.isOptional())//尽力满足输入，而非必须全部输入
                     ingredientIndex++;
                 else

@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -23,8 +22,7 @@ public class LogisticsOutputMoveBehavior extends Behavior<EntityMaid> {
 
     public LogisticsOutputMoveBehavior() {
         super(Map.of(
-                MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
-                InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
+                MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT
         ));
     }
 

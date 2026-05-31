@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.storage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class StorageVisitLock {
         }
 
         public boolean isHolderValid() {
-            return maid.level() instanceof ServerLevel sl && sl.getEntity(maid.getUUID()) instanceof EntityMaid _maid && _maid.isAlive() && _maid.getTask().getUid().equals(StorageManageTask.TASK_ID);
+            return maid.level() instanceof ServerLevel sl && sl.getEntity(maid.getUUID()) instanceof EntityMaid _maid && _maid.isAlive() && false; // StorageManageTask disabled
         }
     }
 

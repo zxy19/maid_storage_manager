@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.debug;
 
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.loading.FMLPaths;
@@ -237,7 +237,7 @@ public class CraftingDebugContext {
     }
 
     private static String in(Item item) {
-        ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+        Identifier key = BuiltInRegistries.ITEM.getKey(item);
         return key.getPath() + "_" + key.getNamespace();
     }
 }

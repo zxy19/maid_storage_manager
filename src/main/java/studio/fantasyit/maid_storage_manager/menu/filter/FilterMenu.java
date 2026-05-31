@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.menu.filter;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +45,7 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     }
 
     public void save() {
-        if (player.level().isClientSide) return;
+        if (player.level().isClientSide()) return;
         FilterItemStackList list = new FilterItemStackList();
         for (int i = 0; i < filteredItems.getContainerSize(); i++) {
             list.list.set(i, filteredItems.getItem(i));
@@ -92,14 +92,14 @@ public class FilterMenu extends AbstractContainerMenu implements ISaveFilter {
     }
 
     @Override
-    public void clicked(int slotId, int dragType, ClickType clickTypeIn, Player player) {
+    public void clicked(int slotId, int dragType, ContainerInput clickTypeIn, Player player) {
         if (slotId >= 0 && this.getSlot(slotId) instanceof FilterSlot fs) {
             int slot = fs.getContainerSlot();
-            if (clickTypeIn == ClickType.THROW)
+            if (clickTypeIn == ContainerInput.THROW)
                 return;
 
             ItemStack held = getCarried();
-            if (clickTypeIn == ClickType.CLONE) {
+            if (clickTypeIn == ContainerInput.CLONE) {
                 if (player.isCreative() && held.isEmpty()) {
                     ItemStack stackInSlot = filteredItems.getItem(slot)
                             .copy();

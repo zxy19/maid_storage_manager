@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
@@ -25,7 +25,6 @@ import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGeneratorGraph;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.util.GenerateIngredientUtil;
-import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
@@ -37,12 +36,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+//import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+
 public class GeneratorStripping implements IAutoCraftGuideGenerator {
     List<ItemStack> strippingItemStacks = new ArrayList<>();
 
     @Override
-    public @NotNull ResourceLocation getType() {
-        return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "stripping");
+    public @NotNull Identifier getType() {
+        return Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "stripping");
     }
 
     @Override
@@ -61,19 +62,19 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<Identifier, List<BlockPos>> recognizedTypePositions) {
         strippingItemStacks
                 .forEach(itemStack -> {
                     if (itemStack.getItem() instanceof BlockItem blockItem) {
                         BlockState axeStrippingState = AxeItem.getAxeStrippingState(blockItem.getBlock().defaultBlockState());
                         if (axeStrippingState == null) return;
                         ItemStack strippedItem = axeStrippingState.getBlock().asItem().getDefaultInstance();
-                        @Nullable ResourceLocation _key = BuiltInRegistries.ITEM.getKey(strippedItem.getItem());
+                        @Nullable Identifier _key = BuiltInRegistries.ITEM.getKey(strippedItem.getItem());
                         if (_key == null) return;
-                        ResourceLocation key = ResourceLocation.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
+                        Identifier key = Identifier.fromNamespaceAndPath(_key.getNamespace(), _key.getPath() + "_stripping");
                         graph.addRecipe(
                                 key,
-                                List.of(Ingredient.of(itemStack), Ingredient.of(ItemTags.AXES)),
+                                List.of(Ingredient.of(itemStack.getItem()), Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.AXES).orElseThrow())),
                                 List.of(1, 1),
                                 List.of(strippedItem),
                                 (items) -> {
@@ -105,7 +106,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
                                     ));
                                     return new CraftGuideData(
                                             craftGuideData,
-                                            CommonType.TYPE
+                                            Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled") // CommonType disabled
                                     );
                                 }
                         );
@@ -117,7 +118,7 @@ public class GeneratorStripping implements IAutoCraftGuideGenerator {
     @Override
     public void onCache(RecipeManager manager) {
         strippingItemStacks.clear();
-        this.strippingItemStacks.addAll(GenerateIngredientUtil.getIngredientItems(Ingredient.of(ItemTags.LOGS)));
+        this.strippingItemStacks.addAll(GenerateIngredientUtil.getIngredientItems(Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.LOGS).orElseThrow())));
     }
 
     @Override

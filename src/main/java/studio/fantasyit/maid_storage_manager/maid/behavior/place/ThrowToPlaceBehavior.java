@@ -4,11 +4,14 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
@@ -37,7 +40,7 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
     @Override
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         if (Conditions.isWaitingForReturn(maid)) return false;
-        if (count >= maid.getAvailableInv(false).getSlots()) {
+        if (count >= maid.getAvailableInv(false).size()) {
             return !MemoryUtil.getViewedInventory(maid).getWaitingAdd().isEmpty();
         }
         return true;
@@ -53,28 +56,32 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         super.tick(p_22551_, maid, p_22553_);
         if (!breath.breathTick(maid)) return;
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
-        if (count >= inv.getSlots()) {
+        CombinedResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
+        if (count >= inv.size()) {
             return;
         }
-        @NotNull ItemStack item = inv.extractItem(count, inv.getStackInSlot(count).getCount(), true);
-        if (item.isEmpty()) {
+        ItemStack stackInSlot = ItemUtil.getStack(inv, count);
+        if (stackInSlot.isEmpty()) {
             count++;
             return;
         }
-        if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            IRequestTaskHandler handler = IRequestTaskHandler.of(item);
-            if (handler == null || !handler.isIgnored(item)) {
+        if (stackInSlot.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            IRequestTaskHandler handler = IRequestTaskHandler.of(stackInSlot);
+            if (handler == null || !handler.isIgnored(stackInSlot)) {
                 count++;
                 return;
             }
         }
-        item = inv.extractItem(count, inv.getStackInSlot(count).getCount(), false);
-        InvUtil.throwItem(maid, item);
-        MemoryUtil.getViewedInventory(maid).addWaitingAdd(item);
+        try (Transaction tx = Transaction.open(null)) {
+            int extracted = inv.extract(count, ItemResource.of(stackInSlot), stackInSlot.getCount(), tx);
+            tx.commit();
+            stackInSlot = stackInSlot.copyWithCount(extracted);
+        }
+        InvUtil.throwItem(maid, stackInSlot);
+        MemoryUtil.getViewedInventory(maid).addWaitingAdd(stackInSlot);
 
         count++;
-        if (count >= inv.getSlots())
+        if (count >= inv.size())
             DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[THROW]Start waiting");
     }
 

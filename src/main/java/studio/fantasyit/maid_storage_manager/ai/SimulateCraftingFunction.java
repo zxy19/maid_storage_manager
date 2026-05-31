@@ -15,7 +15,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
@@ -42,7 +42,7 @@ public class SimulateCraftingFunction extends AbstractTool<StorageFetchFunction.
     public CompletableFuture<LLMCallback> onCallAsync(String toolCallId, StorageFetchFunction.StorageFetchFunctionData data, LLMCallback callback, LLMClient client) {
 
         List<Pair<ItemStack, Integer>> items = new ArrayList<>();
-        @Nullable Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(data.itemId()));
+        @Nullable Item item = BuiltInRegistries.ITEM.get(Identifier.tryParse(data.itemId())).map(r -> r.value()).orElse(null);
         if (item == null) {
             return CompletableFuture.completedFuture(callback.addToolResult(AiUtils.commonFailJson("Item" + data.itemId() + " not found"), toolCallId));
         }
@@ -114,7 +114,7 @@ public class SimulateCraftingFunction extends AbstractTool<StorageFetchFunction.
 
     @Override
     public Component invocationSummaryComponent(StorageFetchFunction.StorageFetchFunctionData result) {
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(result.itemId()));
+        Item item = BuiltInRegistries.ITEM.get(Identifier.tryParse(result.itemId())).map(r -> r.value()).orElse(null);
         return Component.translatable("chat_bubbles.maid_storage_manager.ai.simulating",item == null? Component.literal("?"): item.getDefaultInstance().getHoverName()).withStyle(ChatFormatting.GRAY);
     }
 

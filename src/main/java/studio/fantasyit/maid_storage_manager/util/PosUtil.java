@@ -195,10 +195,10 @@ public class PosUtil {
 
 
     public static @Nullable Pair<BlockPos, BlockPos> pickMeetingPosPair(EntityMaid owner, EntityMaid e, @Nullable MaidPathFindingBFS ownerPathfinding) {
-        BlockPos restrictCenterTarget = e.hasRestriction() ? e.getRestrictCenter() : e.blockPosition();
-        float restrictRadiusTarget = e.hasRestriction() ? e.getRestrictRadius() : 5;
-        BlockPos restrictCenterOwner = owner.hasRestriction() ? owner.getRestrictCenter() : owner.blockPosition();
-        float restrictRadiusOwner = owner.hasRestriction() ? owner.getRestrictRadius() : 5;
+        BlockPos restrictCenterTarget = e.hasHome() ? e.getHomePosition() : e.blockPosition();
+        float restrictRadiusTarget = e.hasHome() ? e.getHomeRadius() : 5;
+        BlockPos restrictCenterOwner = owner.hasHome() ? owner.getHomePosition() : owner.blockPosition();
+        float restrictRadiusOwner = owner.hasHome() ? owner.getHomeRadius() : 5;
         MaidPathFindingBFS pathFindingBFSOwner = ownerPathfinding == null ? new MaidPathFindingBFS(owner.getNavigation().getNodeEvaluator(), (ServerLevel) owner.level(), owner, restrictRadiusOwner + 2, (int) (restrictRadiusOwner + 2)) : ownerPathfinding;
         MaidPathFindingBFS pathFindingBFSTarget = new MaidPathFindingBFS(e.getNavigation().getNodeEvaluator(), (ServerLevel) owner.level(), e, restrictRadiusTarget + 2, (int) (restrictRadiusTarget + 2));
         BlockPos.MutableBlockPos targetT = new BlockPos.MutableBlockPos();

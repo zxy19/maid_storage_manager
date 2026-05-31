@@ -5,7 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.tileentity.TileEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.util.PosListData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class AltarRecipeAction extends AbstractDynamicAddedAction {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "altar");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "altar");
 
     public AltarRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -75,7 +75,7 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
             }
         }
         int ty = (int) (acY / 4);
-        while (!PosUtil.isSafePos(maid.level(), new BlockPos((int) (acX / 4), ty, (int) (acZ / 4))) && ty > maid.level().getMinBuildHeight())
+        while (!PosUtil.isSafePos(maid.level(), new BlockPos((int) (acX / 4), ty, (int) (acZ / 4))) && ty > maid.level().getMinY())
             ty--;
         return new BlockPos((int) (acX / 4), ty, (int) (acZ / 4));
     }

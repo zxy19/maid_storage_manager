@@ -2,12 +2,11 @@ package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -15,15 +14,16 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
-import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -32,13 +32,17 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+
+//import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 
 public class CraftGuide extends Item implements MenuProvider {
+    public static final Identifier COMMON_TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "common");
     private static CraftGuideData EMPTY = null;
 
     public static CraftGuideData empty() {
         if (EMPTY == null)
-            EMPTY = new CraftGuideData(new ArrayList<>(), CommonType.TYPE);
+            EMPTY = new CraftGuideData(new ArrayList<>(), COMMON_TYPE);
         return EMPTY;
     }
 
@@ -115,8 +119,8 @@ public class CraftGuide extends Item implements MenuProvider {
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+    public @NotNull InteractionResult use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             CraftGuideData cgd = getCraftGuideReadOnly(player.getItemInHand(p_41434_));
             if (!cgd.getSteps().isEmpty()) {
                 serverPlayer.openMenu(this, (buffer) -> {
@@ -124,9 +128,9 @@ public class CraftGuide extends Item implements MenuProvider {
             } else {
                 player.sendSystemMessage(Component.translatable("interaction.no_step"));
             }
-            return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
+            return InteractionResult.SUCCESS;
         } else {
-            return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
+            return InteractionResult.PASS;
         }
     }
 
@@ -150,7 +154,7 @@ public class CraftGuide extends Item implements MenuProvider {
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
-        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
+        if (!context.getLevel().isClientSide() && context.getPlayer() instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown())
                 return InteractionResult.PASS;
             ItemStack itemInHand = context.getItemInHand();
@@ -168,7 +172,7 @@ public class CraftGuide extends Item implements MenuProvider {
             return result;
         } else {
             if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown())
-                return InteractionResult.CONSUME;
+                return InteractionResult.SUCCESS;
             return InteractionResult.PASS;
         }
     }
@@ -211,26 +215,26 @@ public class CraftGuide extends Item implements MenuProvider {
     private @NotNull InteractionResult operateNormal(@NotNull UseOnContext context, ServerPlayer serverPlayer, CraftGuideData craftGuideData, ItemStack itemInHand) {
         int selecting = craftGuideData.selecting;
 
-        ResourceLocation specialType = CommonType.TYPE;
+        Identifier specialType = COMMON_TYPE;
         if (craftGuideData.getSteps().size() == 1 && craftGuideData.selecting == 0) {
             if (!craftGuideData.getSteps().get(0).storage.getPos().equals(context.getClickedPos())) {
                 craftGuideData.getSteps().remove(0);
-                craftGuideData.type = CommonType.TYPE;
+                craftGuideData.type = COMMON_TYPE;
             }
         }
 
         if (craftGuideData.selecting == 0 && craftGuideData.getSteps().size() == 0) {
-            if (craftGuideData.getType().equals(CommonType.TYPE))
+            if (craftGuideData.getType().equals(COMMON_TYPE))
                 specialType = CraftManager.getInstance().getTargetType((ServerLevel) context.getLevel(),
                         context.getClickedPos(),
                         context.getClickedFace());
         }
-        if (specialType == null) specialType = CommonType.TYPE;
+        if (specialType == null) specialType = COMMON_TYPE;
         Target target = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), context.getPlayer(), context.getClickedPos(), context.getClickedFace());
         if (target == null) {
             target = Target.virtual(context.getClickedPos(), context.getClickedFace());
         }
-        if (specialType == CommonType.TYPE) {
+        if (specialType == COMMON_TYPE) {
             if (craftGuideData.getSteps().size() <= selecting) {
                 if (!craftGuideData.getSteps().isEmpty() && !craftGuideData.getSteps().get(0).actionType.canBeCommon()) {
                     craftGuideData.getSteps().get(0).actionType = CraftManager.getInstance().getDefaultAction();
@@ -262,25 +266,25 @@ public class CraftGuide extends Item implements MenuProvider {
             steps.add(CraftGuideStepData.createFromTypeStorage(target.withoutSide(), specialType));
             craftGuideData.type = specialType;
         }
-        if (craftGuideData.type != CommonType.TYPE) {
+        if (craftGuideData.type != COMMON_TYPE) {
             CraftManager.getInstance()
                     .getType(craftGuideData.type)
                     .onTypeUsing(serverPlayer, itemInHand, craftGuideData);
         }
-        return InteractionResult.CONSUME;
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, toolTip, p_41424_);
         CraftGuideRenderData data = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.title", data.inputs.size()).withStyle(ChatFormatting.GRAY));
+        toolTip.accept(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.title", data.inputs.size()).withStyle(ChatFormatting.GRAY));
         for (ItemStack input : data.inputs) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.item", input.getHoverName(), input.getCount()).withStyle(ChatFormatting.GRAY));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.craft_guide.input.item", input.getHoverName(), input.getCount()).withStyle(ChatFormatting.GRAY));
         }
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.output.title", data.outputs.size()).withStyle(ChatFormatting.GRAY));
+        toolTip.accept(Component.translatable("tooltip.maid_storage_manager.craft_guide.output.title", data.outputs.size()).withStyle(ChatFormatting.GRAY));
         for (ItemStack output : data.outputs) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.craft_guide.output.item", output.getHoverName(), output.getCount()).withStyle(ChatFormatting.GRAY));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.craft_guide.output.item", output.getHoverName(), output.getCount()).withStyle(ChatFormatting.GRAY));
         }
     }
 

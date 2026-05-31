@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.api.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ public interface IActionStep {
      * @param handler 被请求者
      * @return 是否可用
      */
-    default boolean isAvailable(Map<ResourceLocation, Boolean> checks, EntityMaid wisher, EntityMaid handler) {
+    default boolean isAvailable(Map<Identifier, Boolean> checks, EntityMaid wisher, EntityMaid handler) {
         return true;
     }
 

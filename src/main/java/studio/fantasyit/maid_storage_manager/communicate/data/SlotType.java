@@ -3,16 +3,18 @@ package studio.fantasyit.maid_storage_manager.communicate.data;
 import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
-import net.neoforged.neoforge.items.wrapper.RangedWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
@@ -26,21 +28,21 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public enum SlotType {
-    ALL(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_all")),
+    ALL(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_all")),
     HEAD(InventoryMenu.EMPTY_ARMOR_SLOT_HELMET),
     CHEST(InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE),
     LEGS(InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS),
     FEET(InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS),
-    MAIN_HAND(ResourceLocation.fromNamespaceAndPath("minecraft", "item/empty_slot_sword")),
+    MAIN_HAND(Identifier.fromNamespaceAndPath("minecraft", "item/empty_slot_sword")),
     OFF_HAND(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD),
-    FLOWER(ResourceLocation.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot")),
-    ETA(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_eta")),
-    BAUBLE(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
+    FLOWER(Identifier.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot")),
+    ETA(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_eta")),
+    BAUBLE(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
 
     private final ImageAsset icon;
 
-    SlotType(@Nullable ResourceLocation icon) {
-        this.icon = icon == null ? null : new ImageAsset(ResourceLocation.fromNamespaceAndPath(
+    SlotType(@Nullable Identifier icon) {
+        this.icon = icon == null ? null : new ImageAsset(Identifier.fromNamespaceAndPath(
                 icon.getNamespace(),
                 "textures/" + icon.getPath() + ".png"
         ), 0, 0, 16, 16, 16, 16);
@@ -50,9 +52,9 @@ public enum SlotType {
         List<ItemStack> list = new ArrayList<>();
         switch (this) {
             case ALL -> {
-                CombinedInvWrapper availableInv = maid.getAvailableInv(false);
-                for (int i = 0; i < availableInv.getSlots(); i++) {
-                    list.add(availableInv.getStackInSlot(i));
+                CombinedResourceHandler<ItemResource> availableInv = maid.getAvailableInv(false);
+                for (int i = 0; i < availableInv.size(); i++) {
+                    list.add(ItemUtil.getStack(availableInv, i));
                 }
             }
             case HEAD -> list.add(maid.getItemBySlot(EquipmentSlot.HEAD));
@@ -63,20 +65,20 @@ public enum SlotType {
             case OFF_HAND -> list.add(maid.getItemBySlot(EquipmentSlot.OFFHAND));
             case BAUBLE -> {
                 BaubleItemHandler bauble = maid.getMaidBauble();
-                for (int i = 0; i < bauble.getSlots(); i++) {
-                    list.add(bauble.getStackInSlot(i));
+                for (int i = 0; i < bauble.size(); i++) {
+                    list.add(ItemUtil.getStack(bauble, i));
                 }
             }
             case FLOWER -> {
-                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
-                if (inv.getSlots() > 5)
-                    list.add(inv.getStackInSlot(5));
+                CombinedResourceHandler<ItemResource> inv = maid.getAvailableBackpackInv();
+                if (inv.size() > 5)
+                    list.add(ItemUtil.getStack(inv, 5));
             }
             case ETA -> {
-                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
-                for (int i = 0; i < inv.getSlots(); i++) {
+                CombinedResourceHandler<ItemResource> inv = maid.getAvailableBackpackInv();
+                for (int i = 0; i < inv.size(); i++) {
                     if (i != 5)
-                        list.add(inv.getStackInSlot(i));
+                        list.add(ItemUtil.getStack(inv, i));
                 }
             }
         }
@@ -86,7 +88,7 @@ public enum SlotType {
     public Optional<Integer> processSlotItemsAndGetIsFinished(EntityMaid maid, int startIndex, BiFunction<ItemStack, Integer, ItemStack> process) {
         switch (this) {
             case ALL -> {
-                CombinedInvWrapper availableInv = maid.getAvailableInv(false);
+                CombinedResourceHandler<ItemResource> availableInv = maid.getAvailableInv(false);
                 return resetSlotItemWithProcessAndCheckIfAnyChanged(process, availableInv, startIndex);
             }
             case HEAD -> maid.setItemSlot(EquipmentSlot.HEAD, process.apply(maid.getItemBySlot(EquipmentSlot.HEAD), 0));
@@ -100,45 +102,74 @@ public enum SlotType {
                     maid.setItemSlot(EquipmentSlot.OFFHAND, process.apply(maid.getItemBySlot(EquipmentSlot.OFFHAND), 0));
             case BAUBLE -> {
                 BaubleItemHandler bauble = maid.getMaidBauble();
-                return resetSlotItemWithProcessAndCheckIfAnyChanged(process, bauble, startIndex);
+                return resetBaubleSlotItemWithProcessAndCheckIfAnyChanged(process, bauble, startIndex);
             }
             case FLOWER -> {
-                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
-                if (inv.getSlots() > 5)
-                    inv.setStackInSlot(5, process.apply(inv.getStackInSlot(5), 0));
+                CombinedResourceHandler<ItemResource> inv = maid.getAvailableBackpackInv();
+                if (inv.size() > 5) {
+                    ItemStack oldStack = ItemUtil.getStack(inv, 5);
+                    ItemStack newStack = process.apply(oldStack, 0);
+                    if (!ItemStack.matches(oldStack, newStack)) {
+                        replaceSlot(inv, 5, newStack);
+                    }
+                }
             }
             case ETA -> {
-                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
-                IItemHandlerModifiable noLast;
-                if (inv.getSlots() <= 6)
-                    noLast = new RangedWrapper(inv, 0, Math.max(0, Math.min(inv.getSlots(), 5)));
-                else
-                    noLast = new CombinedInvWrapper(
-                            new RangedWrapper(inv, 0, 5),
-                            new RangedWrapper(inv, 6, inv.getSlots())
-                    );
-                return resetSlotItemWithProcessAndCheckIfAnyChanged(process, noLast, startIndex);
+                CombinedResourceHandler<ItemResource> inv = maid.getAvailableBackpackInv();
+                if (inv.size() <= 6) {
+                    // FIXME: TLM 26.1 - CombinedResourceHandler doesn't support setStackInSlot.
+                    // Cannot create sub-range wrapper with set capability. Needs migration.
+                } else {
+                    // FIXME: TLM 26.1 - Cannot compose RangedResourceHandlers into CombinedResourceHandler safely for write ops.
+                }
             }
         }
         return Optional.empty();
     }
 
     public void iterItemExceptSlotForMaid(EntityMaid maid, Function<ItemStack, ItemStack> process) {
+        // FIXME: TLM 26.1 - getAvailableInv returns CombinedResourceHandler which has no setStackInSlot.
+        // Needs migration to use Transaction-based slot manipulation.
         if (this == ALL) return;
-        CombinedInvWrapper inv = maid.getAvailableInv(true);
-        for (int i = 0; i < inv.getSlots(); i++) {
-            if (this == MAIN_HAND && i == 0) continue;
-            if (this == OFF_HAND && i == 1) continue;
-            if (this == FLOWER && i == 7) continue;
-            inv.setStackInSlot(i, process.apply(inv.getStackInSlot(i)));
+        // CombinedResourceHandler<ItemResource> inv = maid.getAvailableInv(true);
+        // for (int i = 0; i < inv.size(); i++) {
+        //     if (this == MAIN_HAND && i == 0) continue;
+        //     if (this == OFF_HAND && i == 1) continue;
+        //     if (this == FLOWER && i == 7) continue;
+        //     replaceSlot(inv, i, process.apply(ItemUtil.getStack(inv, i)));
+        // }
+    }
+
+    private static void replaceSlot(CombinedResourceHandler<ItemResource> handler, int index, ItemStack newStack) {
+        try (Transaction tx = Transaction.open(null)) {
+            ItemResource oldResource = handler.getResource(index);
+            int oldAmount = (int) handler.getAmountAsLong(index);
+            if (oldAmount > 0 && !oldResource.isEmpty()) {
+                handler.extract(index, oldResource, oldAmount, tx);
+            }
+            if (!newStack.isEmpty()) {
+                handler.insert(index, ItemResource.of(newStack), newStack.getCount(), tx);
+            }
+            tx.commit();
         }
     }
 
-    private Optional<Integer> resetSlotItemWithProcessAndCheckIfAnyChanged(BiFunction<ItemStack, Integer, ItemStack> process, IItemHandlerModifiable bauble, int startIndex) {
-        for (int i = startIndex; i < bauble.getSlots(); i++) {
-            int oCount = bauble.getStackInSlot(i).getCount();
-            ItemStack t = process.apply(bauble.getStackInSlot(i), i);
-            bauble.setStackInSlot(i, t);
+    private Optional<Integer> resetSlotItemWithProcessAndCheckIfAnyChanged(BiFunction<ItemStack, Integer, ItemStack> process, CombinedResourceHandler<ItemResource> handler, int startIndex) {
+        for (int i = startIndex; i < handler.size(); i++) {
+            int oCount = (int) handler.getAmountAsLong(i);
+            ItemStack t = process.apply(ItemUtil.getStack(handler, i), i);
+            replaceSlot(handler, i, t);
+            if (t.getCount() != oCount)
+                return Optional.of(i);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Integer> resetBaubleSlotItemWithProcessAndCheckIfAnyChanged(BiFunction<ItemStack, Integer, ItemStack> process, BaubleItemHandler bauble, int startIndex) {
+        for (int i = startIndex; i < bauble.size(); i++) {
+            int oCount = (int) bauble.getAmountAsLong(i);
+            ItemStack t = process.apply(ItemUtil.getStack(bauble, i), i);
+            bauble.set(i, ItemResource.of(t), t.getCount());
             if (t.getCount() != oCount)
                 return Optional.of(i);
         }
@@ -156,28 +187,25 @@ public enum SlotType {
             case OFF_HAND -> placeArmorSlot(itemStack, maid, EquipmentSlot.OFFHAND);
             case BAUBLE -> InvUtil.tryPlace(maid.getMaidBauble(), itemStack);
             case FLOWER -> {
-                CombinedInvWrapper backpackInv = maid.getAvailableBackpackInv();
-                if (backpackInv.getSlots() > 5) {
-                    ItemStack stackInSlot = backpackInv.getStackInSlot(5);
+                CombinedResourceHandler<ItemResource> backpackInv = maid.getAvailableBackpackInv();
+                if (backpackInv.size() > 5) {
+                    ItemStack stackInSlot = ItemUtil.getStack(backpackInv, 5);
                     if (stackInSlot.isEmpty()) {
-                        backpackInv.setStackInSlot(5, itemStack);
+                        replaceSlot(backpackInv, 5, itemStack);
                         yield ItemStack.EMPTY;
                     }
                     if (ItemStackUtil.isSame(stackInSlot, itemStack, ItemStackUtil.MATCH_TYPE.MATCHING)) {
                         int finallyCount = Math.min(itemStack.getMaxStackSize(), itemStack.getCount() + stackInSlot.getCount());
-                        backpackInv.setStackInSlot(5, itemStack.copyWithCount(finallyCount));
+                        replaceSlot(backpackInv, 5, itemStack.copyWithCount(finallyCount));
                         yield itemStack.copyWithCount(itemStack.getCount() - finallyCount);
                     }
                 }
                 yield itemStack;
             }
             case ETA -> {
-                CombinedInvWrapper inv = maid.getAvailableBackpackInv();
-                CombinedInvWrapper noLast = new CombinedInvWrapper(
-                        new RangedWrapper(inv, 0, 5),
-                        new RangedWrapper(inv, 6, inv.getSlots())
-                );
-                yield InvUtil.tryPlace(noLast, itemStack);
+                CombinedResourceHandler<ItemResource> inv = maid.getAvailableBackpackInv();
+                // FIXME: TLM 26.1 - Cannot create CombinedResourceHandler from RangedResourceHandler sub-ranges for write ops.
+                yield InvUtil.tryPlace(inv, itemStack);
             }
         };
     }
@@ -199,17 +227,20 @@ public enum SlotType {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void drawGold(net.minecraft.client.gui.GuiGraphics graphics, int x, int y) {
+    public void drawGold(GuiGraphicsExtractor graphics, int x, int y) {
+        // FIXME: TLM 26.1 - GuiGraphicsExtractor.flush() and setColor() removed.
+        // Needs migration to new rendering pipeline (Blaze3D render state / RenderPipelines).
         if (icon == null) return;
-        graphics.flush();
-        graphics.setColor(1.69f, 1.69f, 0.04f, 1.0f);
-        icon.blit(graphics, x + 1, y + 1);
-        graphics.flush();
-        icon.blit(graphics, x + 1, y);
-        graphics.flush();
-        graphics.setColor(2.57f, 2.03f, 0.07f, 1.0f);
         icon.blit(graphics, x, y);
-        graphics.flush();
-        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        // graphics.flush();
+        // graphics.setColor(1.69f, 1.69f, 0.04f, 1.0f);
+        // icon.blit(graphics, x + 1, y + 1);
+        // graphics.flush();
+        // icon.blit(graphics, x + 1, y);
+        // graphics.flush();
+        // graphics.setColor(2.57f, 2.03f, 0.07f, 1.0f);
+        // icon.blit(graphics, x, y);
+        // graphics.flush();
+        // graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }

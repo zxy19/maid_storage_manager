@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
@@ -86,7 +86,7 @@ public class RecipeUtil {
         }
 
         @Override
-        public void fillStackedContents(StackedContents p_40281_) {
+        public void fillStackedContents(StackedItemContents p_40281_) {
         }
     }
 
@@ -117,7 +117,7 @@ public class RecipeUtil {
     }
 
     public static Optional<RecipeHolder<CraftingRecipe>> getCraftingRecipe(Level level, CraftingInput container) {
-        RecipeManager recipeManager = level.getRecipeManager();
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
         return recipeManager.getRecipeFor(
                 RecipeType.CRAFTING,
                 container,
@@ -132,7 +132,7 @@ public class RecipeUtil {
                 items.add(ItemStack.EMPTY);
         }
         SmithingRecipeInput input = new SmithingRecipeInput(items.get(0), items.get(1), items.get(2));
-        RecipeManager recipeManager = level.getRecipeManager();
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
         return recipeManager.getRecipeFor(
                 RecipeType.SMITHING,
                 input,
@@ -149,16 +149,16 @@ public class RecipeUtil {
     }
 
     public static Optional<RecipeHolder<AltarRecipe>> getAltarRecipe(Level level, CraftingInput container) {
-        RecipeManager recipeManager = level.getRecipeManager();
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
         return recipeManager.getRecipeFor(
-                InitRecipes.ALTAR_CRAFTING.get(),
+                InitRecipes.ALTAR_RECIPE.get(),
                 container,
                 level
         );
     }
 
     public static Optional<RecipeHolder<SmeltingRecipe>> getSmeltingRecipe(Level level, ItemStack itemStack) {
-        RecipeManager recipeManager = level.getRecipeManager();
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
         return recipeManager.getRecipeFor(
                 RecipeType.SMELTING,
                 new SingleRecipeInput(itemStack),
@@ -175,11 +175,11 @@ public class RecipeUtil {
     }
 
     public static List<RecipeHolder<StonecutterRecipe>> getStonecuttingRecipe(Level level, ItemStack itemStack) {
-        RecipeManager recipeManager = level.getRecipeManager();
-        return recipeManager.getRecipesFor(
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
+        return recipeManager.recipeMap().getRecipesFor(
                 RecipeType.STONECUTTING,
                 new SingleRecipeInput(itemStack),
                 level
-        );
+        ).toList();
     }
 }

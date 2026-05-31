@@ -8,21 +8,22 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.ai.StorageFetchFunction;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
-import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
+//import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class TickServer {
     @SubscribeEvent
     public static void onTick(ServerTickEvent.Post event) {
-        SimulateTargetInteractHelper.removeInvalid();
+        // SimulateTargetInteractHelper disabled
+        // SimulateTargetInteractHelper.removeInvalid();
         StorageVisitLock.invalidateInvalidedLock();
         StorageFetchFunction.tick(event.getServer());
     }
 
     @SubscribeEvent
     public static void onWorldTick(LevelTickEvent.Post event) {
-        if (event.getLevel().isClientSide) return;
+        if (event.getLevel().isClientSide()) return;
         CraftBlockOccupy.get(event.getLevel()).tick((ServerLevel) event.getLevel());
     }
 }

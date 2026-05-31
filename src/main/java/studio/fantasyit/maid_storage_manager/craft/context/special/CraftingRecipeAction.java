@@ -2,13 +2,16 @@ package studio.fantasyit.maid_storage_manager.craft.context.special;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionContext;
@@ -25,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CraftingRecipeAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "craft");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "craft");
 
     public CraftingRecipeAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -43,11 +46,11 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
         Level level = maid.level();
         if (!level.getBlockState(craftGuideStepData.storage.pos).is(WorkBlockTags.CRAFTING_TABLE))
             return Result.NOT_DONE;
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
+        ResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
         List<ItemStack> input = craftGuideStepData.getInput();
         List<ItemStack> output = craftGuideStepData.getOutput();
         List<ItemStack> realInput = new ArrayList<>();
-        int[] slotExtractCount = new int[inv.getSlots()];
+        int[] slotExtractCount = new int[inv.size()];
         Arrays.fill(slotExtractCount, 0);
         boolean allMatch = true;
         for (int i = 0; i < input.size(); i++) {
@@ -56,11 +59,11 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
                 realInput.add(ItemStack.EMPTY);
                 continue;
             }
-            for (int j = 0; j < inv.getSlots(); j++) {
-                if (ItemStack.isSameItem(inv.getStackInSlot(j), input.get(i))) {
+            for (int j = 0; j < inv.size(); j++) {
+                if (ItemStack.isSameItem(ItemUtil.getStack(inv, j), input.get(i))) {
                     //还有剩余（
-                    if (inv.getStackInSlot(j).getCount() > slotExtractCount[j]) {
-                        realInput.add(inv.getStackInSlot(j).copyWithCount(input.get(i).getCount()));
+                    if (ItemUtil.getStack(inv, j).getCount() > slotExtractCount[j]) {
+                        realInput.add(ItemUtil.getStack(inv, j).copyWithCount(input.get(i).getCount()));
                         found = true;
                         slotExtractCount[j] += 1;
                         break;
@@ -76,7 +79,7 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
             CraftingContainer container = RecipeUtil.wrapCraftingContainer(realInput, 3, 3);
             Optional<RecipeHolder<CraftingRecipe>> recipe = RecipeUtil.getCraftingRecipe(level, container.asCraftInput());
             if (recipe.isPresent()) {
-                ItemStack result = recipe.get().value().assemble(container.asCraftInput(), level.registryAccess());
+                ItemStack result = recipe.get().value().assemble(container.asCraftInput());
                 if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
                     craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
                 }
@@ -84,8 +87,12 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
                 int maxCanPlace = InvUtil.maxCanPlace(inv, result);
                 if (maxCanPlace >= result.getCount()) {
                     InvUtil.tryPlace(inv, result);
-                    for (int j = 0; j < inv.getSlots(); j++) {
-                        inv.extractItem(j, slotExtractCount[j], false);
+                    for (int j = 0; j < inv.size(); j++) {
+                        ItemStack slotStack = ItemUtil.getStack(inv, j);
+                        try (var tx = Transaction.open(null)) {
+                            inv.extract(j, ItemResource.of(slotStack), slotExtractCount[j], tx);
+                            tx.commit();
+                        }
                     }
 
                     NonNullList<ItemStack> remain = recipe.get().value().getRemainingItems(container.asCraftInput());

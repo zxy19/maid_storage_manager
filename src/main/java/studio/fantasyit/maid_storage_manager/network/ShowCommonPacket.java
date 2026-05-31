@@ -4,14 +4,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.BoxTip;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 
 public class ShowCommonPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<ShowCommonPacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(
+            Identifier.fromNamespaceAndPath(
                     MaidStorageManager.MODID, "show_common"
             )
     );

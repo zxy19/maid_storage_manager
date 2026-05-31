@@ -5,12 +5,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 public class MaidDataSyncToClientPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<MaidDataSyncToClientPacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(
+            Identifier.fromNamespaceAndPath(
                     MaidStorageManager.MODID, "maid_data_sync_to_client"
             )
     );

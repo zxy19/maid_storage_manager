@@ -1,10 +1,10 @@
 package studio.fantasyit.maid_storage_manager.attachment;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.INBTSerializable;
-import org.jetbrains.annotations.UnknownNullability;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MaidItemPersistData implements INBTSerializable<CompoundTag> {
+public class MaidItemPersistData implements ValueIOSerializable {
     public record Data(CompoundTag inventoryMemory) {
         public CompoundTag toNbt() {
             CompoundTag tag = new CompoundTag();
@@ -23,7 +23,7 @@ public class MaidItemPersistData implements INBTSerializable<CompoundTag> {
 
         public static Data fromNbt(CompoundTag tag) {
             return new Data(
-                    tag.getCompound("inventoryMemory")
+                    tag.getCompound("inventoryMemory").get()
             );
         }
     }
@@ -31,20 +31,20 @@ public class MaidItemPersistData implements INBTSerializable<CompoundTag> {
     public Map<UUID, Data> dataMap = new ConcurrentHashMap<>();
 
     @Override
-    public @UnknownNullability CompoundTag serializeNBT(HolderLookup.Provider provider) {
-        CompoundTag tag = new CompoundTag();
+    public void serialize(ValueOutput output) {
         for (Map.Entry<UUID, Data> entry : dataMap.entrySet()) {
-            tag.put(entry.getKey().toString(), entry.getValue().toNbt());
+            output.store(entry.getKey().toString(), CompoundTag.CODEC, entry.getValue().toNbt());
         }
-        return tag;
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-        for (String key : nbt.getAllKeys()) {
+    public void deserialize(ValueInput input) {
+        for (String key : input.keySet()) {
             try {
                 UUID uuid = UUID.fromString(key);
-                set(uuid, Data.fromNbt(nbt.getCompound(key)));
+                input.read(key, CompoundTag.CODEC).ifPresent(tag -> {
+                    set(uuid, Data.fromNbt(tag));
+                });
             } catch (Exception e) {
                 Logger.logger.error("In persist data", e);
             }

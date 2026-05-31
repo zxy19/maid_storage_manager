@@ -5,14 +5,14 @@ import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.IChatBubbleDat
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 
 public class CraftingChatBubbleData implements IChatBubbleData {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "crafting");
-    private final ResourceLocation bg;
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "crafting");
+    private final Identifier bg;
     private final Component text;
     private final int barBackgroundColor;
     private final int barForegroundColor;
@@ -46,7 +46,7 @@ public class CraftingChatBubbleData implements IChatBubbleData {
     }
 
     @Override
-    public ResourceLocation id() {
+    public Identifier id() {
         return ID;
     }
 
@@ -79,7 +79,7 @@ public class CraftingChatBubbleData implements IChatBubbleData {
     public static class CraftingChatSerializer implements IChatBubbleData.ChatSerializer {
         public IChatBubbleData readFromBuff(FriendlyByteBuf buf) {
             return new CraftingChatBubbleData(
-                    buf.readJsonWithCodec(ComponentSerialization.CODEC),
+                    buf.readLenientJsonWithCodec(ComponentSerialization.CODEC),
                     buf.readInt(),
                     buf.readInt(),
                     buf.readInt(),

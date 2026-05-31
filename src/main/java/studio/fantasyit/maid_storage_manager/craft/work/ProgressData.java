@@ -12,9 +12,9 @@ import net.minecraft.world.item.Items;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -87,7 +87,7 @@ public class ProgressData {
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readInt(),
                     friendlyByteBuf.readEnum(Status.class),
-                    friendlyByteBuf.readCollection(ArrayList::new, (t) -> t.readJsonWithCodec(ComponentSerialization.CODEC))
+                    friendlyByteBuf.readCollection(ArrayList::new, (t) -> t.readLenientJsonWithCodec(ComponentSerialization.CODEC))
             );
         }
 
@@ -143,8 +143,8 @@ public class ProgressData {
     public static ProgressData fromNetwork(RegistryFriendlyByteBuf buf) {
         return new ProgressData(
                 buf.readCollection(ArrayList::new, TaskProgress::fromNetwork),
-                buf.readJsonWithCodec(ComponentSerialization.CODEC),
-                buf.readCollection(ArrayList::new, t -> t.readJsonWithCodec(ComponentSerialization.CODEC)),
+                buf.readLenientJsonWithCodec(ComponentSerialization.CODEC),
+                buf.readCollection(ArrayList::new, t -> t.readLenientJsonWithCodec(ComponentSerialization.CODEC)),
                 buf.readCollection(ArrayList::new, t -> {
                     if (t instanceof RegistryFriendlyByteBuf t1)
                         return ItemStackUtil.parseStack(t1.registryAccess(), t1.readNbt());

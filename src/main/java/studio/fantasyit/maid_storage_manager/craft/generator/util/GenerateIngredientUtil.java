@@ -1,14 +1,17 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.util;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -16,32 +19,33 @@ import java.util.function.Consumer;
 public class GenerateIngredientUtil {
     public static Ingredient getToolIngredient() {
         return IntersectionIngredient.of(
-                Ingredient.of(ItemTags.SWORDS),
-                Ingredient.of(ItemTags.AXES),
-                Ingredient.of(ItemTags.HOES),
-                Ingredient.of(ItemTags.PICKAXES),
-                Ingredient.of(ItemTags.SHOVELS)
+                Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.SWORDS).orElseThrow()),
+                Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.AXES).orElseThrow()),
+                Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.HOES).orElseThrow()),
+                Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.PICKAXES).orElseThrow()),
+                Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.SHOVELS).orElseThrow())
         );
     }
 
-    public static Ingredient getIngredientForDestroyBlockItem(ItemStack itemStack) {
+    public static Optional<Ingredient> getIngredientForDestroyBlockItem(ItemStack itemStack) {
         if (itemStack.getItem() instanceof BlockItem blockItem) {
             BlockState blockState = blockItem.getBlock().defaultBlockState();
-            ItemStack[] items = getToolIngredient().getItems();
-            List<ItemStack> suitable = new ArrayList<>();
-            for (ItemStack item : items) {
-                if (item.isCorrectToolForDrops(blockState)) {
+            List<ItemLike> suitable = new ArrayList<>();
+            getToolIngredient().items().forEach(holder -> {
+                Item item = holder.value();
+                if (item.getDefaultInstance().isCorrectToolForDrops(blockState)) {
                     suitable.add(item);
                 }
-            }
+            });
             if (!suitable.isEmpty())
-                return Ingredient.of(suitable.toArray(new ItemStack[0]));
+                return Optional.of(Ingredient.of(suitable.toArray(new ItemLike[0])));
         }
-        return Ingredient.EMPTY;
+        return Optional.empty();
     }
 
-    public static Optional<Ingredient> optionalIngredient(Ingredient ingredient) {
-        return ingredient.isEmpty() ? Optional.empty() : Optional.of(ingredient);
+    @Nullable
+    public static Ingredient optionalIngredient(Ingredient ingredient) {
+        return ingredient.isEmpty() ? null : ingredient;
     }
 
     public static void each3items(List<ItemStack> itemStackList, Consumer<List<ItemStack>> consumer) {
@@ -52,7 +56,7 @@ public class GenerateIngredientUtil {
     }
 
     public static List<ItemStack> getIngredientItems(Ingredient ingredient) {
-        return Arrays.stream(ingredient.getItems()).toList();
+        return ingredient.items().map(holder -> holder.value().getDefaultInstance()).toList();
     }
 
     public static int getIngredientCount(Ingredient ingredient) {

@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.type;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -29,14 +29,14 @@ public interface ICraftType {
      *
      * @return 合成类型ID
      */
-    @NotNull ResourceLocation getType();
+    @NotNull Identifier getType();
 
     /**
      * 合成操作ID
      *
      * @return 合成操作ID。注意，该ID必须被注册！否则将在绑定该类型时产生错误。如果计划使用stepTransform，可以使用VirtualAction进行注册。
      */
-    @NotNull ResourceLocation getActionType();
+    @NotNull Identifier getActionType();
 
     /**
      * 类型代表物品。会被渲染在合成指南右下角。
@@ -56,7 +56,7 @@ public interface ICraftType {
      */
     @Nullable
     default AbstractCraftActionContext start(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
-        ResourceLocation type = craftGuideStepData.getActionType();
+        Identifier type = craftGuideStepData.getActionType();
         return CraftManager.getInstance().start(type, maid, craftGuideData, craftGuideStepData, layer);
     }
 

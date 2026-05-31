@@ -5,8 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,10 +22,10 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -47,14 +48,14 @@ public class CommonAttackAction extends AbstractCraftActionContext {
     }
 
     public static final ActionOption<USE_TYPE> OPTION_USE_METHOD = new ActionOption<>(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "attack_mode"),
+            Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "attack_mode"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_destroy"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.attack_single")
             },
-            new ResourceLocation[]{
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_long.png"),
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_single.png")
+            new Identifier[]{
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_long.png"),
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_single.png")
             },
             "",
             new ActionOption.BiConverter<>(
@@ -69,7 +70,7 @@ public class CommonAttackAction extends AbstractCraftActionContext {
                     }
             )
     );
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "destroy");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "destroy");
     FakePlayer fakePlayer;
     boolean startDestroyBlock = false;
     float progress = 0.0f;
@@ -165,10 +166,10 @@ public class CommonAttackAction extends AbstractCraftActionContext {
             MutableInt totalGet = new MutableInt(0);
             BlockEntity blockEntity = targetBs.hasBlockEntity() ? level.getBlockEntity(target) : null;
             //改用MainHandItem来roll loot
-            CombinedInvWrapper availableInv = maid.getAvailableInv(false);
+            ResourceHandler<ItemResource> availableInv = maid.getAvailableInv(false);
             Block.getDrops(targetBs, level, target, blockEntity, maid, maid.getMainHandItem()).forEach((stack) -> {
                 ItemStack originalStack = stack.copy();
-                ItemStack remindItemStack = ItemHandlerHelper.insertItemStacked(availableInv, stack, false);
+                ItemStack remindItemStack = ItemUtil.insertItemReturnRemaining(availableInv, stack, false, null);
                 if (ItemStackUtil.isSameInCrafting(originalStack, craftGuideStepData.getOutput().get(0))) {
                     totalGet.add(originalStack.getCount() - remindItemStack.getCount());
                 }

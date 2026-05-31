@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.view;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -47,7 +47,7 @@ public class ViewMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         AdvancementTypes.triggerForMaid(maid, AdvancementTypes.STORAGE_MANAGER);
         if (!priorityTarget(level, maid))
             this.searchForDestination(level, maid);
-        if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
+        if (!maid.getBrain().hasMemoryValue(InitBrains.TARGET_POS.get())) {
             if (MemoryUtil.getViewedInventory(maid).confirmNoTarget(2)) {
                 MemoryUtil.getViewedInventory(maid).removeUnvisited();
                 MemoryUtil.getViewedInventory(maid).resetVisitedPos();

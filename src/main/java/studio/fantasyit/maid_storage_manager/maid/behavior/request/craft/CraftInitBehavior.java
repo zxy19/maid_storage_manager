@@ -1,18 +1,17 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.algo.MaidCraftPlanner;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -20,7 +19,6 @@ import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class CraftInitBehavior extends Behavior<EntityMaid> {
     public CraftInitBehavior() {
@@ -57,7 +55,7 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
 
         }
         planner = new MaidCraftPlanner(level, maid);
-        CraftingDebugManager.getDebugContext(maid.getOwnerUUID())
+        CraftingDebugManager.getDebugContext(maid.getOwner() != null ? maid.getOwner().getUUID() : maid.getUUID())
                 .ifPresentOrElse(c -> {
                     c.convey(planner);
                     debugContext = c;
@@ -93,8 +91,8 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
         if (!debugContext.isDummy()) {
-            Optional.ofNullable(maid.getOwner())
-                    .ifPresent(o -> o.sendSystemMessage(Component.literal("Crafting debug done")));
+            // Optional.ofNullable(maid.getOwner())
+            //         .ifPresent(o -> o.displayClientMessage(Component.literal("Crafting debug done"), true));
             debugContext.stop();
         }
     }

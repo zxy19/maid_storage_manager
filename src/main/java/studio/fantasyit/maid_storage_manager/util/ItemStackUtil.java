@@ -1,7 +1,6 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
@@ -14,12 +13,11 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.DataComponentUtil;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -35,12 +33,7 @@ public class ItemStackUtil {
         NOT_MATCHING,
         MATCHING,
     }
-    static Codec<ItemStack> CODEC_UNLIMITED = Codec.lazyInitialized(() -> RecordCodecBuilder.create((p_347288_) -> p_347288_.group(
-                    ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                    Codec.INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
-                    DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
-            ).apply(p_347288_, ItemStack::new))
-    );
+    static Codec<ItemStack> CODEC_UNLIMITED = ItemStack.CODEC;
     public static Codec<ItemStack> OPTIONAL_CODEC_UNLIMITED = ExtraCodecs.optionalEmptyMap(CODEC_UNLIMITED)
             .xmap((p_330099_) -> p_330099_.orElse(ItemStack.EMPTY), (p_330101_) -> p_330101_.isEmpty() ? Optional.empty() : Optional.of(p_330101_));
 
@@ -64,7 +57,7 @@ public class ItemStackUtil {
                 p_320527_.writeInt(0);
             } else {
                 p_320527_.writeInt(p_320873_.getCount());
-                ITEM_STREAM_CODEC.encode(p_320527_, p_320873_.getItemHolder());
+                ITEM_STREAM_CODEC.encode(p_320527_, p_320873_.typeHolder());
                 DataComponentPatch.STREAM_CODEC.encode(p_320527_, p_320873_.getComponentsPatch());
             }
 
@@ -89,8 +82,8 @@ public class ItemStackUtil {
         return ItemStack.isSameItem(stack1, stack2);
     }
 
-    public static TagKey<Item> NoMatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "no_components"));
-    public static TagKey<Item> MatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_components"));
+    public static TagKey<Item> NoMatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "no_components"));
+    public static TagKey<Item> MatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "use_components"));
 
 
     public static boolean isSameInCrafting(ItemStack stack1, ItemStack stack2) {
@@ -166,6 +159,6 @@ public class ItemStackUtil {
     }
 
     public static CompoundTag saveStack(HolderLookup.Provider holderLookup, ItemStack stack) {
-        return (CompoundTag) DataComponentUtil.wrapEncodingExceptions(stack, OPTIONAL_CODEC_UNLIMITED, holderLookup);
+        return (CompoundTag) OPTIONAL_CODEC_UNLIMITED.encodeStart(holderLookup.createSerializationContext(NbtOps.INSTANCE), stack).getOrThrow();
     }
 }

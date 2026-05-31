@@ -1,13 +1,14 @@
 package studio.fantasyit.maid_storage_manager.util;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -96,7 +97,7 @@ public class Conditions {
      */
     public static boolean hasReachedValidTargetOrReset(EntityMaid maid, double pathCloseEnoughThreshold) {
         Brain<EntityMaid> brain = maid.getBrain();
-        return brain.getMemory(InitEntities.TARGET_POS.get()).map(targetPos -> {
+        return brain.getMemory(InitBrains.TARGET_POS.get()).map(targetPos -> {
             Vec3 targetV3d = targetPos.currentPosition();
             boolean strictArrive = maid.distanceToSqr(targetV3d) < Math.pow(pathCloseEnoughThreshold, 2);
             boolean loosenArrive = maid.distanceToSqr(targetV3d) < Math.pow(pathCloseEnoughThreshold * 2, 2)
@@ -104,7 +105,7 @@ public class Conditions {
             if (!strictArrive && !loosenArrive) {
                 Optional<WalkTarget> walkTarget = brain.getMemory(MemoryModuleType.WALK_TARGET);
                 if (walkTarget.isEmpty() || !walkTarget.get().getTarget().currentPosition().equals(targetV3d)) {
-                    brain.eraseMemory(InitEntities.TARGET_POS.get());
+                    brain.eraseMemory(InitBrains.TARGET_POS.get());
                 }
                 return false;
             }
@@ -139,8 +140,8 @@ public class Conditions {
     public static boolean shouldStopAndPickUpItems(EntityMaid maid) {
         if (MemoryUtil.isWorking(maid))
             return false;
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
-        if (InvUtil.freeSlots(inv) >= inv.getSlots() * Config.pickupRequireWhenPlace) {
+        ResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
+        if (InvUtil.freeSlots(inv) >= inv.size() * Config.pickupRequireWhenPlace) {
             return true;
         }
         return false;
@@ -157,7 +158,7 @@ public class Conditions {
      * 是否应该使用优先（记忆匹配的）目标
      */
     public static boolean usePriorityTarget(EntityMaid maid) {
-        return switch (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).memoryAssistant()) {
+        return switch (StorageManagerConfigData.get(maid).memoryAssistant()) {
             case MEMORY_ONLY, MEMORY_FIRST -> true;
             case ALWAYS_SCAN -> false;
         };
@@ -167,7 +168,7 @@ public class Conditions {
      * 是否应该使用扫描（非记忆匹配的）目标
      */
     public static boolean useScanTarget(EntityMaid maid) {
-        return switch (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).memoryAssistant()) {
+        return switch (StorageManagerConfigData.get(maid).memoryAssistant()) {
             case MEMORY_ONLY -> false;
             case ALWAYS_SCAN, MEMORY_FIRST -> true;
         };
@@ -177,7 +178,7 @@ public class Conditions {
      * 存放是否不分类
      */
     public static boolean noSortPlacement(EntityMaid maid) {
-        return maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).noSortPlacement();
+        return StorageManagerConfigData.get(maid).noSortPlacement();
     }
 
     /**

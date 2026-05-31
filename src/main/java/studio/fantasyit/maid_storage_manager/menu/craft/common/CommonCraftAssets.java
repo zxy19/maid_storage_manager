@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 
@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommonCraftAssets {
-    public static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
+    public static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common.png");
 
-    public static final ResourceLocation BACKGROUND_OPT = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common_opt.png");
+    public static final Identifier BACKGROUND_OPT = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/common_opt.png");
 
 
     public static ImageAsset ROW_HIGHLIGHT = ImageAsset.from4Point(
@@ -168,18 +168,18 @@ public class CommonCraftAssets {
 
 
 
-    public static Map<ResourceLocation, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();
+    public static Map<Identifier, ImageAsset> ACTION_IMAGE_MAP = new HashMap<>();
 
-    public static ImageAsset imageForAction(ResourceLocation location) {
+    public static ImageAsset imageForAction(Identifier location) {
         return ACTION_IMAGE_MAP.computeIfAbsent(location, (key) ->
                 new ImageAsset(
-                        ResourceLocation.fromNamespaceAndPath(location.getNamespace(), "textures/gui/craft/action/" + location.getPath() + ".png"),
+                        Identifier.fromNamespaceAndPath(location.getNamespace(), "textures/gui/craft/action/" + location.getPath() + ".png"),
                         0, 0, 11, 11, 11, 11
                 )
         );
     }
 
-    public static Component translationForAction(ResourceLocation location) {
+    public static Component translationForAction(Identifier location) {
         return Component.translatable("craft_guide.action." + location.getNamespace() + "." + location.getPath());
     }
 }

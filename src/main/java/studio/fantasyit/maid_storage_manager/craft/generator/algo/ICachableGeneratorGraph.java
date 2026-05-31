@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.algo;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -21,31 +21,31 @@ import java.util.function.Function;
 public interface ICachableGeneratorGraph {
     void setItems(List<ItemStack> list, List<ItemStack> itemList);
 
-    void setCurrentGeneratorType(ResourceLocation internalType, boolean b);
+    void setCurrentGeneratorType(Identifier internalType, boolean b);
 
     void setCurrentGeneratorType(IAutoCraftGuideGenerator generator);
 
     void addRecipe(RecipeHolder<? extends Recipe<?>> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
 
-    void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
+    void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> recipe, Identifier generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
 
-    void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
+    void addRecipe(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
 
-    void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
+    void addRecipe(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier);
 
     void addSpecialCraftNode(Function<Integer, SpecialCraftNode> idToNodeBuilder);
 
     void clearStates();
 
-    void invalidAllCraftWithType(@NotNull ResourceLocation type);
+    void invalidAllCraftWithType(@NotNull Identifier type);
 
-    void blockType(ResourceLocation type);
+    void blockType(Identifier type);
 
-    void blockRecipe(ResourceLocation id);
+    void blockRecipe(Identifier id);
 
-    void removeBlockedRecipe(ResourceLocation id);
+    void removeBlockedRecipe(Identifier id);
 
-    void removeBlockedType(ResourceLocation type);
+    void removeBlockedType(Identifier type);
 
     List<CraftGuideData> getCraftGuides();
 
@@ -57,7 +57,7 @@ public interface ICachableGeneratorGraph {
 
     IngredientNode addOrGetCahcedIngredientNode(Ingredient ingredient, UUID uuid);
 
-    void addRecipeWithIngredients(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime);
+    void addRecipeWithIngredients(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, Identifier type, boolean isOneTime);
 
     boolean hasCachedIngredientNode(UUID ingredient);
 

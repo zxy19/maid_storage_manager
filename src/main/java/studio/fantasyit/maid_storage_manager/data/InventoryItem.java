@@ -3,11 +3,11 @@ package studio.fantasyit.maid_storage_manager.data;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -15,7 +15,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryItem implements INBTSerializable<CompoundTag> {
+public class InventoryItem {
     public record PositionCount(Target pos, int count, boolean isCraftGuide) {
         public static StreamCodec<RegistryFriendlyByteBuf, PositionCount> STREAM_CODEC = StreamCodec.composite(
                 Target.STREAM_CODEC,
@@ -70,10 +70,9 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         return new Pair<>(itemStack, totalCount);
     }
 
-    @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider t) {
+    public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.put("itemStack", itemStack.save(t));
+        tag.put("itemStack", ItemStackUtil.OPTIONAL_CODEC_UNLIMITED.encodeStart(NbtOps.INSTANCE, itemStack).getOrThrow());
         tag.putInt("totalCount", totalCount);
         ListTag list = new ListTag();
         for (int i = 0; i < posAndSlot.size(); i++) {
@@ -87,17 +86,16 @@ public class InventoryItem implements INBTSerializable<CompoundTag> {
         return tag;
     }
 
-    @Override
     public void deserializeNBT(HolderLookup.Provider t, CompoundTag nbt) {
-        itemStack = ItemStackUtil.parseStack(t, nbt.getCompound("itemStack"));
-        totalCount = nbt.getInt("totalCount");
-        ListTag list = nbt.getList("posCount", 10);
+        itemStack = ItemStackUtil.parseStack(t, nbt.getCompound("itemStack").get());
+        totalCount = nbt.getInt("totalCount").get();
+        ListTag list = nbt.getList("posCount").get();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tmp = list.getCompound(i);
+            CompoundTag tmp = list.getCompound(i).get();
             posAndSlot.add(new PositionCount(
-                            Target.fromNbt(tmp.getCompound("pos")),
-                            tmp.getInt("count"),
-                            tmp.getBoolean("isCraftGuide")
+                            Target.fromNbt(tmp.getCompound("pos").get()),
+                            tmp.getInt("count").get(),
+                            tmp.getBoolean("isCraftGuide").get()
                     )
             );
         }

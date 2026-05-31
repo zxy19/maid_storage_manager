@@ -1,122 +1,67 @@
 package studio.fantasyit.maid_storage_manager.items.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
-import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
 
 import java.util.List;
 
-import static net.minecraft.client.renderer.entity.ItemRenderer.getFoilBuffer;
+public class CustomItemRenderer {
 
-public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
-    static CustomItemRenderer instance;
-
-    public static CustomItemRenderer getInstance() {
-        if (instance == null) {
-            instance = new CustomItemRenderer();
-        }
-        return instance;
-    }
-
-    private final BlockEntityRenderDispatcher dispatcher;
-
-    public CustomItemRenderer() {
-        super(
-                Minecraft.getInstance().getBlockEntityRenderDispatcher(),
-                Minecraft.getInstance().getEntityModels()
-        );
-        this.dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-    }
-
-    @Override
-    public void renderByItem(@NotNull ItemStack itemStack,
-                             @NotNull ItemDisplayContext context,
-                             @NotNull PoseStack pose,
-                             @NotNull MultiBufferSource multiBufferSource,
-                             int light,
-                             int overlay) {
+    public static void renderByItem(ItemStack itemStack,
+                                    ItemDisplayContext context,
+                                    PoseStack pose,
+                                    SubmitNodeCollector submitNodeCollector,
+                                    int light,
+                                    int overlay) {
         pose.pushPose();
         if (context != ItemDisplayContext.FIXED && context != ItemDisplayContext.GUI) {
             pose.scale(0.5f, 0.5f, 1);
             pose.translate(0.5, 0.8, 0);
         }
+        ItemModelResolver resolver = new ItemModelResolver(Minecraft.getInstance().getModelManager());
+        ItemStackRenderState state = new ItemStackRenderState();
         if (itemStack.is(ItemRegistry.FILTER_LIST.get()))
-            renderFilter(itemStack, context, pose, multiBufferSource, light, overlay);
+            renderFilter(itemStack, context, pose, submitNodeCollector, light, overlay, resolver, state);
         if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()))
-            renderCraft(itemStack, context, pose, multiBufferSource, light, overlay);
+            renderCraft(itemStack, context, pose, submitNodeCollector, light, overlay, resolver, state);
         if (itemStack.is(ItemRegistry.LOGISTICS_GUIDE.get()))
-            renderLogistics(itemStack, context, pose, multiBufferSource, light, overlay);
+            renderLogistics(itemStack, context, pose, submitNodeCollector, light, overlay, resolver, state);
         pose.popPose();
     }
 
-    private void renderWrappedMulti(@NotNull ItemStack itemStack, @NotNull ItemDisplayContext context, @NotNull PoseStack pose, @NotNull MultiBufferSource multiBufferSource, int light, int overlay) {
-        @Nullable List<ItemStack> items = itemStack.get(DataComponentRegistry.TO_SPAWN_ITEMS);
-        if (items != null && !items.isEmpty()) {
-            int i = (Minecraft.getInstance().player.tickCount / 20) % items.size();
-            ItemStack item = items.get(i);
-            Minecraft.getInstance().getItemRenderer().render(item,
-                    context,
-                    true,
-                    pose,
-                    multiBufferSource,
-                    light,
-                    overlay,
-                    Minecraft.getInstance().getItemRenderer().getModel(
-                            item,
-                            null,
-                            null,
-                            0
-                    )
-            );
-        }
+    private static void renderLogistics(ItemStack itemStack,
+                                        ItemDisplayContext context,
+                                        PoseStack pose,
+                                        SubmitNodeCollector submitNodeCollector,
+                                        int light,
+                                        int overlay,
+                                        ItemModelResolver resolver,
+                                        ItemStackRenderState state) {
+        resolver.updateForTopItem(state, itemStack, context, Minecraft.getInstance().level, null, 0);
+        state.submit(pose, submitNodeCollector, light, overlay, 0);
     }
 
-    private void renderLogistics(@NotNull ItemStack itemStack,
-                                 @NotNull ItemDisplayContext context,
-                                 @NotNull PoseStack pose,
-                                 @NotNull MultiBufferSource multiBufferSource,
-                                 int light,
-                                 int overlay) {
-        BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "logistics_guide"), ModelResourceLocation.INVENTORY_VARIANT)
-        );
-        for (var rendertype : model.getRenderTypes(itemStack, false)) {
-            VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
-            Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
-        }
-    }
-
-    private void renderFilter(@NotNull ItemStack itemStack,
-                              @NotNull ItemDisplayContext context,
-                              @NotNull PoseStack pose,
-                              @NotNull MultiBufferSource multiBufferSource,
-                              int light,
-                              int overlay) {
-        BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "item/filter_list_base"), ModelResourceLocation.STANDALONE_VARIANT)
-        );
-        for (var rendertype : model.getRenderTypes(itemStack, false)) {
-            VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
-            Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
-        }
+    private static void renderFilter(ItemStack itemStack,
+                                     ItemDisplayContext context,
+                                     PoseStack pose,
+                                     SubmitNodeCollector submitNodeCollector,
+                                     int light,
+                                     int overlay,
+                                     ItemModelResolver resolver,
+                                     ItemStackRenderState baseState) {
+        resolver.updateForTopItem(baseState, itemStack, context, Minecraft.getInstance().level, null, 0);
+        baseState.submit(pose, submitNodeCollector, light, overlay, 0);
 
         List<ItemStack> items = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new FilterItemStackList().toImmutable())
                 .list()
@@ -136,47 +81,29 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.mulPose(rotation);
                     pose.translate(-0.78, 0.23, -0.46);
                 }
-//                pose.translate(0.04, 0.2, 0.45F);
                 pose.scale(0.55f, 0.55f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.flushAndSetup(multiBufferSource,pose);
-                Minecraft.getInstance().getItemRenderer().render(
-                        item,
-                        ItemDisplayContext.GUI,
-                        true,
-                        pose,
-                        multiBufferSource,
-                        light,
-                        overlay,
-                        Minecraft.getInstance().getItemRenderer().getModel(
-                                item,
-                                null,
-                                null,
-                                0
-                        )
-                );
-                ItemStackLighting.flushAndRestore(multiBufferSource);
+                ItemStackRenderState overlayState = new ItemStackRenderState();
+                resolver.updateForTopItem(overlayState, item, ItemDisplayContext.GUI, Minecraft.getInstance().level, null, 0);
+                overlayState.submit(pose, submitNodeCollector, light, overlay, 0);
                 pose.popPose();
             }
         }
     }
 
-    private void renderCraft(@NotNull ItemStack itemStack,
-                             @NotNull ItemDisplayContext context,
-                             @NotNull PoseStack pose,
-                             @NotNull MultiBufferSource multiBufferSource,
-                             int light,
-                             int overlay) {
+    private static void renderCraft(ItemStack itemStack,
+                                    ItemDisplayContext context,
+                                    PoseStack pose,
+                                    SubmitNodeCollector submitNodeCollector,
+                                    int light,
+                                    int overlay,
+                                    ItemModelResolver resolver,
+                                    ItemStackRenderState baseState) {
         CraftGuideRenderData data = itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_RENDER, CraftGuideRenderData.EMPTY);
         List<ItemStack> items = data.outputs;
-        BakedModel model = Minecraft.getInstance().getModelManager().getModel(
-                new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, items.isEmpty() ? "item/craft_guide_base" : "item/craft_guide_base_blank"), ModelResourceLocation.STANDALONE_VARIANT)
-        );
-        for (var rendertype : model.getRenderTypes(itemStack, false)) {
-            VertexConsumer vertexconsumer = getFoilBuffer(multiBufferSource, rendertype, true, itemStack.hasFoil());
-            Minecraft.getInstance().getItemRenderer().renderModelLists(model, itemStack, light, overlay, pose, vertexconsumer);
-        }
+        resolver.updateForTopItem(baseState, itemStack, context, Minecraft.getInstance().level, null, 0);
+        baseState.submit(pose, submitNodeCollector, light, overlay, 0);
 
         if (!items.isEmpty()) {
             int i = (Minecraft.getInstance().player.tickCount / 20) % items.size();
@@ -192,27 +119,12 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                     pose.translate(-0.78, 0.23, -0.46);
                 }
                 pose.translate(0, -0.05, 0);
-//                pose.translate(0.04, 0.2, 0.45F);
                 pose.scale(0.55f, 0.55f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.flushAndSetup(multiBufferSource,pose);
-                Minecraft.getInstance().getItemRenderer().render(
-                        item,
-                        ItemDisplayContext.GUI,
-                        true,
-                        pose,
-                        multiBufferSource,
-                        light,
-                        overlay,
-                        Minecraft.getInstance().getItemRenderer().getModel(
-                                item,
-                                null,
-                                null,
-                                0
-                        )
-                );
-                ItemStackLighting.flushAndRestore(multiBufferSource);
+                ItemStackRenderState overlayState = new ItemStackRenderState();
+                resolver.updateForTopItem(overlayState, item, ItemDisplayContext.GUI, Minecraft.getInstance().level, null, 0);
+                overlayState.submit(pose, submitNodeCollector, light, overlay, 0);
                 pose.popPose();
             }
         }
@@ -233,25 +145,12 @@ public class CustomItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.scale(0.40f, 0.40f, 1);
                 pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
                 pose.translate(0.5F, 0.5F, 0.5F);
-                ItemStackLighting.flushAndSetup(multiBufferSource,pose);
-                Minecraft.getInstance().getItemRenderer().render(
-                        icon,
-                        ItemDisplayContext.GUI,
-                        true,
-                        pose,
-                        multiBufferSource,
-                        light,
-                        overlay,
-                        Minecraft.getInstance().getItemRenderer().getModel(
-                                icon,
-                                null,
-                                null,
-                                0
-                        )
-                );
-                ItemStackLighting.flushAndRestore(multiBufferSource);
+                ItemStackRenderState iconState = new ItemStackRenderState();
+                resolver.updateForTopItem(iconState, icon, ItemDisplayContext.GUI, Minecraft.getInstance().level, null, 0);
+                iconState.submit(pose, submitNodeCollector, light, overlay, 0);
                 pose.popPose();
             }
         }
     }
 }
+

@@ -48,7 +48,7 @@ public class PathTargetLocator {
                         PosUtil.gatherAroundUpAndDown(finalPos, (pos1) -> {
                             if (PosUtil.isBetween(pos, finalPos, pos1)) return null;
                             if (!PosUtil.isSafePos(maid.level(), pos1)) return null;
-                            if (maid.isWithinRestriction(pos1) && pathFinding.canPathReach(pos1) && canTouchBlock(maid, pos1, target)) {
+                            if (maid.isWithinHome(pos1) && pathFinding.canPathReach(pos1) && canTouchBlock(maid, pos1, target)) {
                                 return pos1;
                             }
                             return null;
@@ -102,7 +102,7 @@ public class PathTargetLocator {
     }
 
     private static boolean validPosForThrowItem(ServerLevel level, EntityMaid maid, BlockPos pos, MaidPathFindingBFS pathFinding) {
-        if (PosUtil.isSafePos(level, pos) && maid.isWithinRestriction(pos)) {
+        if (PosUtil.isSafePos(level, pos) && maid.isWithinHome(pos)) {
             return pathFinding.canPathReach(pos);
         }
         return false;
@@ -114,7 +114,7 @@ public class PathTargetLocator {
             center = center.relative(craftGuideStepData.getStorage().side, 1);
 
         return PosUtil.findAround(center, (pos) -> {
-            if (PosUtil.isSafePos(maid.level(), pos) && maid.isWithinRestriction(pos) && pathFinding.canPathReach(pos)) {
+            if (PosUtil.isSafePos(maid.level(), pos) && maid.isWithinHome(pos) && pathFinding.canPathReach(pos)) {
                 return pos;
             } else {
                 return null;
@@ -132,7 +132,7 @@ public class PathTargetLocator {
         @NotNull List<BlockPos> posListToEval = PosUtil.gatherAroundUpAndDown(target,
                 pos -> {
                     if (!PosUtil.isSafePos(level, pos)) return null;
-                    if (maid.isWithinRestriction(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
+                    if (maid.isWithinHome(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
                         return pos;
                     } else {
                         return null;

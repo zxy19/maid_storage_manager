@@ -1,18 +1,18 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.stock;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -30,7 +30,7 @@ public class StockCheckMoveBehavior extends Behavior<EntityMaid> {
     public StockCheckMoveBehavior() {
         super(Map.of(
                 MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
-                InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
+                InitBrains.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
         ));
     }
 

@@ -12,12 +12,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
@@ -92,7 +93,7 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
 
         if(result.list().isEmpty())
             return Component.empty();
-        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(result.list().get(0).itemId));
+        Item item = BuiltInRegistries.ITEM.get(Identifier.tryParse(result.list().get(0).itemId)).map(r -> r.value()).orElse(null);
         if(item == null)
             return Component.empty();
         Component displayItemName = item.getDefaultInstance().getHoverName();
@@ -113,8 +114,8 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
 
         List<ItemStack> list = new ArrayList<>();
         for(StorageFetchFunctionData i: storageFetchFunctionData){
-            ResourceLocation resourceLocation = ResourceLocation.tryParse(i.itemId);
-            Item item = BuiltInRegistries.ITEM.get(resourceLocation);
+            Identifier resourceLocation = Identifier.tryParse(i.itemId);
+            Item item = BuiltInRegistries.ITEM.get(resourceLocation).map(r -> r.value()).orElse(null);
             if(item == null)
                 return CompletableFuture.completedFuture( callback.addToolResult(AiUtils.commonFailJson(i.itemId+" is not a valid item."), id()));
             ItemStack itemStack = item.getDefaultInstance();
@@ -123,7 +124,7 @@ public class StorageFetchFunction extends AbstractTool<StorageFetchFunction.Stor
         if (list.isEmpty()) {
             return CompletableFuture.completedFuture(callback.addToolResult(AiUtils.commonFailJson("Item list is empty"), id()));
         } else {
-            CombinedInvWrapper availableInv = maid.getAvailableInv(true);
+            CombinedResourceHandler<ItemResource> availableInv = maid.getAvailableInv(true);
             if (InvUtil.hasAnyFree(availableInv)) {
                 InvUtil.tryPlace(availableInv, RequestItemUtil.makeVirtualItemStack(list, null, maid.getOwner(), "AI"));
 

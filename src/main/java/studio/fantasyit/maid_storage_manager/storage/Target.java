@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -17,16 +17,16 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import java.util.Optional;
 
 public class Target {
-    public static final ResourceLocation VIRTUAL_TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "virtual");
+    public static final Identifier VIRTUAL_TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "virtual");
     public static Codec<Target> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.fieldOf("type").forGetter(Target::getType),
+                    Identifier.CODEC.fieldOf("type").forGetter(Target::getType),
                     BlockPos.CODEC.fieldOf("pos").forGetter(Target::getPos),
                     Direction.CODEC.optionalFieldOf("side").forGetter(Target::getSide)
             ).apply(instance, Target::new)
     );
     public static StreamCodec<RegistryFriendlyByteBuf, Target> STREAM_CODEC = StreamCodec.composite(
-            ResourceLocation.STREAM_CODEC,
+            Identifier.STREAM_CODEC,
             Target::getType,
             BlockPos.STREAM_CODEC,
             Target::getPos,
@@ -34,20 +34,20 @@ public class Target {
             Target::getSide,
             Target::new
     );
-    public ResourceLocation type;
+    public Identifier type;
     public BlockPos pos;
     @Nullable
     public Direction side;
 
-    public Target(ResourceLocation type, BlockPos pos) {
+    public Target(Identifier type, BlockPos pos) {
         this(type, pos, Optional.empty());
     }
 
-    public Target(ResourceLocation type, BlockPos pos, Optional<Direction> side) {
+    public Target(Identifier type, BlockPos pos, Optional<Direction> side) {
         this(type, pos, side.orElse(null));
     }
 
-    public Target(ResourceLocation type, BlockPos pos, @Nullable Direction side) {
+    public Target(Identifier type, BlockPos pos, @Nullable Direction side) {
         this.type = type;
         this.pos = pos;
         this.side = side;
@@ -56,14 +56,14 @@ public class Target {
     public static Target fromNbt(CompoundTag nbt) {
         if (!nbt.contains("side"))
             return new Target(
-                    ResourceLocation.tryParse(nbt.getString("type")),
-                    BlockPos.of(nbt.getLong("pos")),
+                    Identifier.tryParse(nbt.getString("type").get()),
+                    BlockPos.of(nbt.getLong("pos").get()),
                     Optional.empty()
             );
         return new Target(
-                ResourceLocation.tryParse(nbt.getString("type")),
-                BlockPos.of(nbt.getLong("pos")),
-                Direction.byName(nbt.getString("side"))
+                Identifier.tryParse(nbt.getString("type").get()),
+                BlockPos.of(nbt.getLong("pos").get()),
+                Direction.byName(nbt.getString("side").get())
         );
     }
 
@@ -71,7 +71,7 @@ public class Target {
         String[] split = str.split(",");
         if (split.length == 4 || split.length == 5)
             return new Target(
-                    ResourceLocation.tryParse(split[0]),
+                    Identifier.tryParse(split[0]),
                     new BlockPos(Integer.parseInt(split[1]),
                             Integer.parseInt(split[2]),
                             Integer.parseInt(split[3])),
@@ -101,7 +101,7 @@ public class Target {
         return nbt;
     }
 
-    public ResourceLocation getType() {
+    public Identifier getType() {
         return type;
     }
 

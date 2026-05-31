@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.algo;
 
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -31,12 +31,12 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         return nodes.size();
     }
 
-    protected record AddRecipeData(ResourceLocation id,
+    protected record AddRecipeData(Identifier id,
                                    List<Ingredient> ingredients,
                                    List<Integer> ingredientCounts,
                                    List<ItemStack> output,
                                    Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier,
-                                   ResourceLocation currentType, boolean oneTime) {
+                                   Identifier currentType, boolean oneTime) {
     }
 
     protected final int MAX_PRE_TICK = 50;
@@ -52,11 +52,11 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     }
 
     List<Node> nodes;
-    HashMap<ResourceLocation, List<ItemNode>> itemNodeMap = new HashMap<>();
-    HashMap<ResourceLocation, CraftNode> craftNodeMap = new HashMap<>();
+    HashMap<Identifier, List<ItemNode>> itemNodeMap = new HashMap<>();
+    HashMap<Identifier, CraftNode> craftNodeMap = new HashMap<>();
     HashMap<UUID, IngredientNode> cachedIngredients = new HashMap<>();
-    Set<ResourceLocation> notToAddRecipe = new HashSet<>();
-    Set<ResourceLocation> notToAddType = new HashSet<>();
+    Set<Identifier> notToAddRecipe = new HashSet<>();
+    Set<Identifier> notToAddType = new HashSet<>();
 
     @Override
     public Node getNode(int a) {
@@ -72,9 +72,6 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     public GeneratorGraph(RegistryAccess registryAccess) {
         this.registryAccess = registryAccess;
         this.nodes = new ArrayList<>();
-        IngredientNode ingredientNode = addOrGetIngredientNode(Ingredient.EMPTY);
-        queue.add(ingredientNode);
-        ingredientNode.related = true;
     }
 
     public void setItems(List<ItemStack> items, List<ItemStack> required) {
@@ -112,7 +109,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     }
 
     public ItemNode getItemNode(ItemStack itemStack) {
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+        Identifier id = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (itemNodeMap.containsKey(id)) {
             for (Node node : itemNodeMap.get(id)) {
                 if (node instanceof ItemNode in) {
@@ -128,7 +125,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     public ItemNode addItemNode(ItemStack itemStack, boolean available) {
         ItemNode itemNode = new ItemNode(nodes.size(), available, itemStack);
         nodes.add(itemNode);
-        ResourceLocation id = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+        Identifier id = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (!itemNodeMap.containsKey(id))
             itemNodeMap.put(id, new ArrayList<>());
         itemNodeMap.get(id).add(itemNode);
@@ -181,7 +178,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
 
     /// ////////////配方节点处理/////////////
 
-    protected ResourceLocation currentType;
+    protected Identifier currentType;
     protected boolean oneTime = false;
 
     public void setCurrentGeneratorType(IAutoCraftGuideGenerator generator) {
@@ -189,7 +186,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         this.oneTime = generator.canCacheGraph();
     }
 
-    public void setCurrentGeneratorType(ResourceLocation internalType, boolean b) {
+    public void setCurrentGeneratorType(Identifier internalType, boolean b) {
         this.currentType = internalType;
         this.oneTime = b;
     }
@@ -197,42 +194,44 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
 
     public void addRecipe(RecipeHolder<? extends Recipe<?>> holder, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         Recipe<?> recipe = holder.value();
-        List<Integer> ingredientCounts = recipe.getIngredients()
+        List<Ingredient> ingredients = recipe.placementInfo().ingredients();
+        List<Integer> ingredientCounts = ingredients
                 .stream()
                 .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
         addRecipe(
-                holder.id(),
-                recipe.getIngredients(),
+                holder.id().identifier(),
+                ingredients,
                 ingredientCounts,
-                recipe.getResultItem(registryAccess),
+                ItemStack.EMPTY,
                 craftGuideSupplier
         );
         pushedSteps++;
     }
 
-    public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> holder, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> holder, Identifier generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         Recipe<?> recipe = holder.value();
-        List<Integer> ingredientCounts = recipe.getIngredients()
+        List<Ingredient> ingredients = recipe.placementInfo().ingredients();
+        List<Integer> ingredientCounts = ingredients
                 .stream()
                 .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
         addRecipe(
-                RecipeUtil.wrapLocation(generator, holder.id()),
-                recipe.getIngredients(),
+                RecipeUtil.wrapLocation(generator, holder.id().identifier()),
+                ingredients,
                 ingredientCounts,
-                recipe.getResultItem(registryAccess),
+                ItemStack.EMPTY,
                 craftGuideSupplier
         );
         pushedSteps++;
     }
 
 
-    public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         addRecipe(id, ingredients, ingredientCounts, List.of(output), craftGuideSupplier);
     }
 
-    public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         if (RecipeUtil.shouldSkip(id, ingredients, ingredientCounts, output))
             return;
         addRecipeQueue.add(new AddRecipeData(
@@ -253,19 +252,19 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         pushedSteps++;
     }
 
-    public void blockType(ResourceLocation type) {
+    public void blockType(Identifier type) {
         notToAddType.add(type);
     }
 
-    public void blockRecipe(ResourceLocation id) {
+    public void blockRecipe(Identifier id) {
         notToAddRecipe.add(id);
     }
 
-    public void removeBlockedRecipe(ResourceLocation id) {
+    public void removeBlockedRecipe(Identifier id) {
         notToAddRecipe.remove(id);
     }
 
-    public void removeBlockedType(ResourceLocation type) {
+    public void removeBlockedType(Identifier type) {
         notToAddType.remove(type);
     }
 
@@ -285,13 +284,13 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
     }
 
 
-    protected int _addRecipe(ResourceLocation id,
+    protected int _addRecipe(Identifier id,
                              List<Ingredient> ingredients,
                              List<Integer> ingredientCounts,
                              List<ItemStack> output,
                              Function<List<ItemStack>,
                                      @Nullable CraftGuideData> craftGuideSupplier,
-                             ResourceLocation type,
+                             Identifier type,
                              boolean isOneTime
     ) {
         if (notToAddRecipe.contains(id) || notToAddType.contains(type)) {
@@ -309,12 +308,12 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         return ingredients.size() + 1;
     }
 
-    public void addRecipeWithIngredients(ResourceLocation id,
+    public void addRecipeWithIngredients(Identifier id,
                                          List<Ingredient> ingredients,
                                          List<Integer> ingredientCounts,
                                          List<ItemStack> outputs,
                                          List<IngredientNode> ingredientNodes,
-                                         Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
+                                         Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier, Identifier type, boolean isOneTime) {
         CraftNode craftNode = getOrCreateCraftNode(id, ingredientCounts, ingredientNodes, craftGuideSupplier, type, isOneTime);
 
         for (IngredientNode ingredientNode : craftNode.independentIngredients) {
@@ -324,7 +323,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         outputs.forEach(output -> craftNode.addEdge(getItemNodeOrCreate(output, false), 1));
     }
 
-    private @NotNull CraftNode getOrCreateCraftNode(ResourceLocation id, List<Integer> ingredientCounts, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
+    private @NotNull CraftNode getOrCreateCraftNode(Identifier id, List<Integer> ingredientCounts, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier, Identifier type, boolean isOneTime) {
         if (craftNodeMap.containsKey(id)) {
             CraftNode originalNode = craftNodeMap.get(id);
             if (originalNode.isRemoved) {
@@ -552,7 +551,7 @@ public class GeneratorGraph implements ICachableGeneratorGraph, IDebugContextSet
         craftGuides.clear();
     }
 
-    public void invalidAllCraftWithType(ResourceLocation type) {
+    public void invalidAllCraftWithType(Identifier type) {
         for (Node node : nodes) {
             if (node instanceof CraftNode cn && cn.type.equals(type)) {
                 cn.removeAllEdges(this);

@@ -5,7 +5,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class AIMatchLocalizedItemC2SPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<AIMatchLocalizedItemC2SPacket> TYPE = new CustomPacketPayload.Type<>(
-            ResourceLocation.fromNamespaceAndPath(
+            Identifier.fromNamespaceAndPath(
                     MaidStorageManager.MODID, "ai_match_localized_c2s"
             )
     );

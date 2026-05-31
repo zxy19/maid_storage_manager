@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.GraphCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 
-@Mixin(value = ReloadableServerResources.class,remap = false)
+@Mixin(value = ReloadableServerResources.class, remap = false)
 public abstract class WorldRecipeLoaderMixin {
     @Shadow
     public abstract RecipeManager getRecipeManager();

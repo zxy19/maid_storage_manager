@@ -2,9 +2,9 @@ package studio.fantasyit.maid_storage_manager.api.communicate.step;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
@@ -15,10 +15,10 @@ import studio.fantasyit.maid_storage_manager.util.PosUtil;
 import java.util.Map;
 
 public interface IMeetActionStep extends IActionStep {
-    public static final ResourceLocation CHECK_PATH_MEETING = ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "meet");
+    public static final Identifier CHECK_PATH_MEETING = Identifier.fromNamespaceAndPath("maid_storage_manager", "meet");
 
     @Override
-    default boolean isAvailable(Map<ResourceLocation, Boolean> checks, EntityMaid wisher, EntityMaid handler) {
+    default boolean isAvailable(Map<Identifier, Boolean> checks, EntityMaid wisher, EntityMaid handler) {
         if (checks.containsKey(CHECK_PATH_MEETING))
             return checks.get(CHECK_PATH_MEETING);
         Pair<BlockPos, BlockPos> blockPosBlockPosPair = getMeetPoint(wisher, handler);
@@ -28,7 +28,7 @@ public interface IMeetActionStep extends IActionStep {
 
     private Pair<BlockPos, BlockPos> getMeetPoint(EntityMaid wisher, EntityMaid handler) {
         ServerLevel level = (ServerLevel) wisher.level();
-        float restrictRadiusOwner = wisher.hasRestriction() ? wisher.getRestrictRadius() : 5;
+        float restrictRadiusOwner = wisher.hasHome() ? wisher.getHomeRadius() : 5;
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(wisher.getNavigation().getNodeEvaluator(), level, wisher, restrictRadiusOwner + 2, (int) (restrictRadiusOwner + 2));
         @Nullable Pair<BlockPos, BlockPos> result = PosUtil.pickMeetingPosPair(wisher, handler, pathFinding);
         pathFinding.finish();
@@ -54,9 +54,9 @@ public interface IMeetActionStep extends IActionStep {
     default boolean shouldRunPrepare(EntityMaid wisher, EntityMaid handler, boolean prepared) {
         if (!prepared)
             return true;
-        if (!wisher.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get()))
+        if (!wisher.getBrain().hasMemoryValue(InitBrains.TARGET_POS.get()))
             return true;
-        if (!handler.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get()))
+        if (!handler.getBrain().hasMemoryValue(InitBrains.TARGET_POS.get()))
             return true;
         return false;
     }

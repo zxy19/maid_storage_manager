@@ -2,15 +2,16 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
-import studio.fantasyit.maid_storage_manager.craft.type.SmithingType;
+//import studio.fantasyit.maid_storage_manager.craft.type.SmithingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, SmithingRecipeInput> {
@@ -26,8 +27,8 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Smit
     }
 
     @Override
-    protected ResourceLocation getCraftType() {
-        return SmithingType.TYPE;
+    protected Identifier getCraftType() {
+        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // SmithingType disabled
     }
 
     @Override
@@ -36,20 +37,28 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Smit
     }
 
     @Override
+    protected ItemStack outputTransform(List<InventoryItem> inventory, Level level, SmithingRecipe recipe) {
+        if (recipe instanceof SmithingTransformRecipe str) {
+            return str.result.create();
+        }
+        return ItemStack.EMPTY;
+    }
+
+    @Override
     protected List<Ingredient> cacheIngredientsTransform(SmithingRecipe recipe) {
-        if (recipe instanceof SmithingTransformRecipe recipe1)
-            return List.of(
-                    recipe1.template,
-                    recipe1.base,
-                    recipe1.addition
-            );
-        return List.of();
+        List<Ingredient> result = new ArrayList<>();
+        if (recipe instanceof SmithingTransformRecipe recipe1) {
+            recipe1.template.ifPresent(result::add);
+            result.add(recipe1.base);
+            recipe1.addition.ifPresent(result::add);
+        }
+        return result;
     }
 
     @Override
     protected List<ItemStack> wrapOutputs(SmithingRecipe recipe, List<ItemStack> inputs, SmithingRecipeInput container, List<ItemStack> outputs) {
         if (recipe instanceof SmithingTransformRecipe smithingTransformRecipe) {
-            return List.of(smithingTransformRecipe.result);
+            return List.of(smithingTransformRecipe.result.create());
         } else {
             return List.of();
         }

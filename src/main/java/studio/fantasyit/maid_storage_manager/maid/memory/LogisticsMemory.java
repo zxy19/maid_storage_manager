@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHand
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -91,9 +92,9 @@ public class LogisticsMemory extends AbstractTargetMemory {
 
     public void switchCurrentLogisticsGuideItem(EntityMaid maid) {
         BaubleItemHandler maidBauble = maid.getMaidBauble();
-        for (int i = 0; i < maidBauble.getSlots(); i++) {
-            next = (next + 1) % maidBauble.getSlots();
-            ItemStack stack = maidBauble.getStackInSlot(next);
+        for (int i = 0; i < maidBauble.size(); i++) {
+            next = (next + 1) % maidBauble.size();
+            ItemStack stack = ItemUtil.getStack(maidBauble, next);
             if (stack.is(ItemRegistry.LOGISTICS_GUIDE.get())) {
                 setCurrentLogisticsGuideItem(stack);
                 return;
@@ -104,8 +105,8 @@ public class LogisticsMemory extends AbstractTargetMemory {
 
     public boolean isStillValid(EntityMaid maid) {
         BaubleItemHandler maidBauble = maid.getMaidBauble();
-        if (next >= maidBauble.getSlots()) return false;
-        ItemStack stackInSlot = maidBauble.getStackInSlot(next);
+        if (next >= maidBauble.size()) return false;
+        ItemStack stackInSlot = ItemUtil.getStack(maidBauble, next);
         return ItemStackUtil.isSame(stackInSlot, currentLogisticsGuideItem, true);
     }
 
@@ -132,8 +133,8 @@ public class LogisticsMemory extends AbstractTargetMemory {
     public boolean hasMultipleGuide(EntityMaid maid) {
         BaubleItemHandler maidBauble = maid.getMaidBauble();
         int count = 0;
-        for (int i = 0; i < maidBauble.getSlots(); i++) {
-            ItemStack stack = maidBauble.getStackInSlot(i);
+        for (int i = 0; i < maidBauble.size(); i++) {
+            ItemStack stack = ItemUtil.getStack(maidBauble, i);
             if (stack.is(ItemRegistry.LOGISTICS_GUIDE.get())) {
                 count++;
             }

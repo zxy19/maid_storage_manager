@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.algo.base;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import oshi.util.tuples.Pair;
@@ -96,7 +96,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
     }
 
     List<Node> nodes;
-    Map<ResourceLocation, List<ItemNode>> itemNodeMap;
+    Map<Identifier, List<ItemNode>> itemNodeMap;
 
     public Node getNode(int a) {
         return nodes.get(a);
@@ -130,7 +130,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
     }
 
     public ItemNode getItemNode(ItemStack itemStack) {
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+        Identifier itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         if (!itemNodeMap.containsKey(itemId)) return null;
         for (ItemNode in : itemNodeMap.get(itemId)) {
             if (ItemStackUtil.isSameInCrafting(itemStack, in.itemStack)) {
@@ -141,7 +141,7 @@ public abstract class AbstractBiCraftGraph implements ICraftGraphLike, IDebugCon
     }
 
     public ItemNode addItemNode(ItemStack itemStack) {
-        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+        Identifier itemId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
         ItemNode itemNode = new ItemNode(nodes.size(), false, itemStack);
         nodes.add(itemNode);
         if (!itemNodeMap.containsKey(itemId))

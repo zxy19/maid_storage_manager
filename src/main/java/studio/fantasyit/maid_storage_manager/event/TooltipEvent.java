@@ -13,7 +13,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID)
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class TooltipEvent {
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {

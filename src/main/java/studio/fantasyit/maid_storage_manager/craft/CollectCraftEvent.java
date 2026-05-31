@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.Event;
@@ -20,9 +20,9 @@ public class CollectCraftEvent extends Event implements IModBusEvent {
     private final List<ICraftType> craftTypes;
     private final List<CraftAction> actions;
     private final List<IAutoCraftGuideGenerator> autoCraftGuideGenerators;
-    private final Map<ResourceLocation, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates;
+    private final Map<Identifier, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates;
 
-    public CollectCraftEvent(List<ICraftType> craftTypes, List<CraftAction> actions, List<IAutoCraftGuideGenerator> autoCraftGuideGenerators, Map<ResourceLocation, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates) {
+    public CollectCraftEvent(List<ICraftType> craftTypes, List<CraftAction> actions, List<IAutoCraftGuideGenerator> autoCraftGuideGenerators, Map<Identifier, List<BiPredicate<ItemStack, ItemStack>>> itemStackPredicates) {
         this.craftTypes = craftTypes;
         this.actions = actions;
         this.autoCraftGuideGenerators = autoCraftGuideGenerators;
@@ -53,7 +53,7 @@ public class CollectCraftEvent extends Event implements IModBusEvent {
      * @param hasInput                             输入数量
      * @param hasOutput                            输出数量
      */
-    public void addAction(ResourceLocation type,
+    public void addAction(Identifier type,
                           CraftAction.CraftActionProvider craftActionProvider,
                           CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
                           double closeEnoughThreshold,
@@ -78,7 +78,7 @@ public class CollectCraftEvent extends Event implements IModBusEvent {
      * @param hasOutput                            输出数量
      * @param options                              选项，如果是
      */
-    public synchronized void addAction(ResourceLocation type,
+    public synchronized void addAction(Identifier type,
                           CraftAction.CraftActionProvider craftActionProvider,
                           CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
                           double closeEnoughThreshold,
@@ -91,7 +91,7 @@ public class CollectCraftEvent extends Event implements IModBusEvent {
         this.actions.add(new CraftAction(type, craftActionProvider, craftActionPathFindingTargetProvider, closeEnoughThreshold, isCommon, marks, hasInput, hasOutput, options));
     }
 
-    public void addAction(ResourceLocation type,
+    public void addAction(Identifier type,
                           CraftAction.CraftActionProvider craftActionProvider,
                           CraftAction.CraftActionPathFindingTargetProvider craftActionPathFindingTargetProvider,
                           double closeEnoughThreshold,
@@ -127,7 +127,7 @@ public class CollectCraftEvent extends Event implements IModBusEvent {
      * @param type
      * @param predicate
      */
-    public synchronized void addItemStackPredicate(ResourceLocation type, BiPredicate<ItemStack, ItemStack> predicate) {
+    public synchronized void addItemStackPredicate(Identifier type, BiPredicate<ItemStack, ItemStack> predicate) {
         if (!itemStackPredicates.containsKey(type))
             itemStackPredicates.put(type, new ArrayList<>());
         itemStackPredicates.get(type).add(predicate);

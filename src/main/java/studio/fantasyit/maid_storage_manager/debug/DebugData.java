@@ -3,7 +3,9 @@ package studio.fantasyit.maid_storage_manager.debug;
 import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.Logger;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
@@ -67,9 +69,9 @@ public class DebugData {
             case OUT -> Logger.debugTrace("%s>[OUT] %s", maid.getUUID(), stack.toString());
         }
         StringBuilder sb = new StringBuilder();
-        CombinedInvWrapper availableInv = maid.getAvailableInv(true);
-        for (int i = 0; i < availableInv.getSlots(); i++) {
-            ItemStack itemStack = availableInv.getStackInSlot(i);
+        ResourceHandler<ItemResource> availableInv = maid.getAvailableInv(true);
+        for (int i = 0; i < availableInv.size(); i++) {
+            ItemStack itemStack = ItemUtil.getStack(availableInv, i);
             if (!itemStack.isEmpty())
                 sb.append(itemStack).append(" ");
         }

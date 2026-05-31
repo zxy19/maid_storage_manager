@@ -16,7 +16,7 @@ import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class MaidItemPickupEvent {
     @SubscribeEvent
     public static void onItemPickup(MaidPickupEvent.ItemResultPre event) {
@@ -43,7 +43,7 @@ public class MaidItemPickupEvent {
         }
         if (event.isCanceled())
             return;
-        if (!maid.level().isClientSide) {
+        if (!maid.level().isClientSide()) {
             CraftBlockOccupy occupation = CraftBlockOccupy.get(maid.level());
             if (BlockPos.betweenClosedStream(
                     entityItem.getBoundingBox().inflate(3.5)
@@ -57,7 +57,7 @@ public class MaidItemPickupEvent {
             return;
         }
         if (entityItem.getItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            if (!(maid).level().isClientSide) {
+            if (!(maid).level().isClientSide()) {
                 int tickCount = (maid).level().getServer().getTickCount();
                 Integer restartAt = MemoryUtil.getReturnToScheduleAt(maid);
                 if (restartAt != null && tickCount < restartAt) {

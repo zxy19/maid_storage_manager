@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.algo;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -54,7 +54,7 @@ public class DummyCollector implements ICachableGeneratorGraph {
     }
 
     @Override
-    public void setCurrentGeneratorType(ResourceLocation internalType, boolean b) {
+    public void setCurrentGeneratorType(Identifier internalType, boolean b) {
 
     }
 
@@ -65,38 +65,40 @@ public class DummyCollector implements ICachableGeneratorGraph {
 
     @Override
     public void addRecipe(RecipeHolder<? extends Recipe<?>> recipe, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        List<Integer> ingredientCounts = recipe.value().getIngredients().stream().map(GenerateIngredientUtil::getIngredientCount).toList();
+        List<Ingredient> ingredients = recipe.value().placementInfo().ingredients();
+        List<Integer> ingredientCounts = ingredients.stream().map(GenerateIngredientUtil::getIngredientCount).toList();
         addRecipe(
-                recipe.id(),
-                recipe.value().getIngredients(),
+                recipe.id().identifier(),
+                ingredients,
                 ingredientCounts,
-                recipe.value().getResultItem(registryAccess),
+                ItemStack.EMPTY,
                 craftGuideSupplier
         );
     }
 
     @Override
-    public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> recipe, ResourceLocation generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
-        List<Integer> ingredientCounts = recipe.value().getIngredients()
+    public void addRecipeWrapId(RecipeHolder<? extends Recipe<?>> recipe, Identifier generator, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+        List<Ingredient> ingredients = recipe.value().placementInfo().ingredients();
+        List<Integer> ingredientCounts = ingredients
                 .stream()
                 .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
         addRecipe(
-                RecipeUtil.wrapLocation(generator, recipe.id()),
-                recipe.value().getIngredients(),
+                RecipeUtil.wrapLocation(generator, recipe.id().identifier()),
+                ingredients,
                 ingredientCounts,
-                recipe.value().getResultItem(registryAccess),
+                ItemStack.EMPTY,
                 craftGuideSupplier
         );
     }
 
     @Override
-    public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, ItemStack output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         addRecipe(id, ingredients, ingredientCounts, List.of(output), craftGuideSupplier);
     }
 
     @Override
-    public void addRecipe(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
+    public void addRecipe(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier) {
         this.craftGuideSuppliers.add(craftGuideSupplier);
         this.counts.add(ingredientCounts);
         this.ingredients.add(ingredients);
@@ -112,25 +114,25 @@ public class DummyCollector implements ICachableGeneratorGraph {
     }
 
     @Override
-    public void invalidAllCraftWithType(@NotNull ResourceLocation type) {
+    public void invalidAllCraftWithType(@NotNull Identifier type) {
     }
 
     @Override
-    public void blockType(ResourceLocation type) {
+    public void blockType(Identifier type) {
     }
 
     @Override
-    public void blockRecipe(ResourceLocation id) {
-
-    }
-
-    @Override
-    public void removeBlockedRecipe(ResourceLocation id) {
+    public void blockRecipe(Identifier id) {
 
     }
 
     @Override
-    public void removeBlockedType(ResourceLocation type) {
+    public void removeBlockedRecipe(Identifier id) {
+
+    }
+
+    @Override
+    public void removeBlockedType(Identifier type) {
 
     }
 
@@ -160,7 +162,7 @@ public class DummyCollector implements ICachableGeneratorGraph {
     }
 
     @Override
-    public void addRecipeWithIngredients(ResourceLocation id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, ResourceLocation type, boolean isOneTime) {
+    public void addRecipeWithIngredients(Identifier id, List<Ingredient> ingredients, List<Integer> ingredientCounts, List<ItemStack> output, List<IngredientNode> ingredientNodes, Function<List<ItemStack>, CraftGuideData> craftGuideSupplier, Identifier type, boolean isOneTime) {
 
     }
 

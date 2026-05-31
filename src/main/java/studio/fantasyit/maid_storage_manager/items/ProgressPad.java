@@ -10,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,8 +21,8 @@ import studio.fantasyit.maid_storage_manager.event.RenderHandMapLikeEvent;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.render.map_like.ProgressPadRender;
 
-import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.MapLikeRenderItem {
     public static final String TAG_BINDING_UUID = "binding_uuid";
@@ -133,7 +134,7 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
 
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player p_41399_, LivingEntity entity, InteractionHand p_41401_) {
-        if (!p_41399_.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND && entity instanceof EntityMaid maid) {
+        if (!p_41399_.level().isClientSide() && p_41401_ == InteractionHand.MAIN_HAND && entity instanceof EntityMaid maid) {
             if (p_41399_.getUUID().equals(maid.getOwner().getUUID())) {
                 setBindingUUID(itemStack, maid.getUUID());
 
@@ -158,25 +159,25 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (!context.getLevel().isClientSide && getBindingUUID(context.getItemInHand()) == null)
+        if (!context.getLevel().isClientSide() && getBindingUUID(context.getItemInHand()) == null)
             return InteractionResult.FAIL;
         return super.useOn(context);
     }
 
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, toolTip, p_41424_);
         UUID bindingUUID = getBindingUUID(itemStack);
         if (bindingUUID != null) {
             ProgressData byMaid = MaidProgressData.getByMaid(ProgressData.ProgressMeta.fromItemStack(itemStack));
             if (byMaid == null)
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.progress_pad.binding", bindingUUID.toString()));
+                toolTip.accept(Component.translatable("tooltip.maid_storage_manager.progress_pad.binding", bindingUUID.toString()));
             else
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.progress_pad.binding", byMaid.maidName));
+                toolTip.accept(Component.translatable("tooltip.maid_storage_manager.progress_pad.binding", byMaid.maidName));
         }
 
-        toolTip.add(switch (getViewing(itemStack)) {
+        toolTip.accept(switch (getViewing(itemStack)) {
             case WORKING -> Component.translatable("tooltip.maid_storage_manager.progress_pad.viewing_working");
             case DONE -> Component.translatable("tooltip.maid_storage_manager.progress_pad.viewing_done");
             case WAITING -> Component.translatable("tooltip.maid_storage_manager.progress_pad.viewing_waiting");

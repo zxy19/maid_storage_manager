@@ -15,6 +15,6 @@ public abstract class TLMFeatureCenterSidePathFinding {
             remap = false
     )
     public BlockPos modify(EntityMaid maid) {
-        return maid.hasRestriction() ? maid.getRestrictCenter() : maid.blockPosition();
+        return maid.hasHome() ? maid.getHomePosition() : maid.blockPosition();
     }
 }

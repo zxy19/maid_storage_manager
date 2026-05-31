@@ -1,11 +1,12 @@
 package studio.fantasyit.maid_storage_manager.maid.data;
 
-import com.github.tartaricacid.touhoulittlemaid.api.entity.data.TaskDataKey;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.attachment.AttachmentType;
 
-public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfigData.Data> {
+public class StorageManagerConfigData {
     public static final class Data {
         private boolean useMemorizedCraftGuide;
         private boolean coWorkMode;
@@ -162,15 +163,18 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         }
     }
 
-    public static TaskDataKey<Data> KEY = null;
-    public static final ResourceLocation LOCATION = ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "storage_manager_config");
+    public static final Identifier LOCATION = Identifier.fromNamespaceAndPath("maid_storage_manager", "storage_manager_config");
 
-    @Override
-    public ResourceLocation getKey() {
-        return LOCATION;
-    }
+    private static final StorageManagerConfigData INSTANCE = new StorageManagerConfigData();
 
-    @Override
+    public static final Codec<Data> CODEC = CompoundTag.CODEC.xmap(
+            INSTANCE::readSaveData,
+            INSTANCE::writeSaveData
+    );
+
+    public static final AttachmentType<Data> ATTACHMENT_TYPE = AttachmentType.builder(Data::getDefault)
+            .build();
+
     public CompoundTag writeSaveData(Data data) {
         CompoundTag tag = new CompoundTag();
         tag.putString("memoryAssistant", data.memoryAssistant().name());
@@ -187,26 +191,25 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
         return tag;
     }
 
-    @Override
     public Data readSaveData(CompoundTag compound) {
-        MemoryAssistant memoryAssistant = MemoryAssistant.valueOf(compound.getString("memoryAssistant"));
+        MemoryAssistant memoryAssistant = MemoryAssistant.valueOf(compound.getString("memoryAssistant").orElse("MEMORY_FIRST"));
         SuppressStrategy suppressStrategy = compound.contains("suppressStrategy")
-                ? SuppressStrategy.valueOf(compound.getString("suppressStrategy"))
+                ? SuppressStrategy.valueOf(compound.getString("suppressStrategy").orElse("AFTER_ALL"))
                 : SuppressStrategy.AFTER_ALL;
-        boolean noSortPlacement = compound.getBoolean("noSortPlacement");
-        boolean coWorkMode = compound.getBoolean("coWorkMode");
-        boolean allowSeekWorkMeal = compound.getBoolean("allowSeekWorkMeal");
-        boolean useMemorizedCraftGuide = compound.getBoolean("useMemorizedCraftGuide");
+        boolean noSortPlacement = compound.getBoolean("noSortPlacement").orElse(false);
+        boolean coWorkMode = compound.getBoolean("coWorkMode").orElse(false);
+        boolean allowSeekWorkMeal = compound.getBoolean("allowSeekWorkMeal").orElse(false);
+        boolean useMemorizedCraftGuide = compound.getBoolean("useMemorizedCraftGuide").orElse(false);
         int maxParallel = compound.contains("maxParallel")
-                ? compound.getInt("maxParallel")
+                ? compound.getInt("maxParallel").orElse(5)
                 : 5;
-        boolean alwaysSingleCrafting = compound.getBoolean("alwaysSingleCrafting");
+        boolean alwaysSingleCrafting = compound.getBoolean("alwaysSingleCrafting").orElse(false);
         int maxCraftingLayerRepeatCount = compound.contains("maxCraftingLayerRepeatCount")
-                ? compound.getInt("maxCraftingLayerRepeatCount")
+                ? compound.getInt("maxCraftingLayerRepeatCount").orElse(alwaysSingleCrafting ? 1 : 8)
                 : (alwaysSingleCrafting ? 1 : 8);
-        boolean autoSorting = compound.contains("autoSorting") ? compound.getBoolean("autoSorting") : true;
-        int itemTypeLimit = compound.contains("itemTypeLimit") ? compound.getInt("itemTypeLimit") : -1;
-        boolean doCommunicate = compound.contains("doCommunicate") ? compound.getBoolean("doCommunicate") : false;
+        boolean autoSorting = compound.contains("autoSorting") ? compound.getBoolean("autoSorting").orElse(true) : true;
+        int itemTypeLimit = compound.contains("itemTypeLimit") ? compound.getInt("itemTypeLimit").orElse(-1) : -1;
+        boolean doCommunicate = compound.contains("doCommunicate") ? compound.getBoolean("doCommunicate").orElse(false) : false;
         return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, maxCraftingLayerRepeatCount, autoSorting, itemTypeLimit, doCommunicate);
     }
 
@@ -244,6 +247,11 @@ public class StorageManagerConfigData implements TaskDataKey<StorageManagerConfi
     }
 
     public static StorageManagerConfigData.Data get(EntityMaid maid) {
-        return maid.getOrCreateData(KEY, Data.getDefault());
+        Data data = maid.getData(ATTACHMENT_TYPE);
+        if (data == null) {
+            data = Data.getDefault();
+            maid.setData(ATTACHMENT_TYPE, data);
+        }
+        return data;
     }
 }

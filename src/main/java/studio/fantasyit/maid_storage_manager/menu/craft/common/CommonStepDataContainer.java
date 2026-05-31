@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.menu.craft.common;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
@@ -72,7 +72,7 @@ public class CommonStepDataContainer extends FilterContainer implements ISaveFil
         return 4;
     }
 
-    public void setAction(ResourceLocation action) {
+    public void setAction(Identifier action) {
         if (step == null)
             return;
         step.setAction(action);

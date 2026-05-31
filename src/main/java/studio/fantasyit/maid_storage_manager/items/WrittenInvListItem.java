@@ -1,11 +1,10 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -15,15 +14,17 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.menu.InventoryListScreen;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 
-import java.util.List;
+import java.util.function.Consumer;
+
+//import studio.fantasyit.maid_storage_manager.menu.InventoryListScreen;
 
 public class WrittenInvListItem extends Item {
     public static final String TAG_UUID = "uuid";
@@ -39,30 +40,31 @@ public class WrittenInvListItem extends Item {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
-        if (level.isClientSide) {
+    public @NotNull InteractionResult use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
+        if (level.isClientSide()) {
             ItemStack stack = player.getMainHandItem();
             if (stack.has(DataComponentRegistry.INVENTORY_UUID)) {
                 Network.sendRequestListPacket(stack.get(DataComponentRegistry.INVENTORY_UUID));
-                Minecraft.getInstance().setScreen(new InventoryListScreen(stack.get(DataComponentRegistry.INVENTORY_UUID)));
+                // InventoryListScreen disabled
+                // Minecraft.getInstance().setScreen(new InventoryListScreen(stack.get(DataComponentRegistry.INVENTORY_UUID)));
             }
-            return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
+            return InteractionResult.SUCCESS;
         } else {
-            return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
+            return InteractionResult.PASS;
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> tooltip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, tooltip, p_41424_);
-        tooltip.add(Component.translatable("tooltip.maid_storage_manager.written_request_list.desc").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> tooltip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, tooltip, p_41424_);
+        tooltip.accept(Component.translatable("tooltip.maid_storage_manager.written_request_list.desc").withStyle(ChatFormatting.GRAY));
         if (itemStack.has(DataComponentRegistry.INVENTORY_AUTHOR))
-            tooltip.add(Component.translatable(
+            tooltip.accept(Component.translatable(
                     "tooltip.maid_storage_manager.request_list.author",
                     itemStack.get(DataComponentRegistry.INVENTORY_AUTHOR)
             ));
         if (itemStack.has(DataComponentRegistry.INVENTORY_TIME))
-            tooltip.add(Component.translatable(
+            tooltip.accept(Component.translatable(
                     "tooltip.maid_storage_manager.request_list.time",
                     getTimeStr(itemStack.get(DataComponentRegistry.INVENTORY_TIME))
             ));

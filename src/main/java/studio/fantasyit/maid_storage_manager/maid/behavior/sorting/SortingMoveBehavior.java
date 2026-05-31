@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.sorting;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +22,7 @@ import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 
 public class SortingMoveBehavior extends Behavior<EntityMaid> {
     public SortingMoveBehavior() {
-        super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT));
+        super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, InitBrains.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT));
     }
 
     @Override

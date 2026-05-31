@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -18,16 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CraftGuideRenderData {
-    static Codec<Pair<Target, ResourceLocation>> STEP_BINDING_CODEC = RecordCodecBuilder.create(instance ->
+    static Codec<Pair<Target, Identifier>> STEP_BINDING_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Target.CODEC.fieldOf("target").forGetter(Pair::getA),
-                    ResourceLocation.CODEC.fieldOf("recipe").forGetter(Pair::getB)
+                    Identifier.CODEC.fieldOf("recipe").forGetter(Pair::getB)
             ).apply(instance, Pair::new)
     );
-    static StreamCodec<RegistryFriendlyByteBuf, Pair<Target, ResourceLocation>> STEP_BINDING_STREAM_CODEC = StreamCodec.composite(
+    static StreamCodec<RegistryFriendlyByteBuf, Pair<Target, Identifier>> STEP_BINDING_STREAM_CODEC = StreamCodec.composite(
             Target.STREAM_CODEC,
             Pair::getA,
-            ResourceLocation.STREAM_CODEC,
+            Identifier.STREAM_CODEC,
             Pair::getB,
             Pair::new
     );
@@ -51,17 +51,17 @@ public class CraftGuideRenderData {
             CraftGuideRenderData::new
     );
 
-    public final List<Pair<Target, ResourceLocation>> stepBindings;
+    public final List<Pair<Target, Identifier>> stepBindings;
     public final List<ItemStack> outputs;
     public final ItemStack icon;
     public final List<ItemStack> inputs;
     public int selecting = -1;
 
-    public CraftGuideRenderData(List<Pair<Target, ResourceLocation>> stepBindings, List<ItemStack> inputs, List<ItemStack> outputs, ItemStack icon) {
+    public CraftGuideRenderData(List<Pair<Target, Identifier>> stepBindings, List<ItemStack> inputs, List<ItemStack> outputs, ItemStack icon) {
         this(stepBindings, inputs, outputs, icon, -1);
     }
 
-    public CraftGuideRenderData(List<Pair<Target, ResourceLocation>> stepBindings, List<ItemStack> inputs, List<ItemStack> outputs, ItemStack icon, int selecting) {
+    public CraftGuideRenderData(List<Pair<Target, Identifier>> stepBindings, List<ItemStack> inputs, List<ItemStack> outputs, ItemStack icon, int selecting) {
         this.stepBindings = stepBindings;
         this.outputs = outputs;
         this.inputs = inputs;

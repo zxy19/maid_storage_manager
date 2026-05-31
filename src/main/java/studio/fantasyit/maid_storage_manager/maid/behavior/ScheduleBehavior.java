@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -72,7 +72,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
             next = Schedule.MEAL;
         } else if (!Conditions.isNothingToPlace(maid))
             //没捡满的话优先捡东西
-            if (maid.getBrain().hasMemoryValue(InitEntities.VISIBLE_PICKUP_ENTITIES.get())
+            if (maid.getBrain().hasMemoryValue(InitBrains.VISIBLE_PICKUP_ENTITIES.get())
                     && Conditions.shouldStopAndPickUpItems(maid))
                 next = Schedule.NO_SCHEDULE;
             else
@@ -87,7 +87,7 @@ public class ScheduleBehavior extends Behavior<EntityMaid> {
             next = Schedule.VIEW;
         else if (MemoryUtil.isCoWorking(maid))
             next = Schedule.CO_WORK;
-        else if (maid.getBrain().hasMemoryValue(InitEntities.VISIBLE_PICKUP_ENTITIES.get()))
+        else if (maid.getBrain().hasMemoryValue(InitBrains.VISIBLE_PICKUP_ENTITIES.get()))
             next = Schedule.NO_SCHEDULE;
         else
             next = Schedule.VIEW;

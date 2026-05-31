@@ -1,34 +1,39 @@
 package studio.fantasyit.maid_storage_manager.recipe;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CopyConfigRecipe extends ShapelessRecipe {
     public CopyConfigRecipe(ShapelessRecipe recipe) {
         super(
-                recipe.getGroup(),
-                recipe.category(),
-                recipe.getResultItem(RegistryAccess.EMPTY),
-                recipe.getIngredients()
+                new Recipe.CommonInfo(recipe.showNotification()),
+                new CraftingRecipe.CraftingBookInfo(recipe.category(), recipe.group()),
+                recipe.result(),
+                new ArrayList<>(recipe.placementInfo().ingredients())
         );
     }
 
-    public CopyConfigRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStack p_252071_, NonNullList<Ingredient> p_250689_) {
-        super(p_249640_, p_249390_, p_252071_, p_250689_);
+    public CopyConfigRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStack p_252071_, List<Ingredient> p_250689_) {
+        super(
+                new Recipe.CommonInfo(true),
+                new CraftingRecipe.CraftingBookInfo(p_249390_, p_249640_),
+                new ItemStackTemplate(p_252071_.getItem(), p_252071_.getCount(), p_252071_.getComponentsPatch()),
+                p_250689_
+        );
     }
 
 
@@ -50,7 +55,7 @@ public class CopyConfigRecipe extends ShapelessRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput inv, HolderLookup.Provider p_335725_) {
+    public ItemStack assemble(CraftingInput inv) {
         Pair<ItemStack, ItemStack> toCopyItem = getToCopyItem(inv);
         if (toCopyItem != null) {
             return applyCopy(toCopyItem.getB().copy(), toCopyItem.getA());
@@ -100,29 +105,18 @@ public class CopyConfigRecipe extends ShapelessRecipe {
         return ItemStack.EMPTY;
     }
 
-    public static class Serializer implements RecipeSerializer<CopyConfigRecipe> {
-        private static final MapCodec<CopyConfigRecipe> CODEC = RecordCodecBuilder.mapCodec((p_340779_) ->
-                p_340779_.group(Codec.STRING.optionalFieldOf("group", "").forGetter(ShapelessRecipe::getGroup),
-                        CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(ShapelessRecipe::category),
-                        ItemStack.STRICT_CODEC.fieldOf("result").forGetter((p_301142_) -> p_301142_.getResultItem(RegistryAccess.EMPTY)),
-                        Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients")
-                                .flatXmap((p_301021_) -> DataResult.success(NonNullList.of(Ingredient.EMPTY, p_301021_.toArray(Ingredient[]::new))), DataResult::success)
-                                .forGetter(ShapelessRecipe::getIngredients)
-                ).apply(p_340779_, CopyConfigRecipe::new));
-        private static final StreamCodec<RegistryFriendlyByteBuf, CopyConfigRecipe> STREAM_CODEC = StreamCodec.composite(
-                RecipeSerializer.SHAPELESS_RECIPE.streamCodec(),
-                t -> t,
-                CopyConfigRecipe::new
-        );
+    private static final MapCodec<CopyConfigRecipe> CODEC = RecordCodecBuilder.mapCodec((p_340779_) ->
+            p_340779_.group(Codec.STRING.optionalFieldOf("group", "").forGetter(Recipe::group),
+                    CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category),
+                    ItemStack.CODEC.fieldOf("result").forGetter((r) -> r.result().create()),
+                    Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter((r) -> r.placementInfo().ingredients())
+            ).apply(p_340779_, CopyConfigRecipe::new));
 
-        @Override
-        public @NotNull MapCodec<CopyConfigRecipe> codec() {
-            return CODEC;
-        }
+    private static final StreamCodec<RegistryFriendlyByteBuf, CopyConfigRecipe> STREAM_CODEC = StreamCodec.composite(
+            ShapelessRecipe.STREAM_CODEC,
+            t -> t,
+            CopyConfigRecipe::new
+    );
 
-        @Override
-        public @NotNull StreamCodec<RegistryFriendlyByteBuf, CopyConfigRecipe> streamCodec() {
-            return STREAM_CODEC;
-        }
-    }
+    public static final RecipeSerializer<CopyConfigRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 }

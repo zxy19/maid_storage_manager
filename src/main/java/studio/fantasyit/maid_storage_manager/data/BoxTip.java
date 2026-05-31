@@ -24,7 +24,7 @@ public record BoxTip(Target target, Component tip, int maxTime, float[] argb) {
         float g = buf.readFloat();
         float b = buf.readFloat();
         return new BoxTip(Target.fromNbt(Objects.requireNonNull(buf.readNbt())),
-                buf.readJsonWithCodec(ComponentSerialization.CODEC),
+                buf.readLenientJsonWithCodec(ComponentSerialization.CODEC),
                 buf.readInt(),
                 new float[]{a, r, g, b});
     }

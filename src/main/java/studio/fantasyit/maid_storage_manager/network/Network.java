@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -18,20 +19,15 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
-import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
-import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
-import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
-import studio.fantasyit.maid_storage_manager.menu.logistics.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -40,27 +36,40 @@ import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import java.util.List;
 import java.util.UUID;
 
+//import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
+//import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
+//import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
+//import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
+//import studio.fantasyit.maid_storage_manager.menu.logistics.LogisticsGuideMenu;
+
 public class Network {
     private static final String PROTOCOL_VERSION = "1";
 
     public static void sendItemSelectorGuiPacket(ItemSelectorGuiPacket.SlotType type, int key, int value) {
-        PacketDistributor.sendToServer(new ItemSelectorGuiPacket(type, key, value));
+        ClientPacketDistributor.sendToServer(new ItemSelectorGuiPacket(type, key, value));
     }
 
+    // ItemSelectorSetItemPacket disabled
+    // public static void sendItemSelectorSetItemPacket(List<Pair<Integer, ItemStack>> list) {
+    //     ClientPacketDistributor.sendToServer(new ItemSelectorSetItemPacket(list));
+    // }
+
+    // public static void sendItemSelectorSetItemPacket(Integer slot, ItemStack item) {
+    //     sendItemSelectorSetItemPacket(List.of(Pair.of(slot, item)));
+    // }
+
     public static void sendItemSelectorSetItemPacket(List<Pair<Integer, ItemStack>> list) {
-        PacketDistributor.sendToServer(new ItemSelectorSetItemPacket(list));
     }
 
     public static void sendItemSelectorSetItemPacket(Integer slot, ItemStack item) {
-        sendItemSelectorSetItemPacket(List.of(Pair.of(slot, item)));
     }
 
     public static void sendRequestListPacket(UUID uuid) {
-        PacketDistributor.sendToServer(new PartialInventoryListData(uuid, List.of()));
+        ClientPacketDistributor.sendToServer(new PartialInventoryListData(uuid, List.of()));
     }
 
     public static void sendMaidDataSync(MaidDataSyncPacket.Type type, int id, int value) {
-        PacketDistributor.sendToServer(new MaidDataSyncPacket(type, id, value));
+        ClientPacketDistributor.sendToServer(new MaidDataSyncPacket(type, id, value));
     }
 
     public static void sendShowInvPacket(ServerPlayer player, InventoryItem item, int time) {
@@ -78,30 +87,31 @@ public class Network {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
                         } else if (sender.containerMenu instanceof FilterMenu ifm) {
                             ifm.handleUpdate(msg.type, msg.key, msg.value);
-                        } else if (sender.containerMenu instanceof LogisticsGuideMenu lgm) {
-                            lgm.handleUpdate(msg.type, msg.key, msg.value);
+                        } else if (false) { // LogisticsGuideMenu disabled
+                            // lgm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
                 }
         );
-        registrar.playToServer(
-                ItemSelectorSetItemPacket.TYPE,
-                ItemSelectorSetItemPacket.STREAM_CODEC,
-                (msg, context) -> {
-                    context.enqueueWork(() -> {
-                        if (!(context.player() instanceof ServerPlayer sender)) return;
-                        if (sender.containerMenu instanceof ItemSelectorMenu ism) {
-                            msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
-                            ism.save();
-                            ism.broadcastChanges();
-                        } else if (sender.containerMenu instanceof FilterMenu ism) {
-                            msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
-                            ism.save();
-                            ism.broadcastChanges();
-                        }
-                    });
-                }
-        );
+        // ItemSelectorSetItemPacket disabled
+        // registrar.playToServer(
+        //         ItemSelectorSetItemPacket.TYPE,
+        //         ItemSelectorSetItemPacket.STREAM_CODEC,
+        //         (msg, context) -> {
+        //             context.enqueueWork(() -> {
+        //                 if (!(context.player() instanceof ServerPlayer sender)) return;
+        //                 if (sender.containerMenu instanceof ItemSelectorMenu ism) {
+        //                     msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
+        //                     ism.save();
+        //                     ism.broadcastChanges();
+        //                 } else if (sender.containerMenu instanceof FilterMenu ism) {
+        //                     msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
+        //                     ism.save();
+        //                     ism.broadcastChanges();
+        //                 }
+        //             });
+        //         }
+        // );
         registrar.playToClient(
                 DebugDataPacket.TYPE,
                 DebugDataPacket.STREAM_CODEC,
@@ -124,7 +134,7 @@ public class Network {
                         } else {
                             context
                                     .player()
-                                    .getServer()
+                                    .level().getServer()
                                     .overworld()
                                     .getData(DataAttachmentRegistry.INVENTORY_LIST_DATA)
                                     .sendTo(msg.key, (ServerPlayer) context.player());
@@ -163,98 +173,67 @@ public class Network {
                     Entity entity = sender.level().getEntity(msg.id);
                     if (entity instanceof EntityMaid maid) {
                         if (msg.type == MaidDataSyncPacket.Type.MemoryAssistant) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.memoryAssistant(StorageManagerConfigData.MemoryAssistant.values()[msg.value]);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.NoPlaceSort) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.noSortPlacement(msg.value == 1);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.CoWork) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.coWorkMode(msg.value == 1);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.AllowSeekWorkMeal) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.allowSeekWorkMeal(msg.value == 1);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.FastSort) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.suppressStrategy(StorageManagerConfigData.SuppressStrategy.values()[msg.value]);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.MemorizeCraftGuide) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.useMemorizedCraftGuide(msg.value == 1);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.MaxParallel) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.maxParallel(msg.value);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.CraftingRepeatCount) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.maxCraftingLayerRepeatCount(msg.value);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.AutoSorting) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.autoSorting(msg.value != 0);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.ItemTypeLimit) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.itemTypeLimit(msg.value);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.DoCommunicate) {
-                            StorageManagerConfigData.Data data = maid.getOrCreateData(
-                                    StorageManagerConfigData.KEY,
-                                    StorageManagerConfigData.Data.getDefault()
-                            );
+                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.doCommunicate(msg.value != 0);
-                            maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         }
                     }
                 }
         );
-        registrar.playBidirectional(
-                CraftGuideGuiPacket.TYPE,
-                CraftGuideGuiPacket.STREAM_CODEC,
-                (msg, context) -> {
-                    Player sender = context.player();
-                    context.enqueueWork(() -> {
-                        if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
-                            icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
-                        }
-                    });
-                }
-        );
+        // CraftGuideGuiPacket disabled
+        // registrar.playBidirectional(
+        //         CraftGuideGuiPacket.TYPE,
+        //         CraftGuideGuiPacket.STREAM_CODEC,
+        //         (msg, context) -> {
+        //             Player sender = context.player();
+        //             context.enqueueWork(() -> {
+        //                 // ICraftGuiPacketReceiver disabled
+        //                 // if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
+        //                 //     icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
+        //                 // }
+        //             });
+        //         }
+        // );
         registrar.playToClient(
                 RenderEntityPacket.TYPE,
                 RenderEntityPacket.STREAM_CODEC,
@@ -278,9 +257,9 @@ public class Network {
                 JEIRequestPacket.STREAM_CODEC,
                 (msg, context) -> {
                     if (!(context.player() instanceof ServerPlayer sender)) return;
-                    context.enqueueWork(() -> {
+                    /*context.enqueueWork(() -> {
                         IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
-                    });
+                    });*/
                 }
         );
         registrar.playToClient(
@@ -288,7 +267,8 @@ public class Network {
                 JEIRequestResultPacket.STREAM_CODEC,
                 (msg, context) -> {
                     context.enqueueWork(() -> {
-                        InScreenTipData.show(msg.result, 5.0f);
+                        // InScreenTipData disabled
+                        // InScreenTipData.show(msg.result, 5.0f);
                     });
                 }
         );
@@ -302,10 +282,11 @@ public class Network {
                             if (msg.type == MaidDataSyncToClientPacket.Type.WORKING) {
                                 maid.getBrain().setMemory(
                                         MemoryModuleRegistry.CURRENTLY_WORKING.get(),
-                                        ScheduleBehavior.Schedule.values()[msg.value.getInt("id")]
+                                        ScheduleBehavior.Schedule.values()[msg.value.getInt("id").orElse(0)]
                                 );
                             } else if (msg.type == MaidDataSyncToClientPacket.Type.BAUBLE) {
-                                maid.getMaidBauble().deserializeNBT(sender.registryAccess(), msg.value);
+                                // BaubleItemHandler.deserializeNBT API changed - disabled
+                                // maid.getMaidBauble().deserializeNBT(sender.registryAccess(), msg.value);
                             }
                         }
                     });
@@ -316,7 +297,7 @@ public class Network {
                 CreateStockManagerPacket.STREAM_CODEC,
                 (packet, context) -> {
                     if (!(context.player() instanceof ServerPlayer sender)) return;
-                    context.enqueueWork(() -> {
+                    /*context.enqueueWork(() -> {
                         Entity target = sender.level().getEntity(packet.id);
                         if (target instanceof EntityMaid maid) {
                             if (packet.data == CreateStockManagerPacket.Type.OPEN_SCREEN) {
@@ -325,7 +306,7 @@ public class Network {
                                 StockManagerInteract.onHandleShoppingList(sender, maid, packet.ticker);
                             }
                         }
-                    });
+                    });*/
                 }
         );
         registrar.playToClient(
@@ -347,24 +328,26 @@ public class Network {
                     });
                 }
         );
-        registrar.playBidirectional(
-                CommunicateMarkGuiPacket.TYPE,
-                CommunicateMarkGuiPacket.STREAM_CODEC,
-                (p, c) -> {
-                    c.enqueueWork(() -> {
-                        CommunicateMarkGuiPacket.handle(c.player(), p);
-                    });
-                }
-        );
-        registrar.playBidirectional(
-                CraftGuideGeneratorUpdate.TYPE,
-                CraftGuideGeneratorUpdate.STREAM_CODEC,
-                (p, c) -> {
-                    c.enqueueWork(() -> {
-                        CraftGuideGeneratorUpdate.handle(c.player(), p);
-                    });
-                }
-        );
+        // CommunicateMarkGuiPacket disabled
+        // registrar.playBidirectional(
+        //         CommunicateMarkGuiPacket.TYPE,
+        //         CommunicateMarkGuiPacket.STREAM_CODEC,
+        //         (p, c) -> {
+        //             c.enqueueWork(() -> {
+        //                 CommunicateMarkGuiPacket.handle(c.player(), p);
+        //             });
+        //         }
+        // );
+        // CraftGuideGeneratorUpdate disabled
+        // registrar.playBidirectional(
+        //         CraftGuideGeneratorUpdate.TYPE,
+        //         CraftGuideGeneratorUpdate.STREAM_CODEC,
+        //         (p, c) -> {
+        //             c.enqueueWork(() -> {
+        //                 CraftGuideGeneratorUpdate.handle(c.player(), p);
+        //             });
+        //         }
+        // );
         registrar.playToServer(
                 AIMatchLocalizedItemC2SPacket.TYPE,
                 AIMatchLocalizedItemC2SPacket.STREAM_CODEC,
@@ -374,16 +357,17 @@ public class Network {
                     });
                 }
         );
-        registrar.playToClient(
-                AIMatchLocalizedItemS2CPacket.TYPE,
-                AIMatchLocalizedItemS2CPacket.STREAM_CODEC,
-                (p, c) -> {
-                    c.enqueueWork(() -> AIMatchLocalizedItemS2CPacket.handle(p));
-                }
-        );
+        // AIMatchLocalizedItemS2CPacket disabled
+        // registrar.playToClient(
+        //         AIMatchLocalizedItemS2CPacket.TYPE,
+        //         AIMatchLocalizedItemS2CPacket.STREAM_CODEC,
+        //         (p, c) -> {
+        //             c.enqueueWork(() -> AIMatchLocalizedItemS2CPacket.handle(p));
+        //         }
+        // );
     }
 
-    @EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = MaidStorageManager.MODID)
     public static class Event {
         @SubscribeEvent
         public static void regis(RegisterPayloadHandlersEvent event) {

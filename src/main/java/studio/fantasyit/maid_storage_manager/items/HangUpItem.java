@@ -18,7 +18,7 @@ public class HangUpItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (!context.getLevel().isClientSide) {
+        if (!context.getLevel().isClientSide()) {
             if (Config.generateVirtualItemFrame)
                 if (context.getPlayer().isShiftKeyDown()) {
                     BlockPos pos = context.getClickedPos().relative(context.getClickedFace());

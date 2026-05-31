@@ -4,11 +4,14 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
@@ -52,7 +55,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     protected boolean canStillUse(ServerLevel p_22545_, EntityMaid maid, long p_22547_) {
         if (Conditions.isWaitingForReturn(maid)) return false;
         if (Conditions.isNothingToPlace(maid)) return false;
-        if (count >= maid.getAvailableInv(false).getSlots()) return false;
+        if (count >= maid.getAvailableInv(false).size()) return false;
         return context != null && !context.isDone();
     }
 
@@ -79,12 +82,12 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
-        CombinedInvWrapper inv = maid.getAvailableInv(false);
-        for (int _i = 0; _i < inv.getSlots() / 3; _i++) {
-            if (count >= inv.getSlots()) {
+        CombinedResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
+        for (int _i = 0; _i < inv.size() / 3; _i++) {
+            if (count >= inv.size()) {
                 break;
             }
-            @NotNull ItemStack item = inv.getStackInSlot(count);
+            @NotNull ItemStack item = ItemUtil.getStack(inv, count);
             int oCount = item.getCount();
             boolean whitelist = false;
             if (context instanceof IFilterable iFilterable) {
@@ -108,19 +111,33 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
                             item.remove(DataComponentRegistry.REQUEST_IGNORE);
                             ItemStack insert = isic.insert(item);
                             ViewedInventoryUtil.ambitiousAddItemAndSync(maid, p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
-                            inv.setStackInSlot(count, insert);
+                            setSlot(inv, count, insert);
                         }
                     } else {
                         ItemStack insert = isic.insert(item);
                         ViewedInventoryUtil.ambitiousAddItemAndSync(maid, p_22551_, target, item.copyWithCount(oCount - insert.getCount()));
-                        inv.setStackInSlot(count, insert);
+                        setSlot(inv, count, insert);
                     }
                 }
             }
-            if (inv.getStackInSlot(count).getCount() != oCount) {
+            if (ItemUtil.getStack(inv, count).getCount() != oCount) {
                 changed = true;
             }
             count++;
+        }
+    }
+
+    private static void setSlot(CombinedResourceHandler<ItemResource> handler, int index, ItemStack newStack) {
+        try (Transaction tx = Transaction.open(null)) {
+            ItemResource oldResource = handler.getResource(index);
+            int oldAmount = (int) handler.getAmountAsLong(index);
+            if (oldAmount > 0 && !oldResource.isEmpty()) {
+                handler.extract(index, oldResource, oldAmount, tx);
+            }
+            if (!newStack.isEmpty()) {
+                handler.insert(index, ItemResource.of(newStack), newStack.getCount(), tx);
+            }
+            tx.commit();
         }
     }
 
@@ -165,7 +182,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             });
         }
         if (!changed && anyMatched) {
-            if (maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault()).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
+            if (StorageManagerConfigData.get(maid).suppressStrategy() != StorageManagerConfigData.SuppressStrategy.AFTER_ALL) {
                 MemoryUtil.getPlacingInv(maid).addSuppressedPos(target);
                 DebugData.sendDebug(maid, ProgressDebugContext.TYPE.WORK, "[PLACE]Suppress set at %s", target);
             }

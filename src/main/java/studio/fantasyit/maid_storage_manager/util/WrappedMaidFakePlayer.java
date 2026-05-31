@@ -13,13 +13,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -37,18 +35,13 @@ public class WrappedMaidFakePlayer extends FakePlayer {
         private final EntityMaid maid;
 
         public WrappedMaidInventory(EntityMaid p_35983_, WrappedMaidFakePlayer fakePlayer) {
-            super(fakePlayer);
+            super(fakePlayer, fakePlayer.equipment);
             this.maid = p_35983_;
         }
 
         @Override
-        public @NotNull ItemStack getSelected() {
+        public @NotNull ItemStack getSelectedItem() {
             return maid.getMainHandItem();
-        }
-
-        @Override
-        public float getDestroySpeed(BlockState p_36021_) {
-            return maid.getMainHandItem().getDestroySpeed(p_36021_);
         }
     }
 
@@ -80,13 +73,6 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     public boolean removeEffect(Holder<MobEffect> p_21196_) {
         if (maid == null) return false;
         return maid.removeEffect(p_21196_);
-    }
-
-    @Nullable
-    @Override
-    public MobEffectInstance removeEffectNoUpdate(@Nullable Holder<MobEffect> p_21164_) {
-        if (maid == null) return super.removeEffectNoUpdate(p_21164_);
-        return maid.removeEffectNoUpdate(p_21164_);
     }
 
     @Override
@@ -179,15 +165,8 @@ public class WrappedMaidFakePlayer extends FakePlayer {
         return maid.onGround();
     }
 
-    @Override
-    public Level level() {
-        if (maid == null) return super.level();
-        return maid.level();
-    }
-
-    @Override
     public ServerLevel serverLevel() {
-        if (maid == null) return super.serverLevel();
+        if (maid == null) return (ServerLevel) super.level();
         return (ServerLevel) maid.level();
     }
 
@@ -228,21 +207,15 @@ public class WrappedMaidFakePlayer extends FakePlayer {
     }
 
     @Override
-    public boolean teleportTo(ServerLevel p_265564_, double p_265424_, double p_265680_, double p_265312_, Set<RelativeMovement> p_265192_, float p_265059_, float p_265266_) {
+    public boolean teleportTo(ServerLevel level, double x, double y, double z, Set<Relative> relatives, float yRot, float xRot, boolean resetCamera) {
         if (maid == null) return false;
-        return maid.teleportTo(p_265564_, p_265424_, p_265680_, p_265312_, p_265192_, p_265059_, p_265266_);
+        return maid.teleportTo(level, x, y, z, relatives, yRot, xRot, resetCamera);
     }
 
     @Override
     public void teleportRelative(double p_251611_, double p_248861_, double p_252266_) {
         if (maid == null) return;
         maid.teleportRelative(p_251611_, p_248861_, p_252266_);
-    }
-
-    @Override
-    public void moveTo(double p_9171_, double p_9172_, double p_9173_) {
-        if (maid == null) return;
-        maid.moveTo(p_9171_, p_9172_, p_9173_);
     }
 
     @Override

@@ -1,10 +1,9 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -16,9 +15,11 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
-import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 
 import java.util.List;
+
+//import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 
 public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, SingleRecipeInput> {
     @Override
@@ -27,26 +28,32 @@ public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, SingleReci
     }
 
     @Override
-    protected ResourceLocation getCraftType() {
-        return FurnaceType.TYPE;
+    protected Identifier getCraftType() {
+        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // FurnaceType disabled
+    }
+
+    @Override
+    protected ItemStack outputTransform(List<InventoryItem> inventory, Level level, SmeltingRecipe recipe) {
+        return recipe.assemble(new SingleRecipeInput(ItemStack.EMPTY));
     }
 
     @Override
     protected List<Ingredient> cacheIngredientsTransform(SmeltingRecipe recipe) {
-        NonNullList<Ingredient> ingredients = recipe.getIngredients();
-        if (recipe.getResultItem(RegistryAccess.EMPTY).is(Items.CHARCOAL) && !ingredients.isEmpty()) {
+        List<Ingredient> ingredients = recipe.placementInfo().ingredients();
+        ItemStack resultOutput = recipe.assemble(new SingleRecipeInput(ItemStack.EMPTY));
+        if (resultOutput.is(Items.CHARCOAL) && !ingredients.isEmpty()) {
             return List.of(
                     ingredients.get(0),
                     IntersectionIngredient.of(
-                            Ingredient.of(ItemTags.LOGS_THAT_BURN),
-                            Ingredient.of(ItemTags.PLANKS),
-                            Ingredient.of(ItemTags.COALS)
+                            Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.LOGS_THAT_BURN).orElseThrow()),
+                            Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.PLANKS).orElseThrow()),
+                            Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.COALS).orElseThrow())
                     )
             );
         } else {
             return List.of(
                     ingredients.get(0),
-                    Ingredient.of(ItemTags.COALS)
+                    Ingredient.of(BuiltInRegistries.ITEM.get(ItemTags.COALS).orElseThrow())
             );
         }
     }

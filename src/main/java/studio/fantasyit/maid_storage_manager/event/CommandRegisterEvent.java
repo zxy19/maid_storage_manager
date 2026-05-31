@@ -12,7 +12,7 @@ import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.CraftingDebugManager;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugManager;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class CommandRegisterEvent {
 
     @SubscribeEvent

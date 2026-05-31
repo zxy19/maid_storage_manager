@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request.find;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
@@ -12,10 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
@@ -64,7 +64,7 @@ public class RequestFindMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
             if (Conditions.useScanTarget(maid) || (handler != null && handler.isBlackMode(stack)))
                 this.searchForDestination(level, maid);
         RequestProgressMemory requestProgress = MemoryUtil.getRequestProgress(maid);
-        if (!maid.getBrain().hasMemoryValue(InitEntities.TARGET_POS.get())) {
+        if (!maid.getBrain().hasMemoryValue(InitBrains.TARGET_POS.get())) {
             if (MemoryUtil.getRequestProgress(maid).confirmNoTarget()) {
                 DebugData.sendDebug(maid, ProgressDebugContext.TYPE.MOVE, "[REQUEST_FIND]No More Target");
                 MemoryUtil.getRequestProgress(maid).setTryCrafting(true);

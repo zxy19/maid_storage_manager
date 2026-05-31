@@ -1,16 +1,16 @@
 package studio.fantasyit.maid_storage_manager.attachment;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.util.ValueIOSerializable;
 import net.neoforged.neoforge.network.PacketDistributor;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -24,7 +24,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class InventoryListData implements INBTSerializable<CompoundTag> {
+public class InventoryListData implements ValueIOSerializable {
     public static InventoryListData get(Level world) {
         return world.getData(DataAttachmentRegistry.INVENTORY_LIST_DATA);
     }
@@ -38,12 +38,12 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
     public void set(HolderLookup.Provider provider, UUID uuid, ListTag listTag) {
         ConcurrentHashMap<String, List<InventoryItem>> map = new ConcurrentHashMap<>();
         for (int i = 0; i < listTag.size(); i++) {
-            CompoundTag tag = listTag.getCompound(i);
-            String key = tag.getString("key");
-            ListTag itemList = tag.getList("items", ListTag.TAG_COMPOUND);
+            CompoundTag tag = listTag.getCompound(i).get();
+            String key = tag.getString("key").get();
+            ListTag itemList = tag.getList("items").get();
             List<InventoryItem> items = new ArrayList<>();
             for (int j = 0; j < itemList.size(); j++) {
-                items.add(InventoryItem.fromNbt(provider, itemList.getCompound(j)));
+                items.add(InventoryItem.fromNbt(provider, itemList.getCompound(j).get()));
             }
             map.put(key, items);
         }
@@ -60,10 +60,9 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
         if (!dataMap.containsKey(uuid)) {
             dataMap.put(uuid, new ConcurrentHashMap<>());
         }
-        Registry<Item> reg = provider.registryOrThrow(Registries.ITEM);
         for (InventoryItem pair : list) {
             ItemStack item = pair.itemStack;
-            String key = String.valueOf(reg.getKey(item.getItem()));
+            String key = String.valueOf(BuiltInRegistries.ITEM.getKey(item.getItem()));
             if (!dataMap.get(uuid).containsKey(key)) {
                 dataMap.get(uuid).put(key, new ArrayList<>());
             }
@@ -75,13 +74,12 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
         if (!dataMap.containsKey(uuid)) {
             dataMap.put(uuid, new ConcurrentHashMap<>());
         }
-        Registry<Item> reg = provider.registryOrThrow(Registries.ITEM);
         for (InventoryItem existingItem : list) {
             if (existingItem.itemStack.is(ItemRegistry.CRAFT_GUIDE.get())) {
                 CraftGuideData cgd = existingItem.itemStack.getOrDefault(DataComponentRegistry.CRAFT_GUIDE_DATA, CraftGuide.empty());
                 if (cgd.available()) {
                     cgd.getOutput().forEach(itemStack -> {
-                        String key = String.valueOf(reg.getKey(itemStack.getItem()));
+                        String key = String.valueOf(BuiltInRegistries.ITEM.getKey(itemStack.getItem()));
                         if (!dataMap.get(uuid).containsKey(key)) {
                             dataMap.get(uuid).put(key, new ArrayList<>());
                         }
@@ -104,7 +102,7 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public ListTag get(HolderLookup.Provider access, UUID uuid) {
+    public ListTag get(UUID uuid) {
         if (!dataMap.containsKey(uuid))
             return new ListTag();
         ListTag listTag = new ListTag();
@@ -113,7 +111,7 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
             compoundTag.putString("key", entry.getKey());
             ListTag sameItem = new ListTag();
             for (InventoryItem inventoryItem : entry.getValue()) {
-                sameItem.add(inventoryItem.serializeNBT(access));
+                sameItem.add(inventoryItem.serializeNBT());
             }
             compoundTag.put("items", sameItem);
             listTag.add(compoundTag);
@@ -144,25 +142,28 @@ public class InventoryListData implements INBTSerializable<CompoundTag> {
     }
 
     @Override
-    public CompoundTag serializeNBT(HolderLookup.Provider var1) {
-        CompoundTag tag = new CompoundTag();
+    public void serialize(ValueOutput output) {
+        CompoundTag root = new CompoundTag();
         for (Map.Entry<UUID, Map<String, List<InventoryItem>>> entry : dataMap.entrySet()) {
-            ListTag listTag = get(var1, entry.getKey());
-            tag.put(entry.getKey().toString(), listTag);
+            ListTag listTag = get(entry.getKey());
+            root.put(entry.getKey().toString(), listTag);
         }
-        return tag;
+        output.store("root", CompoundTag.CODEC, root);
     }
 
     @Override
-    public void deserializeNBT(HolderLookup.Provider var1, CompoundTag nbt) {
-        for (String key : nbt.getAllKeys()) {
-            try {
-                UUID uuid = UUID.fromString(key);
-                ListTag listTag = nbt.getList(key, ListTag.TAG_COMPOUND);
-                set(var1, uuid, listTag);
-            } catch (Exception e) {
-                e.printStackTrace();
+    public void deserialize(ValueInput input) {
+        HolderLookup.Provider provider = input.lookup();
+        input.read("root", CompoundTag.CODEC).ifPresent(root -> {
+            for (String key : root.keySet()) {
+                try {
+                    UUID uuid = UUID.fromString(key);
+                    ListTag listTag = root.getList(key).get();
+                    set(provider, uuid, listTag);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        }
+        });
     }
 }

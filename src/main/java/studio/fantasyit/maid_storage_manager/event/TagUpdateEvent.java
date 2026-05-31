@@ -6,7 +6,7 @@ import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.communicate.data.TaskDefaultCommunicate;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class TagUpdateEvent {
     @SubscribeEvent
     public static void onTagUpdate(TagsUpdatedEvent event) {

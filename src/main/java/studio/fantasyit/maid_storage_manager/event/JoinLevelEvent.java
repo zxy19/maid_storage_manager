@@ -8,7 +8,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.MaidProgressData;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public class JoinLevelEvent {
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent

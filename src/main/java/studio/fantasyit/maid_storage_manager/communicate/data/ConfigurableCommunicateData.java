@@ -12,14 +12,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
-import studio.fantasyit.maid_storage_manager.communicate.wish.PlaceItemWishWithLimitation;
 import studio.fantasyit.maid_storage_manager.communicate.wish.RequestItemWish;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+
+//import studio.fantasyit.maid_storage_manager.communicate.wish.PlaceItemWishWithLimitation;
 
 public class ConfigurableCommunicateData {
     public static final Codec<ConfigurableCommunicateData> CODEC = RecordCodecBuilder.create(instance -> instance
@@ -119,18 +119,18 @@ public class ConfigurableCommunicateData {
 
         public static Item fromNbt(CompoundTag tag, HolderLookup.Provider p) {
             List<ItemStack> list = new ArrayList<>();
-            ListTag requires = tag.getList("requires", 10);
+            ListTag requires = tag.getList("requires").get();
             for (int i = 0; i < requires.size(); i++) {
-                list.add(ItemStackUtil.parseStack(p,requires.getCompound(i)));
+                list.add(ItemStackUtil.parseStack(p,requires.getCompound(i).get()));
             }
             return new Item(
                     list,
-                    tag.getBoolean("whiteMode"),
-                    ItemStackUtil.MATCH_TYPE.valueOf(tag.getString("match")),
-                    SlotType.valueOf(tag.getString("slot")),
-                    tag.getInt("max"),
-                    tag.getInt("min"),
-                    tag.getInt("thresholdCount")
+                    tag.getBoolean("whiteMode").get(),
+                    ItemStackUtil.MATCH_TYPE.valueOf(tag.getString("match").get()),
+                    SlotType.valueOf(tag.getString("slot").get()),
+                    tag.getInt("max").get(),
+                    tag.getInt("min").get(),
+                    tag.getInt("thresholdCount").get()
             );
         }
 
@@ -201,9 +201,9 @@ public class ConfigurableCommunicateData {
 
     public static ConfigurableCommunicateData fromNbt(CompoundTag tag, HolderLookup.Provider p) {
         List<Item> list = new ArrayList<>();
-        ListTag itemsTag = tag.getList("items", 10);
+        ListTag itemsTag = tag.getList("items").get();
         for (int i = 0; i < itemsTag.size(); i++) {
-            list.add(Item.fromNbt(itemsTag.getCompound(i), p));
+            list.add(Item.fromNbt(itemsTag.getCompound(i).get(), p));
         }
         return new ConfigurableCommunicateData(list);
     }
@@ -283,7 +283,8 @@ public class ConfigurableCommunicateData {
                 }
             }
             if (!toTakeItem.isEmpty())
-                list.add(new PlaceItemWishWithLimitation(toTakeItem.stream().map(t -> new Pair<>(t, item.thresholdCount)).toList(), item.slot, item.match));
+                // PlaceItemWishWithLimitation disabled
+                // list.add(new PlaceItemWishWithLimitation(toTakeItem.stream().map(t -> new Pair<>(t, item.thresholdCount)).toList(), item.slot, item.match));
             if (!toRequestItem.isEmpty())
                 list.add(new RequestItemWish(toRequestItem, item.match, item.slot));
         }

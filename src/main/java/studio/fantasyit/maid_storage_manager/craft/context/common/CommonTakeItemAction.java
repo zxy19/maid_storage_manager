@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class CommonTakeItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "extract");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "extract");
     protected IStorageContext storageContext;
 
     public CommonTakeItemAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {

@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -21,7 +21,7 @@ import studio.fantasyit.maid_storage_manager.craft.generator.algo.ICachableGener
 import studio.fantasyit.maid_storage_manager.craft.generator.cache.RecipeIngredientCache;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.ConfigTypes;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
-import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+//import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.PosUtil;
@@ -44,8 +44,8 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     );
 
     @Override
-    public @NotNull ResourceLocation getType() {
-        return ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering");
+    public @NotNull Identifier getType() {
+        return Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "watering");
     }
 
     @Override
@@ -61,11 +61,11 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     }
 
     @Override
-    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions) {
+    public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<Identifier, List<BlockPos>> recognizedTypePositions) {
 
         if (BOTTLE.getValue())
             graph.addRecipe(
-                    ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
+                    Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
                     List.of(Ingredient.of(Items.GLASS_BOTTLE)),
                     List.of(1),
                     List.of(PotionContents.createItemStack(Items.POTION, Potions.WATER)),
@@ -78,13 +78,13 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                         );
                         return new CraftGuideData(
                                 List.of(step),
-                                CommonType.TYPE
+                                Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled") // CommonType disabled
                         );
                     }
             );
         if (BUCKET.getValue())
             graph.addRecipe(
-                    ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bucket"),
+                    Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bucket"),
                     List.of(Ingredient.of(Items.BUCKET)),
                     List.of(1),
                     List.of(new ItemStack(Items.WATER_BUCKET)),
@@ -97,7 +97,7 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
                         );
                         return new CraftGuideData(
                                 List.of(step),
-                                CommonType.TYPE
+                                Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled") // CommonType disabled
                         );
                     }
             );
@@ -106,11 +106,11 @@ public class GeneratorWatering implements IAutoCraftGuideGenerator {
     @Override
     public void onCache(RecipeManager manager) {
         RecipeIngredientCache.addRecipeCache(
-                ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
+                Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bottle"),
                 List.of(Ingredient.of(Items.GLASS_BOTTLE))
         );
         RecipeIngredientCache.addRecipeCache(
-                ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bucket"),
+                Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "watering_bucket"),
                 List.of(Ingredient.of(Items.BUCKET))
         );
     }

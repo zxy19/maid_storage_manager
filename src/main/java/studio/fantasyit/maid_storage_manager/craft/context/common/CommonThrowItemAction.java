@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -17,7 +17,7 @@ import studio.fantasyit.maid_storage_manager.util.MoveUtil;
 import java.util.List;
 
 public class CommonThrowItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "throw");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "throw");
     int ingredientIndex = 0;
     List<ItemStack> ingredients;
 

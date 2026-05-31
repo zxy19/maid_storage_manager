@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.action;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
@@ -12,9 +12,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public record ActionOption<T>(
-        ResourceLocation id,
+        Identifier id,
         Component[] tooltip,
-        ResourceLocation[] icon,
+        Identifier[] icon,
         String defaultValue,
         @NotNull BiConverter<Integer, T> converter,
         @NotNull ValuePredicatorOrGetter<T> valuePredicatorOrGetter
@@ -73,23 +73,23 @@ public record ActionOption<T>(
         }
     }
 
-    public ActionOption(ResourceLocation id, String defaultValue, @NotNull BiConverter<Integer, T> converter, @NotNull ValuePredicatorOrGetter<T> valuePredicatorOrGetter) {
-        this(id, new Component[0], new ResourceLocation[0], defaultValue, converter, valuePredicatorOrGetter);
+    public ActionOption(Identifier id, String defaultValue, @NotNull BiConverter<Integer, T> converter, @NotNull ValuePredicatorOrGetter<T> valuePredicatorOrGetter) {
+        this(id, new Component[0], new Identifier[0], defaultValue, converter, valuePredicatorOrGetter);
     }
 
-    public static ActionOption<Boolean> valueOnly(ResourceLocation id, String defaultValue) {
+    public static ActionOption<Boolean> valueOnly(Identifier id, String defaultValue) {
         return new ActionOption<>(id, defaultValue, new BiConverter<>(value -> true, value -> 0), ValuePredicatorOrGetter.predicator(value -> true));
     }
 
     public static final ActionOption<Boolean> OPTIONAL = new ActionOption<>(
-            ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "optional"),
+            Identifier.fromNamespaceAndPath("maid_storage_manager", "optional"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.required"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.optional")
             },
-            new ResourceLocation[]{
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/required.png"),
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/optional.png")
+            new Identifier[]{
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/required.png"),
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/optional.png")
             },
             "",
             new BiConverter<>(value -> value == 1, value -> value ? 1 : 0),
@@ -108,8 +108,8 @@ public record ActionOption<T>(
     public Optional<T> getOptionSelection(CraftGuideStepData craftGuideStepData) {
         assertValid(craftGuideStepData);
         CompoundTag extraData = craftGuideStepData.getExtraData();
-        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).contains("selection")) {
-            return Optional.of(converter.ab(extraData.getCompound(id.toString()).getInt("selection")));
+        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).get().contains("selection")) {
+            return Optional.of(converter.ab(extraData.getCompound(id.toString()).get().getInt("selection").get()));
         }
         return Optional.empty();
     }
@@ -117,8 +117,8 @@ public record ActionOption<T>(
     public Optional<Integer> getOptionSelectionId(CraftGuideStepData craftGuideStepData) {
         assertValid(craftGuideStepData);
         CompoundTag extraData = craftGuideStepData.getExtraData();
-        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).contains("selection")) {
-            return Optional.of(extraData.getCompound(id.toString()).getInt("selection"));
+        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).get().contains("selection")) {
+            return Optional.of(extraData.getCompound(id.toString()).get().getInt("selection").get());
         }
         return Optional.empty();
     }
@@ -126,8 +126,8 @@ public record ActionOption<T>(
     public String getOptionValue(CraftGuideStepData craftGuideStepData) {
         assertValid(craftGuideStepData);
         CompoundTag extraData = craftGuideStepData.getExtraData();
-        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).contains("value")) {
-            return extraData.getCompound(id.toString()).getString("value");
+        if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).get().contains("value")) {
+            return extraData.getCompound(id.toString()).get().getString("value").get();
         }
         return defaultValue();
     }
@@ -142,7 +142,7 @@ public record ActionOption<T>(
         CompoundTag extraData = craftGuideStepData.getExtraData();
         if (!extraData.contains(id.toString()))
             extraData.put(id.toString(), new CompoundTag());
-        extraData.getCompound(id.toString()).putInt("selection", selection);
+        extraData.getCompound(id.toString()).get().putInt("selection", selection);
         craftGuideStepData.setExtraData(extraData);
     }
 
@@ -151,7 +151,7 @@ public record ActionOption<T>(
         CompoundTag extraData = craftGuideStepData.getExtraData();
         if (!extraData.contains(id.toString()))
             extraData.put(id.toString(), new CompoundTag());
-        extraData.getCompound(id.toString()).putString("value", value);
+        extraData.getCompound(id.toString()).get().putString("value", value);
         craftGuideStepData.setExtraData(extraData);
     }
 

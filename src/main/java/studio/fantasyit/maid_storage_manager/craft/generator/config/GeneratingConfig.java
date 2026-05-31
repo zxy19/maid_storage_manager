@@ -6,11 +6,12 @@ import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.electronwill.nightconfig.toml.TomlWriter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
@@ -22,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class GeneratingConfig {
     static CommentedConfig config;
     public static final Path CONFIG_BASE_PATH = FMLPaths.CONFIGDIR.get();
     public static final String NAME = "maid_storage_manager-generating.toml";
-    public static Map<ResourceLocation, Boolean> enabled = new HashMap<>();
-    public static Map<ResourceLocation, List<ConfigTypes.ConfigType<?>>> configs = new HashMap<>();
+    public static Map<Identifier, Boolean> enabled = new HashMap<>();
+    public static Map<Identifier, List<ConfigTypes.ConfigType<?>>> configs = new HashMap<>();
 
     protected static <T> T getOrSetAndChange(String path, MutableBoolean change, T defaultValue) {
         return config.getOrElse(path, () -> {
@@ -38,7 +39,7 @@ public class GeneratingConfig {
         });
     }
 
-    public static String getByResourceLocation(ResourceLocation resourceLocation) {
+    public static String getByResourceLocation(Identifier resourceLocation) {
         return resourceLocation.getNamespace() + "." + resourceLocation.getPath();
     }
 
@@ -97,21 +98,22 @@ public class GeneratingConfig {
         }
     }
 
-    public static boolean isEnabled(ResourceLocation type) {
+    public static boolean isEnabled(Identifier type) {
         if (!enabled.containsKey(type))
             return false;
         return enabled.get(type);
     }
 
-    public static void setEnable(ResourceLocation type, Boolean b) {
+    public static void setEnable(Identifier type, Boolean b) {
         enabled.put(type, b);
         save();
     }
 
+    private static final Identifier RELOAD_LISTENER_ID = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "generating_config");
+
     @SubscribeEvent
-    static void regReload(AddReloadListenerEvent event) {
-        event.addListener((p_10638_, p_10639_, p_10640_, p_10641_, p_10642_, p_10643_)
-                -> // 某个同步方法
-                CompletableFuture.runAsync(GeneratingConfig::load).thenCompose((p_10638_::wait)));
+    static void regReload(AddServerReloadListenersEvent event) {
+        event.addListener(RELOAD_LISTENER_ID, (PreparableReloadListener) (sharedState, backgroundExecutor, barrier, gameExecutor) ->
+                CompletableFuture.runAsync(GeneratingConfig::load));
     }
 }

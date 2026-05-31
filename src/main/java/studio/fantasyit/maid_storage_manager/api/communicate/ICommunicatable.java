@@ -1,7 +1,7 @@
 package studio.fantasyit.maid_storage_manager.api.communicate;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicatePlan;
 import studio.fantasyit.maid_storage_manager.api.communicate.data.CommunicateRequest;
@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Set;
 
 public interface ICommunicatable {
-    Set<ResourceLocation> getAcceptedWishTypes();
+    Set<Identifier> getAcceptedWishTypes();
 
     default @Nullable CommunicatePlan acceptCommunicateWish(EntityMaid handler, CommunicateWish wish) {
-        Set<ResourceLocation> acceptedWishTypes = getAcceptedWishTypes();
+        Set<Identifier> acceptedWishTypes = getAcceptedWishTypes();
         List<IActionStep> steps = new ArrayList<>();
         for (IActionWish w : wish.wishes()) {
             if (!acceptedWishTypes.contains(w.getType()))

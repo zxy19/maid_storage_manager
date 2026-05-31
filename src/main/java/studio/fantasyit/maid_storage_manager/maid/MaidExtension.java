@@ -9,7 +9,6 @@ import com.github.tartaricacid.touhoulittlemaid.client.overlay.MaidTipsOverlay;
 import com.github.tartaricacid.touhoulittlemaid.debug.target.DebugTarget;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.ExtraMaidBrainManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.chatbubble.ChatBubbleRegister;
-import com.github.tartaricacid.touhoulittlemaid.entity.data.TaskDataRegister;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.task.TaskManager;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
@@ -18,9 +17,6 @@ import net.minecraft.world.item.Items;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.*;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.items.MaidInteractItem;
-import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
-import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.render.CraftingChatBubbleData;
@@ -29,13 +25,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+
 @LittleMaidExtension
 public class MaidExtension implements ILittleMaid {
 
     @Override
     public void addMaidTask(TaskManager manager) {
         ILittleMaid.super.addMaidTask(manager);
-        manager.add(new StorageManageTask());
+//        manager.add(new StorageManageTask());
     }
 
     @Override
@@ -44,7 +42,7 @@ public class MaidExtension implements ILittleMaid {
         manager.bind(ItemRegistry.LOGISTICS_GUIDE.get(), (IMaidBauble) ItemRegistry.LOGISTICS_GUIDE.get());
         manager.bind(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), (IMaidBauble) ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get());
         manager.bind(ItemRegistry.WORK_CARD.get(), (IMaidBauble) ItemRegistry.WORK_CARD.get());
-        manager.bind(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get(), (IMaidBauble) ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get());
+//        manager.bind(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get(), (IMaidBauble) ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK.get());
     }
 
     @Override
@@ -79,11 +77,6 @@ public class MaidExtension implements ILittleMaid {
     }
 
     @Override
-    public void registerTaskData(TaskDataRegister register) {
-        StorageManagerConfigData.KEY = register.register(new StorageManagerConfigData());
-    }
-
-    @Override
     public void registerAITool(ToolRegister register) {
         register.register(new StorageFetchFunction());
         register.register(new GetStorageFunction());
@@ -96,14 +89,14 @@ public class MaidExtension implements ILittleMaid {
     @Override
     public void addMaidTips(MaidTipsOverlay maidTipsOverlay) {
         maidTipsOverlay.addSpecialTips("tip.maid_storage_manager.interact_maid", (stack, maid, player) -> {
-            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
+//            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
                 return false;
-            return stack.getItem() instanceof MaidInteractItem;
+//            return stack.getItem() instanceof MaidInteractItem;
         });
         maidTipsOverlay.addSpecialTips("tip.maid_storage_manager.change_flag", (stack, maid, player) -> {
-            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
+//            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
                 return false;
-            return stack.is(ItemRegistry.CHANGE_FLAG.get());
+//            return stack.is(ItemRegistry.CHANGE_FLAG.get());
         });
 
         maidTipsOverlay.addTips("tip.maid_storage_manager.experience_bottle", Items.EXPERIENCE_BOTTLE);

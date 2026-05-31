@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.algo.node;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
@@ -12,19 +12,19 @@ import java.util.function.Function;
 
 
 public class CraftNode extends Node {
-    public final ResourceLocation recipeId;
+    public final Identifier recipeId;
     public final List<Function<List<ItemStack>, @Nullable CraftGuideData>> craftGuideSupplier;
     public HashSet<List<Integer>> used;
     public final List<IngredientNode> independentIngredients;
     public final List<IngredientNode> ingredientNodes;
     public final List<Integer> ingredientCounts;
-    public final ResourceLocation type;
+    public final Identifier type;
     public final boolean isOneTime;
 
-    public CraftNode(ResourceLocation resourceLocation, int id,
+    public CraftNode(Identifier resourceLocation, int id,
                      Function<List<ItemStack>, @Nullable CraftGuideData> craftGuideSupplier,
                      List<IngredientNode> ingredients,
-                     List<Integer> ingredientCounts, ResourceLocation type, boolean isOneTime) {
+                     List<Integer> ingredientCounts, Identifier type, boolean isOneTime) {
         super(id);
         this.recipeId = resourceLocation;
         this.craftGuideSupplier = new ArrayList<>(List.of(craftGuideSupplier));

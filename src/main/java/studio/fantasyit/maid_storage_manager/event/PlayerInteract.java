@@ -23,8 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugManager;
-import studio.fantasyit.maid_storage_manager.integration.Integrations;
-import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
 import studio.fantasyit.maid_storage_manager.items.HangUpItem;
 import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -35,7 +33,9 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import java.util.List;
 import java.util.Objects;
 
-@EventBusSubscriber(modid = MaidStorageManager.MODID, bus = EventBusSubscriber.Bus.GAME)
+//import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
+
+@EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class PlayerInteract {
     public static void onPlayerInteract(ServerLevel level, ServerPlayer player, BlockPos pos, Direction clickedFace) {
         @Nullable Target validStorage = MaidStorage.getInstance().isValidTarget(level, player, pos, clickedFace);
@@ -67,16 +67,16 @@ public class PlayerInteract {
                 player.sendSystemMessage(Component.literal("Progress debug prepared with ID " + forMaid.id));
             }
         }
-        if (Integrations.createStockManager())
-            if (StockManagerInteract.onPlayerInteract(player, maid)) {
-                event.setCanceled(true);
-                return;
-            }
+        //if (Integrations.createStockManager())
+        //    if (StockManagerInteract.onPlayerInteract(player, maid)) {
+        //        event.setCanceled(true);
+        //        return;
+        //    }
         if (player instanceof ServerPlayer sp) {
             if (sp.getMainHandItem().is(Items.EXPERIENCE_BOTTLE)) {
                 ItemStack mainHandItem = sp.getMainHandItem();
                 int count = sp.isShiftKeyDown() ? mainHandItem.getCount() : 1;
-                int amount = (3 + sp.level().random.nextInt(5) + sp.level().random.nextInt(5)) * count;
+                int amount = (3 + sp.level().getRandom().nextInt(5) + sp.level().getRandom().nextInt(5)) * count;
                 maid.setExperience(maid.getExperience() + amount);
                 mainHandItem.shrink(count);
                 event.setCanceled(true);
@@ -87,7 +87,7 @@ public class PlayerInteract {
 
     @SubscribeEvent
     public static void onPlayerInteractRc(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide || event.getFace() == null) return;
+        if (event.getLevel().isClientSide() || event.getFace() == null) return;
         onPlayerInteract(
                 (ServerLevel) event.getLevel(),
                 (ServerPlayer) event.getEntity(),
@@ -98,7 +98,7 @@ public class PlayerInteract {
 
     @SubscribeEvent
     public static void onPlayerInteractLc(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getLevel().isClientSide || event.getFace() == null) return;
+        if (event.getLevel().isClientSide() || event.getFace() == null) return;
         onPlayerInteract(
                 (ServerLevel) event.getLevel(),
                 (ServerPlayer) event.getEntity(),

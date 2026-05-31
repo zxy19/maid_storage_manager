@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.items.data.TargetList;
@@ -18,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble {
 
@@ -73,7 +75,7 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
-        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer && serverPlayer.isShiftKeyDown()) {
+        if (!context.getLevel().isClientSide() && context.getPlayer() instanceof ServerPlayer serverPlayer && serverPlayer.isShiftKeyDown()) {
             BlockPos clickedPos = context.getClickedPos();
             Direction side = context.getClickedFace();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
@@ -100,9 +102,9 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
                 }
                 item.set(DataComponentRegistry.TARGETS, targetList.toImmutable());
             }
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
         } else {
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
         }
     }
 
@@ -112,16 +114,16 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, toolTip, p_41424_);
         Mode mode = getMode(itemStack);
         int count = getStorages(itemStack).size();
-        toolTip.add(Component.translatable("interaction.mode_" + switch (mode) {
+        toolTip.accept(Component.translatable("interaction.mode_" + switch (mode) {
             case APPEND -> "append";
             case REMOVE -> "remove";
             case REPLACE -> "replace";
             case REPLACE_SPEC -> "replace_spec";
         }));
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.storage_define_bauble.count", count));
+        toolTip.accept(Component.translatable("tooltip.maid_storage_manager.storage_define_bauble.count", count));
     }
 }

@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.craft.context.common;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.StringUtils;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
@@ -16,14 +16,14 @@ import java.util.Objects;
 
 public class CommonIdleAction extends AbstractCraftActionContext {
     public static final ActionOption<Boolean> OPTION_WAIT = new ActionOption<>(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "wait"),
+            Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "wait"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_second"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.idle_tick")
             },
-            new ResourceLocation[]{
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_second.png"),
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_tick.png")
+            new Identifier[]{
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_second.png"),
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/wait_tick.png")
             },
             "0",
             new ActionOption.BiConverter<>(
@@ -31,7 +31,7 @@ public class CommonIdleAction extends AbstractCraftActionContext {
             ),
             ActionOption.ValuePredicatorOrGetter.predicator(t -> (t.isBlank() || (StringUtils.isNumeric(t) && Integer.parseInt(t) <= 999)))
     );
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "idle");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "idle");
 
     public CommonIdleAction(EntityMaid maid, CraftGuideData craftGuideData, CraftGuideStepData craftGuideStepData, CraftLayer layer) {
         super(maid, craftGuideData, craftGuideStepData, layer);
@@ -42,7 +42,7 @@ public class CommonIdleAction extends AbstractCraftActionContext {
     @Override
     public void loadEnv(CompoundTag env) {
         if (env.contains("endTick"))
-            endTick = env.getInt("endTick");
+            endTick = env.getIntOr("endTick", 0);
         else
             endTick = 0;
     }

@@ -4,7 +4,8 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
@@ -69,7 +70,7 @@ public class ResortBehavior extends Behavior<EntityMaid> {
     protected void tick(ServerLevel p_22551_, EntityMaid maid, long p_22553_) {
         if (!lock.checkAndTryGrantLock()) return;
         if (!breath.breathTick(maid)) return;
-        CombinedInvWrapper maidInv = maid.getAvailableInv(false);
+        CombinedResourceHandler<ItemResource> maidInv = maid.getAvailableInv(false);
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
             if (!((IFilterable) context).isAvailable(itemStack)) {
                 int maxStore = InvUtil.maxCanPlace(maidInv, itemStack);

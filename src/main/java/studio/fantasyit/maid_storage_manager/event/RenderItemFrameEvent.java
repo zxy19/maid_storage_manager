@@ -1,35 +1,27 @@
 package studio.fantasyit.maid_storage_manager.event;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
-import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
-import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
-import studio.fantasyit.maid_storage_manager.render.base.CustomCommonGraphics;
-import studio.fantasyit.maid_storage_manager.render.base.CustomGraphics;
-import studio.fantasyit.maid_storage_manager.render.base.ICustomGraphics;
-import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MaidStorageManager.MODID, value = Dist.CLIENT)
+//import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
+
+@EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public class RenderItemFrameEvent {
 
-    private static final ModelResourceLocation MAP_FRAME_LOCATION = ModelResourceLocation.vanilla("item_frame", "map=true");
+    private static final Identifier MAP_FRAME_LOCATION = Identifier.fromNamespaceAndPath("minecraft", "item_frame");
 
     @SubscribeEvent
     public static void renderItemFrame(RenderItemInFrameEvent event) {
+        // FIXME: MC 26.1 RenderItemInFrameEvent API completely refactored.
+        // Old API: getItemStack(), getItemFrameEntity(), getPackedLight(), getMultiBufferSource()
+        // New API: getItemStackRenderState(), getItemFrameRenderState(), getSubmitNodeCollector()
+        // ItemStackRenderState is not directly usable as ItemStack.
+        // Needs complete rewrite using new render state API.
+        /*
         if (event.getItemStack().getItem() instanceof RenderHandMapLikeEvent.MapLikeRenderItem mli) {
             if (!mli.available(event.getItemStack()))
                 return;
@@ -54,24 +46,6 @@ public class RenderItemFrameEvent {
 
             if (state == 3)
                 poseStack.translate(0.48, 0, 0);
-
-            //渲染边框
-            BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
-            ModelManager modelmanager = blockRenderer.getBlockModelShaper().getModelManager();
-            poseStack.pushPose();
-            poseStack.translate(0.5 - 1.875 * width / 128, 0.5 - 1.883 * height / 128, -0.9975);
-            poseStack.scale(1.83f * width / 128, 1.85f * height / 128, 1);
-            blockRenderer.getModelRenderer().renderModel(poseStack.last(),
-                    event.getMultiBufferSource().getBuffer(Sheets.solidBlockSheet()),
-                    null,
-                    modelmanager.getModel(MAP_FRAME_LOCATION),
-                    1.0F,
-                    1.0F,
-                    1.0F,
-                    pCombinedLight,
-                    OverlayTexture.NO_OVERLAY);
-            poseStack.popPose();
-
 
             poseStack.pushPose();
             poseStack.translate(0, 0, -0.0575);
@@ -98,5 +72,7 @@ public class RenderItemFrameEvent {
             poseStack.popPose();
             event.setCanceled(true);
         }
+        */
     }
 }
+

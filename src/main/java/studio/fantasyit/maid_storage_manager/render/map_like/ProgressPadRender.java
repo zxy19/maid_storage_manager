@@ -4,9 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -22,7 +23,7 @@ import java.util.UUID;
 
 public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer {
     public static final ProgressPadRender INSTANCE = new ProgressPadRender();
-    private static final RenderType MAP_BACKGROUND = RenderType.text(ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad.png"));
+    private static final RenderType MAP_BACKGROUND = RenderTypes.text(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad.png"));
 
     @Override
     public float getWidth(RenderHandMapLikeEvent.MapLikeRenderContext context) {
@@ -47,7 +48,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     }
 
 
-    private static final ResourceLocation ELEM = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad_element.png");
+    private static final Identifier ELEM = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/process_pad_element.png");
     private static final ImageAsset LINE = new ImageAsset(ELEM, 14, 39, 154, 2);
     private static final ImageAsset PROGRESS_ALL = new ImageAsset(ELEM, 14, 37, 154, 1);
     private static final ImageAsset PROGRESS_ALL_WAIT = new ImageAsset(ELEM, 14, 35, 154, 1);

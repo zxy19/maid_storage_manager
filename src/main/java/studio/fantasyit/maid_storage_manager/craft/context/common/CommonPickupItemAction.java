@@ -1,8 +1,9 @@
 package studio.fantasyit.maid_storage_manager.craft.context.common;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidItemManager;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +19,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.List;
 
 public class CommonPickupItemAction extends AbstractCraftActionContext {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "pickup");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "pickup");
     int ingredientIndex = 0;
     List<ItemStack> ingredients;
     List<Entity> entities;
@@ -29,7 +30,7 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
 
     @Override
     public void loadEnv(CompoundTag env) {
-        ingredientIndex = env.contains("ingredientIndex") ? env.getInt("ingredientIndex") : 0;
+        ingredientIndex = env.getIntOr("ingredientIndex", 0);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class CommonPickupItemAction extends AbstractCraftActionContext {
         }
         if (entities == null)
             entities = maid.level().getEntities(maid, maid.getBoundingBox().inflate(2.8),
-                    e -> e instanceof ItemEntity ie && EntityMaid.canInsertItem(ie.getItem()) && (!ie.hasPickUpDelay() || Config.pickupIgnoreDelay)
+                    e -> e instanceof ItemEntity ie && MaidItemManager.canInsertItem(ie.getItem()) && (!ie.hasPickUpDelay() || Config.pickupIgnoreDelay)
             );
         for (Entity entity : entities) {
             if (!entity.isAlive()) continue;

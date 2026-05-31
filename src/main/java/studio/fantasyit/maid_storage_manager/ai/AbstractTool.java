@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.agent.tool.ITool;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.ChatCompletion;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public abstract class AbstractTool<T> implements ITool<T> {
     @Override
@@ -16,6 +16,6 @@ public abstract class AbstractTool<T> implements ITool<T> {
 
     @Override
     public boolean trigger(EntityMaid maid, ChatCompletion chatCompletion) {
-        return maid.getTask().getUid().equals(StorageManageTask.TASK_ID);
+        return false; // StorageManageTask disabled
     }
 }

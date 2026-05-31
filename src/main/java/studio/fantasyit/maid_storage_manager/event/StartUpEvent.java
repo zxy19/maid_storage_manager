@@ -9,10 +9,10 @@ import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.cloth.AddClothEvent;
 import studio.fantasyit.maid_storage_manager.integration.cloth.ClothEntry;
-import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
+//import studio.fantasyit.maid_storage_manager.integration.create.CreateIntegration;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber()
 public class StartUpEvent {
     @SubscribeEvent
     public static void onStartUp(FMLLoadCompleteEvent event) {
@@ -22,11 +22,11 @@ public class StartUpEvent {
         });
     }
 
-    @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(value = Dist.CLIENT)
     public static class StartUpEventClient {
         @SubscribeEvent
         public static void onStartUp(FMLLoadCompleteEvent event) {
-            CreateIntegration.init();
+            //CreateIntegration.init();
             if (Integrations.clothConfig()) {
                 ClothEntry.registryConfigPage();
                 NeoForge.EVENT_BUS.addListener(AddClothEvent::init);

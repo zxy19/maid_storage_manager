@@ -4,7 +4,8 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidWorkMea
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -71,7 +72,7 @@ public class MealBehavior extends MaidWorkMealTask {
         }
 
         if (!breath.breathTick(maid)) return;
-        CombinedInvWrapper maidInv = maid.getAvailableInv(true);
+        CombinedResourceHandler<ItemResource> maidInv = maid.getAvailableInv(true);
         Function<ItemStack, ItemStack> taker = (ItemStack itemStack) -> {
             if (hasTaken.getValue())
                 return itemStack;

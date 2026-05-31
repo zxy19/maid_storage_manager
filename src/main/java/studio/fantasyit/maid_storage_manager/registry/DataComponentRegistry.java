@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -40,7 +40,7 @@ public class DataComponentRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> MARK = DATA_COMPONENTS
             .register("mark", () -> DataComponentType.<UUID>builder().persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<List<ItemStack>>> TO_SPAWN_ITEMS = DATA_COMPONENTS
-            .register("to_spawn_items", () -> DataComponentType.<List<ItemStack>>builder().persistent(ItemStack.CODEC.listOf()).networkSynchronized(ItemStack.LIST_STREAM_CODEC).build());
+            .register("to_spawn_items", () -> DataComponentType.<List<ItemStack>>builder().persistent(ItemStack.CODEC.listOf()).networkSynchronized(ItemStack.OPTIONAL_LIST_STREAM_CODEC).build());
 
 
     //region RequestListItem
@@ -129,8 +129,8 @@ public class DataComponentRegistry {
             .register("progress_pad_selecting", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
     //endregion
     //region Communicate
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ResourceLocation>> COMMUNICATE_LAST_TASK = DATA_COMPONENTS
-            .register("communicate_last_task", () -> DataComponentType.<ResourceLocation>builder().persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Identifier>> COMMUNICATE_LAST_TASK = DATA_COMPONENTS
+            .register("communicate_last_task", () -> DataComponentType.<Identifier>builder().persistent(Identifier.CODEC).networkSynchronized(Identifier.STREAM_CODEC).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> COMMUNICATE_CD = DATA_COMPONENTS
             .register("communicate_cd", () -> DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT).build());
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ConfigurableCommunicateData>> COMMUNICATE_DATA = DATA_COMPONENTS

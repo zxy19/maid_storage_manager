@@ -4,13 +4,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class FilterListItem extends HangUpItem implements MenuProvider {
     public static final FilterItemStackList.Immutable EMPTY = new FilterItemStackList().toImmutable();
@@ -41,27 +43,27 @@ public class FilterListItem extends HangUpItem implements MenuProvider {
 
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+    public @NotNull InteractionResult use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown())
                 serverPlayer.openMenu(this, (buffer) -> {
                     buffer.writeInt(-1);
                 });
-            return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
+            return InteractionResult.SUCCESS;
         } else {
-            return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
+            return InteractionResult.PASS;
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.filter_list.desc").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, toolTip, p_41424_);
+        toolTip.accept(Component.translatable("tooltip.maid_storage_manager.filter_list.desc").withStyle(ChatFormatting.GRAY));
 
         if (blackList(itemStack))
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.filter_list.black_mode"));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.filter_list.black_mode"));
         else
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.filter_list.white_mode"));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.filter_list.white_mode"));
 
 
         List<ItemStack> list = itemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, new FilterItemStackList().toImmutable()).list();
@@ -69,7 +71,7 @@ public class FilterListItem extends HangUpItem implements MenuProvider {
             if (itemstack.isEmpty()) continue;
             Component component = Component.translatable("gui.maid_storage_manager.filter_list.item",
                     itemstack.getHoverName().getString());
-            toolTip.add(component);
+            toolTip.accept(component);
         }
     }
 

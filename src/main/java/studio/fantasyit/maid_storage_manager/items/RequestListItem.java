@@ -3,13 +3,11 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -17,26 +15,21 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
-import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Consumer;
 
 public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
@@ -49,21 +42,21 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
-        if (player.isShiftKeyDown()) return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+    public @NotNull InteractionResult use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
+        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             IRequestTaskHandler handler = IRequestTaskHandler.of(serverPlayer.getMainHandItem());
             if (handler == null || !handler.isVirtual(serverPlayer.getMainHandItem()))
                 serverPlayer.openMenu(this, (buffer) -> {
                 });
-            return InteractionResultHolder.consume(player.getItemInHand(p_41434_));
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResultHolder.pass(player.getItemInHand(p_41434_));
+        return InteractionResult.PASS;
     }
 
     @Override
     public @NotNull InteractionResult interactLivingEntity(@NotNull ItemStack itemStack, Player player, LivingEntity entity, InteractionHand p_41401_) {
-        if (!player.level().isClientSide && p_41401_ == InteractionHand.MAIN_HAND) {
+        if (!player.level().isClientSide() && p_41401_ == InteractionHand.MAIN_HAND) {
             if (player.isShiftKeyDown()) {
                 if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_ENTITY)) {
                     itemStack.remove(DataComponentRegistry.REQUEST_STORAGE_ENTITY);
@@ -86,7 +79,7 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
     @Override
     public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
-        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer) {
+        if (!context.getLevel().isClientSide() && context.getPlayer() instanceof ServerPlayer serverPlayer) {
             if (!serverPlayer.isShiftKeyDown()) return InteractionResult.PASS;
             BlockPos clickedPos = context.getClickedPos();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos);
@@ -117,31 +110,31 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                     //TODO bind Trigger
                 }
             }
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
         } else {
-            if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown()) return InteractionResult.CONSUME;
+            if (Objects.requireNonNull(context.getPlayer()).isShiftKeyDown()) return InteractionResult.SUCCESS;
             return InteractionResult.PASS;
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> toolTip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, toolTip, p_41424_);
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> toolTip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, toolTip, p_41424_);
 
-        toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.desc").withStyle(ChatFormatting.GRAY));
+        toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.desc").withStyle(ChatFormatting.GRAY));
 
         if (Boolean.TRUE.equals(itemStack.get(DataComponentRegistry.REQUEST_VIRTUAL))) {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.virtual").withStyle(ChatFormatting.RED));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.virtual").withStyle(ChatFormatting.RED));
         }
         if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_ENTITY)) {
             String tuuid = itemStack.get(DataComponentRegistry.REQUEST_STORAGE_ENTITY).toString().substring(0, 8);
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.entity", tuuid));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.entity", tuuid));
         } else if (itemStack.has(DataComponentRegistry.REQUEST_STORAGE_BLOCK)) {
             Target storage = itemStack.get(DataComponentRegistry.REQUEST_STORAGE_BLOCK);
             BlockPos storagePos = storage.getPos();
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.storage", storagePos.getX(), storagePos.getY(), storagePos.getZ()));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.storage", storagePos.getX(), storagePos.getY(), storagePos.getZ()));
         } else {
-            toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
+            toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.no_storage"));
         }
 
         IRequestTaskHandler handler = IRequestTaskHandler.of(itemStack);
@@ -168,20 +161,20 @@ public class RequestListItem extends MaidInteractItem implements MenuProvider {
                 } else {
                     component = component.copy().withStyle(ChatFormatting.GRAY);
                 }
-                toolTip.add(component);
+                toolTip.accept(component);
             }
         }
 
         if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0) > 0) {
             if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD_UNIT, false))
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_second", itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0) / 20));
+                toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_second", itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0) / 20));
             else
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_tick", itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0)));
+                toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.repeat_interval_tick", itemStack.getOrDefault(DataComponentRegistry.REQUEST_INTERVAL, 0)));
             if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD, 0) > 0) {
                 int cd = itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD, 0);
                 if (itemStack.getOrDefault(DataComponentRegistry.REQUEST_CD_UNIT, false))
                     cd /= 20;
-                toolTip.add(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", cd).withStyle(ChatFormatting.GREEN));
+                toolTip.accept(Component.translatable("tooltip.maid_storage_manager.request_list.cooling_down", cd).withStyle(ChatFormatting.GREEN));
             }
         }
     }

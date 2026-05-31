@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
@@ -29,7 +29,7 @@ public interface IAutoCraftGuideGenerator {
      *
      * @return 合成指南生成器类型
      */
-    @NotNull ResourceLocation getType();
+    @NotNull Identifier getType();
 
     /**
      * 允许为多个位置生成合成指南。如果否则只为距离女仆最近的位置生成。
@@ -93,7 +93,7 @@ public interface IAutoCraftGuideGenerator {
      * @param graph                   生成图
      * @param recognizedTypePositions 已经生成过的生成器类型和位置
      */
-    void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<ResourceLocation, List<BlockPos>> recognizedTypePositions);
+    void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<Identifier, List<BlockPos>> recognizedTypePositions);
 
     /**
      * 缓存回调。缓存发生在数据包加载后。你可以在此为配方添加缓存。<b>缓存的配方原料必须和下次添加同ID配方时完全一致，否则可能出现不可预料的错误</b>

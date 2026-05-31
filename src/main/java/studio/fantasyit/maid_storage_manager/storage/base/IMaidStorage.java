@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.storage.base;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,7 +24,7 @@ public interface IMaidStorage {
      *
      * @return 存储类型
      */
-    ResourceLocation getType();
+    Identifier getType();
 
     /**
      * 是否支持收集物品

@@ -39,9 +39,9 @@ public class CoWorkSwitchFunction extends AbstractTool<CoWorkSwitchFunction.Enab
 
     @Override
     public String call(EnableData en, EntityMaid maid, LLMCallback callback) {
-        StorageManagerConfigData.Data data = maid.getOrCreateData(StorageManagerConfigData.KEY, StorageManagerConfigData.Data.getDefault());
+        StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
         data.coWorkMode(en.enable.equals("true"));
-        maid.setAndSyncData(StorageManagerConfigData.KEY, data);
+        maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
         return (en.enable.equals("true") ? "Cowork mode enabled." : "Cowork mode disabled.");
     }
 

@@ -5,14 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import studio.fantasyit.maid_storage_manager.craft.CraftManager;
-import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
 import studio.fantasyit.maid_storage_manager.craft.type.ICraftType;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -20,12 +18,14 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+//import studio.fantasyit.maid_storage_manager.craft.type.CommonType;
+
 public class CraftGuideData {
     public static Codec<CraftGuideData> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     CraftGuideStepData.CODEC.listOf().fieldOf(CraftGuide.TAG_STEPS)
                             .forGetter(CraftGuideData::getSteps),
-                    ResourceLocation.CODEC.fieldOf(CraftGuide.TAG_TYPE)
+                    Identifier.CODEC.fieldOf(CraftGuide.TAG_TYPE)
                             .forGetter(CraftGuideData::getType),
                     Codec.BOOL.fieldOf(CraftGuide.TAG_MARK_MERGEABLE)
                             .orElse(false)
@@ -38,7 +38,7 @@ public class CraftGuideData {
     public static StreamCodec<RegistryFriendlyByteBuf, CraftGuideData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.collection(ArrayList::new, CraftGuideStepData.STREAM_CODEC),
             CraftGuideData::getSteps,
-            ResourceLocation.STREAM_CODEC,
+            Identifier.STREAM_CODEC,
             CraftGuideData::getType,
             ByteBufCodecs.BOOL,
             CraftGuideData::isMergeable,
@@ -48,7 +48,7 @@ public class CraftGuideData {
     );
 
     public List<CraftGuideStepData> steps;
-    public ResourceLocation type;
+    public Identifier type;
     public List<ItemStack> inputs;
     public List<ItemStack> inputsWithOptional;
 
@@ -63,11 +63,11 @@ public class CraftGuideData {
 
     public int extraSlotConsume = 0;
 
-    public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type) {
+    public CraftGuideData(List<CraftGuideStepData> steps, Identifier type) {
         this(steps, type, false, false);
     }
 
-    public CraftGuideData(List<CraftGuideStepData> steps, ResourceLocation type, boolean mergeable, boolean noOccupy) {
+    public CraftGuideData(List<CraftGuideStepData> steps, Identifier type, boolean mergeable, boolean noOccupy) {
         this.steps = new ArrayList<>(steps);
         this.type = type;
         this.mergeable = mergeable;
@@ -112,27 +112,27 @@ public class CraftGuideData {
     }
 
     public static CraftGuideData fromCompound(CompoundTag tag, RegistryAccess registryAccess) {
-        ListTag inputs = tag.getList(CraftGuide.TAG_STEPS, Tag.TAG_COMPOUND);
-        ResourceLocation type = null;
+        ListTag inputs = tag.getList(CraftGuide.TAG_STEPS).get();
+        Identifier type = null;
         ArrayList<CraftGuideStepData> step = new ArrayList<>();
         for (int i = 0; i < inputs.size(); i++) {
-            step.add(CraftGuideStepData.fromCompound(registryAccess,inputs.getCompound(i)));
+            step.add(CraftGuideStepData.fromCompound(registryAccess,inputs.getCompound(i).get()));
         }
         if (tag.contains(CraftGuide.TAG_TYPE)) {
-            type = ResourceLocation.tryParse(tag.getString(CraftGuide.TAG_TYPE));
+            type = Identifier.tryParse(tag.getString(CraftGuide.TAG_TYPE).get());
         } else {
-            type = CommonType.TYPE;
+            type = Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // CommonType disabled
         }
         boolean mergeable = false;
         if (tag.contains(CraftGuide.TAG_MARK_MERGEABLE))
-            mergeable = tag.getBoolean(CraftGuide.TAG_MARK_MERGEABLE);
+            mergeable = tag.getBoolean(CraftGuide.TAG_MARK_MERGEABLE).get();
         boolean noOccupy = false;
         if (tag.contains(CraftGuide.TAG_MARK_NO_OCCUPY))
-            noOccupy = tag.getBoolean(CraftGuide.TAG_MARK_NO_OCCUPY);
+            noOccupy = tag.getBoolean(CraftGuide.TAG_MARK_NO_OCCUPY).get();
         CraftGuideData craftGuideData = new CraftGuideData(step, type, mergeable, noOccupy);
         craftGuideData.selecting = 0;
         if (tag.contains(CraftGuide.TAG_SELECTING))
-            craftGuideData.selecting = tag.getInt(CraftGuide.TAG_SELECTING);
+            craftGuideData.selecting = tag.getInt(CraftGuide.TAG_SELECTING).get();
         if (craftGuideData.selecting > craftGuideData.steps.size())
             craftGuideData.selecting = craftGuideData.steps.size();
         return craftGuideData;
@@ -229,7 +229,7 @@ public class CraftGuideData {
         return steps.get(idx);
     }
 
-    public ResourceLocation getType() {
+    public Identifier getType() {
         return type;
     }
 

@@ -2,7 +2,7 @@ package studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
-import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
+//import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
@@ -30,8 +30,8 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
     }
 
     @Override
-    protected ResourceLocation getCraftType() {
-        return CraftingType.TYPE;
+    protected Identifier getCraftType() {
+        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // CraftingType disabled
     }
 
     @Override

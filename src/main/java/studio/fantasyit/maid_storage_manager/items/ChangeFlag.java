@@ -14,11 +14,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import studio.fantasyit.maid_storage_manager.items.data.TargetList;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
-import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -26,6 +26,9 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.List;
+import java.util.function.Consumer;
+
+//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class ChangeFlag extends Item {
     public ChangeFlag() {
@@ -42,7 +45,7 @@ public class ChangeFlag extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (!context.getLevel().isClientSide && context.getPlayer() instanceof ServerPlayer serverPlayer && serverPlayer.isShiftKeyDown()) {
+        if (!context.getLevel().isClientSide() && context.getPlayer() instanceof ServerPlayer serverPlayer && serverPlayer.isShiftKeyDown()) {
             BlockPos clickedPos = context.getClickedPos();
             Direction side = context.getClickedFace();
             Target validTarget = MaidStorage.getInstance().isValidTarget((ServerLevel) context.getLevel(), serverPlayer, clickedPos, side);
@@ -68,7 +71,7 @@ public class ChangeFlag extends Item {
                 }
                 item.set(DataComponentRegistry.TARGETS, targets.toImmutable());
             }
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
         } else {
             return InteractionResult.PASS;
         }
@@ -76,14 +79,14 @@ public class ChangeFlag extends Item {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity living, InteractionHand hand) {
-        if (!player.level().isClientSide && hand == InteractionHand.MAIN_HAND && living instanceof EntityMaid maid) {
+        if (!player.level().isClientSide() && hand == InteractionHand.MAIN_HAND && living instanceof EntityMaid maid) {
             ServerLevel level = (ServerLevel) player.level();
             if (maid.getOwner() != null
                     && maid.getOwner().getUUID().equals(player.getUUID())
-                    && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
+                    /* && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) */ ) {
                 List<Target> storages = getStorages(itemStack);
                 if (storages.size() == 0) {
-                    return InteractionResult.CONSUME;
+                    return InteractionResult.SUCCESS;
                 }
                 storages.forEach(interactedTarget -> {
                     Target target;
@@ -134,10 +137,10 @@ public class ChangeFlag extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, List<Component> tooltip, TooltipFlag p_41424_) {
-        super.appendHoverText(itemStack, p_339594_, tooltip, p_41424_);
-        tooltip.add(Component.translatable("tooltip.maid_storage_manager.change_flag.desc").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.maid_storage_manager.change_flag.storages", getStorages(itemStack).size()));
+    public void appendHoverText(ItemStack itemStack, TooltipContext p_339594_, TooltipDisplay tooltipDisplay, Consumer<Component> tooltip, TooltipFlag p_41424_) {
+        super.appendHoverText(itemStack, p_339594_, tooltipDisplay, tooltip, p_41424_);
+        tooltip.accept(Component.translatable("tooltip.maid_storage_manager.change_flag.desc").withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("tooltip.maid_storage_manager.change_flag.storages", getStorages(itemStack).size()));
     }
 
 }

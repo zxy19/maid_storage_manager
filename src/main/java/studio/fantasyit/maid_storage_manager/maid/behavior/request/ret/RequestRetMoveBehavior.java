@@ -2,20 +2,20 @@ package studio.fantasyit.maid_storage_manager.maid.behavior.request.ret;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
-import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.github.tartaricacid.touhoulittlemaid.init.InitBrains;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -32,7 +32,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
     public RequestRetMoveBehavior() {
         super(Map.of(
                 MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
-                InitEntities.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
+                InitBrains.TARGET_POS.get(), MemoryStatus.VALUE_ABSENT
         ));
     }
 
@@ -103,7 +103,7 @@ public class RequestRetMoveBehavior extends Behavior<EntityMaid> {
             MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed);
             return;
         }
-        float restrictRadiusOwner = maid.hasRestriction() ? maid.getRestrictRadius() : 5;
+        float restrictRadiusOwner = maid.hasHome() ? maid.getHomeRadius() : 5;
         MaidPathFindingBFS pathFinding = new MaidPathFindingBFS(maid.getNavigation().getNodeEvaluator(), level, maid, restrictRadiusOwner + 2, (int) (restrictRadiusOwner + 2));
         if (pathFinding.canPathReach(entityMaid.blockPosition())) {
             MemoryUtil.setTarget(maid, entity, (float) Config.collectSpeed);

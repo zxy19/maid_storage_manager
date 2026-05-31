@@ -4,7 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.MaidPathFindingBFS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -28,15 +28,15 @@ import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 import java.util.*;
 
 public class AutoGraphGenerator implements IDebugContextSetter {
-    private static final ResourceLocation INTERNAL_TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "_maid_storage_internal_existed");
+    private static final Identifier INTERNAL_TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "_maid_storage_internal_existed");
     private final EntityMaid maid;
     protected final ICachableGeneratorGraph graph;
     protected final List<IAutoCraftGuideGenerator> iAutoCraftGuideGenerators;
     protected final List<InventoryItem> inventory;
     private final List<ItemStack> itemList;
     protected MaidPathFindingBFS pathfindingBFS;
-    Map<ResourceLocation, List<BlockPos>> recognizedTypePositions;
-    Set<ResourceLocation> hasDoneTypes;
+    Map<Identifier, List<BlockPos>> recognizedTypePositions;
+    Set<Identifier> hasDoneTypes;
     private final List<BlockPos> blockPosList;
     protected int index = 0;
     protected int craftGeneratorTypeIndex = 0;
@@ -52,7 +52,7 @@ public class AutoGraphGenerator implements IDebugContextSetter {
     }
 
     protected void updatePathfinding() {
-        int distance = (int) Math.ceil(maid.hasRestriction() ? maid.getRestrictRadius() : 5);
+        int distance = (int) Math.ceil(maid.hasHome() ? maid.getHomeRadius() : 5);
         new MaidPathFindingBFS(
                 maid.getNavigation().getNodeEvaluator(),
                 (ServerLevel) maid.level(),
@@ -73,16 +73,16 @@ public class AutoGraphGenerator implements IDebugContextSetter {
         this.maid = maid;
         this.itemList = itemList;
         BlockPos center = maid.blockPosition();
-        if (maid.hasRestriction())
-            center = maid.getRestrictCenter();
-        int distance = (int) Math.ceil(maid.hasRestriction() ? maid.getRestrictRadius() : 5);
+        if (maid.hasHome())
+            center = maid.getHomePosition();
+        int distance = (int) Math.ceil(maid.hasHome() ? maid.getHomeRadius() : 5);
         updatePathfinding();
         inventory = MemoryUtil.getViewedInventory(maid).flatten();
         iAutoCraftGuideGenerators = CraftManager.getInstance().getAutoCraftGuideGenerators();
         blockPosList = BlockPos
                 .betweenClosedStream(new AABB(center).inflate(distance, 6, distance))
                 .map(BlockPos::immutable)
-                .filter(maid::isWithinRestriction)
+                .filter(maid::isWithinHome)
                 .toList();
         MutableInt count = new MutableInt();
         GraphCache.CacheRecord cache = GraphCache.getAndValidate(maid.level(), maid, iAutoCraftGuideGenerators);
@@ -101,8 +101,8 @@ public class AutoGraphGenerator implements IDebugContextSetter {
         if (graph instanceof IDebugContextSetter i) i.setDebugContext(debugContext);
         hasExisted.forEach(craftGuideData -> {
             graph.addRecipe(
-                    ResourceLocation.fromNamespaceAndPath("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
-                    craftGuideData.getAllInputItemsWithOptional().stream().map(Ingredient::of).toList(),
+                    Identifier.fromNamespaceAndPath("_maid_storage_internal_existed", String.valueOf(count.incrementAndGet())),
+                    craftGuideData.getAllInputItemsWithOptional().stream().map(item -> Ingredient.of(item.getItem())).toList(),
                     craftGuideData.getAllInputItemsWithOptional().stream().map(ItemStack::getCount).toList(),
                     craftGuideData.getAllOutputItems(),
                     t -> null

@@ -31,7 +31,7 @@ public class MoveUtil {
     public static List<BlockPos> getAllAvailablePosForTarget(ServerLevel level, EntityMaid maid, BlockPos target, MaidPathFindingBFS pathFinding) {
         Function<BlockPos, @Nullable BlockPos> predictor = (BlockPos pos) -> {
             if (!PosUtil.isSafePos(level, pos)) return null;
-            if (maid.isWithinRestriction(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
+            if (maid.isWithinHome(pos) && PosUtil.canTouch(level, pos, target) && pathFinding.canPathReach(pos)) {
                 return pos;
             } else {
                 return null;

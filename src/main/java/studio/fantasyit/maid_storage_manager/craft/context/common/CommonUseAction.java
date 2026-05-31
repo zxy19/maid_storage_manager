@@ -6,11 +6,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.TriState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -20,7 +20,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,14 +43,14 @@ public class CommonUseAction extends AbstractCraftActionContext {
     }
 
     public static final ActionOption<USE_TYPE> OPTION_USE_METHOD = new ActionOption<>(
-            ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use_mode"),
+            Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "use_mode"),
             new Component[]{
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.use_single"),
                     Component.translatable("gui.maid_storage_manager.craft_guide.common.use_long")
             },
-            new ResourceLocation[]{
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_single.png"),
-                    ResourceLocation.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_long.png")
+            new Identifier[]{
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_single.png"),
+                    Identifier.fromNamespaceAndPath("maid_storage_manager", "textures/gui/craft/option/use_long.png")
             },
             "",
             new ActionOption.BiConverter<>(
@@ -65,7 +64,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
             )
     );
 
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath(MaidStorageManager.MODID, "use");
+    public static final Identifier TYPE = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "use");
     protected WrappedMaidFakePlayer fakePlayer;
     int storedSlotMainHand = -1;
     int storedSlotOffHand = -1;
@@ -79,7 +78,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
     @Override
     public void loadEnv(CompoundTag env) {
-        failCount = env.contains("failCount") ? env.getInt("failCount") : 0;
+        failCount = env.getIntOr("failCount", 0);
     }
 
     @Override
@@ -251,8 +250,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
                 if (actionresult == InteractionResult.PASS) {
                     InteractionResult interactionResult = fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).useOn(useContext);
                     if (!interactionResult.consumesAction()) {
-                        InteractionResultHolder<ItemStack> use1 = fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).use(level, fakePlayer, InteractionHand.MAIN_HAND);
-                        fakePlayer.setItemInHand(InteractionHand.MAIN_HAND, use1.getObject());
+                        fakePlayer.getItemInHand(InteractionHand.MAIN_HAND).use(level, fakePlayer, InteractionHand.MAIN_HAND);
                     }
                 }
             }
@@ -291,7 +289,7 @@ public class CommonUseAction extends AbstractCraftActionContext {
 
     private boolean shouldUseFluidClip(ServerLevel level, BlockPos target) {
         if (level.getFluidState(target).isSource()) return true;
-        if (craftGuideStepData.getInput().stream().anyMatch(t -> t.getCapability(Capabilities.FluidHandler.ITEM) != null)) {
+        if (craftGuideStepData.getInput().stream().anyMatch(t -> t.getCapability(Capabilities.Fluid.ITEM, null) != null)) {
             return true;
         }
         return false;

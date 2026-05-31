@@ -25,7 +25,7 @@ public abstract class ItemFrameTickMixin extends Entity {
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
-        if (level().isClientSide) return;
+        if (level().isClientSide()) return;
         if (((Object) this) instanceof ItemFrame ifr)
             if (ifr.getItem().is(ItemRegistry.PROGRESS_PAD.get()) && ifr.tickCount % 5 == 0) {
                 ProgressData.ProgressMeta progressMeta = ProgressData.ProgressMeta.fromItemStack(ifr.getItem());

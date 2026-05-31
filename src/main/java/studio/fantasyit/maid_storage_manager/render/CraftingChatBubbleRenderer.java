@@ -6,9 +6,9 @@ import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.chatbubbl
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
@@ -21,7 +21,7 @@ import java.util.Objects;
 public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
     private static final int MAX_WIDTH = 240;
     private final Font font;
-    private final ResourceLocation bg;
+    private final Identifier bg;
     private final List<FormattedCharSequence> split;
     private final int barBackgroundColor;
     private final int barForegroundColor1;
@@ -31,7 +31,7 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
     private final int width;
     private final int height;
 
-    public CraftingChatBubbleRenderer(ResourceLocation bg, Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1) {
+    public CraftingChatBubbleRenderer(Identifier bg, Component text, int barBackgroundColor, int barForegroundColor, int barForegroundColor1, double progress, double progress1) {
         this.font = Minecraft.getInstance().font;
         this.bg = bg;
         this.split = this.font.split(text, 240);
@@ -59,7 +59,7 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
 
         for (FormattedCharSequence sequence : this.split) {
             int distance = this.width - this.font.width(sequence);
-            graphics.drawString(this.font, sequence, (float) (distance / 2), (float) y, 0, false);
+            graphics.drawString(sequence, (float) (distance / 2), (float) y, 0, false);
             y += 9;
         }
 
@@ -96,14 +96,14 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
         }
         if (!(graphics instanceof IEntityGraphicsBufferSourceGetter iegbsg)) return;
 
-        VertexConsumer vertexconsumer = iegbsg.getBufferSource().getBuffer(RenderType.textBackground());
+        VertexConsumer vertexconsumer = iegbsg.getBufferSource().getBuffer(RenderTypes.textBackground());
         vertexconsumer.addVertex(matrix4f, minX, minY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
         vertexconsumer.addVertex(matrix4f, minX, maxY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
         vertexconsumer.addVertex(matrix4f, maxX, maxY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
         vertexconsumer.addVertex(matrix4f, maxX, minY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
     }
 
-    public ResourceLocation getBackgroundTexture() {
+    public Identifier getBackgroundTexture() {
         return this.bg;
     }
 }

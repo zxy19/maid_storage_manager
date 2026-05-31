@@ -2,12 +2,13 @@ package studio.fantasyit.maid_storage_manager.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
 import studio.fantasyit.maid_storage_manager.registry.EntityRegistry;
 
 public class VirtualDisplayEntity extends ItemFrame {
@@ -25,11 +26,12 @@ public class VirtualDisplayEntity extends ItemFrame {
     }
 
     @Override
-    public boolean hurt(DamageSource p_31776_, float p_31777_) {
-        if (!this.isRemoved() && !this.level().isClientSide) {
-            this.kill();
+    public boolean hurtServer(ServerLevel level, DamageSource p_31776_, float p_31777_) {
+        if (!this.isRemoved()) {
+            // FIXME: MC 26.1 - kill() renamed, dropItem() signature changed
+            this.discard();
             this.markHurt();
-            this.dropItem(p_31776_.getEntity());
+            this.dropItem(level, p_31776_.getEntity());
         }
         return true;
     }
@@ -40,7 +42,7 @@ public class VirtualDisplayEntity extends ItemFrame {
     }
 
     @Override
-    public void load(CompoundTag p_20259_) {
+    public void load(ValueInput p_20259_) {
         super.load(p_20259_);
     }
 }
