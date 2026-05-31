@@ -6,9 +6,7 @@
   "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
     "ContainerOpenersCounterPatch",
-    "ItemFrameTickMixin",
-    "TLMFeatureCenterSidePathFinding",
-    "WorldRecipeLoaderMixin"
+    "ItemFrameTickMixin"
   ],
   "client": [
     "EntityGraphicsBufferSourceGetter",

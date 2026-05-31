@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 //import studio.fantasyit.maid_storage_manager.storage.ItemHandler.SimulateTargetInteractHelper;
 
-@Mixin(value = ContainerOpenersCounter.class,remap = false)
+@Mixin(value = ContainerOpenersCounter.class)
 public class ContainerOpenersCounterPatch {
     @ModifyVariable(method = "recheckOpeners", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/util/List;size()I"))
     private int getOpenCount(int i, @Local(argsOnly = true) BlockPos pos) {

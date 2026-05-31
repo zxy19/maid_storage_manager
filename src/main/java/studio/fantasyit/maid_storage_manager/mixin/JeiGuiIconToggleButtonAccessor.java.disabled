@@ -9,10 +9,10 @@ import studio.fantasyit.maid_storage_manager.api.mixin.IJEIButtonGetter;
 
 @Mixin(GuiIconToggleButton.class)
 public abstract class JeiGuiIconToggleButtonAccessor implements IJEIButtonGetter {
-    @Accessor(value="area",remap = false)
+    @Accessor(value="area")
     public abstract ImmutableRect2i getArea();
-    @Accessor(value="onIcon",remap = false)
+    @Accessor(value="onIcon")
     public abstract IDrawable getOnIcon();
-    @Accessor(value="offIcon",remap = false)
+    @Accessor(value="offIcon")
     public abstract IDrawable getOffIcon();
 }
