@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -41,8 +42,8 @@ public class LogisticsGuide extends MaidInteractItem implements MenuProvider, IM
     public final static String TAG_SELECTING = "selecting";
     public final static String TAG_SINGLE_MODE = "single_mode";
 
-    public LogisticsGuide() {
-        super(new Properties().stacksTo(1));
+    public LogisticsGuide(Identifier id) {
+        super(id, new Properties().stacksTo(1));
     }
 
     public static Component getTip(ItemStack itemInHand) {

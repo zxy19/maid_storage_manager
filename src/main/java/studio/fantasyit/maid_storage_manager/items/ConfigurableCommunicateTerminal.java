@@ -36,8 +36,8 @@ import java.util.UUID;
 
 public class ConfigurableCommunicateTerminal extends MaidInteractItem implements IMaidBauble, MenuProvider {
 
-    public ConfigurableCommunicateTerminal() {
-        super(new Properties());
+    public ConfigurableCommunicateTerminal(Identifier id) {
+        super(id, new Properties());
     }
 
 

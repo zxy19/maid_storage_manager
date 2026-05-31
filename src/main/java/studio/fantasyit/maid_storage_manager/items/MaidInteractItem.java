@@ -3,7 +3,10 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -20,12 +23,12 @@ import studio.fantasyit.maid_storage_manager.util.InvUtil;
 
 public class MaidInteractItem extends Item {
 
-    public MaidInteractItem(Properties p_41383_) {
-        super(p_41383_);
+    public MaidInteractItem(Identifier id, Properties p_41383_) {
+        super(p_41383_.setId(ResourceKey.create(Registries.ITEM, id)));
     }
 
-    public MaidInteractItem() {
-        super(new Item.Properties());
+    public MaidInteractItem(Identifier id) {
+        this(id, new Item.Properties());
     }
 
     @Override

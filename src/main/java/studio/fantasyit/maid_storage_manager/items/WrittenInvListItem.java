@@ -2,7 +2,10 @@ package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -31,10 +34,11 @@ public class WrittenInvListItem extends Item {
     public static final String TAG_AUTHOR = "author";
     public static final String TAG_TIME = "time";
 
-    public WrittenInvListItem() {
+    public WrittenInvListItem(Identifier id) {
         super(
                 new Properties()
                         .stacksTo(1)
+                        .setId(ResourceKey.create(Registries.ITEM, id))
         );
     }
 

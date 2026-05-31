@@ -1,6 +1,9 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
@@ -8,12 +11,12 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 
 public class HangUpItem extends Item {
-    public HangUpItem(Properties p_41383_) {
-        super(p_41383_);
+    public HangUpItem(Identifier id, Properties p_41383_) {
+        super(p_41383_.setId(ResourceKey.create(Registries.ITEM, id)));
     }
 
-    public HangUpItem() {
-        this(new Properties());
+    public HangUpItem(Identifier id) {
+        this(id, new Properties());
     }
 
     @Override

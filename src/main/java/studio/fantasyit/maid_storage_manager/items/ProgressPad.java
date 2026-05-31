@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.items;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitTrigger;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -52,8 +53,8 @@ public class ProgressPad extends HangUpItem implements RenderHandMapLikeEvent.Ma
         ALWAYS
     }
 
-    public ProgressPad() {
-        super(new Properties().stacksTo(1));
+    public ProgressPad(Identifier id) {
+        super(id, new Properties().stacksTo(1));
     }
 
     public static @Nullable UUID getBindingUUID(ItemStack itemStack) {

@@ -1,6 +1,8 @@
 package studio.fantasyit.maid_storage_manager.registry;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -10,21 +12,21 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.items.*;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class ItemRegistry {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, MaidStorageManager.MODID);
 
-    protected static <T extends Item> DeferredHolder<Item, T> item(String name, Supplier<T> properties) {
-        return ITEMS.register(name, properties);
+    protected static <T extends Item> DeferredHolder<Item, T> item(String name, Function<Identifier, T> factory) {
+        return ITEMS.register(name, factory);
     }
 
     protected static DeferredHolder<Item, Item> item(String name) {
-        return item(name, () -> new Item(new Item.Properties()));
+        return item(name, (id) -> new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id))));
     }
 
     protected static DeferredHolder<Item, Item> item(DeferredHolder<Block, Block> block) {
-        return item(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
+        return item(block.getId().getPath(), (id) -> new BlockItem(block.get(), new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id))));
     }
 
     public static void register(IEventBus eventBus) {

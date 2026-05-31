@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,8 +26,8 @@ import java.util.function.Consumer;
 public class FilterListItem extends HangUpItem implements MenuProvider {
     public static final FilterItemStackList.Immutable EMPTY = new FilterItemStackList().toImmutable();
 
-    public FilterListItem() {
-        super(
+    public FilterListItem(Identifier id) {
+        super(id,
                 new Properties()
                         .stacksTo(1)
                         .component(DataComponentRegistry.FILTER_ITEMS, new FilterItemStackList().toImmutable())

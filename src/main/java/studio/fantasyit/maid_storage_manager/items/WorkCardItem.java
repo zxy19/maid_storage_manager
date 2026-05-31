@@ -7,6 +7,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -36,6 +37,10 @@ import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 import java.util.*;
 
 public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
+    public WorkCardItem(Identifier id) {
+        super(id, new Properties().stacksTo(1));
+    }
+
     @Override
     public void onTick(EntityMaid maid, ItemStack baubleItem) {
         if (maid.level().isClientSide()) return;

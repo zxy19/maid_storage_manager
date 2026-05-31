@@ -5,20 +5,12 @@
   "compatibilityLevel": "JAVA_25",
   "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
-    "AltarRecipeMultiOutputMixin",
     "ContainerOpenersCounterPatch",
-    "CreateStockKeeperMenuMixin",
-    "CreateStockTickerBEMixin",
-    "EMIRecipeTransferHook",
     "ItemFrameTickMixin",
-    "JeiGuiIconToggleButtonAccessor",
-    "JEIRecipeTransferHook",
-    "LivingEntityBrainSerializeWrapper",
     "TLMFeatureCenterSidePathFinding",
     "WorldRecipeLoaderMixin"
   ],
   "client": [
-    "CreateStockKeeperScreenMixin",
     "EntityGraphicsBufferSourceGetter",
     "ItemFrameRendererMixin"
   ],

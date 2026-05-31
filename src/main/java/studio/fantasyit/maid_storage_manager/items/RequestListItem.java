@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -33,8 +34,8 @@ import java.util.function.Consumer;
 
 public class RequestListItem extends MaidInteractItem implements MenuProvider {
 
-    public RequestListItem() {
-        super(new Properties()
+    public RequestListItem(Identifier id) {
+        super(id, new Properties()
                 .stacksTo(1)
                 .component(DataComponentRegistry.REQUEST_ITEMS.get(), new RequestItemStackList().toImmutable())
         );

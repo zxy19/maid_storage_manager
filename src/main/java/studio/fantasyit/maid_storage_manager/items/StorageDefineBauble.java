@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.bauble.IMaidBauble;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -36,8 +37,8 @@ public class StorageDefineBauble extends MaidInteractItem implements IMaidBauble
         REPLACE_SPEC
     }
 
-    public StorageDefineBauble() {
-        super(
+    public StorageDefineBauble(Identifier id) {
+        super(id,
                 new Properties().stacksTo(1)
                         .component(DataComponentRegistry.TARGETS, new TargetList().toImmutable())
                         .component(DataComponentRegistry.STORAGE_DEFINE_MODE, Mode.APPEND.name())

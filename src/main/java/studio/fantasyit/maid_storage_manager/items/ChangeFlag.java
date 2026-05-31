@@ -4,7 +4,10 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -31,10 +34,11 @@ import java.util.function.Consumer;
 //import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class ChangeFlag extends Item {
-    public ChangeFlag() {
+    public ChangeFlag(Identifier id) {
         super(
                 new Properties().stacksTo(1)
                         .component(DataComponentRegistry.TARGETS, new TargetList().toImmutable())
+                        .setId(ResourceKey.create(Registries.ITEM, id))
         );
     }
 

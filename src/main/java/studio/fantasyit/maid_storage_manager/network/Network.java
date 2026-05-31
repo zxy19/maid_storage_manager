@@ -129,18 +129,15 @@ public class Network {
                 PartialInventoryListData.STREAM_CODEC,
                 (msg, context) -> {
                     context.enqueueWork(() -> {
-                        if (context.flow().isClientbound()) {
-                            InventoryListDataClient.getInstance().patch(msg.key, msg.data);
-                        } else {
-                            context
-                                    .player()
-                                    .level().getServer()
-                                    .overworld()
-                                    .getData(DataAttachmentRegistry.INVENTORY_LIST_DATA)
-                                    .sendTo(msg.key, (ServerPlayer) context.player());
-                        }
+                        context
+                                .player()
+                                .level().getServer()
+                                .overworld()
+                                .getData(DataAttachmentRegistry.INVENTORY_LIST_DATA)
+                                .sendTo(msg.key, (ServerPlayer) context.player());
                     });
-                }
+                },
+                (msg, context) -> InventoryListDataClient.getInstance().patch(msg.key, msg.data)
         );
         registrar.playToServer(
                 ClientInputPacket.TYPE,
@@ -353,7 +350,7 @@ public class Network {
                 AIMatchLocalizedItemC2SPacket.STREAM_CODEC,
                 (p, c) -> {
                     c.enqueueWork(() -> {
-                        GetStorageFunction.handleRPC(p.rpcId,p.data);
+                        GetStorageFunction.handleRPC(p.rpcId, p.data);
                     });
                 }
         );

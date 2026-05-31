@@ -1,8 +1,10 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -87,10 +89,11 @@ public class CraftGuide extends Item implements MenuProvider {
     }
 
 
-    public CraftGuide() {
+    public CraftGuide(Identifier id) {
         super(
                 new Properties()
                         .stacksTo(1)
+                        .setId(ResourceKey.create(Registries.ITEM, id))
         );
     }
 

@@ -5,6 +5,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -68,7 +69,7 @@ public class PortableCraftCalculatorBauble extends MaidInteractItem implements I
 
     }
 
-    public PortableCraftCalculatorBauble() {
-        super(new Properties().stacksTo(1));
+    public PortableCraftCalculatorBauble(Identifier id) {
+        super(id, new Properties().stacksTo(1));
     }
 }
