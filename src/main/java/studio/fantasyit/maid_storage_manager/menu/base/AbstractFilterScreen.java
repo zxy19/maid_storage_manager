@@ -9,4 +9,8 @@ public abstract class AbstractFilterScreen<T extends AbstractContainerMenu> exte
     public AbstractFilterScreen(T p_97741_, Inventory p_97742_, Component p_97743_) {
         super(p_97741_, p_97742_, p_97743_);
     }
+
+    public AbstractFilterScreen(T p_97741_, Inventory p_97742_, Component p_97743_, int imageWidth, int imageHeight) {
+        super(p_97741_, p_97742_, p_97743_, imageWidth, imageHeight);
+    }
 }

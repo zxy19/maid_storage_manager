@@ -85,7 +85,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
         int tcr = Minecraft.getInstance().player.tickCount / 20;
         float widthScaleFactor = (getWidth(context) - 12) / 78;
         float maxWidth = getWidth(context) / 90 * 160;
-        graphics.pose().scale(0.49f, 0.49f, 1);
+        graphics.pose().scale(0.49f, 0.49f, 1.0F);
         blit(graphics, LINE, 14, 39, widthScaleFactor);
         UUID bindingUUID = ProgressPad.getBindingUUID(pStack);
         if (bindingUUID == null) return;
@@ -109,7 +109,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
         }
         graphics.pose().pushPose();
         graphics.pose().translate(10, 10, 0);
-        graphics.pose().scale(1.4f, 1.4f, 1);
+        graphics.pose().scale(1.4f, 1.4f, 1.0F);
         drawItemStackWithCount(graphics, currentProcessingItem, font);
         graphics.pose().popPose();
 
@@ -160,7 +160,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
                     graphics.pose().translate(ix + 2, iy + 2, 0);
                 } else {
                     graphics.pose().translate(ix + 5, iy + 5, 0);
-                    graphics.pose().scale(1.4f, 1.4f, 1f);
+                    graphics.pose().scale(1.4f, 1.4f, 1.0F);
                 }
                 drawItemStackWithCount(graphics, display, font);
                 graphics.pose().popPose();
@@ -190,7 +190,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
                     float takerWidth = Math.min(font.width(taker), 40) * _scale;
                     graphics.pose().pushPose();
                     graphics.pose().translate(ix + 76 - 2 - takerWidth, iy + lineHeight - 11 * _scale, 0);
-                    graphics.pose().scale(_scale, _scale, 1f);
+                    graphics.pose().scale(_scale, _scale, 1.0F);
                     drawCenteredString(graphics, font, taker, 0, 0, 40, COLOR_TEXT_MAID, false);
                     graphics.pose().popPose();
                 } else
@@ -217,7 +217,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
         int alignWidth = Math.min(maxWidth, textWidth);
         float scale = (float) maxWidth / drawWidth;
         graphics.pose().pushPose();
-        graphics.pose().scale(scale, scale, scale);
+        graphics.pose().scale(scale, scale, 1.0F);
         graphics.drawString(pFont, formattedcharsequence, pX / scale, (pY - 3 + (14 - 8 * scale) / 2) / scale, pColor, shadow);
         graphics.pose().popPose();
     }
@@ -225,10 +225,10 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     @Override
     public void extraTransform(PoseStack pPoseStack, RenderHandMapLikeEvent.MapLikeRenderContext context) {
         if (context == RenderHandMapLikeEvent.MapLikeRenderContext.BOTH_HANDS) {
-            pPoseStack.scale(1.1f, 1.1f, 1);
+            pPoseStack.scale(1.1f, 1.1f, 1.0F);
             pPoseStack.translate(-6, 2f, -10);
         } else if (context == RenderHandMapLikeEvent.MapLikeRenderContext.MAIN_HAND || context == RenderHandMapLikeEvent.MapLikeRenderContext.OFF_HAND) {
-            pPoseStack.scale(1.2f, 1.2f, 1);
+            pPoseStack.scale(1.2f, 1.2f, 1.0F);
             pPoseStack.translate(-10, 0, 0);
         }
     }
@@ -236,7 +236,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     protected void blit(ICustomGraphics graphics, ImageAsset asset, int x, int y, float xScale) {
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0);
-        graphics.pose().scale(xScale, 1, 1);
+        graphics.pose().scale(xScale, 1, 1.0F);
         asset.blit(graphics, 0, 0);
         graphics.pose().popPose();
     }
@@ -247,7 +247,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
             String s = String.valueOf(pStack.getCount());
             int wCount = font.width(s);
             graphics.pose().translate(16 - wCount * 0.7, 12, 1);
-            graphics.pose().scale(0.7f, 0.7f, 1);
+            graphics.pose().scale(0.7f, 0.7f, 1.0F);
             graphics.drawString(font, s, 0, 0, COLOR_TEXT_COUNT, true);
         }
     }

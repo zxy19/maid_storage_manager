@@ -119,15 +119,15 @@ public class ConfigurableCommunicateData {
 
         public static Item fromNbt(CompoundTag tag, HolderLookup.Provider p) {
             List<ItemStack> list = new ArrayList<>();
-            ListTag requires = tag.getList("requires").get();
+            ListTag requires = tag.getListOrEmpty("requires");
             for (int i = 0; i < requires.size(); i++) {
-                list.add(ItemStackUtil.parseStack(p,requires.getCompound(i).get()));
+                list.add(ItemStackUtil.parseStack(p, requires.getCompound(i).get()));
             }
             return new Item(
                     list,
                     tag.getBoolean("whiteMode").get(),
-                    ItemStackUtil.MATCH_TYPE.valueOf(tag.getString("match").get()),
-                    SlotType.valueOf(tag.getString("slot").get()),
+                    ItemStackUtil.MATCH_TYPE.valueOf(tag.getString("match").orElse("")),
+                    SlotType.valueOf(tag.getString("slot").orElse("")),
                     tag.getInt("max").get(),
                     tag.getInt("min").get(),
                     tag.getInt("thresholdCount").get()
@@ -201,7 +201,7 @@ public class ConfigurableCommunicateData {
 
     public static ConfigurableCommunicateData fromNbt(CompoundTag tag, HolderLookup.Provider p) {
         List<Item> list = new ArrayList<>();
-        ListTag itemsTag = tag.getList("items").get();
+        ListTag itemsTag = tag.getListOrEmpty("items");
         for (int i = 0; i < itemsTag.size(); i++) {
             list.add(Item.fromNbt(itemsTag.getCompound(i).get(), p));
         }
@@ -219,7 +219,7 @@ public class ConfigurableCommunicateData {
             List<ItemStack> toRequestItem = new ArrayList<>();
             List<ItemStack> hasItem = item.slot.getItemStacks(maid);
             if (item.whiteMode) {
-                //count表示物品总共存在的数量。在此数量上统计应该放回的物品
+                //count琛ㄧず鐗╁搧鎬诲叡瀛樺湪鐨勬暟閲忋€傚湪姝ゆ暟閲忎笂缁熻搴旇鏀惧洖鐨勭墿鍝?
                 List<MutableInt> count = item.requires.stream().map(itemStack -> new MutableInt(0)).toList();
                 for (ItemStack itemStack : hasItem) {
                     if (itemStack.isEmpty()) continue;
@@ -253,7 +253,7 @@ public class ConfigurableCommunicateData {
                     }
                 }
             } else {
-                //先找出所有应该放回的物品
+                //鍏堟壘鍑烘墍鏈夊簲璇ユ斁鍥炵殑鐗╁搧
                 List<ItemStack> exists = new ArrayList<>();
                 for (ItemStack itemStack : hasItem) {
                     if (itemStack.isEmpty()) continue;
@@ -266,7 +266,7 @@ public class ConfigurableCommunicateData {
                             break;
                         }
                     }
-                    //对于不匹配黑名单的物品，匹配最大数量限制
+                    //瀵逛簬涓嶅尮閰嶉粦鍚嶅崟鐨勭墿鍝侊紝鍖归厤鏈€澶ф暟閲忛檺鍒?
                     if (!find) {
                         ItemStackUtil.addToList(exists, itemStack.copyWithCount(itemStack.getCount()), item.match);
                     }

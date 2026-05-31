@@ -102,6 +102,7 @@
 | 12 | [vanilla-items-entities/](./12-vanilla-items-entities.md) | 物品、方块、实体、数据、AI、配方 | ~65+ | Item.setId()、EntityDataAccessor→AttachmentType、MobSpawnType→EntitySpawnReason、Brain API重写、CompoundTag→ValueInput/ValueOutput |
 | 13 | [vanilla-client-network/](./13-vanilla-client-network.md) | 网络、渲染、GUI、文本组件、输入 | 10 节 | CustomPacketPayload+StreamCodec网络重写、EntityRenderState系统、Component/MutableComponent变化、ClickEvent/HoverEvent签名变更、KeyMapping重构 |
 | 14 | [gradle-config/](./14-gradle-config.md) | 构建系统完整配置 | 9 节 | JDK 21→25、Gradle 8→9.4.1、moddev 2.0.95→2.0.141、Shadow 8→9.4.1、Parchment移除、依赖大幅精简、mixins.json 重构 |
+| 15 | [vanilla-screen-menu/](./15-vanilla-screen-menu.md) | Screen、Container、Slot、MenuType | ~70+ | render→extractRenderState渲染架构重写、GuiGraphics→GuiGraphicsExtractor、SlotItemHandler→ResourceHandlerSlot、stillValid重命名、openMenu参数变更 |
 
 ### 原版 API 核心迁移主题
 
@@ -134,9 +135,9 @@
 | 类型 | 文档数 | 总大小 |
 |------|--------|--------|
 | 模组包级迁移 | 10 份 | ~199 KB |
-| 原版 API 迁移 | 3 份 | ~83 KB |
+| 原版 API 迁移 | 4 份 | ~108 KB |
 | 构建配置迁移 | 1 份 | ~12 KB |
-| **总计** | **14 份** | **~294 KB** |
+| **总计** | **15 份** | **~319 KB** |
 
 ---
 

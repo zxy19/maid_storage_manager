@@ -50,7 +50,7 @@ public class RenderItemFrameEvent {
             poseStack.pushPose();
             poseStack.translate(0, 0, -0.0575);
             poseStack.translate(0.5f, 0.5f, -0.01f);
-            poseStack.scale(-0.015f, -0.015f, -0.015f);
+            poseStack.scale(-0.015f, -0.015f);
 
             CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, event.getMultiBufferSource(), pCombinedLight, mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, event.getMultiBufferSource(), pCombinedLight, event.getItemStack()));
 
@@ -59,7 +59,7 @@ public class RenderItemFrameEvent {
                     new CustomGraphics(Minecraft.getInstance(), poseStack, bs) :
                     new CustomCommonGraphics(Minecraft.getInstance(), poseStack, event.getMultiBufferSource());
             graphics.flush();
-            poseStack.scale(1, 1, 1f);
+            poseStack.scale(1, 1);
             poseStack.translate(0, 0, 0.01f);
             RenderSystem.enableDepthTest();
 

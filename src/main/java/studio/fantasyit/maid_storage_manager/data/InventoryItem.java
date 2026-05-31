@@ -87,13 +87,13 @@ public class InventoryItem {
     }
 
     public void deserializeNBT(HolderLookup.Provider t, CompoundTag nbt) {
-        itemStack = ItemStackUtil.parseStack(t, nbt.getCompound("itemStack").get());
+        itemStack = ItemStackUtil.parseStack(t, nbt.getCompoundOrEmpty("itemStack"));
         totalCount = nbt.getInt("totalCount").get();
-        ListTag list = nbt.getList("posCount").get();
+        ListTag list = nbt.getListOrEmpty("posCount");
         for (int i = 0; i < list.size(); i++) {
             CompoundTag tmp = list.getCompound(i).get();
             posAndSlot.add(new PositionCount(
-                            Target.fromNbt(tmp.getCompound("pos").get()),
+                            Target.fromNbt(tmp.getCompoundOrEmpty("pos")),
                             tmp.getInt("count").get(),
                             tmp.getBoolean("isCraftGuide").get()
                     )

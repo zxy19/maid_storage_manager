@@ -49,6 +49,6 @@ public class ItemRegistry {
 
     public static final DeferredHolder<Item, ProgressPad> PROGRESS_PAD = item("progress_pad", ProgressPad::new);
 
-    // ConfigurableCommunicateTerminal disabled
-    // public static final DeferredHolder<Item,ConfigurableCommunicateTerminal> CONFIGURABLE_COMMUNICATE_MARK = item("configurable_communicate_terminal", ConfigurableCommunicateTerminal::new);
+    // ConfigurableCommunicateTerminal
+    public static final DeferredHolder<Item,ConfigurableCommunicateTerminal> CONFIGURABLE_COMMUNICATE_MARK = item("configurable_communicate_terminal", ConfigurableCommunicateTerminal::new);
 }

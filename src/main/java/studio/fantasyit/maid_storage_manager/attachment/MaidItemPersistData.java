@@ -23,7 +23,7 @@ public class MaidItemPersistData implements ValueIOSerializable {
 
         public static Data fromNbt(CompoundTag tag) {
             return new Data(
-                    tag.getCompound("inventoryMemory").get()
+                    tag.getCompoundOrEmpty("inventoryMemory")
             );
         }
     }

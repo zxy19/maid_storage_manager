@@ -3,6 +3,7 @@ package studio.fantasyit.maid_storage_manager.menu.base;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import studio.fantasyit.maid_storage_manager.render.base.ICustomGraphics;
+import studio.fantasyit.maid_storage_manager.util.GuiTools;
 
 public class ImageAsset {
     public Identifier location;
@@ -32,7 +33,7 @@ public class ImageAsset {
     }
 
     public void blit(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.blit(location, x, y, u, v, w, h, iw, ih);
+        GuiTools.guiBlit(graphics, location, x, y, u, v, w, h, iw, ih);
     }
 
     public void blit(ICustomGraphics graphics, int x, int y) {

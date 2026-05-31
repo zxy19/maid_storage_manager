@@ -82,7 +82,7 @@ public class CustomItemRenderer {
                     pose.translate(-0.78, 0.23, -0.46);
                 }
                 pose.scale(0.55f, 0.55f, 1);
-                pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
+                pose.mulPose(new Matrix4f().scale(1, 1, 1));
                 pose.translate(0.5F, 0.5F, 0.5F);
                 ItemStackRenderState overlayState = new ItemStackRenderState();
                 resolver.updateForTopItem(overlayState, item, ItemDisplayContext.GUI, Minecraft.getInstance().level, null, 0);
@@ -120,7 +120,7 @@ public class CustomItemRenderer {
                 }
                 pose.translate(0, -0.05, 0);
                 pose.scale(0.55f, 0.55f, 1);
-                pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
+                pose.mulPose(new Matrix4f().scale(1, 1, 1));
                 pose.translate(0.5F, 0.5F, 0.5F);
                 ItemStackRenderState overlayState = new ItemStackRenderState();
                 resolver.updateForTopItem(overlayState, item, ItemDisplayContext.GUI, Minecraft.getInstance().level, null, 0);
@@ -143,7 +143,7 @@ public class CustomItemRenderer {
                 }
                 pose.translate(0.3F, -0.2F, 0.02F);
                 pose.scale(0.40f, 0.40f, 1);
-                pose.mulPose(new Matrix4f().scale(1, 1, 0.01F));
+                pose.mulPose(new Matrix4f().scale(1, 1, 1));
                 pose.translate(0.5F, 0.5F, 0.5F);
                 ItemStackRenderState iconState = new ItemStackRenderState();
                 resolver.updateForTopItem(iconState, icon, ItemDisplayContext.GUI, Minecraft.getInstance().level, null, 0);

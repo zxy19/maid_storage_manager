@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
-abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends AbstractContainerMenu implements ISaveFilter/*, ICraftGuiPacketReceiver disabled*/ {
+abstract public class AbstractCraftMenu<T extends AbstractCraftMenu<?>> extends AbstractContainerMenu implements ISaveFilter, ICraftGuiPacketReceiver {
     ItemStack target;
     protected Player player;
     protected CraftGuideData craftGuideData;

@@ -1,0 +1,15 @@
+package studio.fantasyit.maid_storage_manager.menu.craft.furnace;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Inventory;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftScreen;
+
+public class FurnaceCraftScreen extends AbstractCraftScreen<FurnaceCraftMenu> {
+    private static final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/furnace.png");
+
+    public FurnaceCraftScreen(FurnaceCraftMenu p_97741_, Inventory p_97742_, Component p_97743_) {
+        super(p_97741_, p_97742_, p_97743_, background, true);
+    }
+}

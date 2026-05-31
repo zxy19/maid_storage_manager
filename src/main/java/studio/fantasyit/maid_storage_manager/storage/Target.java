@@ -56,14 +56,14 @@ public class Target {
     public static Target fromNbt(CompoundTag nbt) {
         if (!nbt.contains("side"))
             return new Target(
-                    Identifier.tryParse(nbt.getString("type").get()),
+                    Identifier.tryParse(nbt.getString("type").orElse("")),
                     BlockPos.of(nbt.getLong("pos").get()),
                     Optional.empty()
             );
         return new Target(
-                Identifier.tryParse(nbt.getString("type").get()),
+                Identifier.tryParse(nbt.getString("type").orElse("")),
                 BlockPos.of(nbt.getLong("pos").get()),
-                Direction.byName(nbt.getString("side").get())
+                Direction.byName(nbt.getString("side").orElse(""))
         );
     }
 

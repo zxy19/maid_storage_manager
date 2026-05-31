@@ -127,7 +127,7 @@ public record ActionOption<T>(
         assertValid(craftGuideStepData);
         CompoundTag extraData = craftGuideStepData.getExtraData();
         if (extraData.contains(id.toString()) && extraData.getCompound(id.toString()).get().contains("value")) {
-            return extraData.getCompound(id.toString()).get().getString("value").get();
+            return extraData.getCompound(id.toString()).get().getString("value").orElse("");
         }
         return defaultValue();
     }

@@ -39,8 +39,8 @@ public class InventoryListData implements ValueIOSerializable {
         ConcurrentHashMap<String, List<InventoryItem>> map = new ConcurrentHashMap<>();
         for (int i = 0; i < listTag.size(); i++) {
             CompoundTag tag = listTag.getCompound(i).get();
-            String key = tag.getString("key").get();
-            ListTag itemList = tag.getList("items").get();
+            String key = tag.getString("key").orElse("");
+            ListTag itemList = tag.getListOrEmpty("items");
             List<InventoryItem> items = new ArrayList<>();
             for (int j = 0; j < itemList.size(); j++) {
                 items.add(InventoryItem.fromNbt(provider, itemList.getCompound(j).get()));
@@ -85,7 +85,7 @@ public class InventoryListData implements ValueIOSerializable {
                         }
                         List<InventoryItem> matches = dataMap.get(uuid).get(key).stream().filter(
                                 p -> ItemStackUtil.isSameInCrafting(p.itemStack, itemStack)
-                                        //目标不能是当前物品
+                                        //鐩爣涓嶈兘鏄綋鍓嶇墿鍝?
                                         && !ItemStackUtil.isSame(p.itemStack, existingItem.itemStack, true)
                         ).toList();
                         if (!matches.isEmpty()) {
@@ -158,7 +158,7 @@ public class InventoryListData implements ValueIOSerializable {
             for (String key : root.keySet()) {
                 try {
                     UUID uuid = UUID.fromString(key);
-                    ListTag listTag = root.getList(key).get();
+                    ListTag listTag = root.getListOrEmpty(key);
                     set(provider, uuid, listTag);
                 } catch (Exception e) {
                     e.printStackTrace();
