@@ -1,78 +1,96 @@
 package studio.fantasyit.maid_storage_manager.event;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
-
-//import studio.fantasyit.maid_storage_manager.render.ItemStackLighting;
+import studio.fantasyit.maid_storage_manager.render.base.CustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.base.ICustomGraphics;
+import studio.fantasyit.maid_storage_manager.render.map_like.CommonMapLike;
 
 @EventBusSubscriber(modid = MaidStorageManager.MODID, value = Dist.CLIENT)
 public class RenderItemFrameEvent {
 
     private static final Identifier MAP_FRAME_LOCATION = Identifier.fromNamespaceAndPath("minecraft", "item_frame");
 
+    private static final ThreadLocal<ItemStack> CURRENT_RENDERING_ITEM = new ThreadLocal<>();
+
+    public static void setCurrentRenderingItem(ItemStack stack) {
+        CURRENT_RENDERING_ITEM.set(stack);
+    }
+
+    public static void clearCurrentRenderingItem() {
+        CURRENT_RENDERING_ITEM.remove();
+    }
+
     @SubscribeEvent
     public static void renderItemFrame(RenderItemInFrameEvent event) {
-        // FIXME: MC 26.1 RenderItemInFrameEvent API completely refactored.
-        // Old API: getItemStack(), getItemFrameEntity(), getPackedLight(), getMultiBufferSource()
-        // New API: getItemStackRenderState(), getItemFrameRenderState(), getSubmitNodeCollector()
-        // ItemStackRenderState is not directly usable as ItemStack.
-        // Needs complete rewrite using new render state API.
-        /*
-        if (event.getItemStack().getItem() instanceof RenderHandMapLikeEvent.MapLikeRenderItem mli) {
-            if (!mli.available(event.getItemStack()))
-                return;
-            int pCombinedLight = event.getPackedLight();
-            PoseStack poseStack = event.getPoseStack();
-            poseStack.pushPose();
-            poseStack.mulPose(Axis.ZP.rotationDegrees((float) event.getItemFrameEntity().getRotation() * (-360.0F) / 8.0F));
-            int state = event.getItemFrameEntity().getRotation() % 4;
-            RenderHandMapLikeEvent.MapLikeRenderContext context = switch (state) {
-                case 0 -> RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_SMALL;
-                case 1 -> RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_LARGE;
-                default -> RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_SIDE;
-            };
-            RenderHandMapLikeEvent.MapLikeRenderer mlr = mli.getRenderer();
-            float height = mlr.getHeight(context);
-            float width = mlr.getWidth(context);
+        ItemStack itemStack = CURRENT_RENDERING_ITEM.get();
+        if (itemStack == null || !(itemStack.getItem() instanceof RenderHandMapLikeEvent.MapLikeRenderItem mli))
+            return;
+        if (!mli.available(itemStack))
+            return;
 
-            if ((!(event.getItemFrameEntity() instanceof VirtualDisplayEntity) && !event.getItemFrameEntity().isInvisible()) ||
-                    (event.getItemFrameEntity() instanceof VirtualDisplayEntity && Config.virtualItemFrameRender == Config.VirtualItemFrameRender.FRAME)) {
-                poseStack.translate(0, 0, 0.0625);
-            }
+        ItemFrameRenderState frameState = event.getItemFrameRenderState();
+        PoseStack poseStack = event.getPoseStack();
+        int rotation = frameState.rotation;
 
-            if (state == 3)
-                poseStack.translate(0.48, 0, 0);
+        RenderHandMapLikeEvent.MapLikeRenderContext context = switch (rotation % 4) {
+            case 0 -> RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_SMALL;
+            case 1 -> RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_LARGE;
+            default -> RenderHandMapLikeEvent.MapLikeRenderContext.ITEM_FRAME_SIDE;
+        };
 
-            poseStack.pushPose();
-            poseStack.translate(0, 0, -0.0575);
-            poseStack.translate(0.5f, 0.5f, -0.01f);
-            poseStack.scale(-0.015f, -0.015f);
+        RenderHandMapLikeEvent.MapLikeRenderer mlr = mli.getRenderer();
+        float height = mlr.getHeight(context);
+        float width = mlr.getWidth(context);
 
-            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, event.getMultiBufferSource(), pCombinedLight, mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, event.getMultiBufferSource(), pCombinedLight, event.getItemStack()));
+        int combinedLight = LightCoordsUtil.FULL_BRIGHT;
+        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-            mlr.extraTransform(poseStack, context);
-            ICustomGraphics graphics = (event.getMultiBufferSource() instanceof MultiBufferSource.BufferSource bs) ?
-                    new CustomGraphics(Minecraft.getInstance(), poseStack, bs) :
-                    new CustomCommonGraphics(Minecraft.getInstance(), poseStack, event.getMultiBufferSource());
-            graphics.flush();
-            poseStack.scale(1, 1);
-            poseStack.translate(0, 0, 0.01f);
-            RenderSystem.enableDepthTest();
+        poseStack.pushPose();
+        poseStack.mulPose(Axis.ZP.rotationDegrees((float) rotation * (-360.0F) / 8.0F));
 
-            graphics.flush();
-            ItemStackLighting.setup(poseStack);
-            mlr.renderOnHand(graphics, event.getItemStack(), pCombinedLight, context);
-            graphics.flush();
-            ItemStackLighting.restore();
-            poseStack.popPose();
-            poseStack.popPose();
-            event.setCanceled(true);
+        Config.VirtualItemFrameRender renderMode = Config.virtualItemFrameRender;
+        boolean frameVisible = renderMode == Config.VirtualItemFrameRender.FRAME;
+        if (frameVisible) {
+            poseStack.translate(0, 0, 0.0625);
         }
-        */
+
+        if (rotation % 4 == 3)
+            poseStack.translate(0.48, 0, 0);
+
+        poseStack.pushPose();
+        poseStack.translate(0, 0, -0.0575);
+        poseStack.translate(0.5f, 0.5f, -0.01f);
+        poseStack.scale(-0.015f, -0.015f, 1f);
+
+        var bgRenderType = mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, bufferSource, combinedLight, itemStack);
+        if (bgRenderType != null) {
+            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, bufferSource, combinedLight, bgRenderType);
+        }
+
+        mlr.extraTransform(poseStack, context);
+        poseStack.scale(1f, 1f, 1f);
+        poseStack.translate(0, 0, 0.01f);
+
+        ICustomGraphics graphics = new CustomGraphics(Minecraft.getInstance(), poseStack, bufferSource);
+        mlr.renderOnHand(graphics, itemStack, combinedLight, context);
+        bufferSource.endBatch();
+
+        poseStack.popPose();
+        poseStack.popPose();
+        event.setCanceled(true);
     }
 }
 

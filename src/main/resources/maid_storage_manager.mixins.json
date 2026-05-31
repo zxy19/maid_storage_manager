@@ -19,7 +19,8 @@
   ],
   "client": [
     "CreateStockKeeperScreenMixin",
-    "EntityGraphicsBufferSourceGetter"
+    "EntityGraphicsBufferSourceGetter",
+    "ItemFrameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
