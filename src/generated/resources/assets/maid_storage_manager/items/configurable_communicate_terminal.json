@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "maid_storage_manager:item/configurable_communicate_terminal"
+  }
+}

@@ -1,0 +1,62 @@
+package studio.fantasyit.maid_storage_manager.datagen;
+
+import com.github.tartaricacid.touhoulittlemaid.advancements.maid.MaidEventTrigger;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementType;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.advancements.AdvancementProvider;
+import net.minecraft.data.advancements.AdvancementSubProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Items;
+import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+public class AdvancementDataGen extends AdvancementProvider {
+
+    public AdvancementDataGen(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries, List.of(new ModAdvancements()));
+    }
+
+    static class ModAdvancements implements AdvancementSubProvider {
+        @Override
+        public void generate(HolderLookup.Provider registries, Consumer<AdvancementHolder> consumer) {
+            AdvancementHolder storageManager = Advancement.Builder.advancement()
+                    .parent(AdvancementSubProvider.createPlaceholder("touhou_little_maid:maid_base/switch_schedule"))
+                    .display(
+                            Items.CHEST,
+                            Component.translatable("advancements.maid_storage_manager.storage_manager.title"),
+                            Component.translatable("advancements.maid_storage_manager.storage_manager.desc"),
+                            Identifier.fromNamespaceAndPath("touhou_little_maid", "textures/advancements/backgrounds/stone.png"),
+                            AdvancementType.TASK,
+                            true,
+                            true,
+                            false
+                    )
+                    .addCriterion("maid_event", MaidEventTrigger.create("storage_manager"))
+                    .sendsTelemetryEvent()
+                    .save(consumer, MaidStorageManager.MODID + ":storage_manager");
+
+            Advancement.Builder.advancement()
+                    .parent(storageManager)
+                    .display(
+                            Items.BARREL,
+                            Component.translatable("advancements.maid_storage_manager.view.title"),
+                            Component.translatable("advancements.maid_storage_manager.view.desc"),
+                            Identifier.fromNamespaceAndPath("touhou_little_maid", "textures/advancements/backgrounds/stone.png"),
+                            AdvancementType.TASK,
+                            true,
+                            true,
+                            false
+                    )
+                    .addCriterion("maid_event", MaidEventTrigger.create("view"))
+                    .sendsTelemetryEvent()
+                    .save(consumer, MaidStorageManager.MODID + ":view");
+        }
+    }
+}
