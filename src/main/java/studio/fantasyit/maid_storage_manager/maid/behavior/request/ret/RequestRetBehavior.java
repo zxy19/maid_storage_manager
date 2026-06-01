@@ -19,6 +19,7 @@ import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.RequestProgressMemory;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -28,8 +29,6 @@ import studio.fantasyit.maid_storage_manager.util.*;
 
 import java.util.Map;
 import java.util.Objects;
-
-//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class RequestRetBehavior extends Behavior<EntityMaid> {
     private final BehaviorBreath breath = new BehaviorBreath();
@@ -103,7 +102,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
 
     protected boolean tryReadyMaid(EntityMaid m, EntityMaid maid) {
         if (targetEntityReady) return true;
-        if (false) { // StorageManageTask disabled
+        if (m.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
             if (MemoryUtil.isWorking(m) && !MemoryUtil.isParallelWorking(m)) return false;
             MemoryUtil.joinAndStartParallelWorking(m);
         }
@@ -200,7 +199,7 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
             context.finish();
         if (targetEntity instanceof EntityMaid m) {
             MemoryUtil.clearTarget(m);
-            if (false) { // StorageManageTask disabled
+            if (m.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
                 MemoryUtil.clearPickUpItemTemp(m);
                 MemoryUtil.leaveParallelWorking(m);
             }

@@ -8,6 +8,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.attachment.InventoryListData;
 import studio.fantasyit.maid_storage_manager.attachment.MaidItemPersistData;
+import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 
 import java.util.function.Supplier;
 
@@ -22,6 +23,8 @@ public class DataAttachmentRegistry {
             "inventory_list_data", () -> AttachmentType.serializable(InventoryListData::new).build());
     public static final Supplier<AttachmentType<MaidItemPersistData>> MAID_ITEM_PERSIST_DATA = ATTACHMENT_TYPES.register(
             "maid_item_persist_data", () -> AttachmentType.serializable(MaidItemPersistData::new).build());
+    public static final Supplier<AttachmentType<StorageManagerConfigData.Data>> MAID_TASK_DATA = ATTACHMENT_TYPES.register(
+            "maid_task_data", () -> AttachmentType.builder(StorageManagerConfigData.Data::getDefault).serialize(StorageManagerConfigData.CODEC).build());
 
     public static void register(IEventBus bus) {
         ATTACHMENT_TYPES.register(bus);

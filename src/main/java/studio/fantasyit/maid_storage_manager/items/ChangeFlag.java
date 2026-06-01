@@ -22,6 +22,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import studio.fantasyit.maid_storage_manager.items.data.TargetList;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -30,8 +31,6 @@ import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 
 import java.util.List;
 import java.util.function.Consumer;
-
-//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class ChangeFlag extends Item {
     public ChangeFlag(Identifier id) {
@@ -87,7 +86,7 @@ public class ChangeFlag extends Item {
             ServerLevel level = (ServerLevel) player.level();
             if (maid.getOwner() != null
                     && maid.getOwner().getUUID().equals(player.getUUID())
-                    /* && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) */ ) {
+                    && maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
                 List<Target> storages = getStorages(itemStack);
                 if (storages.size() == 0) {
                     return InteractionResult.SUCCESS;

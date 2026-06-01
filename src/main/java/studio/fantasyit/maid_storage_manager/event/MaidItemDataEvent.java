@@ -9,7 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.attachment.MaidItemPersistData;
-//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class MaidItemDataEvent {
         if (event.getMaid().level() instanceof ServerLevel sl) {
             EntityMaid maid = event.getMaid();
             CompoundTag data = event.getData();
-            if (false) { // StorageManageTask disabled
+            if (maid.getTask().getUid().equals(StorageManageTask.TASK_ID)) {
                 CompoundTag brain = data.getCompoundOrEmpty("Brain");
                 if (!brain.contains("memories")) return;
                 CompoundTag memories = brain.getCompoundOrEmpty("memories");

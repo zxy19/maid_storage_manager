@@ -169,51 +169,31 @@ public class Network {
                     if (!(context.player() instanceof ServerPlayer sender)) return;
                     Entity entity = sender.level().getEntity(msg.id);
                     if (entity instanceof EntityMaid maid) {
+                        StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                         if (msg.type == MaidDataSyncPacket.Type.MemoryAssistant) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.memoryAssistant(StorageManagerConfigData.MemoryAssistant.values()[msg.value]);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.NoPlaceSort) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.noSortPlacement(msg.value == 1);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.CoWork) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.coWorkMode(msg.value == 1);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.AllowSeekWorkMeal) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.allowSeekWorkMeal(msg.value == 1);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.FastSort) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.suppressStrategy(StorageManagerConfigData.SuppressStrategy.values()[msg.value]);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.MemorizeCraftGuide) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.useMemorizedCraftGuide(msg.value == 1);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.MaxParallel) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.maxParallel(msg.value);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.CraftingRepeatCount) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.maxCraftingLayerRepeatCount(msg.value);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.AutoSorting) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.autoSorting(msg.value != 0);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.ItemTypeLimit) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.itemTypeLimit(msg.value);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         } else if (msg.type == MaidDataSyncPacket.Type.DoCommunicate) {
-                            StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
                             data.doCommunicate(msg.value != 0);
-                            maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
                         }
+                        StorageManagerConfigData.set(maid, data);
                     }
                 }
         );

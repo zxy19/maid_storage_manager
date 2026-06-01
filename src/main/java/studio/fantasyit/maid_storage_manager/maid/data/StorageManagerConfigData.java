@@ -2,9 +2,10 @@ package studio.fantasyit.maid_storage_manager.maid.data;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.mojang.serialization.Codec;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
-import net.neoforged.neoforge.attachment.AttachmentType;
+import studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry;
 
 public class StorageManagerConfigData {
     public static final class Data {
@@ -167,51 +168,32 @@ public class StorageManagerConfigData {
 
     private static final StorageManagerConfigData INSTANCE = new StorageManagerConfigData();
 
-    public static final Codec<Data> CODEC = CompoundTag.CODEC.xmap(
-            INSTANCE::readSaveData,
-            INSTANCE::writeSaveData
-    );
-
-    public static final AttachmentType<Data> ATTACHMENT_TYPE = AttachmentType.builder(Data::getDefault)
-            .build();
-
-    public CompoundTag writeSaveData(Data data) {
-        CompoundTag tag = new CompoundTag();
-        tag.putString("memoryAssistant", data.memoryAssistant().name());
-        tag.putString("suppressStrategy", data.suppressStrategy().name());
-        tag.putBoolean("noSortPlacement", data.noSortPlacement());
-        tag.putBoolean("coWorkMode", data.coWorkMode());
-        tag.putBoolean("allowSeekWorkMeal", data.allowSeekWorkMeal());
-        tag.putBoolean("useMemorizedCraftGuide", data.useMemorizedCraftGuide());
-        tag.putInt("maxParallel", data.maxParallel());
-        tag.putInt("maxCraftingLayerRepeatCount", data.maxCraftingLayerRepeatCount());
-        tag.putBoolean("autoSorting", data.autoSorting());
-        tag.putInt("itemTypeLimit", data.itemTypeLimit());
-        tag.putBoolean("doCommunicate", data.doCommunicate());
-        return tag;
-    }
-
-    public Data readSaveData(CompoundTag compound) {
-        MemoryAssistant memoryAssistant = MemoryAssistant.valueOf(compound.getString("memoryAssistant").orElse("MEMORY_FIRST"));
-        SuppressStrategy suppressStrategy = compound.contains("suppressStrategy")
-                ? SuppressStrategy.valueOf(compound.getString("suppressStrategy").orElse("AFTER_ALL"))
-                : SuppressStrategy.AFTER_ALL;
-        boolean noSortPlacement = compound.getBoolean("noSortPlacement").orElse(false);
-        boolean coWorkMode = compound.getBoolean("coWorkMode").orElse(false);
-        boolean allowSeekWorkMeal = compound.getBoolean("allowSeekWorkMeal").orElse(false);
-        boolean useMemorizedCraftGuide = compound.getBoolean("useMemorizedCraftGuide").orElse(false);
-        int maxParallel = compound.contains("maxParallel")
-                ? compound.getInt("maxParallel").orElse(5)
-                : 5;
-        boolean alwaysSingleCrafting = compound.getBoolean("alwaysSingleCrafting").orElse(false);
-        int maxCraftingLayerRepeatCount = compound.contains("maxCraftingLayerRepeatCount")
-                ? compound.getInt("maxCraftingLayerRepeatCount").orElse(alwaysSingleCrafting ? 1 : 8)
-                : (alwaysSingleCrafting ? 1 : 8);
-        boolean autoSorting = compound.contains("autoSorting") ? compound.getBoolean("autoSorting").orElse(true) : true;
-        int itemTypeLimit = compound.contains("itemTypeLimit") ? compound.getInt("itemTypeLimit").orElse(-1) : -1;
-        boolean doCommunicate = compound.contains("doCommunicate") ? compound.getBoolean("doCommunicate").orElse(false) : false;
-        return new Data(memoryAssistant, noSortPlacement, coWorkMode, suppressStrategy, allowSeekWorkMeal, useMemorizedCraftGuide, maxParallel, maxCraftingLayerRepeatCount, autoSorting, itemTypeLimit, doCommunicate);
-    }
+    public static final MapCodec<Data> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.STRING.fieldOf("memoryAssistant")
+                    .xmap(MemoryAssistant::valueOf, MemoryAssistant::name)
+                    .forGetter(Data::memoryAssistant),
+            Codec.BOOL.fieldOf("noSortPlacement")
+                    .forGetter(Data::noSortPlacement),
+            Codec.BOOL.fieldOf("coWorkMode")
+                    .forGetter(Data::coWorkMode),
+            Codec.STRING.fieldOf("suppressStrategy")
+                    .xmap(SuppressStrategy::valueOf, SuppressStrategy::name)
+                    .forGetter(Data::suppressStrategy),
+            Codec.BOOL.fieldOf("allowSeekWorkMeal")
+                    .forGetter(Data::allowSeekWorkMeal),
+            Codec.BOOL.fieldOf("useMemorizedCraftGuide")
+                    .forGetter(Data::useMemorizedCraftGuide),
+            Codec.INT.fieldOf("maxParallel")
+                    .forGetter(Data::maxParallel),
+            Codec.INT.fieldOf("maxCraftingLayerRepeatCount")
+                    .forGetter(Data::maxCraftingLayerRepeatCount),
+            Codec.BOOL.fieldOf("autoSorting")
+                    .forGetter(Data::autoSorting),
+            Codec.INT.fieldOf("itemTypeLimit")
+                    .forGetter(Data::itemTypeLimit),
+            Codec.BOOL.fieldOf("doCommunicate")
+                    .forGetter(Data::doCommunicate)
+    ).apply(instance, Data::new));
 
     public static String getTranslationKey(MemoryAssistant memoryAssistant) {
         return "gui.maid_storage_manager.config.memory_assistant." + switch (memoryAssistant) {
@@ -247,11 +229,11 @@ public class StorageManagerConfigData {
     }
 
     public static StorageManagerConfigData.Data get(EntityMaid maid) {
-        Data data = maid.getData(ATTACHMENT_TYPE);
-        if (data == null) {
-            data = Data.getDefault();
-            maid.setData(ATTACHMENT_TYPE, data);
-        }
+        return maid.getData(DataAttachmentRegistry.MAID_TASK_DATA);
+    }
+
+    public static StorageManagerConfigData.Data set(EntityMaid maid, StorageManagerConfigData.Data data) {
+        maid.setData(DataAttachmentRegistry.MAID_TASK_DATA, data);
         return data;
     }
 }

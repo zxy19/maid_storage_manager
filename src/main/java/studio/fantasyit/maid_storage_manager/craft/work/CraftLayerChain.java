@@ -31,14 +31,13 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.ViewedInventoryMemory;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.*;
-
-//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 
 public class CraftLayerChain implements IProgressDebugContextSetter {
     public static final Codec<Pair<UUID, Pair<Integer, UUID>>>
@@ -541,7 +540,7 @@ public class CraftLayerChain implements IProgressDebugContextSetter {
             EntityMaid dispatchedMaid = null;
             if (level.getEntity(p.getKey()) instanceof EntityMaid _dispatchedMaid) {
                 dispatchedMaid = _dispatchedMaid;
-                valid = false; // StorageManageTask disabled
+                valid = _dispatchedMaid.getTask().getUid().equals(StorageManageTask.TASK_ID);
             } else valid = false;
             if (!valid) {
                 if (dispatchedTaskTickCount.get(p.getKey()).incrementAndGet() < 20)

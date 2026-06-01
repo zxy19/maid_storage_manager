@@ -34,14 +34,14 @@ public class CoWorkSwitchFunction extends AbstractTool<CoWorkSwitchFunction.Enab
 
     @Override
     public String invocationSummary(EnableData enableData) {
-        return "Co-work mode ->"+ (enableData.enable.equals("true") ? "enabled" : "disabled");
+        return "Co-work mode ->" + (enableData.enable.equals("true") ? "enabled" : "disabled");
     }
 
     @Override
     public String call(EnableData en, EntityMaid maid, LLMCallback callback) {
         StorageManagerConfigData.Data data = StorageManagerConfigData.get(maid);
         data.coWorkMode(en.enable.equals("true"));
-        maid.setData(StorageManagerConfigData.ATTACHMENT_TYPE, data);
+        StorageManagerConfigData.set(maid, data);
         return (en.enable.equals("true") ? "Cowork mode enabled." : "Cowork mode disabled.");
     }
 

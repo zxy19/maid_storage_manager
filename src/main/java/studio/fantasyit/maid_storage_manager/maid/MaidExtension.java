@@ -17,6 +17,8 @@ import net.minecraft.world.item.Items;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.ai.*;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
+import studio.fantasyit.maid_storage_manager.items.MaidInteractItem;
+import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.registry.MemoryModuleRegistry;
 import studio.fantasyit.maid_storage_manager.render.CraftingChatBubbleData;
@@ -25,15 +27,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-//import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
-
 @LittleMaidExtension
 public class MaidExtension implements ILittleMaid {
 
     @Override
     public void addMaidTask(TaskManager manager) {
         ILittleMaid.super.addMaidTask(manager);
-//        manager.add(new StorageManageTask());
+        manager.add(new StorageManageTask());
     }
 
     @Override
@@ -89,14 +89,14 @@ public class MaidExtension implements ILittleMaid {
     @Override
     public void addMaidTips(MaidTipsOverlay maidTipsOverlay) {
         maidTipsOverlay.addSpecialTips("tip.maid_storage_manager.interact_maid", (stack, maid, player) -> {
-//            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
+            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
                 return false;
-//            return stack.getItem() instanceof MaidInteractItem;
+            return stack.getItem() instanceof MaidInteractItem;
         });
         maidTipsOverlay.addSpecialTips("tip.maid_storage_manager.change_flag", (stack, maid, player) -> {
-//            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
+            if (!maid.getTask().getUid().equals(StorageManageTask.TASK_ID))
                 return false;
-//            return stack.is(ItemRegistry.CHANGE_FLAG.get());
+            return stack.is(ItemRegistry.CHANGE_FLAG.get());
         });
 
         maidTipsOverlay.addTips("tip.maid_storage_manager.experience_bottle", Items.EXPERIENCE_BOTTLE);

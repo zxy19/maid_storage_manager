@@ -7,6 +7,7 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.maid.config.StorageManagerMaidConfigGui;
 import studio.fantasyit.maid_storage_manager.menu.communicate.CommunicateMarkMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.altar.AltarCraftMenu;
 import studio.fantasyit.maid_storage_manager.menu.craft.anvil.AnvilCraftMenu;
@@ -48,6 +49,8 @@ public class GuiRegistry {
             () -> IMenuTypeExtension.create((windowId, inv, data) -> new BrewingCraftMenu(windowId, inv.player)));
     public static final DeferredHolder<MenuType<?>, MenuType<StoneCutterCraftMenu>> CRAFT_GUIDE_MENU_STONE_CUTTER = MENU_TYPES.register("craft_guide_menu_stone_cutter",
             () -> IMenuTypeExtension.create((windowId, inv, data) -> new StoneCutterCraftMenu(windowId, inv.player)));
+    public static final DeferredHolder<MenuType<?>, MenuType<StorageManagerMaidConfigGui.Container>> STORAGE_MANAGER_MAID_CONFIG_GUI = MENU_TYPES.register("storage_manager_maid_config_gui",
+            () -> IMenuTypeExtension.create((windowId, inv, data) -> new StorageManagerMaidConfigGui.Container(windowId, inv, data.readInt())));
 
     public static void init(IEventBus modEventBus) {
         MENU_TYPES.register(modEventBus);
