@@ -11,8 +11,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.network.ClientInputPacket;
@@ -26,19 +26,19 @@ public class InputEvent {
             Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "category")
     );
 
-    public static final Lazy<KeyMapping> KEY_REQUEST_INGREDIENT = Lazy.of(() -> new net.minecraft.client.KeyMapping(
+    public static final Lazy<KeyMapping> KEY_REQUEST_INGREDIENT = Lazy.of(() -> new KeyMapping(
             "key.maid_storage_manager.request_ingredient",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_ALT,
             CATEGORY
     ));
-    public static final Lazy<KeyMapping> KEY_SEE_THROUGH_MARK_BOX = Lazy.of(() -> new net.minecraft.client.KeyMapping(
+    public static final Lazy<KeyMapping> KEY_SEE_THROUGH_MARK_BOX = Lazy.of(() -> new KeyMapping(
             "key.maid_storage_manager.see_through_mark_box",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_ALT,
             CATEGORY
     ));
-    public static final Lazy<KeyMapping> KEY_ROLL_SPECIAL_MODE = Lazy.of(() -> new net.minecraft.client.KeyMapping(
+    public static final Lazy<KeyMapping> KEY_ROLL_SPECIAL_MODE = Lazy.of(() -> new KeyMapping(
             "key.maid_storage_manager.roll_special_mode",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_LEFT_ALT,
@@ -65,14 +65,14 @@ public class InputEvent {
         if (player.isShiftKeyDown()) {
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) || itemStack.is(ItemRegistry.LOGISTICS_GUIDE.get()) || itemStack.is(ItemRegistry.PROGRESS_PAD.get())) {
                 event.setCanceled(true);
-                PacketDistributor.sendToServer(
+                ClientPacketDistributor.sendToServer(
                         new ClientInputPacket(ClientInputPacket.Type.SCROLL, (int) (event.getScrollDeltaY() * 100))
                 );
             }
         } else if (pressingSpecialKey) {
             event.setCanceled(true);
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.PROGRESS_PAD.get())) {
-                PacketDistributor.sendToServer(
+                ClientPacketDistributor.sendToServer(
                         new ClientInputPacket(ClientInputPacket.Type.ALT_SCROLL, (int) (event.getScrollDeltaY() * 100))
                 );
             }

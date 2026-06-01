@@ -42,10 +42,10 @@ public class PlayerInteractClient {
         int i = minecraft.player.getItemInHand(event.getHand()).getCount();
         InteractionResult interactionresult1 = minecraft.gameMode.useItemOn((LocalPlayer) event.getEntity(), event.getHand(), clip);
         if (interactionresult1.consumesAction()) {
-            if (interactionresult1.shouldSwing()) {
+            if (interactionresult1 == InteractionResult.SUCCESS) {
                 minecraft.player.swing(event.getHand());
                 ItemStack itemstack = minecraft.player.getItemInHand(event.getHand());
-                if (!itemstack.isEmpty() && (itemstack.getCount() != i || minecraft.gameMode.hasInfiniteItems())) {
+                if (!itemstack.isEmpty() && (itemstack.getCount() != i || minecraft.player.hasInfiniteMaterials())) {
                     minecraft.gameRenderer.itemInHandRenderer.itemUsed(event.getHand());
                 }
             }
