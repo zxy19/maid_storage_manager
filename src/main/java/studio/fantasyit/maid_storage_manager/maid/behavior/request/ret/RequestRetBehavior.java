@@ -170,8 +170,9 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         for (int i = 0; i < 5 && currentSlot < availableInv.size(); i++)
             if (ItemUtil.getStack(availableInv, currentSlot).isEmpty())
                 currentSlot++;
-        if (ItemUtil.getStack(availableInv, currentSlot) == maid.getMainHandItem())
-            currentSlot++;
+        if(currentSlot < availableInv.size())
+            if (ItemUtil.getStack(availableInv, currentSlot) == maid.getMainHandItem())
+                currentSlot++;
         if (currentSlot < availableInv.size()) {
             ItemStack stack = ItemUtil.getStack(availableInv, currentSlot);
             if (!stack.isEmpty())

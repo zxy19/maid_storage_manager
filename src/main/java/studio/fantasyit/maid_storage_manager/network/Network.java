@@ -14,6 +14,8 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.apache.commons.lang3.tuple.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -250,20 +252,40 @@ public class Network {
                 }
         );
         registrar.playToClient(
-                MaidDataSyncToClientPacket.TYPE,
-                MaidDataSyncToClientPacket.STREAM_CODEC,
+                MaidScheduleSyncPacket.TYPE,
+                MaidScheduleSyncPacket.STREAM_CODEC,
                 (msg, context) -> {
                     context.enqueueWork(() -> {
                         Player sender = context.player();
-                        if (sender.level().getEntity(msg.id) instanceof EntityMaid maid) {
-                            if (msg.type == MaidDataSyncToClientPacket.Type.WORKING) {
-                                maid.getBrain().setMemory(
-                                        MemoryModuleRegistry.CURRENTLY_WORKING.get(),
-                                        ScheduleBehavior.Schedule.values()[msg.value.getInt("id").orElse(0)]
-                                );
-                            } else if (msg.type == MaidDataSyncToClientPacket.Type.BAUBLE) {
-                                // BaubleItemHandler.deserializeNBT API changed - disabled
-                                // maid.getMaidBauble().deserializeNBT(sender.registryAccess(), msg.value);
+                        if (sender.level().getEntity(msg.maidId) instanceof EntityMaid maid) {
+                            maid.getBrain().setMemory(
+                                    MemoryModuleRegistry.CURRENTLY_WORKING.get(),
+                                    ScheduleBehavior.Schedule.values()[msg.scheduleOrdinal]
+                            );
+                        }
+                    });
+                }
+        );
+        registrar.playToClient(
+                MaidBaubleSyncPacket.TYPE,
+                MaidBaubleSyncPacket.STREAM_CODEC,
+                (msg, context) -> {
+                    context.enqueueWork(() -> {
+                        Player sender = context.player();
+                        if (sender.level().getEntity(msg.maidId) instanceof EntityMaid maid) {
+                            var baubleHandler = maid.getMaidBauble();
+                            try (Transaction tx = Transaction.open(null)) {
+                                for (int i = 0; i < msg.baubles.size() && i < baubleHandler.size(); i++) {
+                                    ItemStack stack = msg.baubles.get(i);
+                                    var old = baubleHandler.getResource(i);
+                                    if (!old.isEmpty()) {
+                                        baubleHandler.extract(i, old, (int) baubleHandler.getAmountAsLong(i), tx);
+                                    }
+                                    if (!stack.isEmpty()) {
+                                        baubleHandler.insert(i, ItemResource.of(stack), stack.getCount(), tx);
+                                    }
+                                }
+                                tx.commit();
                             }
                         }
                     });

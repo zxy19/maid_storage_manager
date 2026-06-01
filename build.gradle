@@ -130,6 +130,7 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
     compileOnly "curse.maven:applied-energistics-2-223794:8129795"
 //    compileOnly "curse.maven:mouse-tweaks-60089:5637846"
 //    compileOnly "curse.maven:just-enough-characters-250702:6681787"
@@ -155,6 +156,7 @@ dependencies {
 //    runtimeOnly "libs:tacz-neoforge-1.21.1:1.1.6-hotfix-r5"
 
     runtimeOnly "curse.maven:applied-energistics-2-223794:8129795"
+    runtimeOnly "curse.maven:guideme-1173950:8129704"
 //    runtimeOnly "com.tterrag.registrate:Registrate:MC1.21-1.3.0+67"
 //    runtimeOnly "curse.maven:patchouli-306770:6164617"
 //    runtimeOnly "curse.maven:sophisticated-storage-619320:6759132"
@@ -174,7 +176,6 @@ dependencies {
 //    runtimeOnly "org.anti_ad.mc:libIPN-neoforge-1.21:6.5.1"
 //    runtimeOnly "curse.maven:kotlin-for-neoforge-351264:6706911"
 //    runtimeOnly "curse.maven:geckolib-388172:6659026"
-//    runtimeOnly "curse.maven:guideme-1173950:6688687"
 
 }
 

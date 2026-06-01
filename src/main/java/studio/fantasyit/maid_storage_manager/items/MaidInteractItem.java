@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.item.bauble.BaubleManager;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,9 +16,13 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.NotNull;
-import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
+import studio.fantasyit.maid_storage_manager.network.MaidBaubleSyncPacket;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MaidInteractItem extends Item {
 
@@ -48,13 +51,12 @@ public class MaidInteractItem extends Item {
                         p_41399_.getMainHandItem().shrink(1);
 
                     if (inv instanceof BaubleItemHandler bh) {
-                        CompoundTag tag = new CompoundTag();
+                        List<ItemStack> baubles = new ArrayList<>();
+                        for (int i = 0; i < bh.size(); i++) {
+                            baubles.add(ItemUtil.getStack(bh, i));
+                        }
                         PacketDistributor.sendToPlayer((ServerPlayer) p_41399_,
-                                new MaidDataSyncToClientPacket(
-                                        MaidDataSyncToClientPacket.Type.BAUBLE,
-                                        maid.getId(),
-                                        tag
-                                )
+                                new MaidBaubleSyncPacket(maid.getId(), baubles)
                         );
                     }
 

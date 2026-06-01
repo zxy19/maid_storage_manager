@@ -11,17 +11,18 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
-import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
+import studio.fantasyit.maid_storage_manager.network.MaidBaubleSyncPacket;
 import studio.fantasyit.maid_storage_manager.network.ProgressPadUpdatePacket;
 import studio.fantasyit.maid_storage_manager.network.RenderEntityPacket;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -56,8 +57,13 @@ public class BindingRenderSyncSender {
                         player.getBoundingBox().inflate(32),
                         t -> true
                 ).forEach(maid -> {
+                    List<ItemStack> baubles = new ArrayList<>();
+                    var baubleHandler = maid.getMaidBauble();
+                    for (int i = 0; i < baubleHandler.size(); i++) {
+                        baubles.add(ItemUtil.getStack(baubleHandler, i));
+                    }
                     PacketDistributor.sendToPlayer(player,
-                            new MaidDataSyncToClientPacket(MaidDataSyncToClientPacket.Type.BAUBLE, maid.getId(), maid.getMaidBauble().serializeNBT(player.registryAccess()))
+                            new MaidBaubleSyncPacket(maid.getId(), baubles)
                     );
                 });
             }

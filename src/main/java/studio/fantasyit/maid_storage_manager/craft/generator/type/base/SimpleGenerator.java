@@ -28,6 +28,8 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
 
     abstract protected C getWrappedContainer(T recipe, List<ItemStack> inputs);
 
+    abstract protected C getLookingUpContainer(T recipe);
+
     protected List<ItemStack> wrapInputs(T recipe, List<ItemStack> inputs) {
         return inputs;
     }
@@ -58,9 +60,7 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
     }
 
     protected ItemStack outputTransform(List<InventoryItem> inventory, Level level, T recipe) {
-        return recipe.placementInfo().ingredients().isEmpty()
-                ? ItemStack.EMPTY
-                : ItemStack.EMPTY;
+        return recipe.assemble(getLookingUpContainer(recipe));
     }
 
     protected boolean isValid(List<InventoryItem> inventory, Level level, BlockPos pos, T recipe) {

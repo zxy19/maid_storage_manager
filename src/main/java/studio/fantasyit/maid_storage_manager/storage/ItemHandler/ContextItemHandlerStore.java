@@ -13,12 +13,13 @@ import studio.fantasyit.maid_storage_manager.storage.base.IStorageSplitInsertabl
 public class ContextItemHandlerStore extends AbstractItemHandlerContext implements IStorageInsertableContext, IStorageSplitInsertableContext {
     @Override
     public void start(EntityMaid maid, ServerLevel level, Target target) {
-        super.start(maid, level,target);
+        super.start(maid, level, target);
     }
 
     @Override
     public ItemStack insert(ItemStack item) {
         if (!this.helper.isStillValid()) return item;
+        if (item.isEmpty()) return item;
         ItemStack copy = item.copy();
         for (int i = 0; i < this.helper.itemHandler.size(); i++) {
             try (var tx = Transaction.open(null)) {
@@ -35,9 +36,10 @@ public class ContextItemHandlerStore extends AbstractItemHandlerContext implemen
     public ItemStack splitInsert(ItemStack item) {
         if (!this.isAvailable(item)) return item;
         if (!this.helper.isStillValid()) return item;
+        if (item.isEmpty()) return item;
         ItemStack copy = item.copy();
         for (int i = 0; i < this.helper.itemHandler.size(); i++) {
-            if(!ItemUtil.getStack(this.helper.itemHandler, i).isEmpty())
+            if (!ItemUtil.getStack(this.helper.itemHandler, i).isEmpty())
                 continue;
             try (var tx = Transaction.open(null)) {
                 int inserted = this.helper.itemHandler.insert(i, ItemResource.of(copy), copy.getCount(), tx);
