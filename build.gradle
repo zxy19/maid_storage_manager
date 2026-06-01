@@ -140,7 +140,7 @@ dependencies {
 //    compileOnly "net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:1.0.60"
 //    compileOnly "curse.maven:refined-storage-243076:6798977"
 //    compileOnly "libs:tacz-neoforge-1.21.1:1.1.6-hotfix-r5"
-//    compileOnly("me.shedaniel.cloth:cloth-config-neoforge:15.0.140")
+    compileOnly("maven.modrinth:cloth-config:26.1.154+neoforge")
 //    compileOnly "mekanism:Mekanism:${mekanism_version}"
 //    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
 //    compileOnly "dev.latvian.mods:rhino-neoforge:${rhino_version}"
