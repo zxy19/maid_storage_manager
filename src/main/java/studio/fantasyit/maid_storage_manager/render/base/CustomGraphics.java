@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
@@ -59,8 +60,10 @@ public class CustomGraphics implements ICustomGraphics {
         ItemStackRenderState isrs = new ItemStackRenderState();
         Minecraft.getInstance().getItemModelResolver().updateForTopItem(isrs, p_281978_, ItemDisplayContext.GUI, minecraft.level, minecraft.player, 0);
         this.pose.pushPose();
-        this.pose.scale(10, 10, 10);
-        this.pose.translate(x, y, -10000);
+        Quaternionf quaternionf = new Quaternionf().rotateY((float) Math.PI, new Quaternionf());
+        this.pose.scale(-16, -16, 0.0001f);
+        this.pose.translate(x - 0.5, y - 0.5, 0);
+        this.pose.mulPose(quaternionf);
         isrs.submit(this.pose, this.submitNodeCollector, LightCoordsUtil.FULL_BRIGHT, 0, 0);
         this.pose.popPose();
     }
