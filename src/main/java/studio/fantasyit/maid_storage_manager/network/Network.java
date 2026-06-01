@@ -13,6 +13,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -21,6 +22,7 @@ import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.ai.GetStorageFunction;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
+import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
@@ -29,7 +31,9 @@ import studio.fantasyit.maid_storage_manager.items.ProgressPad;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
+import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 import studio.fantasyit.maid_storage_manager.menu.filter.FilterMenu;
+import studio.fantasyit.maid_storage_manager.menu.logistics.LogisticsGuideMenu;
 import studio.fantasyit.maid_storage_manager.menu.request.ItemSelectorMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataAttachmentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -51,19 +55,13 @@ public class Network {
         ClientPacketDistributor.sendToServer(new ItemSelectorGuiPacket(type, key, value));
     }
 
-    // ItemSelectorSetItemPacket disabled
-    // public static void sendItemSelectorSetItemPacket(List<Pair<Integer, ItemStack>> list) {
-    //     ClientPacketDistributor.sendToServer(new ItemSelectorSetItemPacket(list));
-    // }
-
-    // public static void sendItemSelectorSetItemPacket(Integer slot, ItemStack item) {
-    //     sendItemSelectorSetItemPacket(List.of(Pair.of(slot, item)));
-    // }
 
     public static void sendItemSelectorSetItemPacket(List<Pair<Integer, ItemStack>> list) {
+        ClientPacketDistributor.sendToServer(new ItemSelectorSetItemPacket(list));
     }
 
     public static void sendItemSelectorSetItemPacket(Integer slot, ItemStack item) {
+        sendItemSelectorSetItemPacket(List.of(Pair.of(slot, item)));
     }
 
     public static void sendRequestListPacket(UUID uuid) {
@@ -89,31 +87,30 @@ public class Network {
                             ism.handleUpdate(msg.type, msg.key, msg.value);
                         } else if (sender.containerMenu instanceof FilterMenu ifm) {
                             ifm.handleUpdate(msg.type, msg.key, msg.value);
-                        } else if (false) { // LogisticsGuideMenu disabled
-                            // lgm.handleUpdate(msg.type, msg.key, msg.value);
+                        } else if (sender.containerMenu instanceof LogisticsGuideMenu lgm) {
+                            lgm.handleUpdate(msg.type, msg.key, msg.value);
                         }
                     });
                 }
         );
-        // ItemSelectorSetItemPacket disabled
-        // registrar.playToServer(
-        //         ItemSelectorSetItemPacket.TYPE,
-        //         ItemSelectorSetItemPacket.STREAM_CODEC,
-        //         (msg, context) -> {
-        //             context.enqueueWork(() -> {
-        //                 if (!(context.player() instanceof ServerPlayer sender)) return;
-        //                 if (sender.containerMenu instanceof ItemSelectorMenu ism) {
-        //                     msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
-        //                     ism.save();
-        //                     ism.broadcastChanges();
-        //                 } else if (sender.containerMenu instanceof FilterMenu ism) {
-        //                     msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
-        //                     ism.save();
-        //                     ism.broadcastChanges();
-        //                 }
-        //             });
-        //         }
-        // );
+        registrar.playToServer(
+                ItemSelectorSetItemPacket.TYPE,
+                ItemSelectorSetItemPacket.STREAM_CODEC,
+                (msg, context) -> {
+                    context.enqueueWork(() -> {
+                        if (!(context.player() instanceof ServerPlayer sender)) return;
+                        if (sender.containerMenu instanceof ItemSelectorMenu ism) {
+                            msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
+                            ism.save();
+                            ism.broadcastChanges();
+                        } else if (sender.containerMenu instanceof FilterMenu ism) {
+                            msg.items.forEach((p) -> ism.filteredItems.setItem(p.getLeft(), p.getRight()));
+                            ism.save();
+                            ism.broadcastChanges();
+                        }
+                    });
+                }
+        );
         registrar.playToClient(
                 DebugDataPacket.TYPE,
                 DebugDataPacket.STREAM_CODEC,
@@ -199,20 +196,21 @@ public class Network {
                     }
                 }
         );
-        // CraftGuideGuiPacket disabled
-        // registrar.playBidirectional(
-        //         CraftGuideGuiPacket.TYPE,
-        //         CraftGuideGuiPacket.STREAM_CODEC,
-        //         (msg, context) -> {
-        //             Player sender = context.player();
-        //             context.enqueueWork(() -> {
-        //                 // ICraftGuiPacketReceiver disabled
-        //                 // if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
-        //                 //     icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
-        //                 // }
-        //             });
-        //         }
-        // );
+        IPayloadHandler<CraftGuideGuiPacket> handler = (msg, context) -> {
+            Player sender = context.player();
+            context.enqueueWork(() -> {
+                ICraftGuiPacketReceiver disabled;
+                if (sender.containerMenu instanceof ICraftGuiPacketReceiver icgpr) {
+                    icgpr.handleGuiPacket(msg.type, msg.key, msg.value, msg.data);
+                }
+            });
+        };
+        registrar.playBidirectional(
+                CraftGuideGuiPacket.TYPE,
+                CraftGuideGuiPacket.STREAM_CODEC,
+                handler,
+                handler
+        );
         registrar.playToClient(
                 RenderEntityPacket.TYPE,
                 RenderEntityPacket.STREAM_CODEC,
@@ -236,9 +234,10 @@ public class Network {
                 JEIRequestPacket.STREAM_CODEC,
                 (msg, context) -> {
                     if (!(context.player() instanceof ServerPlayer sender)) return;
-                    /*context.enqueueWork(() -> {
-                        IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
-                    });*/
+                    //TODO wait ingredient request
+//                    context.enqueueWork(() -> {
+//                        IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
+//                    });
                 }
         );
         registrar.playToClient(
@@ -246,8 +245,7 @@ public class Network {
                 JEIRequestResultPacket.STREAM_CODEC,
                 (msg, context) -> {
                     context.enqueueWork(() -> {
-                        // InScreenTipData disabled
-                        // InScreenTipData.show(msg.result, 5.0f);
+                        InScreenTipData.show(msg.result, 5.0f);
                     });
                 }
         );
@@ -296,16 +294,17 @@ public class Network {
                 CreateStockManagerPacket.STREAM_CODEC,
                 (packet, context) -> {
                     if (!(context.player() instanceof ServerPlayer sender)) return;
-                    /*context.enqueueWork(() -> {
-                        Entity target = sender.level().getEntity(packet.id);
-                        if (target instanceof EntityMaid maid) {
-                            if (packet.data == CreateStockManagerPacket.Type.OPEN_SCREEN) {
-                                StockManagerInteract.onHandleStockManager(sender, maid, packet.ticker);
-                            } else if (packet.data == CreateStockManagerPacket.Type.SHOP_LIST) {
-                                StockManagerInteract.onHandleShoppingList(sender, maid, packet.ticker);
-                            }
-                        }
-                    });*/
+                    // TODO wait create
+//                    context.enqueueWork(() -> {
+//                        Entity target = sender.level().getEntity(packet.id);
+//                        if (target instanceof EntityMaid maid) {
+//                            if (packet.data == CreateStockManagerPacket.Type.OPEN_SCREEN) {
+//                                StockManagerInteract.onHandleStockManager(sender, maid, packet.ticker);
+//                            } else if (packet.data == CreateStockManagerPacket.Type.SHOP_LIST) {
+//                                StockManagerInteract.onHandleShoppingList(sender, maid, packet.ticker);
+//                            }
+//                        }
+//                    });
                 }
         );
         registrar.playToClient(
@@ -327,26 +326,34 @@ public class Network {
                     });
                 }
         );
-        // CommunicateMarkGuiPacket disabled
-        // registrar.playBidirectional(
-        //         CommunicateMarkGuiPacket.TYPE,
-        //         CommunicateMarkGuiPacket.STREAM_CODEC,
-        //         (p, c) -> {
-        //             c.enqueueWork(() -> {
-        //                 CommunicateMarkGuiPacket.handle(c.player(), p);
-        //             });
-        //         }
-        // );
-        // CraftGuideGeneratorUpdate disabled
-        // registrar.playBidirectional(
-        //         CraftGuideGeneratorUpdate.TYPE,
-        //         CraftGuideGeneratorUpdate.STREAM_CODEC,
-        //         (p, c) -> {
-        //             c.enqueueWork(() -> {
-        //                 CraftGuideGeneratorUpdate.handle(c.player(), p);
-        //             });
-        //         }
-        // );
+        registrar.playBidirectional(
+                CommunicateMarkGuiPacket.TYPE,
+                CommunicateMarkGuiPacket.STREAM_CODEC,
+                (p, c) -> {
+                    c.enqueueWork(() -> {
+                        CommunicateMarkGuiPacket.handle(c.player(), p);
+                    });
+                },
+                (p, c) -> {
+                    c.enqueueWork(() -> {
+                        CommunicateMarkGuiPacket.handle(c.player(), p);
+                    });
+                }
+        );
+        registrar.playBidirectional(
+                CraftGuideGeneratorUpdate.TYPE,
+                CraftGuideGeneratorUpdate.STREAM_CODEC,
+                (p, c) -> {
+                    c.enqueueWork(() -> {
+                        CraftGuideGeneratorUpdate.handle(c.player(), p);
+                    });
+                },
+                (p, c) -> {
+                    c.enqueueWork(() -> {
+                        CraftGuideGeneratorUpdate.handle(c.player(), p);
+                    });
+                }
+        );
         registrar.playToServer(
                 AIMatchLocalizedItemC2SPacket.TYPE,
                 AIMatchLocalizedItemC2SPacket.STREAM_CODEC,
@@ -356,14 +363,13 @@ public class Network {
                     });
                 }
         );
-        // AIMatchLocalizedItemS2CPacket disabled
-        // registrar.playToClient(
-        //         AIMatchLocalizedItemS2CPacket.TYPE,
-        //         AIMatchLocalizedItemS2CPacket.STREAM_CODEC,
-        //         (p, c) -> {
-        //             c.enqueueWork(() -> AIMatchLocalizedItemS2CPacket.handle(p));
-        //         }
-        // );
+        registrar.playToClient(
+                AIMatchLocalizedItemS2CPacket.TYPE,
+                AIMatchLocalizedItemS2CPacket.STREAM_CODEC,
+                (p, c) -> {
+                    c.enqueueWork(() -> AIMatchLocalizedItemS2CPacket.handle(p));
+                }
+        );
     }
 
     @EventBusSubscriber(modid = MaidStorageManager.MODID)

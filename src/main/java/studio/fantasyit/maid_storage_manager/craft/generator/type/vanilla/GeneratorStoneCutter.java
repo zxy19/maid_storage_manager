@@ -10,6 +10,8 @@ import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
+import studio.fantasyit.maid_storage_manager.craft.type.StoneCuttingType;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 //import studio.fantasyit.maid_storage_manager.craft.type.StoneCuttingType;
 
 import java.util.List;
@@ -21,7 +23,12 @@ public class GeneratorStoneCutter extends SimpleGenerator<StonecutterRecipe, Sin
     }
     @Override
     protected Identifier getCraftType() {
-        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // StoneCuttingType disabled
+        return StoneCuttingType.TYPE;
+    }
+
+    @Override
+    protected ItemStack getOutputItem(List<InventoryItem> inventory, Level level, StonecutterRecipe recipe) {
+        return recipe.assemble(new SingleRecipeInput(ItemStack.EMPTY));
     }
 
     @Override

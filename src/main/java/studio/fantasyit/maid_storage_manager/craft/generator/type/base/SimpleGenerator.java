@@ -28,8 +28,7 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
 
     abstract protected C getWrappedContainer(T recipe, List<ItemStack> inputs);
 
-    abstract protected C getLookingUpContainer(T recipe);
-
+    abstract protected ItemStack getOutputItem(List<InventoryItem> inventory, Level level, T recipe);
     protected List<ItemStack> wrapInputs(T recipe, List<ItemStack> inputs) {
         return inputs;
     }
@@ -57,10 +56,6 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
                 .stream()
                 .map(GenerateIngredientUtil::getIngredientCount)
                 .toList();
-    }
-
-    protected ItemStack outputTransform(List<InventoryItem> inventory, Level level, T recipe) {
-        return recipe.assemble(getLookingUpContainer(recipe));
     }
 
     protected boolean isValid(List<InventoryItem> inventory, Level level, BlockPos pos, T recipe) {
@@ -91,7 +86,7 @@ public abstract class SimpleGenerator<T extends Recipe<C>, C extends RecipeInput
                     if (!isValid(inventory, level, pos, recipe))
                         return;
                     List<Ingredient> ingredients = ingredientsTransform(inventory, level, recipe);
-                    ItemStack output = outputTransform(inventory, level, recipe);
+                    ItemStack output = getOutputItem(inventory, level, recipe);
                     if (!posFilter.isAvailable(output))
                         return;
                     List<Integer> ingredientCounts = ingredientCountsTransform(inventory, level, recipe, ingredients);

@@ -1,6 +1,11 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "maid_storage_manager:item/craft_guide"
+    "type": "minecraft:special",
+    "base": "maid_storage_manager:item/craft_guide",
+    "model": {
+      "type": "maid_storage_manager:craft_guide",
+      "blank_model": "maid_storage_manager:item/craft_guide_blank",
+      "model": "maid_storage_manager:item/craft_guide"
+    }
   }
 }

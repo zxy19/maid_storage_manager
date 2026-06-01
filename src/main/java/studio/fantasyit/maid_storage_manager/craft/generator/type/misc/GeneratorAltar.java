@@ -12,6 +12,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 import studio.fantasyit.maid_storage_manager.craft.type.AltarType;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.List;
@@ -25,6 +26,11 @@ public class GeneratorAltar extends SimpleGenerator<AltarRecipe, CraftingInput> 
     @Override
     protected Identifier getCraftType() {
         return AltarType.TYPE;
+    }
+
+    @Override
+    protected ItemStack getOutputItem(List<InventoryItem> inventory, Level level, AltarRecipe recipe) {
+        return recipe.getResult().create();
     }
 
     @Override

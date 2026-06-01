@@ -2,6 +2,7 @@ package studio.fantasyit.maid_storage_manager.items.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
@@ -26,32 +27,36 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
-public record CraftGuideSMR(List<BakedQuad> baseQuads) implements SpecialModelRenderer<CraftGuideRenderData> {
+public record CraftGuideSMR(List<BakedQuad> baseQuads,
+                            List<BakedQuad> blankQuads) implements SpecialModelRenderer<CraftGuideRenderData> {
 
     @Override
     public void submit(@Nullable CraftGuideRenderData data, PoseStack poseStack,
                        SubmitNodeCollector submitNodeCollector, int light, int overlay, boolean hasFoil, int outline) {
-        submitNodeCollector.submitItem(poseStack, ItemDisplayContext.NONE,
-                light, overlay, 0, new int[0], baseQuads,
-                ItemStackRenderState.FoilType.NONE);
-
-        if (data == null) return;
 
         Minecraft mc = Minecraft.getInstance();
         ItemModelResolver resolver = mc.getItemModelResolver();
+        if (data == null || data.outputs.isEmpty()) {
+            submitNodeCollector.submitItem(poseStack, ItemDisplayContext.NONE,
+                    light, overlay, 0, new int[0], baseQuads,
+                    ItemStackRenderState.FoilType.NONE);
+            return;
+        }
 
+        submitNodeCollector.submitItem(poseStack, ItemDisplayContext.NONE,
+                light, overlay, 0, new int[0], blankQuads,
+                ItemStackRenderState.FoilType.NONE);
         List<ItemStack> outputs = data.outputs;
-        if (!outputs.isEmpty() && mc.player != null) {
+        if (mc.player != null) {
             int i = (mc.player.tickCount / 20) % outputs.size();
             ItemStack item = outputs.get(i);
             if (!item.isEmpty()) {
                 ItemStackRenderState outputState = new ItemStackRenderState();
-                resolver.updateForTopItem(outputState, item, ItemDisplayContext.NONE, mc.level, null, 0);
+                resolver.updateForTopItem(outputState, item, ItemDisplayContext.GUI, mc.level, null, 0);
 
                 poseStack.pushPose();
-                poseStack.translate(0.72f, 0.67f, 0.54f);
-                poseStack.scale(0.55f, 0.55f, 1f);
-                poseStack.translate(0.5f, 0.5f, 1.0f);
+                poseStack.translate(0.52f, 0.50f, 0.54f);
+                poseStack.scale(0.7f, 0.7f, 0.0001f);
                 outputState.submit(poseStack, submitNodeCollector, light, overlay, outline);
                 poseStack.popPose();
             }
@@ -60,12 +65,12 @@ public record CraftGuideSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
         ItemStack icon = data.icon;
         if (!icon.isEmpty()) {
             ItemStackRenderState iconState = new ItemStackRenderState();
-            resolver.updateForTopItem(iconState, icon, ItemDisplayContext.NONE, mc.level, null, 0);
+            resolver.updateForTopItem(iconState, icon, ItemDisplayContext.GUI, mc.level, null, 0);
 
             poseStack.pushPose();
-            poseStack.translate(1.02f, 0.52f, 0.56f);
-            poseStack.scale(0.40f, 0.40f, 1f);
-            poseStack.translate(0.5f, 0.5f, 1.0f);
+            poseStack.translate(0.8f, 0.2f, 0.54f);
+            poseStack.scale(0.40f, 0.4f, 0.0001f);
+            poseStack.translate(0, 0, 1.0f);
             iconState.submit(poseStack, submitNodeCollector, light, overlay, outline);
             poseStack.popPose();
         }
@@ -84,10 +89,12 @@ public record CraftGuideSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
         return data;
     }
 
-    public record Unbaked(Identifier modelId) implements SpecialModelRenderer.Unbaked<CraftGuideRenderData> {
-        public static final MapCodec<Unbaked> MAP_CODEC = Identifier.CODEC
-                .fieldOf("model")
-                .xmap(Unbaked::new, Unbaked::modelId);
+    public record Unbaked(Identifier modelId,
+                          Identifier blankModelId) implements SpecialModelRenderer.Unbaked<CraftGuideRenderData> {
+        public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Identifier.CODEC.fieldOf("model").forGetter(Unbaked::modelId),
+                Identifier.CODEC.fieldOf("blank_model").forGetter(Unbaked::blankModelId)
+        ).apply(instance, Unbaked::new));
 
         @Override
         public MapCodec<? extends SpecialModelRenderer.Unbaked<CraftGuideRenderData>> type() {
@@ -98,10 +105,15 @@ public record CraftGuideSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
         public @Nullable SpecialModelRenderer<CraftGuideRenderData> bake(BakingContext ctx) {
             ItemModel.BakingContext itemCtx = (ItemModel.BakingContext) ctx;
             ModelBaker baker = itemCtx.blockModelBaker();
+
             ResolvedModel model = baker.getModel(this.modelId);
             TextureSlots slots = model.getTopTextureSlots();
             QuadCollection quads = model.bakeTopGeometry(slots, baker, BlockModelRotation.IDENTITY);
-            return new CraftGuideSMR(quads.getAll());
+
+            ResolvedModel blankModel = baker.getModel(this.blankModelId);
+            TextureSlots blankSlots = blankModel.getTopTextureSlots();
+            QuadCollection blankQuads = blankModel.bakeTopGeometry(blankSlots, baker, BlockModelRotation.IDENTITY);
+            return new CraftGuideSMR(quads.getAll(), blankQuads.getAll());
         }
     }
 }

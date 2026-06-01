@@ -1,6 +1,10 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "maid_storage_manager:item/logistics_guide"
+    "type": "minecraft:special",
+    "base": "maid_storage_manager:item/logistics_guide",
+    "model": {
+      "type": "maid_storage_manager:logistics_guide",
+      "model": "maid_storage_manager:item/logistics_guide"
+    }
   }
 }

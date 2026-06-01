@@ -5,7 +5,9 @@ import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelTemplate;
+import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -46,9 +48,12 @@ public class ModelGen extends ModelProvider {
         itemModels.generateFlatItem(ItemRegistry.NO_ACCESS.get(), ITEM_SIMPLE);
         itemModels.generateFlatItem(ItemRegistry.ALLOW_ACCESS.get(), ITEM_SIMPLE);
 
+        // CraftGuide的双层模型
         Identifier craftGuideModel = itemModels.createFlatItemModel(ItemRegistry.CRAFT_GUIDE.get(), ITEM_SIMPLE);
+        Identifier id = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "craft_guide_blank");
+        Identifier identifier = ITEM_SIMPLE.create(id.withPrefix("item/"), new TextureMapping().put(TextureSlot.LAYER0, new Material(id.withPrefix("item/"))), itemModels.modelOutput);
         itemModels.itemModelOutput.accept(ItemRegistry.CRAFT_GUIDE.get(),
-                ItemModelUtils.specialModel(craftGuideModel, new CraftGuideSMR.Unbaked(craftGuideModel)));
+                ItemModelUtils.specialModel(craftGuideModel, new CraftGuideSMR.Unbaked(craftGuideModel, identifier)));
 
         itemModels.generateFlatItem(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), ITEM_SIMPLE);
         itemModels.generateFlatItem(ItemRegistry.WORK_CARD.get(), ITEM_SIMPLE);

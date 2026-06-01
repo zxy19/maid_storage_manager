@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.IntersectionIngredient;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
+import studio.fantasyit.maid_storage_manager.craft.type.FurnaceType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 
 import java.util.List;
@@ -29,11 +30,11 @@ public class GeneratorFurnace extends SimpleGenerator<SmeltingRecipe, SingleReci
 
     @Override
     protected Identifier getCraftType() {
-        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // FurnaceType disabled
+        return FurnaceType.TYPE;
     }
 
     @Override
-    protected ItemStack outputTransform(List<InventoryItem> inventory, Level level, SmeltingRecipe recipe) {
+    protected ItemStack getOutputItem(List<InventoryItem> inventory, Level level, SmeltingRecipe recipe) {
         return recipe.assemble(new SingleRecipeInput(ItemStack.EMPTY));
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
 //import studio.fantasyit.maid_storage_manager.craft.type.SmithingType;
+import studio.fantasyit.maid_storage_manager.craft.type.SmithingType;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Smit
 
     @Override
     protected Identifier getCraftType() {
-        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // SmithingType disabled
+        return SmithingType.TYPE;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class GeneratorSmithingTable extends SimpleGenerator<SmithingRecipe, Smit
     }
 
     @Override
-    protected ItemStack outputTransform(List<InventoryItem> inventory, Level level, SmithingRecipe recipe) {
+    protected ItemStack getOutputItem(List<InventoryItem> inventory, Level level, SmithingRecipe recipe) {
         if (recipe instanceof SmithingTransformRecipe str) {
             return str.result.create();
         }

@@ -4,13 +4,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.SimpleGenerator;
+import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
+import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 //import studio.fantasyit.maid_storage_manager.craft.type.CraftingType;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
@@ -31,12 +30,26 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
 
     @Override
     protected Identifier getCraftType() {
-        return Identifier.fromNamespaceAndPath("maid_storage_manager", "disabled"); // CraftingType disabled
+        return CraftingType.TYPE;
     }
 
     @Override
     protected CraftingInput getWrappedContainer(CraftingRecipe recipe, List<ItemStack> inputs) {
         return RecipeUtil.wrapCraftingContainer(inputs, recipe);
+    }
+
+    @Override
+    protected ItemStack getOutputItem(List<InventoryItem> inventory, Level level, CraftingRecipe recipe) {
+        if (recipe instanceof ShapedRecipe sr)
+            return sr.result.create();
+        List<ItemStack> allInputs = new ArrayList<>();
+        for (Ingredient i : recipe.placementInfo().ingredients()) {
+            i.items().map(t -> t.value().getDefaultInstance()).findAny().ifPresent(allInputs::add);
+        }
+        CraftingInput craftInput = RecipeUtil.wrapCraftingContainer(allInputs, 3, 3).asCraftInput();
+        if (recipe.matches(craftInput, level))
+            return recipe.assemble(craftInput);
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -62,6 +75,7 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
         }
         return inputs;
     }
+
     @Override
     public Component getConfigName() {
         return Component.translatable("config.maid_storage_manager.crafting.generating.maid_storage_manager.crafting");

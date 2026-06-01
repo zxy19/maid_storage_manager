@@ -1,7 +1,9 @@
 package studio.fantasyit.maid_storage_manager.maid.behavior.request.craft;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +21,7 @@ import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class CraftInitBehavior extends Behavior<EntityMaid> {
     public CraftInitBehavior() {
@@ -91,8 +94,11 @@ public class CraftInitBehavior extends Behavior<EntityMaid> {
         MemoryUtil.getCrafting(maid).clearTarget();
         MemoryUtil.clearTarget(maid);
         if (!debugContext.isDummy()) {
-            // Optional.ofNullable(maid.getOwner())
-            //         .ifPresent(o -> o.displayClientMessage(Component.literal("Crafting debug done"), true));
+            Optional.ofNullable(maid.getOwner())
+                    .ifPresent(_o -> {
+                        if (_o instanceof ServerPlayer o)
+                            o.sendSystemMessage(Component.literal("Crafting debug done"));
+                    });
             debugContext.stop();
         }
     }
