@@ -292,8 +292,8 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
                 lastScrolling = i;
                 startMills = Util.getMillis();
             }
-            drawScrollingStringWithoutShadow(graphics, font, options.get(i).label(), 5, i * 13 + 3, 0x444444, 103, baseX, baseY, hoverId == i);
-            drawCenteredStringWithoutShadow(graphics, font, options.get(i).value().getValue(), 134, i * 13 + 3, ChatFormatting.GREEN.getColor(), 40);
+            drawScrollingStringWithoutShadow(graphics, font, options.get(i).label(), 5, i * 13 + 3, 0xFF444444, 103, baseX, baseY, hoverId == i);
+            drawCenteredStringWithoutShadow(graphics, font, options.get(i).value().getValue(), 134, i * 13 + 3, 0xff000000 | ChatFormatting.GREEN.getColor(), 40);
         }
     }
 
@@ -326,16 +326,16 @@ public class StorageManagerMaidConfigGui extends MaidTaskConfigGui<StorageManage
         int maxX = pX + maxWidth;
         int j = (pY + maxY - 9) / 2 + 1;
         int k = maxX - pX;
-        graphics.enableScissor(pX + baseX, pY + baseY, maxX + baseX, maxY + baseY);
+        graphics.enableScissor(pX, pY, maxX, maxY);
         if (i > k && enableScroll) {
             int l = i - k;
             double d0 = (double) (Util.getMillis() - startMills) / 600.0D;
             double d1 = Math.max((double) l * 0.5D, 3.0D);
             double d2 = Math.sin((Math.PI / 2D) * Math.cos((Math.PI * 2D) * d0 / d1) - Math.PI) / 2.0D + 0.5D;
             double d3 = Mth.lerp(d2, 0.0D, (double) l);
-            graphics.text(pFont, pText, (int) (pX - d3), pY, pColor);
+            graphics.text(pFont, pText, (int) (pX - d3), pY, pColor, false);
         } else {
-            graphics.text(pFont, pText, pX, pY, pColor);
+            graphics.text(pFont, pText, pX, pY, pColor, false);
         }
         graphics.disableScissor();
     }

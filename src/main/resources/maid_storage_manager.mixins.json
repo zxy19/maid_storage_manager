@@ -9,7 +9,8 @@
     "ItemFrameTickMixin"
   ],
   "client": [
-    "ItemFrameRendererMixin"
+    "ItemFrameRendererMixin",
+    "ItemFrameRenderStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

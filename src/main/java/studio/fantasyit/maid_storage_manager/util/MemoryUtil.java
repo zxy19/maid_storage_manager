@@ -206,4 +206,8 @@ public class MemoryUtil {
     public static void setGoingCenter(EntityMaid maid, boolean goingCenter) {
         maid.getBrain().setMemory(MemoryModuleRegistry.RETURN_CENTER.get(), goingCenter);
     }
+
+    public static boolean hasTargetPos(EntityMaid maid) {
+        return maid.getBrain().hasMemoryValue(InitBrains.TARGET_POS.get());
+    }
 }

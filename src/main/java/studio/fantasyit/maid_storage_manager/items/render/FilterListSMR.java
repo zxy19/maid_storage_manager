@@ -54,9 +54,8 @@ public record FilterListSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
         resolver.updateForTopItem(overlayState, item, ItemDisplayContext.NONE, mc.level, null, 0);
 
         poseStack.pushPose();
-        poseStack.translate(0.72f, 0.72f, 0.54f);
-        poseStack.scale(0.55f, 0.55f, 1f);
-        poseStack.translate(0.5f, 0.5f, 1.0f);
+        poseStack.translate(0.52f, 0.50f, 0.54f);
+        poseStack.scale(0.7f, 0.7f, 0.0001f);
         overlayState.submit(poseStack, submitNodeCollector, light, overlay, outline);
         poseStack.popPose();
     }

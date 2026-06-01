@@ -4,11 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -50,7 +52,13 @@ public class CustomCommonGraphics implements ICustomGraphics {
     public void flush() {
     }
 
-    public void renderItem(ItemStack p_281978_, int p_282647_, int p_281944_) {
+    public void renderItem(ItemStack p_281978_, int x, int y) {
+        ItemStackRenderState isrs = new ItemStackRenderState();
+        Minecraft.getInstance().getItemModelResolver().updateForTopItem(isrs, p_281978_, ItemDisplayContext.GUI, minecraft.level, minecraft.player, 0);
+        this.pose.pushPose();
+        this.pose.translate(x, y, 0);
+        isrs.submit(this.pose, this.submitNodeCollector, LightCoordsUtil.FULL_BRIGHT, 0, 0);
+        this.pose.popPose();
     }
 
     public void blit(Identifier p_282639_, int p_282732_, int p_283541_, int p_281760_, int p_283298_, int p_283429_, int p_282193_, int p_281980_, float p_282660_, float p_281522_, int p_282315_, int p_281436_) {

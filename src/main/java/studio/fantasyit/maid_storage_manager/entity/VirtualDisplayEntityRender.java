@@ -15,6 +15,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IItemFrameRenderStateItemVisitor;
 
 @OnlyIn(Dist.CLIENT)
 public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplayEntity> {
@@ -61,6 +62,8 @@ public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplay
         if (Config.virtualItemFrameRender == Config.VirtualItemFrameRender.CORNER) {
             poseStack.translate(0.25, 0.25, 0);
         }
+        if (state instanceof IItemFrameRenderStateItemVisitor iiv)
+            iiv.maid_storage_manager$virtualItemFrameRender(true);
 
         if (!NeoForge.EVENT_BUS.post(new RenderItemInFrameEvent(state, this, poseStack, submitNodeCollector)).isCanceled()) {
             if (!state.item.isEmpty()) {

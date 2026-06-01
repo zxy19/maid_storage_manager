@@ -15,6 +15,7 @@ import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, CraftingInput> {
 
@@ -57,16 +58,26 @@ public class GeneratorCraftingTable extends SimpleGenerator<CraftingRecipe, Craf
         return wrapInputsForRecipe(inputs, recipe);
     }
 
+    @Override
+    protected List<Ingredient> ingredientsTransform(List<InventoryItem> inventory, Level level, CraftingRecipe recipe) {
+        if (recipe instanceof ShapedRecipe sr)
+            return sr.getIngredients().stream().filter(Optional::isPresent).map(Optional::get).toList();
+        return super.ingredientsTransform(inventory, level, recipe);
+    }
+
     protected static List<ItemStack> wrapInputsForRecipe(List<ItemStack> items, CraftingRecipe recipe) {
         List<ItemStack> inputs = new ArrayList<>();
         for (int i = 0; i < 9; i++)
             inputs.add(ItemStack.EMPTY);
         if (recipe instanceof ShapedRecipe shapedRecipe) {
-            int c = 0;
+            List<Optional<Ingredient>> ing = shapedRecipe.getIngredients();
+            int c = 0, ic = 0;
             for (int y = 0; y < 3; y++) {
                 for (int x = 0; x < 3; x++) {
-                    if (x < shapedRecipe.getWidth() && y < shapedRecipe.getHeight() && c < items.size())
-                        inputs.set(x + y * 3, items.get(c++));
+                    if (x < shapedRecipe.getWidth() && y < shapedRecipe.getHeight() && c < items.size() && ic < ing.size()) {
+                        if (ing.get(ic++).isPresent())
+                            inputs.set(x + y * 3, items.get(c++));
+                    }
                 }
             }
         } else {

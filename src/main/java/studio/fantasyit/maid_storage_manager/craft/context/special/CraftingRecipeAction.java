@@ -1,16 +1,16 @@
 package studio.fantasyit.maid_storage_manager.craft.context.special;
 
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemUtil;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
@@ -18,12 +18,10 @@ import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionCo
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,80 +48,36 @@ public class CraftingRecipeAction extends AbstractCraftActionContext {
         List<ItemStack> input = craftGuideStepData.getInput();
         List<ItemStack> output = craftGuideStepData.getOutput();
         List<ItemStack> realInput = new ArrayList<>();
-        int[] slotExtractCount = new int[inv.size()];
-        Arrays.fill(slotExtractCount, 0);
-        boolean allMatch = true;
-        for (int i = 0; i < input.size(); i++) {
-            boolean found = false;
-            if (input.get(i).isEmpty()) {
-                realInput.add(ItemStack.EMPTY);
-                continue;
-            }
-            for (int j = 0; j < inv.size(); j++) {
-                if (ItemStack.isSameItem(ItemUtil.getStack(inv, j), input.get(i))) {
-                    //还有剩余（
-                    if (ItemUtil.getStack(inv, j).getCount() > slotExtractCount[j]) {
-                        realInput.add(ItemUtil.getStack(inv, j).copyWithCount(input.get(i).getCount()));
-                        found = true;
-                        slotExtractCount[j] += 1;
-                        break;
-                    }
-                }
-            }
-            if (!found) {
-                allMatch = false;
-                break;
-            }
-        }
-        if (allMatch) {
-            CraftingContainer container = RecipeUtil.wrapCraftingContainer(realInput, 3, 3);
-            Optional<RecipeHolder<CraftingRecipe>> recipe = RecipeUtil.getCraftingRecipe(level, container.asCraftInput());
-            if (recipe.isPresent()) {
-                ItemStack result = recipe.get().value().assemble(container.asCraftInput());
-                if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
-                    craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
-                }
-
-                int maxCanPlace = InvUtil.maxCanPlace(inv, result);
-                if (maxCanPlace >= result.getCount()) {
-                    InvUtil.tryPlace(inv, result);
-                    for (int j = 0; j < inv.size(); j++) {
-                        ItemStack slotStack = ItemUtil.getStack(inv, j);
-                        try (var tx = Transaction.open(null)) {
-                            inv.extract(j, ItemResource.of(slotStack), slotExtractCount[j], tx);
-                            tx.commit();
-                        }
-                    }
-
-                    NonNullList<ItemStack> remain = recipe.get().value().getRemainingItems(container.asCraftInput());
-                    for (int j = 0; j < remain.size(); j++) {
-                        if (!remain.get(j).isEmpty()) {
-                            int total = remain.get(j).getCount();
-                            for (int k = 0; k < output.size(); k++) {
-                                int rem = output.get(k).getCount() - craftLayer.getCurrentStepCount(k);
-                                if (ItemStackUtil.isSameInCrafting(remain.get(j), output.get(k)) && rem > 0) {
-                                    craftLayer.addCurrentStepPlacedCounts(k, Math.min(total, rem));
-                                }
-                                total -= rem;
-                                if (total <= 0) break;
-                            }
-                            ItemStack itemStack = InvUtil.tryPlace(inv, remain.get(j));
-                            if (!itemStack.isEmpty()) {
-                                InvUtil.throwItem(maid, itemStack);
-                                return Result.FAIL;
-                            }
-                        }
-                    }
-
-                    return Result.SUCCESS;
-                } else {
+        try (Transaction transaction = Transaction.openRoot()) {
+            for (ItemStack itemStack : input) {
+                realInput.add(itemStack.copy());
+                if (itemStack.isEmpty()) continue;
+                ItemResource itemResource = ItemResource.of(itemStack);
+                int count = itemStack.getCount();
+                if (inv.extract(itemResource, count, transaction) != count)
                     return Result.FAIL;
-                }
             }
-        } else {
-            return Result.FAIL;
+            Optional<RecipeHolder<CraftingRecipe>> result = ((ServerLevel) level).recipeAccess().getRecipeFor(RecipeType.CRAFTING, RecipeUtil.wrapCraftingContainer(realInput, 3, 3).asCraftInput(), level);
+            if (result.isEmpty())
+                return Result.FAIL;
+            CraftingRecipe recipe = result.get().value();
+            CraftingInput craftingInput = RecipeUtil.wrapCraftingContainer(realInput, recipe);
+            ItemStack tmpResult = recipe.assemble(craftingInput);
+            if (!ItemStackUtil.isSameInCrafting(tmpResult, output.getFirst()))
+                return Result.FAIL;
+            if (inv.insert(ItemResource.of(tmpResult), tmpResult.getCount(), transaction) != tmpResult.getCount())
+                return Result.FAIL;
+            for (ItemStack itemStack : craftingInput.items()) {
+                if (itemStack.isEmpty()) continue;
+                if (itemStack.getCraftingRemainder() == null) continue;
+                ItemStack reminder = itemStack.getCraftingRemainder().create();
+                if (reminder.isEmpty()) continue;
+                if (inv.insert(ItemResource.of(reminder), reminder.getCount(), transaction) != reminder.getCount())
+                    return Result.FAIL;
+            }
+            transaction.commit();
         }
-        return Result.FAIL;
+        return Result.SUCCESS;
     }
 
     @Override

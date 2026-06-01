@@ -63,7 +63,7 @@ public abstract class AbstractGatherMoveBehavior extends MaidMoveToBlockTaskWith
             if (Conditions.useScanTarget(maid))
                 this.searchForDestination(level, maid);
 
-        if (!maid.getNavigation().isInProgress()) {
+        if (!MemoryUtil.hasTargetPos(maid)) {
             if (memory.confirmNoTarget()) {
                 if (hasAnyFailPathing && maid.hasHome() && maid.distanceToSqr(maid.getHomePosition().getCenter()) > 9) {
                     MemoryUtil.goRestrictCenterAndWait(maid, (float) Config.collectSpeed);

@@ -14,7 +14,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.items.render.CraftGuideSMR;
 import studio.fantasyit.maid_storage_manager.items.render.FilterListSMR;
-import studio.fantasyit.maid_storage_manager.items.render.LogisticsGuideSMR;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 
 import java.util.Optional;
@@ -58,9 +57,7 @@ public class ModelGen extends ModelProvider {
         itemModels.generateFlatItem(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), ITEM_SIMPLE);
         itemModels.generateFlatItem(ItemRegistry.WORK_CARD.get(), ITEM_SIMPLE);
 
-        Identifier logisticsGuideModel = itemModels.createFlatItemModel(ItemRegistry.LOGISTICS_GUIDE.get(), ITEM_SIMPLE);
-        itemModels.itemModelOutput.accept(ItemRegistry.LOGISTICS_GUIDE.get(),
-                ItemModelUtils.specialModel(logisticsGuideModel, new LogisticsGuideSMR.Unbaked(logisticsGuideModel)));
+        itemModels.generateFlatItem(ItemRegistry.LOGISTICS_GUIDE.get(), ITEM_SIMPLE);
 
         itemModels.generateFlatItem(ItemRegistry.CHANGE_FLAG.get(), ITEM_SIMPLE);
         itemModels.generateFlatItem(ItemRegistry.PROGRESS_PAD.get(), ITEM_SIMPLE);

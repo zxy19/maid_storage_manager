@@ -55,7 +55,7 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
 
         for (FormattedCharSequence sequence : this.split) {
             int distance = this.width - this.font.width(sequence);
-            graphics.drawString(sequence, (float) (distance / 2), (float) y, 0, false);
+            graphics.drawString(sequence, (float) (distance / 2), (float) y, 0xff000000, false);
             y += 9;
         }
 

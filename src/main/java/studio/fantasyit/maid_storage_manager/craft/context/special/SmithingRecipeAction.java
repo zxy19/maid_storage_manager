@@ -9,7 +9,6 @@ import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemUtil;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.craft.WorkBlockTags;
@@ -17,11 +16,10 @@ import studio.fantasyit.maid_storage_manager.craft.context.AbstractCraftActionCo
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
-import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.RecipeUtil;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,63 +42,48 @@ public class SmithingRecipeAction extends AbstractCraftActionContext {
         Level level = maid.level();
         if (!level.getBlockState(craftGuideStepData.storage.pos).is(WorkBlockTags.SMITHING_TABLE))
             return Result.NOT_DONE;
+
         ResourceHandler<ItemResource> inv = maid.getAvailableInv(false);
         List<ItemStack> input = craftGuideStepData.getInput();
         List<ItemStack> output = craftGuideStepData.getOutput();
-        int[] slotExtractCount = new int[inv.size()];
-        Arrays.fill(slotExtractCount, 0);
-        boolean allMatch = true;
-        for (int i = 0; i < input.size(); i++) {
-            boolean found = false;
-            if (input.get(i).isEmpty()) continue;
-            for (int j = 0; j < inv.size(); j++) {
-                if (ItemStack.isSameItem(ItemUtil.getStack(inv, j), input.get(i))) {
-                    //还有剩余（
-                    if (ItemUtil.getStack(inv, j).getCount() > slotExtractCount[j]) {
-                        found = true;
-                        slotExtractCount[j] += 1;
-                        break;
-                    }
-                }
-            }
-            if (!found) {
-                allMatch = false;
-                break;
-            }
-        }
-        if (allMatch) {
-            Optional<RecipeHolder<SmithingRecipe>> recipe = RecipeUtil.getSmithingRecipe(level, input);
-            if (recipe.isPresent()) {
-                SmithingRecipeInput recipeInput = new SmithingRecipeInput(input.get(0), input.get(1), input.get(2));
-                ItemStack result = recipe.get().value().assemble(recipeInput);
-                if (ItemStackUtil.isSameInCrafting(result, output.get(0))) {
-                    craftLayer.addCurrentStepPlacedCounts(0, result.getCount());
-                }
 
-                int maxCanPlace = InvUtil.maxCanPlace(inv, result);
-                if (maxCanPlace >= result.getCount()) {
-                    InvUtil.tryPlace(inv, result);
-                    for (int j = 0; j < inv.size(); j++) {
-                        ItemStack slotStack = ItemUtil.getStack(inv, j);
-                        try (var tx = Transaction.open(null)) {
-                            inv.extract(j, ItemResource.of(slotStack), slotExtractCount[j], tx);
-                            tx.commit();
-                        }
-                    }
-                    level.levelEvent(1044, craftGuideStepData.storage.pos, 0);
-                    return Result.SUCCESS;
-                } else {
+        try (Transaction transaction = Transaction.openRoot()) {
+            // 1. 提取输入物品
+            List<ItemStack> realInput = new ArrayList<>();
+            for (ItemStack itemStack : input) {
+                realInput.add(itemStack.copy());
+                if (itemStack.isEmpty()) continue;
+                ItemResource itemResource = ItemResource.of(itemStack);
+                int count = itemStack.getCount();
+                if (inv.extract(itemResource, count, transaction) != count)
                     return Result.FAIL;
-                }
             }
-        } else {
-            return Result.FAIL;
+
+            Optional<RecipeHolder<SmithingRecipe>> recipeOpt = RecipeUtil.getSmithingRecipe(level, realInput);
+            if (recipeOpt.isEmpty())
+                return Result.FAIL;
+            SmithingRecipe recipe = recipeOpt.get().value();
+
+            ItemStack template = realInput.size() > 0 ? realInput.get(0) : ItemStack.EMPTY;
+            ItemStack base     = realInput.size() > 1 ? realInput.get(1) : ItemStack.EMPTY;
+            ItemStack addition = realInput.size() > 2 ? realInput.get(2) : ItemStack.EMPTY;
+            SmithingRecipeInput recipeInput = new SmithingRecipeInput(template, base, addition);
+            ItemStack result = recipe.assemble(recipeInput);
+
+            if (!ItemStackUtil.isSameInCrafting(result, output.getFirst()))
+                return Result.FAIL;
+
+            if (inv.insert(ItemResource.of(result), result.getCount(), transaction) != result.getCount())
+                return Result.FAIL;
+            transaction.commit();
         }
-        return Result.FAIL;
+
+        // 成功，播放音效
+        level.levelEvent(1044, craftGuideStepData.storage.pos, 0);
+        return Result.SUCCESS;
     }
 
     @Override
     public void stop() {
-
     }
 }
