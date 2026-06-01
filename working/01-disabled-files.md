@@ -1,11 +1,11 @@
 # Disabled Files Summary
 
-> 总计 161 个文件被禁用，等待后续恢复或重新实现。
+> 总计 134 个文件被禁用，等待后续恢复或重新实现。
 > 禁用方法：文件重命名为 `.java.disabled`，不会被 javac 编译。
 
 ---
 
-## 1. 兼容模组集成（等待模组更新 26.1 版本）— 97 个文件
+## 1. 兼容模组集成（等待模组更新 26.1 版本）— 93 个文件
 
 ### 1.1 AE2 (9 files)
 
@@ -62,7 +62,7 @@ waiting: Create 暂无 MC 26.1 兼容版本
 - `mixin/CreateStockKeeperScreenMixin.java`
 - `mixin/CreateStockTickerBEMixin.java`
 
-### 1.4 Mekanism (9 files)
+### 1.4 Mekanism (14 files)
 
 waiting: Mekanism 暂无 MC 26.1 兼容版本
 
@@ -103,23 +103,16 @@ waiting: TACZ 暂无 MC 26.1 兼容版本
 - `menu/craft/tacz/EMITaczRecipeTransfer.java`
 - `menu/craft/tacz/JEITaczRecipeTransfer.java`
 
-### 1.7 JEI (10 files)
+### 1.7 JEI (4 files)
 
-waiting: JEI 暂无 MC 26.1 兼容版本
+waiting: JEI 暂无 MC 26.1 兼容版本 (核心 integration/jei/ 4 个文件已恢复，剩余文件等待)
 
-- `integration/jei/GhostIngredientHandler.java`
-- `integration/jei/IFilterScreen.java`
-- `integration/jei/Plugin.java`
-- `integration/jei/RequestRecipeHandler.java`
 - `integration/request/JEIClient.java`
 - `integration/request/JEIRequestDisplayError.java`
-- `mixin/JeiGuiIconToggleButtonAccessor.java`
-- `mixin/JEIRecipeTransferHook.java`
-- `menu/craft/base/handler/JEIRecipeHandler.java`
-- `menu/craft/common/JEICommonRecipeHandler.java`
-- `menu/craft/stone_cutter/JeiStoneCutterRecipeHandler.java`
+- `mixin/JeiGuiIconToggleButtonAccessor.java` (见 2.3)
+- `mixin/JEIRecipeTransferHook.java` (见 2.3)
 
-### 1.8 EMI (7 files)
+### 1.8 EMI (8 files)
 
 waiting: EMI 暂无 MC 26.1 兼容版本
 
@@ -180,7 +173,7 @@ waiting: Jade API 变化，需要适配新的 MC 26.1 Jade API
 
 ### 1.11 Cloth Config (2 files)
 
-waiting: Cloth Config 包名/API 变化，item_storage_manager cloth 集成需要重写
+waiting: Cloth Config 包名/API 变化，cloth 集成需要重写
 
 - `integration/cloth/AddClothEvent.java`
 - `integration/cloth/ClothEntry.java`
@@ -191,7 +184,7 @@ waiting: Cloth Config 包名/API 变化，item_storage_manager cloth 集成需�
 
 ---
 
-## 2. 混入（Mixin）— 5 个文件
+## 2. 混入（Mixin）— 6 个文件
 
 ### 2.1 等待 TLM API 适配（2 files）
 
@@ -210,9 +203,17 @@ waiting: Create 恢复后一同恢复
 - `mixin/CreateStockKeeperScreenMixin.java`
 - `mixin/CreateStockTickerBEMixin.java`
 
+### 2.3 等待 JEI/EMI API（3 files，随 JEI/EMI 恢复）
+
+waiting: JEI/EMI 恢复后一同恢复
+
+- `mixin/JeiGuiIconToggleButtonAccessor.java`
+- `mixin/JEIRecipeTransferHook.java`
+- `mixin/EMIRecipeTransferHook.java`
+
 ---
 
-## 3. GUI/渲染/事件管线 — 9 个文件
+## 3. GUI/渲染/事件管线 — 8 个文件
 
 ### 3.1 等待渲染管线适配（2 files）
 
@@ -233,39 +234,29 @@ reason: MC 26.1 渲染从 MultiBufferSource 迁移到 SubmitNodeCollector，需�
 
 - `entity/VirtualItemEntityRender.java`
 
-### 3.4 Config GUI（1 file）
-
-- `maid/config/StorageManagerMaidConfigGui.java`
-
 ---
 
-## 4. Craft 系统 — 15 个文件
+## 4. Craft 系统 — 5 个文件
 
-reason: CraftManager 中注册引用了禁用的 craft types。这些 type 类本身是轻量的 Identifier 引用，可以直接恢复但需要重写 AltarRecipeBuilder
+reason: 兼容模组的 craft type/action/generator，等待各自模组更新
 
-### 4.1 基础 Craft Types（11 files）
+### 4.1 兼容模组 Craft Types（3 files）
 
-waiting: 级联禁用，CraftManager 注册了这些类型，需要一同恢复
+waiting: 各自依赖模组未更新
 
-- `craft/type/AltarType.java`
-- `craft/type/AnvilType.java`
-- `craft/type/BrewingType.java`
-- `craft/type/CommonType.java`
-- `craft/type/CraftingType.java`
-- `craft/type/FurnaceType.java`
-- `craft/type/SmithingType.java`
-- `craft/type/StoneCuttingType.java`
-- `craft/type/TaczType.java` (also 1.6)
-- `craft/type/AE2Type.java` (also 1.1)
-- `craft/type/RSType.java` (also 1.2)
+- `craft/type/TaczType.java`
+- `craft/type/AE2Type.java`
+- `craft/type/RSType.java`
 
-### 4.2 Craft 特殊 Action / Generator（4 files）
+### 4.2 Craft 特殊 Action（3 files）
 
-- `craft/context/special/AeCraftingAction.java` (also 1.1)
-- `craft/context/special/RsCraftingAction.java` (also 1.2)
-- `craft/context/special/TaczRecipeAction.java` (also 1.6)
-- `craft/generator/type/misc/GeneratorAltar.java` - 依赖 TLM AltarRecipe API
-- `craft/generator/type/misc/GeneratorTACZ.java` (also 1.6)
+- `craft/context/special/AeCraftingAction.java`
+- `craft/context/special/RsCraftingAction.java`
+- `craft/context/special/TaczRecipeAction.java`
+
+### 4.3 Craft Generator - Misc（1 file）
+
+- `craft/generator/type/misc/GeneratorTACZ.java`
 
 ---
 
@@ -277,66 +268,7 @@ waiting: AI 对话系统重新启用后恢复
 
 ---
 
-## 6. Maid 行为/任务 — 4 个文件
-
-reason: 通队 StorageManageTask 被禁用导致的级联禁用，行为类依赖 task
-
-- `maid/task/StorageManageTask.java` - 核心任务类，需要重写
-- `maid/behavior/logistics/output/LogisticsOutputBehavior.java`
-- `maid/behavior/logistics/recycle/LogisticsRecycleBehavior.java`
-- `maid/behavior/view/WriteInventoryListBehavior.java`
-
----
-
-## 7. 存储系统 — 10 个文件
-
-### 7.1 Item Handler (5 files)
-
-waiting: IItemHandler → ResourceHandler 迁移 + ContainerOpenersCounter API 变化
-
-- `storage/ItemHandler/AbstractItemHandlerContext.java`
-- `storage/ItemHandler/ContextItemHandlerCollect.java`
-- `storage/ItemHandler/ContextItemHandlerStore.java`
-- `storage/ItemHandler/ContextItemHandlerView.java`
-- `storage/ItemHandler/SimulateTargetInteractHelper.java`
-
-### 7.2 Mod-specific storage（5 files）
-
-waiting: 各自依赖模组更新
-
-- `storage/ae2/Ae2BaseContext.java` (also 1.1)
-- `storage/ae2/Ae2CollectContext.java` (also 1.1)
-- `storage/ae2/Ae2PlacingContext.java` (also 1.1)
-- `storage/ae2/Ae2Storage.java` (also 1.1)
-- `storage/ae2/Ae2ViewContext.java` (also 1.1)
-- `storage/rs/AbstractRSContext.java` (also 1.2)
-- `storage/rs/RSCollectContext.java` (also 1.2)
-- `storage/rs/RSInsertContext.java` (also 1.2)
-- `storage/rs/RsStorage.java` (also 1.2)
-- `storage/rs/RSViewContext.java` (also 1.2)
-- `storage/qio/QIOBaseContext.java` (also 1.4)
-- `storage/qio/QIOCollectContext.java` (also 1.4)
-- `storage/qio/QIOInsertContext.java` (also 1.4)
-- `storage/qio/QIOStorage.java` (also 1.4)
-- `storage/qio/QIOViewContext.java` (also 1.4)
-- `storage/create/place/CreateChainConveyorStorage.java` (also 1.3)
-- `storage/create/place/CreatePlacePackageContext.java` (also 1.3)
-- `storage/create/stock/AbstractCreateContext.java` (also 1.3)
-- `storage/create/stock/CreateCollectContext.java` (also 1.3)
-- `storage/create/stock/CreateStockTickerStorage.java` (also 1.3)
-- `storage/create/stock/CreateViewContext.java` (also 1.3)
-
----
-
-## 8. GUI 注册 — 1 个文件
-
-reason: 引用了禁用的 screen 类，可以安全恢复
-
-- `registry/ClientGuiRegistry.java`
-
----
-
-## 9. 通信 — 1 个文件
+## 6. 通信 — 1 个文件
 
 reason: 级联禁用
 
@@ -344,20 +276,20 @@ reason: 级联禁用
 
 ---
 
-## 10. Datagen — 2 个文件
+## 7. Datagen — 2 个文件
 
 - `datagen/RecipeDataGen.java` - TLM AltarRecipeBuilder 不兼容 data component 配方
 - `datagen/AdvancementDataGen.java` - TLM MaidEvent trigger 类在 datagen 环境不可用
 
 ---
 
-## 11. API / 其他 — 1 个文件
+## 8. API / 其他 — 1 个文件
 
-- `api/mixin/IJEIButtonGetter.java` (also 1.7)
+- `api/mixin/IJEIButtonGetter.java` (等待 JEI 更新)
 
 ---
 
-## 12. Ingredient Request（请求系统）— 2 个文件
+## 9. Ingredient Request（请求系统）— 2 个文件
 
 waiting: JEI/EMI 恢复后一同恢复
 
@@ -366,9 +298,52 @@ waiting: JEI/EMI 恢复后一同恢复
 
 ---
 
-## 恢复优先级
+## 已恢复文件列表（自上次文档更新以来）
 
-1. **P0 — 核心功能**：StorageManageTask, ClientGuiRegistry, Craft types (手动重写)
-2. **P1 — 存储系统**：ItemHandler storage providers (API 适配)
-3. **P2 — GUI/渲染**：Screens (等待 MC 26.1 渲染管线成熟)
-4. **P3 — 兼容模组**：AE2, Create, JEI/EMI 等 (等待模组更新)
+以下文件已从 `.java.disabled` 恢复为 `.java`（共 27 个）：
+
+### Craft Types（8 files）
+- `craft/type/CommonType.java`
+- `craft/type/CraftingType.java`
+- `craft/type/AltarType.java`
+- `craft/type/FurnaceType.java`
+- `craft/type/BrewingType.java`
+- `craft/type/SmithingType.java`
+- `craft/type/AnvilType.java`
+- `craft/type/StoneCuttingType.java`
+
+### JEI 集成（7 files）
+- `integration/jei/Plugin.java`
+- `integration/jei/GhostIngredientHandler.java`
+- `integration/jei/IFilterScreen.java`
+- `integration/jei/RequestRecipeHandler.java`
+- `menu/craft/base/handler/JEIRecipeHandler.java`
+- `menu/craft/common/JEICommonRecipeHandler.java`
+- `menu/craft/stone_cutter/JeiStoneCutterRecipeHandler.java`
+
+### Maid 行为/任务（4 files）
+- `maid/task/StorageManageTask.java`
+- `maid/behavior/logistics/output/LogisticsOutputBehavior.java`
+- `maid/behavior/logistics/recycle/LogisticsRecycleBehavior.java`
+- `maid/behavior/view/WriteInventoryListBehavior.java`
+
+### ItemHandler 存储（5 files）
+- `storage/ItemHandler/AbstractItemHandlerContext.java`
+- `storage/ItemHandler/ContextItemHandlerCollect.java`
+- `storage/ItemHandler/ContextItemHandlerStore.java`
+- `storage/ItemHandler/ContextItemHandlerView.java`
+- `storage/ItemHandler/SimulateTargetInteractHelper.java`
+
+### 其他（3 files）
+- `craft/generator/type/misc/GeneratorAltar.java`
+- `maid/config/StorageManagerMaidConfigGui.java`
+- `registry/ClientGuiRegistry.java`（从删除恢复）
+
+---
+
+## 恢复优先级（更新）
+
+1. **P1 — 事件/渲染**：Client events, BoxRender, VirtualItemEntityRender, ItemStackLighting
+2. **P2 — Mixin 适配**：AltarRecipeMultiOutputMixin, LivingEntityBrainSerializeWrapper
+3. **P2 — 网络包**：ItemSelectorSetItemPacket, CraftGuideGuiPacket 等
+4. **P3 — 兼容模组**：AE2, Create, Mekanism, JEI/EMI, KubeJS 等（等待模组更新）
