@@ -4,7 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.ItemCapability;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
@@ -52,7 +53,7 @@ public interface IRequestTaskHandler {
     void markAllDone(ItemStack stack);
     ItemStack updateCollectedItem(ItemStack stack, ItemStack collected, int maxCollect, boolean isInCrafting);
     int updateStored(ItemStack stack, ItemStack toStore, boolean simulate, boolean isInCrafting);
-    void updateCollectedNotStored(ItemStack stack, IItemHandler tmpStorage);
+    void updateCollectedNotStored(ItemStack stack, CombinedResourceHandler<ItemResource> tmpStorage);
     void setFailAddition(ItemStack stack, ItemStack item, String failAddition);
 
     // --- 合成相关 ---

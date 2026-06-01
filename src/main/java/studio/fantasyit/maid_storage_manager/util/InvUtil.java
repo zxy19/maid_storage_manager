@@ -7,7 +7,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
@@ -23,30 +22,17 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class InvUtil {
-    public static boolean hasAnyFree(IItemHandler container) {
-        for (int i = 0; i < container.getSlots(); i++) {
-            if (container.getStackInSlot(i).isEmpty())
+    public static boolean hasAnyFree(ResourceHandler<ItemResource> container) {
+        for (int i = 0; i < container.size(); i++) {
+            if (container.getResource(i).isEmpty())
                 return true;
         }
         return false;
     }
 
-    public static ItemStack tryPlace(IItemHandler container, ItemStack itemStack) {
+    public static ItemStack tryPlace(ResourceHandler<ItemResource> container, ItemStack itemStack) {
         if (itemStack.isEmpty()) return itemStack;
-        ItemStack restItem = itemStack.copy();
-        for (int i = 0; i < container.getSlots(); i++) {
-            if (ItemStack.isSameItemSameComponents(container.getStackInSlot(i), restItem)) {
-                restItem = container.insertItem(i, restItem, false);
-                if (restItem.isEmpty()) break;
-            }
-        }
-        for (int i = 0; i < container.getSlots(); i++) {
-            if (container.isItemValid(i, itemStack)) {
-                restItem = container.insertItem(i, restItem, false);
-                if (restItem.isEmpty()) break;
-            }
-        }
-        return restItem;
+        return ItemUtil.insertItemReturnRemaining(container, itemStack, false, null);
     }
 
     public static ItemStack tryPlace(IStorageContext container, ItemStack itemStack) {
@@ -55,21 +41,6 @@ public class InvUtil {
             return isic.insert(itemStack);
         }
         return itemStack;
-    }
-
-    public static ItemStack tryExtract(IItemHandler inv, ItemStack itemStack, ItemStackUtil.MATCH_TYPE matchTag) {
-        int count = 0;
-        int max = itemStack.getCount();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            ItemStack stackInSlot = inv.getStackInSlot(i);
-            if (ItemStackUtil.isSame(stackInSlot, itemStack, matchTag)) {
-                int extractCurrent = Math.min(max - count, stackInSlot.getCount());
-                ItemStack get = inv.extractItem(i, extractCurrent, false);
-                count += get.getCount();
-                if (count >= max) break;
-            }
-        }
-        return itemStack.copyWithCount(count);
     }
 
     public static ItemStack tryExtract(ResourceHandler<ItemResource> inv, ItemStack itemStack, ItemStackUtil.MATCH_TYPE matchTag) {
@@ -84,21 +55,6 @@ public class InvUtil {
                     tx.commit();
                     count += extracted;
                 }
-                if (count >= max) break;
-            }
-        }
-        return itemStack.copyWithCount(count);
-    }
-
-    public static ItemStack tryExtractForCrafting(IItemHandler inv, ItemStack itemStack) {
-        int count = 0;
-        int max = itemStack.getCount();
-        for (int i = 0; i < inv.getSlots(); i++) {
-            ItemStack stackInSlot = inv.getStackInSlot(i);
-            if (ItemStackUtil.isSameInCrafting(stackInSlot, itemStack)) {
-                int extractCurrent = Math.min(max - count, stackInSlot.getCount());
-                ItemStack get = inv.extractItem(i, extractCurrent, false);
-                count += get.getCount();
                 if (count >= max) break;
             }
         }
@@ -123,21 +79,6 @@ public class InvUtil {
         return itemStack.copyWithCount(count);
     }
 
-    public static int maxCanPlace(IItemHandler container, ItemStack itemStack) {
-        int count = 0;
-        ItemStack testStack = itemStack.copyWithCount(itemStack.getMaxStackSize());
-        for (int i = 0; i < container.getSlots(); i++) {
-            if (container.isItemValid(i, itemStack)) {
-                @NotNull ItemStack rest = container.insertItem(i, testStack, true);
-                if (rest.isEmpty())
-                    count += itemStack.getMaxStackSize();
-                else
-                    count += itemStack.getMaxStackSize() - rest.getCount();
-            }
-        }
-        return count;
-    }
-
     public static int maxCanPlace(ResourceHandler<ItemResource> container, ItemStack itemStack) {
         int count = 0;
         ItemStack testStack = itemStack.copyWithCount(itemStack.getMaxStackSize());
@@ -153,17 +94,6 @@ public class InvUtil {
         return count;
     }
 
-    public static List<ItemStack> forSlotMatches(IItemHandler container, Predicate<ItemStack> matches) {
-        List<ItemStack> list = new ArrayList<>();
-        for (int i = 0; i < container.getSlots(); i++) {
-            ItemStack stackInSlot = container.getStackInSlot(i);
-            if (matches.test(stackInSlot)) {
-                list.add(stackInSlot);
-            }
-        }
-        return list;
-    }
-
     public static List<ItemStack> forSlotMatches(ResourceHandler<ItemResource> container, Predicate<ItemStack> matches) {
         List<ItemStack> list = new ArrayList<>();
         for (int i = 0; i < container.size(); i++) {
@@ -175,19 +105,6 @@ public class InvUtil {
         return list;
     }
 
-    public static boolean hasAnyFree(ResourceHandler<ItemResource> container) {
-        for (int i = 0; i < container.size(); i++) {
-            if (container.getResource(i).isEmpty())
-                return true;
-        }
-        return false;
-    }
-
-    public static ItemStack tryPlace(ResourceHandler<ItemResource> container, ItemStack itemStack) {
-        if (itemStack.isEmpty()) return itemStack;
-        return ItemUtil.insertItemReturnRemaining(container, itemStack, false, null);
-    }
-
     public static boolean isEmpty(ResourceHandler<ItemResource> availableInv) {
         for (int i = 0; i < availableInv.size(); i++) {
             if (!availableInv.getResource(i).isEmpty()) {
@@ -195,16 +112,6 @@ public class InvUtil {
             }
         }
         return true;
-    }
-
-    public static int freeSlots(IItemHandler availableInv) {
-        int count = 0;
-        for (int i = 0; i < availableInv.getSlots(); i++) {
-            if (availableInv.getStackInSlot(i).isEmpty()) {
-                count++;
-            }
-        }
-        return count;
     }
 
     public static int freeSlots(ResourceHandler<ItemResource> availableInv) {
@@ -312,21 +219,6 @@ public class InvUtil {
         }
     }
 
-    public static void mergeSameStack(IItemHandler inv) {
-        for (int i = inv.getSlots() - 1; i >= 0; i--) {
-            ItemStack stackInSlot = inv.getStackInSlot(i);
-            if (!stackInSlot.isEmpty()) {
-                for (int j = 0; j < i; j++) {
-                    ItemStack stackInSlot1 = inv.getStackInSlot(j);
-                    ItemStack rest = inv.insertItem(i, stackInSlot1, false);
-                    if (rest.getCount() != stackInSlot1.getCount()) {
-                        inv.extractItem(j, stackInSlot1.getCount() - rest.getCount(), false);
-                    }
-                }
-            }
-        }
-    }
-
     public static void mergeSameStack(ResourceHandler<ItemResource> inv) {
         for (int i = inv.size() - 1; i >= 0; i--) {
             ItemStack stackInSlot = ItemUtil.getStack(inv, i);
@@ -344,16 +236,6 @@ public class InvUtil {
                 }
             }
         }
-    }
-
-    public static boolean hasItem(IItemHandler inv, Item item) {
-        for (int i = 0; i < inv.getSlots(); i++) {
-            ItemStack stackInSlot = inv.getStackInSlot(i);
-            if (!stackInSlot.isEmpty() && stackInSlot.getItem() == item) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static boolean hasItem(ResourceHandler<ItemResource> inv, Item item) {

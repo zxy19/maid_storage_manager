@@ -230,8 +230,8 @@ public class RequestRetBehavior extends Behavior<EntityMaid> {
         }
         ItemStack stack = maid.getMainHandItem();
         IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
-        // FIXME: TLM 26.1 - updateCollectedNotStored expects IItemHandler, but getAvailableInv now returns CombinedResourceHandler
-        // if (handler != null) handler.updateCollectedNotStored(stack, maid.getAvailableInv(false));
+        // updateCollectedNotStored now accepts CombinedResourceHandler directly
+        if (handler != null) handler.updateCollectedNotStored(stack, maid.getAvailableInv(false));
         MemoryUtil.getRequestProgress(maid).setReturn(false);
         MemoryUtil.getRequestProgress(maid).clearTarget();
         MemoryUtil.getCrafting(maid).clearTarget();

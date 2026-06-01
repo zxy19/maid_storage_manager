@@ -3,7 +3,9 @@ package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.AbstractFilterableBlockStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.ISlotBasedStorage;
@@ -31,8 +33,8 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
         if (helper.itemHandler == null)
             return;
         isSortingSlots = true;
-        sortingSlot = helper.itemHandler.getSlots() - 1;
-        maxSortingChances = helper.itemHandler.getSlots() * helper.itemHandler.getSlots() / 2;
+        sortingSlot = helper.itemHandler.size() - 1;
+        maxSortingChances = helper.itemHandler.size() * helper.itemHandler.size() / 2;
     }
 
     @Override
@@ -41,9 +43,9 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
             isSortingSlots = false;
             return;
         }
-        int cstT = Math.max(3000 / helper.itemHandler.getSlots(), 1);
+        int cstT = Math.max(3000 / helper.itemHandler.size(), 1);
         while (sortingSlot >= 0 && cstT > 0 && maxSortingChances > 0) {
-            if (helper.itemHandler.getStackInSlot(sortingSlot).isEmpty()) {
+            if (ItemUtil.getStack(helper.itemHandler, sortingSlot).isEmpty()) {
                 sortingSlot--;
                 continue;
             }
@@ -51,33 +53,27 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
             int cur = sortingSlot - 1;
             int targetP = -1;
             int lastSuccess = -1;
-            //第一步，向前寻找从当前位置开始连续的物品序列
             while (cur >= 0 && isSame(cur, sortingSlot))
                 cur--;
-            //如果第一步直接找到了容器开头，那么说明当前物品是容器唯一物品，可以直接结束
             if (cur < 0) {
                 sortingSlot = -1;
                 isSortingSlots = false;
                 continue;
             }
-            //第二步，寻找可能可以拼接在其后的物品序列位置。
             while (cur >= 0) {
                 if (isSame(cur, sortingSlot)) {
-                    //如果当前位置的下一个位置没用判断成功
                     if (lastSuccess != cur + 1)
                         targetP = cur;
                     lastSuccess = cur;
                 }
                 cur--;
             }
-            //找到了可以插入的位置？
             if (targetP != -1) {
                 int targetIndex = targetP + 1;
                 swap(targetIndex, sortingSlot);
                 maxSortingChances--;
-                sortingSlot = helper.itemHandler.getSlots() - 1;
+                sortingSlot = helper.itemHandler.size() - 1;
             } else {
-                //否则，当前位置正常，向前进行交换
                 sortingSlot--;
             }
         }
@@ -86,30 +82,42 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
     private void swap(int slot1, int slot2) {
         if (slot2 == slot1 || helper.itemHandler == null) return;
         Stack<ItemStack> extracted = new Stack<>();
-        int t0 = helper.itemHandler.getStackInSlot(slot1).getCount();
-        while (helper.itemHandler.getStackInSlot(slot1).getCount() > 0 && t0 > 0) {
-            ItemStack itemStack = helper.itemHandler.extractItem(slot1, helper.itemHandler.getStackInSlot(slot1).getCount(), false);
-            t0 -= itemStack.getCount();
-            if (itemStack.isEmpty()) break;
-            extracted.push(itemStack);
+        ItemStack stackInSlot1 = ItemUtil.getStack(helper.itemHandler, slot1);
+        int t0 = stackInSlot1.getCount();
+        while (ItemUtil.getStack(helper.itemHandler, slot1).getCount() > 0 && t0 > 0) {
+            int toExtract = ItemUtil.getStack(helper.itemHandler, slot1).getCount();
+            try (var tx = Transaction.open(null)) {
+                int extractedCount = helper.itemHandler.extract(slot1, ItemResource.of(stackInSlot1), toExtract, tx);
+                tx.commit();
+                t0 -= extractedCount;
+                if (extractedCount == 0) break;
+                extracted.push(stackInSlot1.copyWithCount(extractedCount));
+            }
         }
-        int t1 = helper.itemHandler.getStackInSlot(slot2).getCount();
-        while (helper.itemHandler.getStackInSlot(slot2).getCount() > 0 && t1 > 0) {
-            ItemStack itemStack = helper.itemHandler.extractItem(slot2, helper.itemHandler.getStackInSlot(slot2).getCount(), true);
-            if (itemStack.isEmpty()) break;
-            @NotNull ItemStack rest = helper.itemHandler.insertItem(slot1, itemStack, true);
-            ItemStack toInsert = itemStack.copy();
-            toInsert.shrink(rest.getCount());
-            t1 -= toInsert.getCount();
-            if (toInsert.isEmpty()) break;
-            helper.itemHandler.insertItem(slot1, helper.itemHandler.extractItem(slot2, toInsert.getCount(), false), false);
+        ItemStack stackInSlot2 = ItemUtil.getStack(helper.itemHandler, slot2);
+        int t1 = stackInSlot2.getCount();
+        while (ItemUtil.getStack(helper.itemHandler, slot2).getCount() > 0 && t1 > 0) {
+            ItemStack currentStack2 = ItemUtil.getStack(helper.itemHandler, slot2);
+            if (currentStack2.isEmpty()) break;
+            try (var tx = Transaction.open(null)) {
+                int inserted = helper.itemHandler.insert(slot1, ItemResource.of(currentStack2), currentStack2.getCount(), tx);
+                if (inserted > 0) {
+                    int extractedCount = helper.itemHandler.extract(slot2, ItemResource.of(currentStack2), inserted, tx);
+                    t1 -= extractedCount;
+                    tx.commit();
+                }
+            }
         }
         while (!extracted.isEmpty()) {
             ItemStack tmp = extracted.pop();
             int count1 = tmp.getCount();
-            ItemStack itemStack = helper.itemHandler.insertItem(slot2, tmp, false);
-            if (itemStack.getCount() == count1) {
-                break;
+            try (var tx = Transaction.open(null)) {
+                int inserted = helper.itemHandler.insert(slot2, ItemResource.of(tmp), count1, tx);
+                tx.commit();
+                if (inserted == 0) {
+                    extracted.push(tmp);
+                    break;
+                }
             }
         }
         while (!extracted.isEmpty()) {
@@ -119,7 +127,7 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
 
     private boolean isSame(int slot1, int slot2) {
         if (helper.itemHandler == null) return false;
-        return ItemStackUtil.isSame(helper.itemHandler.getStackInSlot(slot1), helper.itemHandler.getStackInSlot(slot2), false);
+        return ItemStackUtil.isSame(ItemUtil.getStack(helper.itemHandler, slot1), ItemUtil.getStack(helper.itemHandler, slot2), false);
     }
 
     @Override
@@ -131,14 +139,14 @@ public class AbstractItemHandlerContext extends AbstractFilterableBlockStorage i
     public int getSlots() {
         if (helper.itemHandler == null)
             return 0;
-        return helper.itemHandler.getSlots();
+        return helper.itemHandler.size();
     }
 
     @Override
     public ItemStack getStackInSlot(int slot) {
         if (helper.itemHandler == null)
             return ItemStack.EMPTY;
-        return helper.itemHandler.getStackInSlot(slot);
+        return ItemUtil.getStack(helper.itemHandler, slot);
     }
 
     @Override

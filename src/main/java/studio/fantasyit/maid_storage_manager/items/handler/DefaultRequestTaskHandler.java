@@ -2,7 +2,9 @@ package studio.fantasyit.maid_storage_manager.items.handler;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
@@ -197,13 +199,13 @@ public class DefaultRequestTaskHandler implements IRequestTaskHandler {
     }
 
     @Override
-    public void updateCollectedNotStored(ItemStack stack, IItemHandler tmpStorage) {
+    public void updateCollectedNotStored(ItemStack stack, CombinedResourceHandler<ItemResource> tmpStorage) {
         RequestItemStackList request = getMutableRequestData(stack);
         for (RequestItemStackList.ListItem tmp : request.list) {
             if (tmp.stored >= tmp.collected) continue;
             int count = 0;
-            for (int j = 0; j < tmpStorage.getSlots(); j++) {
-                ItemStack itemStack = tmpStorage.getStackInSlot(j);
+            for (int j = 0; j < tmpStorage.size(); j++) {
+                ItemStack itemStack = ItemUtil.getStack(tmpStorage, j);
                 if (ItemStackUtil.isSame(itemStack, tmp.item, getMatchType(stack))) {
                     count += itemStack.getCount();
                 }

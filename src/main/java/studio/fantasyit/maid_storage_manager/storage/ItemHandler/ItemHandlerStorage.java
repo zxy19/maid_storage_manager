@@ -44,20 +44,17 @@ public class ItemHandlerStorage implements IMaidStorage {
 
     @Override
     public @Nullable IStorageContext onStartCollect(ServerLevel level, EntityMaid maid, Target storage) {
-        // ContextItemHandlerCollect disabled
-        return null;
+        return new ContextItemHandlerCollect();
     }
 
     @Override
     public @Nullable IStorageContext onStartPlace(ServerLevel level, EntityMaid maid, Target storage) {
-        // ContextItemHandlerStore disabled
-        return null;
+        return new ContextItemHandlerStore();
     }
 
     @Override
     public @Nullable IStorageContext onStartView(ServerLevel level, EntityMaid maid, Target storage) {
-        // ContextItemHandlerView disabled
-        return null;
+        return new ContextItemHandlerView();
     }
 
     @Override
@@ -68,9 +65,8 @@ public class ItemHandlerStorage implements IMaidStorage {
     public static TagKey<Block> SORTABLE = TagKey.create(BuiltInRegistries.BLOCK.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "sortable_chests"));
     @Override
     public @Nullable ISortSlotContext onStartSorting(ServerLevel level, EntityMaid maid, Target target) {
-        // AbstractItemHandlerContext disabled
-        // if(level.getBlockState(target.getPos()).is(SORTABLE))
-        //     return new AbstractItemHandlerContext();
+        if(level.getBlockState(target.getPos()).is(SORTABLE))
+            return new AbstractItemHandlerContext();
         return null;
     }
 }

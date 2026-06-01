@@ -17,11 +17,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.Transaction;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -141,13 +140,13 @@ public class SimulateTargetInteractHelper {
         if (blockEntity instanceof WorldlyContainer wc) {
             return Optional.of(new ContainerOpenersCounter() {
                 @Override
-                public void decrementOpeners(LivingEntity p_155469_, Level p_155470_, BlockPos p_155471_, BlockState p_155472_) {
-                    wc.stopOpen(p_155469_);
+                public void decrementOpeners(LivingEntity ent, Level p_155470_, BlockPos p_155471_, BlockState p_155472_) {
+                    wc.stopOpen(opener);
                 }
 
                 @Override
-                public void incrementOpeners(LivingEntity p_155453_, Level p_155454_, BlockPos p_155455_, BlockState p_155456_, double p_343876_) {
-                    wc.startOpen(p_155453_);
+                public void incrementOpeners(LivingEntity ent, Level p_155454_, BlockPos p_155455_, BlockState p_155456_, double p_343876_) {
+                    wc.startOpen(opener);
                 }
 
                 @Override

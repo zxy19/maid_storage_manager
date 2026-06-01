@@ -3,6 +3,9 @@ package studio.fantasyit.maid_storage_manager.storage.ItemHandler;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageInsertableContext;
 import studio.fantasyit.maid_storage_manager.storage.base.IStorageSplitInsertableContext;
@@ -17,9 +20,13 @@ public class ContextItemHandlerStore extends AbstractItemHandlerContext implemen
     public ItemStack insert(ItemStack item) {
         if (!this.helper.isStillValid()) return item;
         ItemStack copy = item.copy();
-        for (int i = 0; i < this.helper.itemHandler.getSlots(); i++) {
-            copy = this.helper.itemHandler.insertItem(i, copy, false);
-            if (copy.isEmpty()) return ItemStack.EMPTY;
+        for (int i = 0; i < this.helper.itemHandler.size(); i++) {
+            try (var tx = Transaction.open(null)) {
+                int inserted = this.helper.itemHandler.insert(i, ItemResource.of(copy), copy.getCount(), tx);
+                tx.commit();
+                copy.shrink(inserted);
+                if (copy.isEmpty()) return ItemStack.EMPTY;
+            }
         }
         return copy;
     }
@@ -29,11 +36,15 @@ public class ContextItemHandlerStore extends AbstractItemHandlerContext implemen
         if (!this.isAvailable(item)) return item;
         if (!this.helper.isStillValid()) return item;
         ItemStack copy = item.copy();
-        for (int i = 0; i < this.helper.itemHandler.getSlots(); i++) {
-            if(!this.helper.itemHandler.getStackInSlot(i).isEmpty())
+        for (int i = 0; i < this.helper.itemHandler.size(); i++) {
+            if(!ItemUtil.getStack(this.helper.itemHandler, i).isEmpty())
                 continue;
-            copy = this.helper.itemHandler.insertItem(i, copy, false);
-            if (copy.isEmpty()) return ItemStack.EMPTY;
+            try (var tx = Transaction.open(null)) {
+                int inserted = this.helper.itemHandler.insert(i, ItemResource.of(copy), copy.getCount(), tx);
+                tx.commit();
+                copy.shrink(inserted);
+                if (copy.isEmpty()) return ItemStack.EMPTY;
+            }
         }
         return copy;
     }
