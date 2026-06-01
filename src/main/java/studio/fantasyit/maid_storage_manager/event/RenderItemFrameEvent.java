@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.event;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
@@ -56,7 +56,7 @@ public class RenderItemFrameEvent {
         float width = mlr.getWidth(context);
 
         int combinedLight = LightCoordsUtil.FULL_BRIGHT;
-        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        SubmitNodeCollector submitNodeCollector = event.getSubmitNodeCollector();
 
         poseStack.pushPose();
         poseStack.mulPose(Axis.ZP.rotationDegrees((float) rotation * (-360.0F) / 8.0F));
@@ -75,18 +75,17 @@ public class RenderItemFrameEvent {
         poseStack.translate(0.5f, 0.5f, -0.01f);
         poseStack.scale(-0.015f, -0.015f, 1f);
 
-        var bgRenderType = mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, bufferSource, combinedLight, itemStack);
+        var bgRenderType = mlr.backgroundRenderType(Minecraft.getInstance(), poseStack, submitNodeCollector, combinedLight, itemStack);
         if (bgRenderType != null) {
-            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, bufferSource, combinedLight, bgRenderType);
+            CommonMapLike.renderBgSliced(0, 0, width, height, 8, poseStack, submitNodeCollector, combinedLight, bgRenderType);
         }
 
         mlr.extraTransform(poseStack, context);
         poseStack.scale(1f, 1f, 1f);
         poseStack.translate(0, 0, 0.01f);
 
-        ICustomGraphics graphics = new CustomGraphics(Minecraft.getInstance(), poseStack, bufferSource);
+        ICustomGraphics graphics = new CustomGraphics(Minecraft.getInstance(), poseStack, submitNodeCollector);
         mlr.renderOnHand(graphics, itemStack, combinedLight, context);
-        bufferSource.endBatch();
 
         poseStack.popPose();
         poseStack.popPose();

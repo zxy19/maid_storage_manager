@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.render.map_like;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.network.chat.Component;
@@ -43,7 +43,7 @@ public class ProgressPadRender implements RenderHandMapLikeEvent.MapLikeRenderer
     }
 
     @Override
-    public RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack) {
+    public RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, SubmitNodeCollector pSubmitNodeCollector, int pCombinedLight, ItemStack pStack) {
         return MAP_BACKGROUND;
     }
 

@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.event;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +42,7 @@ public class RenderHandMapLikeEvent {
             return 142.0F;
         }
 
-        RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, MultiBufferSource pBuffer, int pCombinedLight, ItemStack pStack);
+        RenderType backgroundRenderType(Minecraft mc, PoseStack pPoseStack, SubmitNodeCollector pSubmitNodeCollector, int pCombinedLight, ItemStack pStack);
 
         void renderOnHand(ICustomGraphics graphics, ItemStack pStack, int pCombinedLight, MapLikeRenderContext context);
 
