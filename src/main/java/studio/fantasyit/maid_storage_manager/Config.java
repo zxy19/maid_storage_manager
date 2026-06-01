@@ -183,7 +183,7 @@ public class Config {
             .comment("Prevent new byproduct from loop that's not available in graph.")
             .define("crafting.loop_solver.prevent_new_byproduct", false);
     private static final ModConfigSpec.BooleanValue USE_NBT = BUILDER
-            .comment("Match components for all items by default. Use #maid_storage_manager:no_components and #maid_storage_manager:use_components to modify.")
+            .comment("Match components for all items by default. Use #maid_storage_manager:no_nbt and #maid_storage_manager:use_nbt to modify.")
             .define("crafting.components.default", false);
     private static final ModConfigSpec.ConfigValue<List<? extends String>> NBT_NO_MATCH_PATH = BUILDER
             .comment("Specific those components that are ignored from comparing.")

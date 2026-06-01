@@ -1,10 +1,10 @@
-// 26.1.2	2026-06-01T01:17:34.7258935	Tags for minecraft:block mod id maid_storage_manager
-35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/maid_storage_manager/tags/block/create_package_container.json
-35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/maid_storage_manager/tags/block/default_storage_blocks.json
-35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/maid_storage_manager/tags/block/mb_chests.json
-35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/maid_storage_manager/tags/block/sortable_chests.json
+// 26.1.2	2026-06-01T13:25:28.5456513	Tags for minecraft:block mod id maid_storage_manager
+2bfcd7312da32faf33f7e7ab4c3e10d9543454e7 data/maid_storage_manager/tags/block/create_package_container.json
+a01a7942ac5794a3975aee4aa33008363164b3ad data/maid_storage_manager/tags/block/default_storage_blocks.json
+4c705b5be94d719f4ac83400e0d708e8a16b493e data/maid_storage_manager/tags/block/mb_chests.json
+9c777956627e4cda0e8eb97faaa21254c6c5afa8 data/maid_storage_manager/tags/block/sortable_chests.json
 58183e5c4e831d01d50a17bd245187faab590d40 data/maid_storage_manager/tags/block/working_block/brewing_stand.json
 269fcb0d7980156a2d8c271bfb048968ebc0fb79 data/maid_storage_manager/tags/block/working_block/crafting_table.json
-406ec23abc48d2750d26097b5d352fc1552a7d14 data/maid_storage_manager/tags/block/working_block/furnace.json
+b71eb59ed4e4dca15c9f4b78974dc23bbcb781bf data/maid_storage_manager/tags/block/working_block/furnace.json
 a2532422fa008e572914e9b666d1f760c3c36060 data/maid_storage_manager/tags/block/working_block/smithing_table.json
 dc6576accd36f93696dedd61e25a7f2f557d47ee data/maid_storage_manager/tags/block/working_block/stone_cutter.json

@@ -82,8 +82,8 @@ public class ItemStackUtil {
         return ItemStack.isSameItem(stack1, stack2);
     }
 
-    public static TagKey<Item> NoMatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "no_components"));
-    public static TagKey<Item> MatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "use_components"));
+    public static TagKey<Item> NoMatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "no_nbt"));
+    public static TagKey<Item> MatchItems = TagKey.create(BuiltInRegistries.ITEM.key(), Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "use_nbt"));
 
 
     public static boolean isSameInCrafting(ItemStack stack1, ItemStack stack2) {
