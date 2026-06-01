@@ -12,8 +12,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ChestMultiBlockProcessor;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
+import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.base.IMultiBlockProcessor;
 
@@ -23,7 +25,6 @@ import java.util.function.Consumer;
 
 //import studio.fantasyit.maid_storage_manager.integration.create.CreateMultiBlockVault;
 //import studio.fantasyit.maid_storage_manager.integration.sophisticated_storage.SophisticatedStorageMultiBlock;
-//import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
 //import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
 //import studio.fantasyit.maid_storage_manager.storage.create.stock.CreateStockTickerStorage;
 //import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
@@ -45,10 +46,10 @@ public class MaidStorage {
         ArrayList<IMaidStorage> list = new ArrayList<>();
         List<IMultiBlockProcessor> processorList = new ArrayList<>();
 
-        /*if (Integrations.ae2Storage()) {
+        if (Integrations.ae2Storage()) {
             list.add(new Ae2Storage());
         }
-        if (Integrations.rsStorage()) {
+        /*if (Integrations.rsStorage()) {
             list.add(new RSStorage());
         }
         if (Integrations.createStorage()) {

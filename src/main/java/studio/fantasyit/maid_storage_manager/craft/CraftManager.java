@@ -7,9 +7,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.action.PathTargetLocator;
@@ -20,11 +22,15 @@ import studio.fantasyit.maid_storage_manager.craft.context.special.*;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
 import studio.fantasyit.maid_storage_manager.craft.generator.config.GeneratingConfig;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Charger;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2Inscriber;
+import studio.fantasyit.maid_storage_manager.craft.generator.type.ae2.GeneratorAE2ItemTransform;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.base.IAutoCraftGuideGenerator;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.misc.GeneratorAltar;
 import studio.fantasyit.maid_storage_manager.craft.generator.type.vanilla.*;
 import studio.fantasyit.maid_storage_manager.craft.type.*;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
+import studio.fantasyit.maid_storage_manager.integration.Integrations;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -232,19 +238,19 @@ public class CraftManager {
         event.addAutoCraftGuideGenerator(new GeneratorWatering());
         event.addAutoCraftGuideGenerator(new GeneratorStripping());
 
-//        if (ModList.get().isLoaded("ae2") && Config.enableAe2Sup) {
-//            event.addCraftType(new AE2Type());
-//            event.addAction(
-//                    AE2Type.TYPE,
-//                    AeCraftingAction::new,
-//                    PathTargetLocator::commonNearestAvailablePos,
-//                    CraftAction.PathEnoughLevel.NORMAL.value,
-//                    false, true,
-//                    0,
-//                    1,
-//                    List.of()
-//            );
-//        }
+        if (ModList.get().isLoaded("ae2") && Config.enableAe2Sup) {
+            event.addCraftType(new AE2Type());
+            event.addAction(
+                    AE2Type.TYPE,
+                    AeCraftingAction::new,
+                    PathTargetLocator::commonNearestAvailablePos,
+                    CraftAction.PathEnoughLevel.NORMAL.value,
+                    false, true,
+                    0,
+                    1,
+                    List.of()
+            );
+        }
 //        if (ModList.get().isLoaded("refinedstorage") && Config.enableRsSup) {
 //            event.addCraftType(new RSType());
 //            event.addAction(
@@ -280,11 +286,11 @@ public class CraftManager {
 //            event.addAutoCraftGuideGenerator(new GeneratorMekCombine());
 //            event.addAutoCraftGuideGenerator(new GeneratorMekSmelter());
 //        }
-//        if (Integrations.ae2()) {
-//            event.addAutoCraftGuideGenerator(new GeneratorAE2Inscriber());
-//            event.addAutoCraftGuideGenerator(new GeneratorAE2Charger());
-//            event.addAutoCraftGuideGenerator(new GeneratorAE2ItemTransform());
-//        }
+        if (Integrations.ae2()) {
+            event.addAutoCraftGuideGenerator(new GeneratorAE2Inscriber());
+            event.addAutoCraftGuideGenerator(new GeneratorAE2Charger());
+            event.addAutoCraftGuideGenerator(new GeneratorAE2ItemTransform());
+        }
 //        if (Integrations.botania()) {
 //            event.addAutoCraftGuideGenerator(new GeneratorBotaniaRunicAltar());
 //            event.addAutoCraftGuideGenerator(new GeneratorBotaniaApothecary());

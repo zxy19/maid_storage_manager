@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -42,11 +43,12 @@ public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<Identifier, List<BlockPos>> recognizedTypePositions) {
         StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
-        level.getRecipeManager()
-                .getAllRecipesFor(AERecipeTypes.CHARGER)
-                .forEach(recipeHolder -> {
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
+        recipeManager.recipeMap()
+                .byType(AERecipeTypes.CHARGER)
+                .forEach((RecipeHolder<ChargerRecipe> recipeHolder) -> {
                     ChargerRecipe recipe = recipeHolder.value();
-                    if (!posFilter.isAvailable(recipe.getResultItem()))
+                    if (!posFilter.isAvailable(recipe.result().create()))
                         return;
                     graph.addRecipe(
                             recipeHolder,
@@ -61,7 +63,7 @@ public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
                                 steps.add(new CraftGuideStepData(
                                         new Target(ItemHandlerStorage.TYPE, pos),
                                         List.of(),
-                                        List.of(recipe.getResultItem()),
+                                        List.of(recipe.result().create()),
                                         CommonTakeItemAction.TYPE
                                 ));
                                 return new CraftGuideData(
@@ -75,8 +77,11 @@ public class GeneratorAE2Charger implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(AERecipeTypes.CHARGER)
-                .forEach(RecipeIngredientCache::addRecipeCache);
+        manager.recipeMap().byType(AERecipeTypes.CHARGER)
+                .forEach(holder -> {
+                    ChargerRecipe recipe = holder.value();
+                    RecipeIngredientCache.addRecipeCache(holder.id().identifier(), List.of(recipe.ingredient()));
+                });
     }
 
     @Override

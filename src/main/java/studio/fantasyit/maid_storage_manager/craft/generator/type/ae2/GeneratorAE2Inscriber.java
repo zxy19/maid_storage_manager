@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +35,7 @@ import studio.fantasyit.maid_storage_manager.util.StorageAccessUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
     @Override
@@ -71,31 +73,31 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
         if (level.getBlockEntity(pos) instanceof InscriberBlockEntity inscriber) {
             StorageAccessUtil.Filter posFilter = GenerateCondition.getFilterOn(level, pos);
             ItemStack topItem = inscriber.getInternalInventory().getStackInSlot(0);
-            level.getRecipeManager()
-                    .getAllRecipesFor(AERecipeTypes.INSCRIBER)
-                    .forEach(holder -> {
+            RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
+            recipeManager.recipeMap()
+                    .byType(AERecipeTypes.INSCRIBER)
+                    .forEach((RecipeHolder<InscriberRecipe> holder) -> {
                         InscriberRecipe recipe = holder.value();
-                        if (!posFilter.isAvailable(recipe.getResultItem()))
+                        if (!posFilter.isAvailable(recipe.result().create()))
                             return;
-                        //复制配方，全都不处理。
-                        if (!recipe.getTopOptional().isEmpty() && recipe.getTopOptional().test(recipe.getResultItem())) {
+                        Optional<Ingredient> topOpt = recipe.getTopOptional();
+                        if (topOpt.isPresent() && topOpt.get().test(recipe.result().create())) {
                             return;
                         }
                         boolean available = true;
                         boolean hasPriority = false;
                         boolean skipFirst;
                         if (!topItem.isEmpty()) {
-                            if (recipe.getTopOptional().isEmpty()) {
+                            if (topOpt.isEmpty()) {
                                 available = false;
-                            } else if (!recipe.getTopOptional().test(topItem)) {
+                            } else if (!topOpt.get().test(topItem)) {
                                 available = false;
                             }
                             hasPriority = true;
                             skipFirst = true;
-                        } else if (recipe.getTopOptional().isEmpty()) {
+                        } else if (topOpt.isEmpty()) {
                             skipFirst = true;
                         } else if (recipe.getProcessType() == InscriberProcessType.INSCRIBE) {
-                            //压印类型，如果不分离侧面，则要求必须顶部存在物品，否则放入的物品无法取出
                             if (inscriber.getConfigManager().getSetting(Settings.INSCRIBER_SEPARATE_SIDES) == YesNo.NO) {
                                 skipFirst = false;
                                 available = false;
@@ -108,16 +110,15 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                         if (available) {
                             List<Ingredient> ingredients = new ArrayList<>();
                             if (!skipFirst)
-                                ingredients.add(recipe.getTopOptional());
+                                topOpt.ifPresent(ingredients::add);
                             ingredients.add(recipe.getMiddleInput());
-                            if (!recipe.getBottomOptional().isEmpty())
-                                ingredients.add(recipe.getBottomOptional());
+                            recipe.getBottomOptional().ifPresent(ingredients::add);
 
-                            ItemStack result = recipe.getResultItem();
+                            ItemStack result = recipe.result().create();
                             if (hasPriority)
-                                graph.blockRecipe(transformRecipeId(holder.id(), false));
+                                graph.blockRecipe(transformRecipeId(holder.id().identifier(), false));
                             graph.addRecipe(
-                                    transformRecipeId(holder.id(), skipFirst),
+                                    transformRecipeId(holder.id().identifier(), skipFirst),
                                     ingredients,
                                     ingredients
                                             .stream()
@@ -153,7 +154,6 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
                                                 List.of(result),
                                                 CommonTakeItemAction.TYPE
                                         ));
-                                        //如果输入物品保留第一个而且需要取回
                                         if (!skipFirst && recipe.getProcessType() == InscriberProcessType.INSCRIBE)
                                             steps.add(new CraftGuideStepData(
                                                     new Target(ItemHandlerStorage.TYPE, pos, Direction.UP),
@@ -177,27 +177,24 @@ public class GeneratorAE2Inscriber implements IAutoCraftGuideGenerator {
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(AERecipeTypes.INSCRIBER)
+        manager.recipeMap().byType(AERecipeTypes.INSCRIBER)
                 .forEach(holder -> {
                     InscriberRecipe recipe = holder.value();
-                    if (recipe.getProcessType() == InscriberProcessType.INSCRIBE && !recipe.getTopOptional().isEmpty()) {
+                    if (recipe.getProcessType() == InscriberProcessType.INSCRIBE && recipe.getTopOptional().isPresent()) {
                         List<Ingredient> ingredients = new ArrayList<>();
                         ingredients.add(recipe.getMiddleInput());
-                        if (!recipe.getBottomOptional().isEmpty())
-                            ingredients.add(recipe.getBottomOptional());
+                        recipe.getBottomOptional().ifPresent(ingredients::add);
                         RecipeIngredientCache.addRecipeCache(
-                                transformRecipeId(holder.id(), true),
+                                transformRecipeId(holder.id().identifier(), true),
                                 ingredients
                         );
                     }
                     List<Ingredient> ingredientsFull = new ArrayList<>();
-                    if (!recipe.getTopOptional().isEmpty())
-                        ingredientsFull.add(recipe.getTopOptional());
+                    recipe.getTopOptional().ifPresent(ingredientsFull::add);
                     ingredientsFull.add(recipe.getMiddleInput());
-                    if (!recipe.getBottomOptional().isEmpty())
-                        ingredientsFull.add(recipe.getBottomOptional());
+                    recipe.getBottomOptional().ifPresent(ingredientsFull::add);
                     RecipeIngredientCache.addRecipeCache(
-                            transformRecipeId(holder.id(), false),
+                            transformRecipeId(holder.id().identifier(), false),
                             ingredientsFull
                     );
                 });

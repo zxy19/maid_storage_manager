@@ -7,20 +7,27 @@
 
 ## 1. 兼容模组集成（等待模组更新 26.1 版本）— 93 个文件
 
-### 1.1 AE2 (9 files)
+### 1.1 AE2 (10 files)
 
-waiting: AE2 暂无 MC 26.1 兼容版本
+status: RECOVERED — 已恢复（AE2 版本 8129795，适配了 MC 26.1 API 变更）
 
-- `craft/context/special/AeCraftingAction.java`
-- `craft/generator/type/ae2/GeneratorAE2Charger.java`
-- `craft/generator/type/ae2/GeneratorAE2Inscriber.java`
-- `craft/generator/type/ae2/GeneratorAE2ItemTransform.java`
-- `craft/type/AE2Type.java`
-- `storage/ae2/Ae2BaseContext.java`
-- `storage/ae2/Ae2CollectContext.java`
-- `storage/ae2/Ae2PlacingContext.java`
-- `storage/ae2/Ae2Storage.java`
-- `storage/ae2/Ae2ViewContext.java`
+- `craft/context/special/AeCraftingAction.java` (RECOVERED)
+- `craft/generator/type/ae2/GeneratorAE2Charger.java` (RECOVERED, API adapted)
+- `craft/generator/type/ae2/GeneratorAE2Inscriber.java` (RECOVERED, API adapted)
+- `craft/generator/type/ae2/GeneratorAE2ItemTransform.java` (RECOVERED, API adapted)
+- `craft/type/AE2Type.java` (RECOVERED)
+- `storage/ae2/Ae2BaseContext.java` (RECOVERED)
+- `storage/ae2/Ae2CollectContext.java` (RECOVERED)
+- `storage/ae2/Ae2PlacingContext.java` (RECOVERED)
+- `storage/ae2/Ae2Storage.java` (RECOVERED)
+- `storage/ae2/Ae2ViewContext.java` (RECOVERED)
+
+**API Changes (v6763533 → v8129795):**
+- `ChargerRecipe`/`InscriberRecipe`/`TransformRecipe`: `getResultItem()` → `result().create()` (returns `ItemStackTemplate` now)
+- `InscriberRecipe`: `getTopOptional()`/`getBottomOptional()` 返回 `Optional<Ingredient>` 代替 `Ingredient`
+- `Level.getRecipeManager()` → `(RecipeManager) level.recipeAccess()`
+- `RecipeManager.getAllRecipesFor()` → `.recipeMap().byType()`
+- `RecipeHolder.id()` → `RecipeHolder.id().identifier()` (ResourceKey → ResourceLocation)
 
 ### 1.2 RS (7 files)
 

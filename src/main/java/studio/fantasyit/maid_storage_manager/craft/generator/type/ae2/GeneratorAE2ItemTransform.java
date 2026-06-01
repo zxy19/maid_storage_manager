@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -40,43 +41,46 @@ public class GeneratorAE2ItemTransform implements IAutoCraftGuideGenerator {
 
     @Override
     public void generate(List<InventoryItem> inventory, Level level, BlockPos pos, ICachableGeneratorGraph graph, Map<Identifier, List<BlockPos>> recognizedTypePositions) {
-        level.getRecipeManager()
-                .getAllRecipesFor(AERecipeTypes.TRANSFORM)
-                .stream()
-                .filter(t -> t.value().circumstance.isFluid() && t.value().circumstance.isFluid(Fluids.WATER))
-                .forEach(holder -> {
+        RecipeManager recipeManager = (RecipeManager) level.recipeAccess();
+        recipeManager.recipeMap()
+                .byType(AERecipeTypes.TRANSFORM)
+                .forEach((RecipeHolder<TransformRecipe> holder) -> {
                     TransformRecipe recipe = holder.value();
-                    graph.addRecipe(
-                            holder,
-                            (List<ItemStack> items) -> {
-                                List<CraftGuideStepData> steps = new ArrayList<>();
-                                steps.add(new CraftGuideStepData(
-                                        new Target(ItemHandlerStorage.TYPE, pos),
-                                        items,
-                                        List.of(),
-                                        CommonThrowItemAction.TYPE
-                                ));
-                                steps.add(new CraftGuideStepData(
-                                        new Target(ItemHandlerStorage.TYPE, pos),
-                                        List.of(),
-                                        List.of(recipe.getResultItem()),
-                                        CommonPickupItemAction.TYPE
-                                ));
-                                return new CraftGuideData(
-                                        steps,
-                                        CommonType.TYPE
-                                );
-                            }
-                    );
+                    if (recipe.circumstance.isFluid() && recipe.circumstance.isFluid(Fluids.WATER)) {
+                        graph.addRecipe(
+                                holder,
+                                (List<ItemStack> items) -> {
+                                    List<CraftGuideStepData> steps = new ArrayList<>();
+                                    steps.add(new CraftGuideStepData(
+                                            new Target(ItemHandlerStorage.TYPE, pos),
+                                            items,
+                                            List.of(),
+                                            CommonThrowItemAction.TYPE
+                                    ));
+                                    steps.add(new CraftGuideStepData(
+                                            new Target(ItemHandlerStorage.TYPE, pos),
+                                            List.of(),
+                                            List.of(recipe.result().create()),
+                                            CommonPickupItemAction.TYPE
+                                    ));
+                                    return new CraftGuideData(
+                                            steps,
+                                            CommonType.TYPE
+                                    );
+                                }
+                        );
+                    }
                 });
     }
 
     @Override
     public void onCache(RecipeManager manager) {
-        manager.getAllRecipesFor(AERecipeTypes.TRANSFORM)
-                .stream()
-                .filter(t -> t.value().circumstance.isFluid() && t.value().circumstance.isFluid(Fluids.WATER))
-                .forEach(RecipeIngredientCache::addRecipeCache);
+        manager.recipeMap().byType(AERecipeTypes.TRANSFORM)
+                .forEach(holder -> {
+                    TransformRecipe recipe = holder.value();
+                    if (recipe.circumstance.isFluid() && recipe.circumstance.isFluid(Fluids.WATER))
+                        RecipeIngredientCache.addRecipeCache(holder.id().identifier(), recipe.ingredients());
+                });
     }
 
     @Override
