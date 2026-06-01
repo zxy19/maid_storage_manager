@@ -3,7 +3,7 @@ package studio.fantasyit.maid_storage_manager.event;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.inventory.handler.BaubleItemHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
@@ -50,28 +50,28 @@ public final class BindingRender {
     private static final float[][] colors = new float[][]{colors_b, colors_g, colors_y};
 
     @SubscribeEvent
-    public static void onRender(RenderLevelStageEvent.AfterTranslucentFeatures event) {
+    public static void onRender(SubmitCustomGeometryEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
         var poseStack = event.getPoseStack();
-        var bufferSource = mc.renderBuffers().bufferSource();
+        var submitNodeCollector = event.getSubmitNodeCollector();
         var camera = event.getLevelRenderState().cameraRenderState;
         float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
 
         Map<BlockPos, Integer> floating = new ConcurrentHashMap<>();
-        renderForRequest(poseStack, bufferSource, camera, partialTick, mc, floating);
-        renderForStorage(poseStack, bufferSource, camera, partialTick, mc, floating);
-        renderForCraftGuide(poseStack, bufferSource, camera, partialTick, mc, floating);
-        renderForFlag(poseStack, bufferSource, camera, partialTick, mc, floating);
-        renderForInv(poseStack, bufferSource, camera, partialTick, mc, floating);
-        renderForLogistics(poseStack, bufferSource, camera, partialTick, mc, floating);
-        renderForEntity(poseStack, bufferSource, camera, partialTick, mc);
-        renderForWorkCard(poseStack, bufferSource, camera, mc);
+        renderForRequest(poseStack, submitNodeCollector, camera, partialTick, mc, floating);
+        renderForStorage(poseStack, submitNodeCollector, camera, partialTick, mc, floating);
+        renderForCraftGuide(poseStack, submitNodeCollector, camera, partialTick, mc, floating);
+        renderForFlag(poseStack, submitNodeCollector, camera, partialTick, mc, floating);
+        renderForInv(poseStack, submitNodeCollector, camera, partialTick, mc, floating);
+        renderForLogistics(poseStack, submitNodeCollector, camera, partialTick, mc, floating);
+        renderForEntity(poseStack, submitNodeCollector, camera, partialTick, mc);
+        renderForWorkCard(poseStack, submitNodeCollector, camera, mc);
     }
 
-    private static void renderForLogistics(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
+    private static void renderForLogistics(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.LOGISTICS_GUIDE.get()) {
             return;
@@ -81,7 +81,7 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(input,
                     colors_b,
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     Component.translatable("maid_storage_manager.logistics_guide_binding_extract").getString(),
                     floating);
@@ -92,14 +92,14 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(output,
                     colors_g,
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     Component.translatable("maid_storage_manager.logistics_guide_binding_store").getString(),
                     floating);
         }
     }
 
-    private static void renderForEntity(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc) {
+    private static void renderForEntity(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc) {
         if (mc.level == null) return;
         BindingData.getEntityIds().forEach(id -> {
             Entity entity = mc.level.getEntity(id);
@@ -108,14 +108,14 @@ public final class BindingRender {
             }
             BoxRenderUtil.renderEntity(entity, colors_p,
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     partialTick,
                     Component.translatable("maid_storage_manager.request_list_binding_render").getString());
         });
     }
 
-    private static void renderForRequest(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
+    private static void renderForRequest(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.REQUEST_LIST_ITEM.get()) {
             return;
@@ -124,14 +124,14 @@ public final class BindingRender {
         if (storage != null) {
             BoxRenderUtil.renderStorage(storage, colors_p,
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     Component.translatable("maid_storage_manager.request_list_binding_render").getString(),
                     floating);
         }
     }
 
-    private static void renderForStorage(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
+    private static void renderForStorage(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) {
             if (mainStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
@@ -163,14 +163,14 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(storage1,
                     color,
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     Component.translatable("maid_storage_manager.storage_define_bauble_binding_render." + mode).getString(),
                     floating);
         }
     }
 
-    private static void renderForFlag(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
+    private static void renderForFlag(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.CHANGE_FLAG.get()) {
             return;
@@ -183,14 +183,14 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(storage1,
                     colors_r,
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     Component.translatable("maid_storage_manager.changed_flag_binding_render.changed").getString(),
                     floating);
         }
     }
 
-    private static void renderForCraftGuide(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
+    private static void renderForCraftGuide(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
         ItemStack mainStack = mc.player.getMainHandItem();
         boolean noRenderSelecting = false;
         if (mainStack.getItem() != ItemRegistry.CRAFT_GUIDE.get()) {
@@ -209,7 +209,7 @@ public final class BindingRender {
             BoxRenderUtil.renderStorage(step.getA(),
                     colors[i % colors.length],
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     "[" + (i + 1) + "]" + CommonCraftAssets.translationForAction(step.getB()).getString(),
                     floating,
@@ -222,7 +222,7 @@ public final class BindingRender {
                 BoxRenderUtil.renderStorage(step.getA(),
                         colors_r,
                         poseStack,
-                        bufferSource,
+                        submitNodeCollector,
                         camera,
                         Component.translatable("interaction.craft_guide_selecting").getString(),
                         floating
@@ -230,7 +230,7 @@ public final class BindingRender {
             }
     }
 
-    private static void renderForInv(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
+    private static void renderForInv(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, Minecraft mc, Map<BlockPos, Integer> floating) {
         if (InventoryListDataClient.showingInv.isEmpty() && InventoryListDataClient.commonTips.isEmpty())
             return;
         for (Pair<InventoryItem, MutableInt> pair : InventoryListDataClient.showingInv) {
@@ -242,7 +242,7 @@ public final class BindingRender {
                             storageIntegerPair.pos(),
                             colors_y,
                             poseStack,
-                            bufferSource,
+                            submitNodeCollector,
                             camera,
                             Component.translatable("maid_storage_manager.inventory_list_render.inv_craft_guide",
                                             inv.itemStack.getDisplayName().getString()
@@ -255,7 +255,7 @@ public final class BindingRender {
                             storageIntegerPair.pos(),
                             colors_y,
                             poseStack,
-                            bufferSource,
+                            submitNodeCollector,
                             camera,
                             Component.translatable("maid_storage_manager.inventory_list_render.inv",
                                             inv.itemStack.getDisplayName().getString(),
@@ -272,7 +272,7 @@ public final class BindingRender {
                     pair.getA().target(),
                     pair.getA().argb(),
                     poseStack,
-                    bufferSource,
+                    submitNodeCollector,
                     camera,
                     pair.getA().tip().getString(),
                     floating
@@ -280,7 +280,7 @@ public final class BindingRender {
         }
     }
 
-    private static void renderForWorkCard(com.mojang.blaze3d.vertex.PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, Minecraft mc) {
+    private static void renderForWorkCard(com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, Minecraft mc) {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.WORK_CARD.get()) return;
 
@@ -301,7 +301,7 @@ public final class BindingRender {
                                 poseStack,
                                 mc,
                                 camera,
-                                bufferSource,
+                                submitNodeCollector,
                                 maid.getPosition(mc.getDeltaTracker().getGameTimeDeltaPartialTick(true)),
                                 slotStack.getHoverName().getString(),
                                 0xFFFFFFFF,

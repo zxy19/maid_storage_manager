@@ -5,12 +5,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -28,19 +29,20 @@ import java.util.Map;
 public class BoxRenderUtil {
     public static boolean useSeeThroughBox = false;
 
-    public static void renderStorage(Target storage, float[] colors, PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, String key, Map<BlockPos, Integer> floating) {
-        renderStorage(storage, colors, poseStack, bufferSource, camera, key, floating, 0xffffff);
+    public static void renderStorage(Target storage, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, String key, Map<BlockPos, Integer> floating) {
+        renderStorage(storage, colors, poseStack, submitNodeCollector, camera, key, floating, 0xffffff);
     }
 
-    public static void renderStorage(Target storage, float[] colors, PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, String key, Map<BlockPos, Integer> floating, int textColor) {
+    public static void renderStorage(Target storage, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, String key, Map<BlockPos, Integer> floating, int textColor) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
         Vec3 position = camera.pos.reverse();
         AABB aabb = new AABB(storage.getPos()).move(position);
-        VertexConsumer buffer = bufferSource.getBuffer(useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderTypes.LINES);
-        renderBox(poseStack, buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
+        submitNodeCollector.submitCustomGeometry(poseStack, useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderTypes.LINES, (poseState, consumer) -> {
+            renderBox(poseStack, consumer, aabb, colors[0], colors[1], colors[2], colors[3]);
+        });
         if (storage.getSide().isPresent()) {
             BlockPos sidePos = storage.getPos().relative(storage.getSide().get());
             int dx = sidePos.getX() - storage.getPos().getX();
@@ -74,35 +76,39 @@ public class BoxRenderUtil {
                 sideAabb = sideAabb.setMaxZ(sideAabb.maxZ - 0.2);
                 sideAabb = sideAabb.setMinZ(sideAabb.minZ + 0.2);
             }
-            renderBox(poseStack, buffer, sideAabb, colors[0], colors[1], colors[2], colors[3]);
+            final AABB finalSideAabb = sideAabb;
+            submitNodeCollector.submitCustomGeometry(poseStack, useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderTypes.LINES, (poseState, consumer) -> {
+                renderBox(poseStack, consumer, finalSideAabb, colors[0], colors[1], colors[2], colors[3]);
+            });
         }
         if (!Strings.isBlank(key)) {
             Vec3 livingFrom = storage.getPos().getCenter().add(0, 0.7f, 0);
-            drawText(poseStack, mc, camera, bufferSource, livingFrom, key, textColor, floating.getOrDefault(storage.getPos(), 0) * 0.3f);
+            drawText(poseStack, mc, camera, submitNodeCollector, livingFrom, key, textColor, floating.getOrDefault(storage.getPos(), 0) * 0.3f);
             floating.put(storage.getPos(), floating.getOrDefault(storage.getPos(), 0) + 1);
         }
     }
 
-    public static void renderEntity(Entity entity, float[] colors, PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, String key) {
-        renderEntity(entity, colors, poseStack, bufferSource, camera, partialTick, key, 0xffffff);
+    public static void renderEntity(Entity entity, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, String key) {
+        renderEntity(entity, colors, poseStack, submitNodeCollector, camera, partialTick, key, 0xffffff);
     }
 
-    public static void renderEntity(Entity entity, float[] colors, PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, CameraRenderState camera, float partialTick, String key, int textColor) {
+    public static void renderEntity(Entity entity, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, String key, int textColor) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
         Vec3 position = camera.pos.reverse();
         AABB aabb = entity.getBoundingBox().move(position).inflate(0.3);
-        VertexConsumer buffer = bufferSource.getBuffer(useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderTypes.LINES);
-        renderBox(poseStack, buffer, aabb, colors[0], colors[1], colors[2], colors[3]);
+        submitNodeCollector.submitCustomGeometry(poseStack, useSeeThroughBox ? SeeThroughBoxRenderType.seeThroughBox() : RenderTypes.LINES, (poseState, consumer) -> {
+            renderBox(poseStack, consumer, aabb, colors[0], colors[1], colors[2], colors[3]);
+        });
         if (!Strings.isBlank(key)) {
             Vec3 livingFrom = entity.getPosition(partialTick).add(0, entity.getBbHeight() + 0.5f, 0);
-            drawText(poseStack, mc, camera, bufferSource, livingFrom, key, textColor, 0);
+            drawText(poseStack, mc, camera, submitNodeCollector, livingFrom, key, textColor, 0);
         }
     }
 
-    public static void drawText(PoseStack poseStack, Minecraft mc, CameraRenderState camera, MultiBufferSource.BufferSource bufferSource, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
+    public static void drawText(PoseStack poseStack, Minecraft mc, CameraRenderState camera, SubmitNodeCollector submitNodeCollector, Vec3 livingFrom, String key, int textColor, float floatingTransform) {
         float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
         Vec3 fromPos = mc.player.getEyePosition(partialTick);
         Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
@@ -113,17 +119,11 @@ public class BoxRenderUtil {
         poseStack.mulPose(Axis.XP.rotationDegrees(camera.xRot));
         poseStack.scale(-0.025f, -0.025f, -1f);
         poseStack.translate(-mc.font.width(key) / 2f, 0, 0);
-        mc.font.drawInBatch(key,
-                0,
-                0,
-                textColor,
+        submitNodeCollector.submitText(poseStack, 0, 0,
+                net.minecraft.util.FormattedCharSequence.forward(key, net.minecraft.network.chat.Style.EMPTY),
                 mc.font.isBidirectional(),
-                poseStack.last().pose(),
-                bufferSource,
                 useSeeThroughBox ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL,
-                0,
-                15728880);
-        bufferSource.endBatch();
+                LightCoordsUtil.FULL_BRIGHT, textColor, 0, 0);
         poseStack.popPose();
     }
 

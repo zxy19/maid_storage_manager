@@ -3,16 +3,12 @@ package studio.fantasyit.maid_storage_manager.render;
 import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.EntityMaidRenderer;
 import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.chatbubble.EntityGraphics;
 import com.github.tartaricacid.touhoulittlemaid.client.renderer.entity.chatbubble.IChatBubbleRenderer;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
-import studio.fantasyit.maid_storage_manager.api.mixin.IEntityGraphicsBufferSourceGetter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -79,28 +75,6 @@ public class CraftingChatBubbleRenderer implements IChatBubbleRenderer {
             graphics.getPoseStack().translate(0.0F, 0.0F, -0.01);
             graphics.fill(margin, y + margin, barWidth, y + 6 - margin, this.barForegroundColor1);
         }
-    }
-
-    protected void fill(EntityGraphics graphics, float minX, float minY, float maxX, float maxY, int color) {
-        Matrix4f matrix4f = graphics.getPoseStack().last().pose();
-        if (minX < maxX) {
-            float i = minX;
-            minX = maxX;
-            maxX = i;
-        }
-
-        if (minY < maxY) {
-            float j = minY;
-            minY = maxY;
-            maxY = j;
-        }
-        if (!(graphics instanceof IEntityGraphicsBufferSourceGetter iegbsg)) return;
-
-        VertexConsumer vertexconsumer = iegbsg.getBufferSource().getBuffer(RenderTypes.textBackground());
-        vertexconsumer.addVertex(matrix4f, minX, minY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
-        vertexconsumer.addVertex(matrix4f, minX, maxY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
-        vertexconsumer.addVertex(matrix4f, maxX, maxY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
-        vertexconsumer.addVertex(matrix4f, maxX, minY, 0.0f).setColor(color).setLight(graphics.getPackedLight());
     }
 
     public Identifier getBackgroundTexture() {
