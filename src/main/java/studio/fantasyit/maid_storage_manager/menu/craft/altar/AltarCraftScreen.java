@@ -28,7 +28,7 @@ public class AltarCraftScreen extends AbstractCraftScreen<AltarCraftMenu> {
                     String.valueOf(this.menu.ppcost),
                     59 + this.getGuiLeft(),
                     96 + this.getGuiTop(),
-                    0xffffff
+                    0xffffffff
             );
         }
     }

@@ -3,7 +3,7 @@
   "criteria": {
     "altar_craft": {
       "conditions": {
-        "recipe_id": "maid_storage_manager:storage_define"
+        "recipe_id": "maid_storage_manager:storage_define_bauble"
       },
       "trigger": "touhou_little_maid:altar_craft"
     }

@@ -12,7 +12,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
+import studio.fantasyit.maid_storage_manager.communicate.wish.PlaceItemWishWithLimitation;
 import studio.fantasyit.maid_storage_manager.communicate.wish.RequestItemWish;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
@@ -105,7 +107,7 @@ public class ConfigurableCommunicateData {
             CompoundTag tag = new CompoundTag();
             ListTag requireTags = new ListTag();
             for (ItemStack req : requires) {
-                requireTags.add(ItemStackUtil.saveStack(p,req));
+                requireTags.add(ItemStackUtil.saveStack(p, req));
             }
             tag.put("requires", requireTags);
             tag.putBoolean("whiteMode", whiteMode);
@@ -219,7 +221,6 @@ public class ConfigurableCommunicateData {
             List<ItemStack> toRequestItem = new ArrayList<>();
             List<ItemStack> hasItem = item.slot.getItemStacks(maid);
             if (item.whiteMode) {
-                //count琛ㄧず鐗╁搧鎬诲叡瀛樺湪鐨勬暟閲忋€傚湪姝ゆ暟閲忎笂缁熻搴旇鏀惧洖鐨勭墿鍝?
                 List<MutableInt> count = item.requires.stream().map(itemStack -> new MutableInt(0)).toList();
                 for (ItemStack itemStack : hasItem) {
                     if (itemStack.isEmpty()) continue;
@@ -283,8 +284,7 @@ public class ConfigurableCommunicateData {
                 }
             }
             if (!toTakeItem.isEmpty())
-                // PlaceItemWishWithLimitation disabled
-                // list.add(new PlaceItemWishWithLimitation(toTakeItem.stream().map(t -> new Pair<>(t, item.thresholdCount)).toList(), item.slot, item.match));
+                list.add(new PlaceItemWishWithLimitation(toTakeItem.stream().map(t -> new Pair<>(t, item.thresholdCount)).toList(), item.slot, item.match));
             if (!toRequestItem.isEmpty())
                 list.add(new RequestItemWish(toRequestItem, item.match, item.slot));
         }

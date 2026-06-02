@@ -10,14 +10,11 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.RenderItemInFrameEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.api.IItemFrameRenderStateItemVisitor;
 
-@OnlyIn(Dist.CLIENT)
 public class VirtualDisplayEntityRender extends ItemFrameRenderer<VirtualDisplayEntity> {
     public VirtualDisplayEntityRender(EntityRendererProvider.Context p_174204_) {
         super(p_174204_);

@@ -75,8 +75,8 @@ public class CommunicateSlotSelector extends AbstractWidget {
 
     @Override
     public void onClick(MouseButtonEvent event, boolean doubleClick) {
-        double mx = Minecraft.getInstance().mouseHandler.xpos();
-        double my = Minecraft.getInstance().mouseHandler.ypos();
+        double mx = event.x();
+        double my = event.y();
         int x = (int) mx - getX();
         int y = (int) my - getY();
         for (Pair<Vector2i, SlotType> slot : slots) {

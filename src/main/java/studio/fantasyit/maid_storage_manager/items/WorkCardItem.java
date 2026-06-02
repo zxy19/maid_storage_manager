@@ -145,7 +145,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
     }
 
     protected void tryDispatchFind(EntityMaid maid, ItemStack baubleItem) {
-        if (Conditions.takingRequestList(maid) && maid.getVehicle() != null && maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+        if (Conditions.takingRequestList(maid) && maid.getVehicle() != null && IRequestTaskHandler.is(maid.getMainHandItem())) {
             if (MemoryUtil.getRequestProgress(maid).isTryCrafting()) return;
             if (MemoryUtil.getRequestProgress(maid).isReturning()) return;
             if (MemoryUtil.getCurrentlyWorking(maid) != ScheduleBehavior.Schedule.REQUEST) return;
@@ -233,7 +233,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 queue.add(ItemUtil.getStack(inv, i));
                 // 空名字天然匹配一切，可以直接跳过
                 if (!ItemUtil.getStack(inv, i).has(DataComponents.CUSTOM_NAME) && reversed)
-                    return getNearbyMaidsSameGroup(maid, ItemUtil.getStack(inv, i), requireAvailable,reversed);
+                    return getNearbyMaidsSameGroup(maid, ItemUtil.getStack(inv, i), requireAvailable, reversed);
                 hasChecked.add(ItemUtil.getStack(inv, i).getHoverName());
             }
         }
@@ -250,7 +250,7 @@ public class WorkCardItem extends MaidInteractItem implements IMaidBauble {
                 for (int i = 0; i < tt.size(); i++) {
                     if (!ItemUtil.getStack(tt, i).is(ItemRegistry.WORK_CARD.get())) continue;
                     if (!ItemUtil.getStack(tt, i).has(DataComponents.CUSTOM_NAME))
-                        return getNearbyMaidsSameGroup(maid, ItemUtil.getStack(inv, i), requireAvailable,reversed);
+                        return getNearbyMaidsSameGroup(maid, ItemUtil.getStack(inv, i), requireAvailable, reversed);
                     if (!hasChecked.contains(ItemUtil.getStack(tt, i).getHoverName())) {
                         queue.add(ItemUtil.getStack(tt, i));
                         hasChecked.add(ItemUtil.getStack(tt, i).getHoverName());

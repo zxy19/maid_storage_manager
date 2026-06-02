@@ -7,8 +7,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
@@ -21,7 +19,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-@OnlyIn(Dist.CLIENT)
 public class InventoryListUtil {
     public static boolean isMatchSearchStr(ItemStack itemStack, String search){
         if(search.isBlank()) return true;

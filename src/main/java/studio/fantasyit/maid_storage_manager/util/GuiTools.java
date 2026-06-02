@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 
 public final class GuiTools {
     public static void blit(GuiGraphicsExtractor graphics, Identifier atlasLocation, int x, int y, int width, int height, int uOffset, int vOffset) {
@@ -90,5 +91,14 @@ public final class GuiTools {
     private static IntIterator slices(int target, int total) {
         int count = Mth.positiveCeilDiv(target, total);
         return new Divisor(target, count);
+    }
+
+
+    public static void renderItemStackSlotPlaceholder(GuiGraphicsExtractor graphics, ItemStack itemStack, int x, int y) {
+        renderItemStackSlotPlaceholder(graphics, itemStack, x, y, 0x9AA5B9);
+    }
+    public static void renderItemStackSlotPlaceholder(GuiGraphicsExtractor graphics, ItemStack itemStack, int x, int y,int baseColor) {
+        graphics.item(itemStack, x, y);
+        graphics.fill(x, y, x + 16, y + 16, 0x80000000 | ((baseColor) & 0x00ffffff));
     }
 }

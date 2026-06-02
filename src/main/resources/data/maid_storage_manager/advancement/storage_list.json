@@ -17,7 +17,7 @@
     "frame": "task",
     "hidden": false,
     "icon": {
-      "id": "maid_storage_manager:storage_list"
+      "id": "maid_storage_manager:inventory_list"
     },
     "show_toast": true,
     "title": {

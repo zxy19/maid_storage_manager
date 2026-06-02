@@ -15,7 +15,6 @@ import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -105,7 +104,7 @@ public class PlaceBehavior extends Behavior<EntityMaid> {
             if (context instanceof IStorageInsertableContext isic) {
                 List<ItemStack> arrangeItems = MemoryUtil.getPlacingInv(maid).getArrangeItems();
                 if (arrangeItems.isEmpty() || arrangeItems.stream().anyMatch(i -> ItemStack.isSameItem(i, item))) {
-                    if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                    if (IRequestTaskHandler.is(item)) {
                         IRequestTaskHandler handler = IRequestTaskHandler.of(item);
                         if (handler != null && handler.isIgnored(item)) {
                             item.remove(DataComponentRegistry.REQUEST_IGNORE);

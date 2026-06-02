@@ -9,8 +9,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.transfer.CombinedResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
@@ -226,21 +224,8 @@ public enum SlotType {
         return Component.translatable("slot.maid_storage_manager.communicate." + this.name().toLowerCase());
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void drawGold(GuiGraphicsExtractor graphics, int x, int y) {
-        // FIXME: TLM 26.1 - GuiGraphicsExtractor.flush() and setColor() removed.
-        // Needs migration to new rendering pipeline (Blaze3D render state / RenderPipelines).
         if (icon == null) return;
         icon.blit(graphics, x, y);
-        // graphics.flush();
-        // graphics.setColor(1.69f, 1.69f, 0.04f, 1.0f);
-        // icon.blit(graphics, x + 1, y + 1);
-        // graphics.flush();
-        // icon.blit(graphics, x + 1, y);
-        // graphics.flush();
-        // graphics.setColor(2.57f, 2.03f, 0.07f, 1.0f);
-        // icon.blit(graphics, x, y);
-        // graphics.flush();
-        // graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }

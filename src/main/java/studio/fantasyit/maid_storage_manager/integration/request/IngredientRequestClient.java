@@ -4,7 +4,6 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
@@ -13,17 +12,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.entity.EntityTypeTest;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
-import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.task.StorageManageTask;
-import studio.fantasyit.maid_storage_manager.network.JEIRequestPacket;
+import studio.fantasyit.maid_storage_manager.network.IngredientRequestC2SPacket;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -34,7 +30,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-@OnlyIn(Dist.CLIENT)
 public class IngredientRequestClient {
     private final static Identifier R = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/jei_request.png");
     public static boolean keyPressed = false;
@@ -52,16 +47,13 @@ public class IngredientRequestClient {
 
     public static void drawIcon(GuiGraphicsExtractor guiGraphics, int xOffset, int yOffset) {
         guiGraphics.blit(R, xOffset, yOffset, 0, 0, 9, 9, 9, 9);
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(xOffset + 11, yOffset + 8, 0);
-        guiGraphics.pose().scale(0.5f, 0.5f, 1f);
-        guiGraphics.drawString(
+        guiGraphics.text(
                 Minecraft.getInstance().font,
-                String.valueOf(multiple),
-                0,
-                0,
-                0xFFFFFF);
-        guiGraphics.pose().popPose();
+                Component.literal(String.valueOf(multiple)),
+                xOffset + 11,
+                yOffset + 5,
+                0xFFFFFFFF,
+                false);
     }
 
     private static ItemStack getPriorityFromUUID(UUID uuid, ItemStack itemStack, int number) {
@@ -77,8 +69,8 @@ public class IngredientRequestClient {
     public static void processRequestNearByClient(List<List<ItemStack>> data) {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
-        NonNullList<ItemStack> inventoryItems = player.getInventory().items;
-        Object inventoryListUUID = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.getInventory().items);
+        NonNullList<ItemStack> inventoryItems = player.getInventory().getNonEquipmentItems();
+        Object inventoryListUUID = InventoryListUtil.getInventoryListUUIDFromPlayerInv(player.getInventory().getNonEquipmentItems());
         List<ItemStack> costed = new ArrayList<>();
         List<ItemStack> toRequest = new ArrayList<>();
         for (List<ItemStack> toSelect : data) {
@@ -126,7 +118,7 @@ public class IngredientRequestClient {
         }
         toRequest.forEach(i -> i.setCount(i.getCount() * IngredientRequestClient.multiple));
         if (toRequest.size() > 0) {
-            ClientPacketDistributor.sendToServer(new JEIRequestPacket(toRequest, IngredientRequestClient.preferMaidId));
+            ClientPacketDistributor.sendToServer(new IngredientRequestC2SPacket(toRequest, IngredientRequestClient.preferMaidId));
         }
     }
 
@@ -186,28 +178,8 @@ public class IngredientRequestClient {
     }
 
     public static void renderGui(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, Screen screen) {
-        if (!Config.renderMaidWhenIngredientRequest) return;
-        if (hasButtonTick == 0) return;
-        if (maidAnimated == 0) return;
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level == null) return;
-        if (lastAnimatedMaidId != -1 && level.getEntity(lastAnimatedMaidId) instanceof EntityMaid maid) {
-            int x = screen.width / 2;
-            int y = (int) (screen.height + 100 - 75 * maidAnimated);
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0, 0, 500);
-            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics,
-                    x - 25,
-                    y - 25,
-                    x + 25,
-                    y + 25,
-                    50,
-                    0.1F,
-                    x - mouseX,
-                    y - maid.getEyeHeight() * 50 - mouseY,
-                    maid);
-            guiGraphics.pose().popPose();
-        }
+        // FIXME: MC 26.1 - renderEntityInInventoryFollowsMouse renamed to renderEntityInInventoryFollowsAngle with unknown new signature
+        // Maid entity rendering when JEI request is active needs updating for new rendering API
     }
 
     public static void scroll(double scrollDelta) {

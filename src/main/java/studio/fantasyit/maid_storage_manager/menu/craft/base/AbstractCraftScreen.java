@@ -134,7 +134,7 @@ abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends A
                     graphics.text(this.font, text,
                             (int) ((relX + filterSlot.x + 16 - this.font.width(text) * 0.6) / 0.6f),
                             (int) ((relY + filterSlot.y + 16 - this.font.lineHeight * 0.6) / 0.6f),
-                            0xffffff);
+                            0xffffffff);
                     graphics.pose().popMatrix();
                 }
             }

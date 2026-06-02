@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.BiCraftCountCalculator;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
@@ -25,11 +26,9 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -62,24 +61,27 @@ public class MaidCraftPlanner implements IDebugContextSetter {
 
     CraftLayerChain plan;
 
-    public MaidCraftPlanner(ServerLevel level, EntityMaid maid){
-        this(level, maid,null);
+    public MaidCraftPlanner(ServerLevel level, EntityMaid maid) {
+        this(level, maid, null);
     }
-    public MaidCraftPlanner(ServerLevel level, EntityMaid maid,List<Pair<ItemStack, Integer>> notDoneList) {
+
+    public MaidCraftPlanner(ServerLevel level, EntityMaid maid, List<Pair<ItemStack, Integer>> notDoneList) {
         notDone = notDoneList;
         this.craftingMemory = MemoryUtil.getCrafting(maid);
         this.maid = maid;
         this.level = level;
         this.count = 0;
-        if(maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            ItemStack stack = maid.getMainHandItem();
-            IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
-            if(notDoneList ==  null)
-                notDone = handler != null ? handler.getItemStacksNotDone(stack) : List.of();
+        ItemStack stack = maid.getMainHandItem();
+        IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
+        if (handler != null) {
+            if (notDoneList == null)
+                notDone = handler.getItemStacksNotDone(stack);
             if (!precheck()) {
                 done = true;
                 return;
             }
+        } else if (notDoneList == null) {
+            notDoneList = new ArrayList<>();
         }
         for (ICraftGraphLike.CraftAlgorithmInit<?> craftAlgorithmInit : initGraphList()) {
             craftJobs.add(new Pair<>(
@@ -91,7 +93,7 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         if (Config.craftingGenerateCraftGuide) {
             autoGraphGenerator = new AutoGraphGenerator(
                     maid,
-                    notDone.stream().map(itemStack -> itemStack.getA()).toList(),
+                    notDone.stream().map(Pair::getA).toList(),
                     craftGuides
             );
             autoGraphGenerator.setDebugContext(debugContext);
@@ -101,6 +103,7 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         plan = new CraftLayerChain(maid);
         ProgressDebugManager.getDebugContext(maid).ifPresent(debugContext -> debugContext.convey(plan));
     }
+
     protected boolean precheck() {
         if (PortableCraftCalculatorBauble.getCalculator(maid).isEmpty()) {
             if (!Config.craftingNoCalculator) {
@@ -356,6 +359,7 @@ public class MaidCraftPlanner implements IDebugContextSetter {
     public List<String> getExtraFailMessage() {
         return extraFailMessage;
     }
+
     public List<Pair<ItemStack, Integer>> getMissings() {
         return missings;
     }

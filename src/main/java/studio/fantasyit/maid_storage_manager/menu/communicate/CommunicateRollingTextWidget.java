@@ -1,13 +1,9 @@
 package studio.fantasyit.maid_storage_manager.menu.communicate;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextColor;
-
-import java.util.Optional;
 
 public class CommunicateRollingTextWidget extends AbstractWidget {
     private Component text;
@@ -25,13 +21,7 @@ public class CommunicateRollingTextWidget extends AbstractWidget {
     @Override
     public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int p_268034_, int p_268009_, float p_268085_) {
         if (!visible) return;
-        int textColor = Optional.ofNullable(text.getStyle().getColor()).map(TextColor::getValue).orElse(color);
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(0, 0);
-        graphics.enableScissor(getX(), getY(), getX() + getWidth(), getY() + getHeight());
-        graphics.text(Minecraft.getInstance().font, text, getX(), getY(), textColor, false);
-        graphics.disableScissor();
-        graphics.pose().popMatrix();
+        extractScrollingStringOverContents(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE), text, 1);
     }
 
     public void setColor(int color) {

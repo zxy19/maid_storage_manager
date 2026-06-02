@@ -1,6 +1,7 @@
 package studio.fantasyit.maid_storage_manager.items;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -19,9 +20,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.menu.InventoryListScreen;
 import studio.fantasyit.maid_storage_manager.network.Network;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 
@@ -43,14 +43,18 @@ public class WrittenInvListItem extends Item {
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public @NotNull InteractionResult use(Level level, @NotNull Player player, @NotNull InteractionHand p_41434_) {
         if (level.isClientSide()) {
             ItemStack stack = player.getMainHandItem();
             if (stack.has(DataComponentRegistry.INVENTORY_UUID)) {
                 Network.sendRequestListPacket(stack.get(DataComponentRegistry.INVENTORY_UUID));
-                // InventoryListScreen disabled
-                // Minecraft.getInstance().setScreen(new InventoryListScreen(stack.get(DataComponentRegistry.INVENTORY_UUID)));
+                //noinspection Convert2Lambda
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        Minecraft.getInstance().setScreen(new InventoryListScreen(stack.get(DataComponentRegistry.INVENTORY_UUID)));
+                    }
+                }.run();
             }
             return InteractionResult.SUCCESS;
         } else {

@@ -25,6 +25,7 @@ import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 import studio.fantasyit.maid_storage_manager.data.InventoryItem;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
+import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
@@ -44,7 +45,6 @@ import java.util.UUID;
 
 //import studio.fantasyit.maid_storage_manager.data.InScreenTipData;
 //import studio.fantasyit.maid_storage_manager.integration.create.StockManagerInteract;
-//import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequest;
 //import studio.fantasyit.maid_storage_manager.menu.craft.base.ICraftGuiPacketReceiver;
 //import studio.fantasyit.maid_storage_manager.menu.logistics.LogisticsGuideMenu;
 
@@ -230,19 +230,18 @@ public class Network {
                 }
         );
         registrar.playToServer(
-                JEIRequestPacket.TYPE,
-                JEIRequestPacket.STREAM_CODEC,
+                IngredientRequestC2SPacket.TYPE,
+                IngredientRequestC2SPacket.STREAM_CODEC,
                 (msg, context) -> {
                     if (!(context.player() instanceof ServerPlayer sender)) return;
-                    //TODO wait ingredient request
-//                    context.enqueueWork(() -> {
-//                        IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
-//                    });
+                    context.enqueueWork(() -> {
+                        IngredientRequest.onRequest(sender, msg.data, msg.targetMaidId);
+                    });
                 }
         );
         registrar.playToClient(
-                JEIRequestResultPacket.TYPE,
-                JEIRequestResultPacket.STREAM_CODEC,
+                IngredientRequestResultS2CPacket.TYPE,
+                IngredientRequestResultS2CPacket.STREAM_CODEC,
                 (msg, context) -> {
                     context.enqueueWork(() -> {
                         InScreenTipData.show(msg.result, 5.0f);

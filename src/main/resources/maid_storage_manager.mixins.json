@@ -6,7 +6,8 @@
   "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
     "ContainerOpenersCounterPatch",
-    "ItemFrameTickMixin"
+    "ItemFrameTickMixin",
+    "JEIRecipeTransferHook"
   ],
   "client": [
     "ItemFrameRendererMixin",

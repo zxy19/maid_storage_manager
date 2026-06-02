@@ -25,7 +25,7 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.memory.AbstractTargetMemory;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
-import studio.fantasyit.maid_storage_manager.network.JEIRequestResultPacket;
+import studio.fantasyit.maid_storage_manager.network.IngredientRequestResultS2CPacket;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -67,7 +67,7 @@ public class RequestItemUtil {
             } else if (source.equals("JEI")) {
                 if (maid.getOwner() instanceof ServerPlayer player)
                     PacketDistributor.sendToPlayer(player,
-                            new JEIRequestResultPacket(
+                            new IngredientRequestResultS2CPacket(
                                     Component.translatable("gui.maid_storage_manager.jei_request.finish",
                                             maid.getDisplayName()
                                     )));

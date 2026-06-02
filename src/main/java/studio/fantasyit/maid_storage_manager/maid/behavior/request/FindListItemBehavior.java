@@ -16,7 +16,6 @@ import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEv
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -47,7 +46,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         CombinedResourceHandler<ItemResource> maidInv = maid.getAvailableInv(false);
         for (int i = 0; i < maidInv.size(); i++) {
             ItemStack item = ItemUtil.getStack(maidInv, i);
-            if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            if (IRequestTaskHandler.is(item)) {
                 IRequestTaskHandler itemHandler = IRequestTaskHandler.of(item);
                 if (itemHandler != null) itemHandler.tickCoolingDown(item);
                 if (itemHandler != null && !itemHandler.isIgnored(item) && !itemHandler.isCoolingDown(item))
@@ -63,7 +62,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
             CombinedResourceHandler<ItemResource> maidInv = maid.getAvailableInv(false);
             for (int i = 0; i < maidInv.size(); i++) {
                 ItemStack item = ItemUtil.getStack(maidInv, i);
-                if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                if (IRequestTaskHandler.is(item)) {
                     IRequestTaskHandler itemHandler = IRequestTaskHandler.of(item);
                     if (itemHandler != null && !itemHandler.isIgnored(item) && !itemHandler.isCoolingDown(item)) {
                         ItemStack itemstack = ItemUtil.getStack(maidInv, i).copyWithCount(1);

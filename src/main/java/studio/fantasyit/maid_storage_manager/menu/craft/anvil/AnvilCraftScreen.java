@@ -54,7 +54,7 @@ public class AnvilCraftScreen extends AbstractCraftScreen<AnvilCraftMenu> {
                     Component.translatable("gui.maid_storage_manager.craft_guide.anvil_xp_cost", menu.xpCost).getString(),
                     getGuiLeft() + 27,
                     getGuiTop() + 96,
-                    0xffffff
+                    0xffffffff
             );
         }
     }

@@ -15,6 +15,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.lwjgl.glfw.GLFW;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
 import studio.fantasyit.maid_storage_manager.network.ClientInputPacket;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.BoxRenderUtil;
@@ -83,7 +84,7 @@ public class InputEvent {
     public static void onKey(net.neoforged.neoforge.client.event.InputEvent.Key event) {
         InputConstants.Key key = InputConstants.getKey(event.getKeyEvent());
         if (KEY_REQUEST_INGREDIENT.get().getKey().equals(key)) {
-            //IngredientRequestClient.keyPressed = (event.getAction() == GLFW.GLFW_PRESS);
+            IngredientRequestClient.keyPressed = (event.getAction() == GLFW.GLFW_PRESS);
         }
         if (KEY_SEE_THROUGH_MARK_BOX.get().getKey().equals(key)) {
             if (event.getAction() == GLFW.GLFW_PRESS) {

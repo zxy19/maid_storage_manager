@@ -126,13 +126,12 @@ dependencies {
 
 //    runtimeOnly "curse.maven:accelerated-rendering-1314021:6839175"
 
-//    compileOnly "org.anti_ad.mc:InventoryProfilesNext-neoforge-1.21:2.1.10"
+    compileOnly "maven.modrinth:inventory-profiles-next:neoforge-26.1-2.3.2"
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 
     compileOnly "curse.maven:applied-energistics-2-223794:8129795"
-//    compileOnly "curse.maven:mouse-tweaks-60089:5637846"
     compileOnly "curse.maven:mouse-tweaks-60089:7840778"
 //    compileOnly "curse.maven:just-enough-characters-250702:6681787"
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"

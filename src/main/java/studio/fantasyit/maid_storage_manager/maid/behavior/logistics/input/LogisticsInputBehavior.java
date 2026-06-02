@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftResultContext;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
@@ -17,7 +18,6 @@ import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.memory.LogisticsMemory;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StorageVisitLock;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -128,7 +128,7 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
         ItemStack currentLogisticsGuideItem = MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem();
         CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(currentLogisticsGuideItem);
         List<ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target)
-                .stream().filter(itemCount -> !itemCount.item().is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !itemCount.item().isEmpty()).toList();
+                .stream().filter(itemCount -> !IRequestTaskHandler.is(itemCount.item()) && !itemCount.item().isEmpty()).toList();
         ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem);
         if (!filterItemStack.isEmpty()) {
             List<ItemStack> filteredItems = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY).list();

@@ -252,7 +252,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
                         Component.translatable("gui.maid_storage_manager.request_list.repeat"),
                         this.getX() + 6,
                         this.getY() + 4,
-                        0xFFFFFF,
+                        0xFFFFFFFF,
                         false
                 );
                 MutableComponent repeatDesc = Component.translatable("gui.maid_storage_manager.request_list.never");
@@ -319,7 +319,7 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
 
     @Override
     public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        
+
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
@@ -331,13 +331,11 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
                 this.imageWidth,
                 this.imageHeight);
 
-        // guiGraphics.setColor removed in MC 26.1
-        guiGraphics.item(
+        GuiTools.renderItemStackSlotPlaceholder(guiGraphics,
                 ItemRegistry.STORAGE_DEFINE_BAUBLE.get().getDefaultInstance(),
                 relX + 8,
                 relY + 71
         );
-        // guiGraphics.setColor removed in MC 26.1
     }
 
     @Override
@@ -416,13 +414,13 @@ public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> i
                     graphics.text(this.font, text,
                             (int) ((relX + filterSlot.x + 16 - this.font.width(text) * 0.6) / 0.6f),
                             (int) ((relY + filterSlot.y + 16 - this.font.lineHeight * 0.6) / 0.6f),
-                            0xffffff);
+                            0xffffffff);
 
                     String collectedStr = String.valueOf(collected.getValue());
                     graphics.text(this.font, collectedStr,
                             (int) ((relX + filterSlot.x + 30 - this.font.width(collectedStr) * 0.6) / 0.6),
                             (int) ((relY + filterSlot.y + 16 - this.font.lineHeight * 0.6) / 0.6),
-                            0xffffff);
+                            0xffffffff);
                     graphics.pose().popMatrix();
 
                     if (done.getValue() != 0) {

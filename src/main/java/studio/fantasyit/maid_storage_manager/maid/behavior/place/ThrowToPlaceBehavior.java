@@ -13,7 +13,6 @@ import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -65,7 +64,7 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
             count++;
             return;
         }
-        if (stackInSlot.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+        if (IRequestTaskHandler.is(stackInSlot)) {
             IRequestTaskHandler handler = IRequestTaskHandler.of(stackInSlot);
             if (handler == null || !handler.isIgnored(stackInSlot)) {
                 count++;

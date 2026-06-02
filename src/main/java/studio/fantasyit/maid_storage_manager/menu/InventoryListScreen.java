@@ -258,7 +258,7 @@ public class InventoryListScreen extends Screen {
                             Integer.toString(list.get(index).totalCount),
                             2 * ix + 32 - this.font.width(Integer.toString(list.get(index).totalCount)),
                             2 * iy + 32 - this.font.lineHeight,
-                            0xffffff
+                            0xffffffff
                     );
                     guiGraphics.pose().popMatrix();
                 }
@@ -291,7 +291,7 @@ public class InventoryListScreen extends Screen {
                 component,
                 this.left + this.width / 2 - this.font.width(component) / 2,
                 this.top,
-                0xFFFFFF);
+                0xFFFFFFFF);
     }
 
 

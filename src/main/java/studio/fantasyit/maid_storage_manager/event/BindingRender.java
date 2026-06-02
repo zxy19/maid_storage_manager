@@ -213,7 +213,7 @@ public final class BindingRender {
                     camera,
                     "[" + (i + 1) + "]" + CommonCraftAssets.translationForAction(step.getB()).getString(),
                     floating,
-                    (i == data.selecting && !noRenderSelecting ? 0xe91e63 : 0xffffff)
+                    (i == data.selecting && !noRenderSelecting ? 0xffe91e63 : 0xffffffff)
             );
         }
         if (!noRenderSelecting)

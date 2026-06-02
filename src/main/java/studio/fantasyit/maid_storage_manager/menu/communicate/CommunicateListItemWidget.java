@@ -34,7 +34,7 @@ public class CommunicateListItemWidget extends AbstractWidget {
                 Component.translatable("gui.maid_storage_manager.communicate_terminal.list.index", i),
                 getX() - 2,
                 getY() + 1,
-                0xFFFFFF);
+                0xFFFFFFFF);
         ConfigurableCommunicateData.Item item = data.items.get(i);
         graphics.fill(getX(), getY() + 11, getX() + 4, getY() + 14, item.whiteMode ? 0xFFFFFFFF : 0xFF000000);
         graphics.pose().pushMatrix();

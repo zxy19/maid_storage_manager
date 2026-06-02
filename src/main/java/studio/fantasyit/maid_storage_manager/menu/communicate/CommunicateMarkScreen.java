@@ -248,13 +248,13 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                             Component.translatable("gui.maid_storage_manager.communicate_terminal.blacklist")
             );
         }, this));
-        slotText = addRenderableOnly(new CommunicateRollingTextWidget(
+        slotText = new CommunicateRollingTextWidget(
                 getGuiLeft() + 77,
                 getGuiTop() + 72,
                 23,
                 16,
                 Component.empty()
-        ));
+        );
         btnSlot = addRenderableWidget(new SelectButtonWidget<>(73, 71, data -> {
             if (data == null) {
                 data = menu.item.slot;
@@ -269,14 +269,15 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                     Component.empty()
             );
         }, this));
+        addRenderableOnly(slotText);
 
-        btnManualText = addRenderableOnly(new CommunicateRollingTextWidget(
+        btnManualText = new CommunicateRollingTextWidget(
                 getGuiLeft() + 22,
                 getGuiTop() + 19,
                 MANUAL.w,
                 MANUAL.h,
                 Component.empty()
-        ));
+        );
         btnManual = addRenderableWidget(new SelectButtonWidget<>(22, 19, data -> {
             if (data == null) {
                 data = menu.isManual ? TaskDefaultCommunicate.DUMMY_USE_CURRENT_DATA : TaskDefaultCommunicate.DUMMY_AUTO_DETECT_TASK;
@@ -292,6 +293,7 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
                     Component.empty()
             );
         }, this));
+        addRenderableOnly(btnManualText);
     }
 
     private void addSelector() {
@@ -358,10 +360,10 @@ public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkM
             graphics.pose().popMatrix();
             return;
         }
-        if (btnSlot != null)
+        if (btnSlot != null && !selector.visible)
             menu.item.slot.drawGold(graphics, btnSlot.getX() + btnSlot.getWidth() - 17, btnSlot.getY() + 3);
         if (menu.workCard.isEmpty())
-            graphics.item(ItemRegistry.WORK_CARD.get().getDefaultInstance(), getGuiLeft() + 139, getGuiTop() + 19);
+            GuiTools.renderItemStackSlotPlaceholder(graphics, ItemRegistry.WORK_CARD.get().getDefaultInstance(), getGuiLeft() + 139, getGuiTop() + 19);
     }
 
     @Override

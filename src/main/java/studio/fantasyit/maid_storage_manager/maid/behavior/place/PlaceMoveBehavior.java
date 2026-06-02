@@ -23,7 +23,6 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.base.MaidMoveToBlockTaskWithArrivalMap;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.PlacingInventoryMemory;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.MaidStorage;
 import studio.fantasyit.maid_storage_manager.storage.StoragePredictor;
 import studio.fantasyit.maid_storage_manager.storage.Target;
@@ -63,8 +62,7 @@ public class PlaceMoveBehavior extends MaidMoveToBlockTaskWithArrivalMap {
         maidAvailableItems = new ArrayList<>();
         for (int i = 0; i < inv.size(); i++) {
             if (!ItemUtil.getStack(inv, i).isEmpty())
-                if (!ItemUtil.getStack(inv, i).is(ItemRegistry.REQUEST_LIST_ITEM.get())
-                        || (IRequestTaskHandler.of(ItemUtil.getStack(inv, i)) != null && IRequestTaskHandler.of(ItemUtil.getStack(inv, i)).isIgnored(ItemUtil.getStack(inv, i))))
+                if (!IRequestTaskHandler.is(ItemUtil.getStack(inv, i)) || IRequestTaskHandler.of(ItemUtil.getStack(inv, i)).isIgnored(ItemUtil.getStack(inv, i)))
                     maidAvailableItems.add(ItemUtil.getStack(inv, i).copy());
         }
         if (!this.priorityTarget(level, maid))

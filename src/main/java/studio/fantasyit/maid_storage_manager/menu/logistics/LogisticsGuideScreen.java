@@ -63,7 +63,7 @@ public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuide
 
     @Override
     public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        
+
         int relX = (this.width - this.imageWidth) / 2;
         int relY = (this.height - this.imageHeight) / 2;
 
@@ -98,8 +98,8 @@ public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuide
 
         if (!menu.slotGuide.hasItem()) {
             int i = (menu.player.tickCount % 80) / 40;
-            // graphics.setColor removed in MC 26.1
-            graphics.item(switch (i) {
+            GuiTools.renderItemStackSlotPlaceholder(
+                    graphics, switch (i) {
                         case 0 -> ItemRegistry.CRAFT_GUIDE.get().getDefaultInstance();
                         case 1 -> ItemRegistry.FILTER_LIST.get().getDefaultInstance();
                         default -> ItemStack.EMPTY;
@@ -107,7 +107,6 @@ public class LogisticsGuideScreen extends AbstractContainerScreen<LogisticsGuide
                     menu.slotGuide.x + this.getGuiLeft(),
                     menu.slotGuide.y + this.getGuiTop()
             );
-            // graphics.setColor removed in MC 26.1
         }
     }
 

@@ -25,6 +25,7 @@ import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.StorageDefineBauble;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
@@ -143,9 +144,9 @@ public class StorageAccessUtil {
                 itemStack.add(stackInSlot);
             }
         }
-        if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+        if (IRequestTaskHandler.is(maid.getMainHandItem())) {
             ItemStack stack = maid.getMainHandItem().getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack();
-            if (!stack.isEmpty()) {
+            if (!stack.isEmpty() && stack.is(ItemRegistry.STORAGE_DEFINE_BAUBLE.get())) {
                 itemStack.add(stack);
             }
         }

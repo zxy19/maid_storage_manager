@@ -12,19 +12,19 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JEIRequestPacket implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<JEIRequestPacket> TYPE = new CustomPacketPayload.Type<>(
+public class IngredientRequestC2SPacket implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<IngredientRequestC2SPacket> TYPE = new CustomPacketPayload.Type<>(
             Identifier.fromNamespaceAndPath(
-                    MaidStorageManager.MODID, "jei_request"
+                    MaidStorageManager.MODID, "ingredient_request"
             )
     );
 
     @Override
-    public CustomPacketPayload.Type<JEIRequestPacket> type() {
+    public CustomPacketPayload.Type<IngredientRequestC2SPacket> type() {
         return TYPE;
     }
 
-    public static StreamCodec<RegistryFriendlyByteBuf, JEIRequestPacket> STREAM_CODEC = StreamCodec.composite(
+    public static StreamCodec<RegistryFriendlyByteBuf, IngredientRequestC2SPacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.collection(
                     ArrayList::new,
                     ItemStackUtil.OPTIONAL_STREAM_CODEC
@@ -32,13 +32,13 @@ public class JEIRequestPacket implements CustomPacketPayload {
             t -> t.data,
             ByteBufCodecs.INT,
             t -> t.targetMaidId,
-            JEIRequestPacket::new
+            IngredientRequestC2SPacket::new
     );
 
     List<ItemStack> data;
     int targetMaidId;
 
-    public JEIRequestPacket(List<ItemStack> data, int maidId) {
+    public IngredientRequestC2SPacket(List<ItemStack> data, int maidId) {
         this.data = data;
         this.targetMaidId = maidId;
     }

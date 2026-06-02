@@ -17,20 +17,17 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.logging.log4j.util.Strings;
 import studio.fantasyit.maid_storage_manager.render.SeeThroughBoxRenderType;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 
 import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
 public class BoxRenderUtil {
     public static boolean useSeeThroughBox = false;
 
     public static void renderStorage(Target storage, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, String key, Map<BlockPos, Integer> floating) {
-        renderStorage(storage, colors, poseStack, submitNodeCollector, camera, key, floating, 0xffffff);
+        renderStorage(storage, colors, poseStack, submitNodeCollector, camera, key, floating, 0xffffffff);
     }
 
     public static void renderStorage(Target storage, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, String key, Map<BlockPos, Integer> floating, int textColor) {
@@ -89,7 +86,7 @@ public class BoxRenderUtil {
     }
 
     public static void renderEntity(Entity entity, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, String key) {
-        renderEntity(entity, colors, poseStack, submitNodeCollector, camera, partialTick, key, 0xffffff);
+        renderEntity(entity, colors, poseStack, submitNodeCollector, camera, partialTick, key, 0xffffffff);
     }
 
     public static void renderEntity(Entity entity, float[] colors, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, float partialTick, String key, int textColor) {
@@ -129,7 +126,7 @@ public class BoxRenderUtil {
 
     private static void renderBox(PoseStack poseStack, VertexConsumer consumer, AABB aabb, float r, float g, float b, float a) {
         VoxelShape shape = Shapes.create(aabb);
-        int color = ARGB.color((int)(a * 255), (int)(r * 255), (int)(g * 255), (int)(b * 255));
+        int color = ARGB.color((int) (a * 255), (int) (r * 255), (int) (g * 255), (int) (b * 255));
         ShapeRenderer.renderShape(poseStack, consumer, shape, 0, 0, 0, color, 2.0f);
     }
 }

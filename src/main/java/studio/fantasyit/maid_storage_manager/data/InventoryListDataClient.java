@@ -3,8 +3,6 @@ package studio.fantasyit.maid_storage_manager.data;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.apache.commons.lang3.mutable.MutableInt;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.network.Network;
@@ -14,7 +12,6 @@ import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@OnlyIn(Dist.CLIENT)
 public class InventoryListDataClient {
     public static List<Pair<InventoryItem, MutableInt>> showingInv = new ArrayList<>();
     public static List<Pair<BoxTip, MutableInt>> commonTips = new ArrayList<>();

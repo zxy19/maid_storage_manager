@@ -7,6 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
+import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
 import studio.fantasyit.maid_storage_manager.items.CraftGuide;
 import studio.fantasyit.maid_storage_manager.items.LogisticsGuide;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -17,7 +18,7 @@ public class TickClient {
     public static void onTick(ClientTickEvent.Post event) {
         InventoryListDataClient.tickShowingInv();
         InventoryListDataClient.getInstance().tickRequest();
-        //IngredientRequestClient.tickClient();
+        IngredientRequestClient.tickClient();
 
         showCraftGuideTip();
     }
