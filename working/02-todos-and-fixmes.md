@@ -1,6 +1,6 @@
 # TODO/FIXME Inventory
 
-> 自动扫描生成，手工更新 | Updated: 2026-06-01
+> 自动扫描生成，手工更新 | Updated: 2026-06-02
 > 项目: maid_storage_manager | 目标: NeoForge 26.1 + Touhou Little Maid 26.1
 
 ---
@@ -9,10 +9,12 @@
 
 | 类型 | 数量 | 状态 |
 |------|------|------|
-| FIXME | 5 | 影响功能运行，需优先修复 |
+| FIXME | 4 | 影响功能运行，需优先修复 |
 | TODO | 3 | 功能未完成，可延后 |
-| 已禁用文件中的 TODO | 2 | 对应功能已禁用，暂不处理 |
 | 迁移文档中记录的 TODO | 1 | 第三方兼容缺失 |
+
+> 兼容模组 disabled 文件中的 TODO 已移至 [05-integration-disabled.md](./05-integration-disabled.md)
+> FIXME-02 已修复（渲染管线全面适配），FIXME-03 已修复（updateCollectedNotStored API）
 
 ---
 
@@ -75,60 +77,16 @@ TLM 26.1 之后: CombinedResourceHandler<ItemResource> handler = maid.getAvailab
 
 ---
 
-### FIXME-02: MC 26.1 渲染管线重构 - VirtualDisplayEntity 的 item 渲染
+### ~~FIXME-02: MC 26.1 渲染管线重构 - VirtualDisplayEntity 的 item 渲染~~ ✅ 已修复
 
 | 属性 | 值 |
 |------|-----|
 | 文件 | `src/main/java/studio/fantasyit/maid_storage_manager/entity/VirtualDisplayEntityRender.java` |
-| 行号 | 26, 34 |
-| 优先级 | **HIGH** |
-| 是否阻碍编译 | 否（编译通过） |
-| 是否影响运行 | **是** — 非 FRAME 模式渲染无效 |
+| 行号 | ~~26, 34~~ |
+| 优先级 | ~~HIGH~~ |
+| 状态 | **RESOLVED** |
 
-**问题描述：**
-
-MC 26.1 重构了 EntityRenderer 渲染管线：
-- `render(entity, yaw, partialTick, poseStack, bufferSource, light)` 被 `submit(EntityRenderState, PoseStack, SubmitNodeCollector, CameraRenderState)` 替代
-- `MultiBufferSource` 替换为 `SubmitNodeCollector`
-
-`VirtualDisplayEntity` 有三种渲染模式（Config 控制）：
-- `FRAME` — 委托给 super.submit()（使用 ItemFrame 默认渲染）
-- `CORNER` / `LARGE` / `ICON` — 自定义 item 渲染（不同缩放比）
-
-**当前状态：** 只有 FRAME 模式正常工作。CORNER/LARGE/ICON 模式仅有两行注释，实际无渲染代码。
-
-```
-行 26: // FIXME: MC 26.1 rendering pipeline refactored. MultiBufferSource replaced by SubmitNodeCollector.
-行 34: // Non-FRAME rendering (CORNER, LARGE, ICON) not yet ported to 26.1 submit-based API.
-```
-
-**涉及 API 变化：**
-
-```
-MC 26.0 及之前: render(Entity entity, float yaw, float partialTick,
-                        PoseStack poseStack, MultiBufferSource bufferSource, int light)
-
-MC 26.1:        submit(EntityRenderState state, PoseStack poseStack,
-                        SubmitNodeCollector collector, CameraRenderState camera)
-                // 加上 extractRenderState() 用于每帧提取 RenderState
-```
-
-**建议修复方案：**
-
-1. 研究 `submit()` 中如何使用 `SubmitNodeCollector` 提交自定义 item 渲染
-2. 参考 `ItemRenderer.renderStatic()` 或其他实体渲染器的 submit 实现
-3. 在 `submit()` 中根据 `Config.virtualItemFrameRender` 值选择：
-   - FRAME → 直接调用 `super.submit()`
-   - CORNER/LARGE/ICON → 使用 `ItemRenderer.submitItem()` 或自定义 SubmitNode
-     - LARGE: scale 0.7
-     - CORNER: scale 0.35
-     - 默认: scale 0.5
-
-**影响范围：**
-- 虚拟展示框的视觉渲染（CORNER/LARGE/ICON 模式）
-- 不影响 FRAME 模式
-- 物品标识、合成进度展示等 GUI 功能依赖此渲染
-- 未修复会导致：非 FRAME 模式下虚拟展示框不可见
+**修复方式：** `submit()` 方法已完整实现 CORNER、LARGE 和 ICON 三种渲染模式。使用 `SubmitNodeCollector` + `ItemStack.submit()` 提交自定义 item 渲染，支持 `RenderItemInFrameEvent` 事件钩子。所有 FIXME 注释已移除。
 
 ---
 
@@ -366,12 +324,7 @@ for (FormattedCharSequence line : font.split(..., 90)) {
 
 ## 已禁用文件中的 TODO
 
-这些文件已被重命名为 `.disabled` 后缀，对应功能暂不可用。
-
-| 文件 | 行号 | 内容 | 备注 |
-|------|------|------|------|
-| `craft/generator/type/create/GeneratorCreate.java.disabled` | 174 | `//TODO 验证正确性` | Create mod 合成生成器 |
-| `craft/generator/type/mekanism/GeneratorMekOsmiumComp.java.disabled` | 56 | `//TODO: WHERE the 200 FROM?` | Mekanism 锇压缩机生成器，magic number 来源不明 |
+> 兼容模组 disabled 文件中的 TODO（Create GeneratorCreate、Mekanism GeneratorMekOsmiumComp）已移至 [05-integration-disabled.md](./05-integration-disabled.md)。
 
 ---
 
@@ -381,8 +334,6 @@ for (FormattedCharSequence line : font.split(..., 90)) {
 |------|------|------|
 | `mixin/client/HumanoidModelMixin.java` | 被禁用 (`// FIXME`) | 玩家骑乘女仆时的手臂角度设置 |
 
-注：`integration/top/` 目录已完全移除，相关 `InterModComms.sendTo("theoneprobe", ...)` 代码不再存在于代码库中。
-
 ---
 
 ## 修复优先级建议
@@ -390,11 +341,10 @@ for (FormattedCharSequence line : font.split(..., 90)) {
 | 排序 | 编号 | 简述 | 理由 |
 |------|------|------|------|
 | 1 | FIXME-01 | CombinedResourceHandler 写操作 | 导致 ETA 背包槽功能完全不可用 |
-| 2 | FIXME-02 | 渲染管线重构 | 非 FRAME 模式渲染缺失 |
-| 3 | FIXME-05 | dropItem 签名 | 实体掉落行为可能异常 |
-| 4 | FIXME-04 | GuiGraphicsExtractor 渲染 | 仅视觉，不影响功能 |
-| 5 | FIXME-06 | 多行文本 y 偏移 | 仅影响长错误信息显示 |
-| 6 | TODO-01~03 | 触发器/验证 | 非阻塞，可延后 |
+| 2 | FIXME-05 | dropItem 签名 | 实体掉落行为可能异常 |
+| 3 | FIXME-04 | GuiGraphicsExtractor 渲染 | 仅视觉，不影响功能 |
+| 4 | FIXME-06 | 多行文本 y 偏移 | 仅影响长错误信息显示 |
+| 5 | TODO-01~03 | 触发器/验证 | 非阻塞，可延后 |
 
 ---
 
@@ -430,10 +380,11 @@ IItemHandler legacy = NeoForge.getAdapter(IItemHandler.class, handler);
 
 ---
 
-*文档更新于 2026-06-01*
+*文档更新于 2026-06-02*
 
 ## 更新记录
 
 | 日期 | 变更 |
 |------|------|
-| 2026-06-01 | FIXME-03 已修复（updateCollectedNotStored API 适配完成）；FIXME-05 行号修正（31-34→31）；FIXME-06 行号修正（564→561）；移除已不存在的 TOP 兼容 TODO；移除已修复的 FIXME-03 从优先级表 |
+| 2026-06-02 | FIXME-02 已修复；兼容模组 TODO 移至 integration 文档 |
+| 2026-06-01 | FIXME-03 已修复；FIXME-05/06 行号修正；移除 TOP 兼容 TODO |

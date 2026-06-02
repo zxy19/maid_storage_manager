@@ -17,7 +17,7 @@ import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntity;
 import studio.fantasyit.maid_storage_manager.entity.VirtualDisplayEntityRender;
 import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntity;
-//import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntityRender;
+import studio.fantasyit.maid_storage_manager.entity.VirtualItemEntityRender;
 
 @EventBusSubscriber(modid = MaidStorageManager.MODID)
 public class EntityRegistry {
@@ -44,7 +44,6 @@ public class EntityRegistry {
     @SubscribeEvent
     public static void registerModel(FMLClientSetupEvent event) {
         EntityRenderers.register(VIRTUAL_DISPLAY_ENTITY.get(), VirtualDisplayEntityRender::new);
-        // VirtualItemEntityRender disabled
-        // EntityRenderers.register(VIRTUAL_ITEM_ENTITY.get(), VirtualItemEntityRender::new);
+        EntityRenderers.register(VIRTUAL_ITEM_ENTITY.get(), VirtualItemEntityRender::new);
     }
 }
