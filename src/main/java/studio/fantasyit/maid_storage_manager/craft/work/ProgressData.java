@@ -12,9 +12,9 @@ import net.minecraft.world.item.Items;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.items.WorkCardItem;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -339,7 +339,7 @@ public class ProgressData {
                     return ProgressData.fromPlacing(maid, level, MemoryUtil.getPlacingInv(maid), viewing, merge, maxSz);
                 }
                 return ProgressData.fromPlan(maid, level, MemoryUtil.getCrafting(maid).plan(), viewing, merge, maxSz);
-            } else if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            } else if (IRequestTaskHandler.is(maid.getMainHandItem())) {
                 if (MemoryUtil.getCrafting(maid).calculatingTotal != -1)
                     return new ProgressData(
                             List.of(),

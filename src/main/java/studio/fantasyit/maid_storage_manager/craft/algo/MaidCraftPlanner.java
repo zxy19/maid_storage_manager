@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.Config;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.AbstractBiCraftGraph;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.BiCraftCountCalculator;
 import studio.fantasyit.maid_storage_manager.craft.algo.base.ICraftGraphLike;
@@ -25,11 +26,9 @@ import studio.fantasyit.maid_storage_manager.craft.work.CraftLayer;
 import studio.fantasyit.maid_storage_manager.craft.work.CraftLayerChain;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.items.PortableCraftCalculatorBauble;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
 import studio.fantasyit.maid_storage_manager.maid.data.StorageManagerConfigData;
 import studio.fantasyit.maid_storage_manager.maid.memory.CraftMemory;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -71,7 +70,7 @@ public class MaidCraftPlanner implements IDebugContextSetter {
         this.maid = maid;
         this.level = level;
         this.count = 0;
-        if(maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+        if(IRequestTaskHandler.is(maid.getMainHandItem())) {
             ItemStack stack = maid.getMainHandItem();
             IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
             if(notDoneList ==  null)

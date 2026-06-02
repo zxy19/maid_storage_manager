@@ -16,7 +16,6 @@ import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.work.ProgressData;
 import studio.fantasyit.maid_storage_manager.data.BindingData;
 import studio.fantasyit.maid_storage_manager.items.ProgressPad;
-import studio.fantasyit.maid_storage_manager.items.RequestListItem;
 import studio.fantasyit.maid_storage_manager.network.MaidDataSyncToClientPacket;
 import studio.fantasyit.maid_storage_manager.network.ProgressPadUpdatePacket;
 import studio.fantasyit.maid_storage_manager.network.RenderEntityPacket;
@@ -38,7 +37,7 @@ public class BindingRenderSyncSender {
 
     public static void syncEntitySelector(ServerPlayer player) {
         if (BindingData.isDifferentAndUpdateItemOnHand(player)) {
-            if (player.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            if (IRequestTaskHandler.is(player.getMainHandItem())) {
                 ItemStack stack = player.getMainHandItem();
                 IRequestTaskHandler handler = IRequestTaskHandler.of(stack);
                 UUID entityId = handler != null ? handler.getStorageEntity(stack) : null;

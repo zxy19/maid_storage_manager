@@ -6,11 +6,10 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.BehaviorBreath;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.InvUtil;
@@ -62,7 +61,7 @@ public class ThrowToPlaceBehavior extends Behavior<EntityMaid> {
             count++;
             return;
         }
-        if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+        if (IRequestTaskHandler.is(item)) {
             IRequestTaskHandler handler = IRequestTaskHandler.of(item);
             if (handler == null || !handler.isIgnored(item)) {
                 count++;

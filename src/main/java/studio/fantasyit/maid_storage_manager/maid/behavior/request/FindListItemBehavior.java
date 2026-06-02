@@ -9,12 +9,11 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.advancement.AdvancementTypes;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.api.event.RequestListStatusChangeEvent;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
-import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.maid.ChatTexts;
-import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.Conditions;
 import studio.fantasyit.maid_storage_manager.util.MemoryUtil;
@@ -45,7 +44,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
         IItemHandler maidInv = maid.getAvailableInv(false);
         for (int i = 0; i < maidInv.getSlots(); i++) {
             ItemStack item = maidInv.getStackInSlot(i);
-            if (item.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+            if (IRequestTaskHandler.is(item)) {
                 IRequestTaskHandler itemHandler = IRequestTaskHandler.of(item);
                 if (itemHandler != null) itemHandler.tickCoolingDown(item);
                 if (itemHandler != null && !itemHandler.isIgnored(item) && !itemHandler.isCoolingDown(item))
@@ -62,7 +61,7 @@ public class FindListItemBehavior extends Behavior<EntityMaid> {
             IItemHandler maidInv = maid.getAvailableInv(false);
             for (int i = 0; i < maidInv.getSlots(); i++) {
                 ItemStack item = maidInv.getStackInSlot(i);
-                if (maidInv.getStackInSlot(i).is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+                if (IRequestTaskHandler.is(maidInv.getStackInSlot(i))) {
                     IRequestTaskHandler itemHandler = IRequestTaskHandler.of(item);
                     if (itemHandler != null && !itemHandler.isIgnored(item) && !itemHandler.isCoolingDown(item)) {
                         @NotNull ItemStack itemstack = maidInv.extractItem(i, 1, false);

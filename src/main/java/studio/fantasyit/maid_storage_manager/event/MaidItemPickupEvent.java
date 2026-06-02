@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.api.IRequestTaskHandler;
 import studio.fantasyit.maid_storage_manager.attachment.CraftBlockOccupy;
 import studio.fantasyit.maid_storage_manager.craft.debug.ProgressDebugContext;
 import studio.fantasyit.maid_storage_manager.debug.DebugData;
@@ -56,7 +57,7 @@ public class MaidItemPickupEvent {
             event.setCanceled(true);
             return;
         }
-        if (entityItem.getItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
+        if (IRequestTaskHandler.is(entityItem.getItem())) {
             if (!(maid).level().isClientSide) {
                 int tickCount = (maid).level().getServer().getTickCount();
                 Integer restartAt = MemoryUtil.getReturnToScheduleAt(maid);
@@ -77,7 +78,7 @@ public class MaidItemPickupEvent {
         if (!event.isSimulate()) {
             ItemStack pickupItem = event.getPickupItem();
             EntityMaid maid = event.getMaid();
-            if (!pickupItem.is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !pickupItem.is(ItemRegistry.INVENTORY_LIST.get())) {
+            if (!IRequestTaskHandler.is(pickupItem) && !pickupItem.is(ItemRegistry.INVENTORY_LIST.get())) {
                 MemoryUtil.getPlacingInv(maid).resetVisitedPos();
                 if (MemoryUtil.getPlacingInv(maid).hasTarget()) {
                     MemoryUtil.getPlacingInv(maid).clearTarget();
