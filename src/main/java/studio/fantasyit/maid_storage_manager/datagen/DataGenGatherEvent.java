@@ -15,5 +15,6 @@ public class DataGenGatherEvent {
         event.createProvider((a) -> new ModelGen(a, rm));
         event.createProvider(TagGenItem::new);
         event.createProvider(TagGenBlock::new);
+        event.createProvider(RecipeDataGen.Runner::new);
     }
 }

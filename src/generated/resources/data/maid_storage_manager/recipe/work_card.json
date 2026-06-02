@@ -1,0 +1,15 @@
+{
+  "type": "touhou_little_maid:altar",
+  "entity": "minecraft:item",
+  "ingredients": [
+    "#c:dyes/blue",
+    "#c:strings",
+    "minecraft:paper"
+  ],
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "power": 0.0,
+  "result": {
+    "count": 2,
+    "id": "maid_storage_manager:work_card"
+  }
+}

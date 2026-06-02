@@ -1,0 +1,11 @@
+{
+  "type": "maid_storage_manager:copy",
+  "category": "misc",
+  "ingredients": [
+    "maid_storage_manager:craft_guide",
+    "maid_storage_manager:craft_guide"
+  ],
+  "result": {
+    "id": "maid_storage_manager:craft_guide"
+  }
+}

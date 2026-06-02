@@ -39,6 +39,7 @@ public class ModelGen extends ModelProvider {
                 Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "virtual_request_list").withPrefix("item/"),
                 new TextureMapping().put(TextureSlot.LAYER0, new Material(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "item/request_list"))),
                 itemModels.modelOutput);
+        itemModels.itemModelOutput.accept(ItemRegistry.REQUEST_LIST_ITEM.get(), ItemModelUtils.plainModel(requestListModel));
         itemModels.itemModelOutput.accept(ItemRegistry.VIRTUAL_REQUEST_LIST_ITEM.get(), ItemModelUtils.plainModel(virtualRequestListModel));
         itemModels.generateFlatItem(ItemRegistry.INVENTORY_LIST.get(), ITEM_SIMPLE);
         itemModels.generateFlatItem(ItemRegistry.WRITTEN_INVENTORY_LIST.get(), ITEM_SIMPLE);
@@ -58,11 +59,7 @@ public class ModelGen extends ModelProvider {
         itemModels.itemModelOutput.accept(ItemRegistry.CRAFT_GUIDE.get(),
                 ItemModelUtils.specialModel(craftGuideModel, new CraftGuideSMR.Unbaked(craftGuideModel, identifier)));
 
-        Identifier portableCraftCalcModel = ITEM_SIMPLE.create(
-                Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "portable_craft_calculator_bauble").withPrefix("item/"),
-                new TextureMapping().put(TextureSlot.LAYER0, new Material(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "item/portable_craft_calculator"))),
-                itemModels.modelOutput);
-        itemModels.itemModelOutput.accept(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), ItemModelUtils.plainModel(portableCraftCalcModel));
+        itemModels.generateFlatItem(ItemRegistry.PORTABLE_CRAFT_CALCULATOR_BAUBLE.get(), ITEM_SIMPLE);
         itemModels.generateFlatItem(ItemRegistry.WORK_CARD.get(), ITEM_SIMPLE);
 
         itemModels.generateFlatItem(ItemRegistry.LOGISTICS_GUIDE.get(), ITEM_SIMPLE);

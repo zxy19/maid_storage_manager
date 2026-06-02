@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_allow_access": {
+      "conditions": {
+        "items": [
+          {
+            "items": "maid_storage_manager:allow_access"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "minecraft:no_access_from_allow_access"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_allow_access"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minecraft:no_access_from_allow_access"
+    ]
+  }
+}

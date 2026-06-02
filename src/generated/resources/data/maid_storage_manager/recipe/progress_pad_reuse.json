@@ -1,0 +1,10 @@
+{
+  "type": "maid_storage_manager:list_clear",
+  "category": "misc",
+  "ingredients": [
+    "maid_storage_manager:progress_pad"
+  ],
+  "result": {
+    "id": "maid_storage_manager:progress_pad"
+  }
+}

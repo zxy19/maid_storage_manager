@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "storage_define_bauble_reuse",
+  "ingredients": [
+    "maid_storage_manager:storage_define_bauble"
+  ],
+  "result": {
+    "id": "maid_storage_manager:storage_define_bauble"
+  }
+}

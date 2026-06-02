@@ -35,7 +35,7 @@ public enum SlotType {
     FEET(InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS.withPrefix("gui/sprites/")),
     MAIN_HAND(Identifier.fromNamespaceAndPath("minecraft", "gui/sprites/container/slot/sword")),
     OFF_HAND(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD.withPrefix("gui/sprites/")),
-    FLOWER(Identifier.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "gui/sprites/container/slot/empty_back_show_slot")),
+    FLOWER(Identifier.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "gui/sprites/container/slot/back_show")),
     ETA(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_eta")),
     BAUBLE(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
 

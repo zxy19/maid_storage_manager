@@ -1,0 +1,10 @@
+{
+  "type": "maid_storage_manager:list_clear",
+  "category": "misc",
+  "ingredients": [
+    "maid_storage_manager:request_list"
+  ],
+  "result": {
+    "id": "maid_storage_manager:request_list"
+  }
+}

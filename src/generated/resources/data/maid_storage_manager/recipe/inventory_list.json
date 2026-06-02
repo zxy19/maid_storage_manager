@@ -1,0 +1,13 @@
+{
+  "type": "touhou_little_maid:altar",
+  "entity": "minecraft:item",
+  "ingredients": [
+    "minecraft:writable_book",
+    "minecraft:cake"
+  ],
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "power": 0.0,
+  "result": {
+    "id": "maid_storage_manager:inventory_list"
+  }
+}

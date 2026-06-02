@@ -1,0 +1,14 @@
+{
+  "type": "touhou_little_maid:altar",
+  "entity": "minecraft:item",
+  "ingredients": [
+    "maid_storage_manager:work_card",
+    "minecraft:filled_map",
+    "minecraft:ender_pearl"
+  ],
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "power": 0.0,
+  "result": {
+    "id": "maid_storage_manager:progress_pad"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "type": "touhou_little_maid:altar",
+  "entity": "minecraft:item",
+  "ingredients": [
+    "minecraft:rabbit_foot",
+    "minecraft:rabbit",
+    "minecraft:rabbit_hide"
+  ],
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "power": 0.0,
+  "result": {
+    "components": {
+      "maid_storage_manager:to_spawn_items": [
+        {
+          "ist": {
+            "id": "maid_storage_manager:logistics_guide"
+          }
+        },
+        {
+          "ist": {
+            "id": "maid_storage_manager:logistics_guide"
+          }
+        },
+        {
+          "ist": {
+            "id": "maid_storage_manager:logistics_guide"
+          }
+        }
+      ]
+    },
+    "id": "maid_storage_manager:logistics_guide"
+  }
+}

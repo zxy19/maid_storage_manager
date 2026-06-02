@@ -26,11 +26,11 @@ public class ListClearRecipe extends ShapelessRecipe {
         );
     }
 
-    public ListClearRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStack p_252071_, List<Ingredient> p_250689_) {
+    public ListClearRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStackTemplate p_252071_, List<Ingredient> p_250689_) {
         super(
                 new Recipe.CommonInfo(true),
                 new CraftingRecipe.CraftingBookInfo(p_249390_, p_249640_),
-                new ItemStackTemplate(p_252071_.getItem(), p_252071_.getCount(), p_252071_.getComponentsPatch()),
+                p_252071_,
                 p_250689_
         );
     }
@@ -63,14 +63,14 @@ public class ListClearRecipe extends ShapelessRecipe {
                 return tmp;
             }
         }
-        return this.result().create().copy();
+        return this.result().create();
     }
 
 
     private static final MapCodec<ListClearRecipe> CODEC = RecordCodecBuilder.mapCodec((p_340779_) ->
             p_340779_.group(Codec.STRING.optionalFieldOf("group", "").forGetter(Recipe::group),
                     CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category),
-                    ItemStack.CODEC.fieldOf("result").forGetter((r) -> r.result().create()),
+                    ItemStackTemplate.CODEC.fieldOf("result").forGetter(ShapelessRecipe::result),
                     Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter((r) -> r.placementInfo().ingredients())
             ).apply(p_340779_, ListClearRecipe::new));
 
@@ -79,6 +79,12 @@ public class ListClearRecipe extends ShapelessRecipe {
             t -> t,
             ListClearRecipe::new
     );
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public RecipeSerializer<ShapelessRecipe> getSerializer() {
+        return (RecipeSerializer<ShapelessRecipe>) (Object) SERIALIZER;
+    }
 
     public static final RecipeSerializer<ListClearRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 }

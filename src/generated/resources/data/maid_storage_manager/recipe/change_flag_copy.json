@@ -1,0 +1,11 @@
+{
+  "type": "maid_storage_manager:copy",
+  "category": "misc",
+  "ingredients": [
+    "maid_storage_manager:change_flag",
+    "maid_storage_manager:change_flag"
+  ],
+  "result": {
+    "id": "maid_storage_manager:change_flag"
+  }
+}

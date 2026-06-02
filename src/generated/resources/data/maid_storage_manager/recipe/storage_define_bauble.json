@@ -1,0 +1,14 @@
+{
+  "type": "touhou_little_maid:altar",
+  "entity": "minecraft:item",
+  "ingredients": [
+    "#c:dyes/red",
+    "#c:dyes/green",
+    "minecraft:name_tag"
+  ],
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "power": 0.0,
+  "result": {
+    "id": "maid_storage_manager:storage_define_bauble"
+  }
+}

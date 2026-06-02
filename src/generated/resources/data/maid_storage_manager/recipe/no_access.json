@@ -1,0 +1,16 @@
+{
+  "type": "touhou_little_maid:altar",
+  "entity": "minecraft:item",
+  "ingredients": [
+    "#c:dyes/red",
+    "#minecraft:signs",
+    "#minecraft:signs",
+    "#minecraft:signs"
+  ],
+  "lang": "jei.touhou_little_maid.altar_craft.item_craft.result",
+  "power": 0.0,
+  "result": {
+    "count": 3,
+    "id": "maid_storage_manager:no_access"
+  }
+}

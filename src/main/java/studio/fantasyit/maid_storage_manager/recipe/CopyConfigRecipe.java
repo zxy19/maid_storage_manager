@@ -27,11 +27,11 @@ public class CopyConfigRecipe extends ShapelessRecipe {
         );
     }
 
-    public CopyConfigRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStack p_252071_, List<Ingredient> p_250689_) {
+    public CopyConfigRecipe(String p_249640_, CraftingBookCategory p_249390_, ItemStackTemplate p_252071_, List<Ingredient> p_250689_) {
         super(
                 new Recipe.CommonInfo(true),
                 new CraftingRecipe.CraftingBookInfo(p_249390_, p_249640_),
-                new ItemStackTemplate(p_252071_.getItem(), p_252071_.getCount(), p_252071_.getComponentsPatch()),
+                p_252071_,
                 p_250689_
         );
     }
@@ -108,7 +108,7 @@ public class CopyConfigRecipe extends ShapelessRecipe {
     private static final MapCodec<CopyConfigRecipe> CODEC = RecordCodecBuilder.mapCodec((p_340779_) ->
             p_340779_.group(Codec.STRING.optionalFieldOf("group", "").forGetter(Recipe::group),
                     CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category),
-                    ItemStack.CODEC.fieldOf("result").forGetter((r) -> r.result().create()),
+                    ItemStackTemplate.CODEC.fieldOf("result").forGetter((r) -> r.result()),
                     Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter((r) -> r.placementInfo().ingredients())
             ).apply(p_340779_, CopyConfigRecipe::new));
 
@@ -117,6 +117,12 @@ public class CopyConfigRecipe extends ShapelessRecipe {
             t -> t,
             CopyConfigRecipe::new
     );
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public RecipeSerializer<ShapelessRecipe> getSerializer() {
+        return (RecipeSerializer<ShapelessRecipe>) (Object) SERIALIZER;
+    }
 
     public static final RecipeSerializer<CopyConfigRecipe> SERIALIZER = new RecipeSerializer<>(CODEC, STREAM_CODEC);
 }
