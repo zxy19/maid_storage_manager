@@ -14,13 +14,14 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.model.quad.MutableQuad;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -28,11 +29,11 @@ import org.joml.Quaternionf;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UnlitSubmitNodeCollector implements SubmitNodeCollector {
+public class LightmapSubmitNodeCollector implements SubmitNodeCollector {
 
     private final SubmitNodeCollector delegate;
 
-    public UnlitSubmitNodeCollector(SubmitNodeCollector delegate) {
+    public LightmapSubmitNodeCollector(SubmitNodeCollector delegate) {
         this.delegate = delegate;
     }
 
@@ -49,7 +50,7 @@ public class UnlitSubmitNodeCollector implements SubmitNodeCollector {
     private List<BakedQuad> remapQuads(List<BakedQuad> quads) {
         boolean needsRemap = false;
         for (BakedQuad quad : quads) {
-            if (isItemRenderType(quad.materialInfo().itemRenderType())) {
+            if (isItemQuad(quad)) {
                 needsRemap = true;
                 break;
             }
@@ -61,13 +62,13 @@ public class UnlitSubmitNodeCollector implements SubmitNodeCollector {
         List<BakedQuad> remapped = new ArrayList<>(quads.size());
         MutableQuad mutable = new MutableQuad();
         for (BakedQuad quad : quads) {
-            RenderType renderType = quad.materialInfo().itemRenderType();
-            if (isItemRenderType(renderType)) {
+            if (isItemQuad(quad)) {
                 mutable.setFrom(quad);
-                RenderType unlitType = renderType.hasBlending()
-                        ? NeoForgeRenderTypes.getItemTranslucentUnlit(quad.materialInfo().sprite().atlasLocation())
-                        : NeoForgeRenderTypes.getItemCutoutUnlit(quad.materialInfo().sprite().atlasLocation());
-                mutable.setSprite(quad.materialInfo().sprite(), quad.materialInfo().layer(), unlitType);
+                RenderType renderType = quad.materialInfo().itemRenderType();
+                RenderType lightmapType = LightmapRenderTypes.resolve(
+                        quad.materialInfo().sprite().atlasLocation(),
+                        renderType.hasBlending());
+                mutable.setSprite(quad.materialInfo().sprite(), quad.materialInfo().layer(), lightmapType);
                 remapped.add(mutable.toBakedQuad());
             } else {
                 remapped.add(quad);
@@ -76,8 +77,9 @@ public class UnlitSubmitNodeCollector implements SubmitNodeCollector {
         return remapped;
     }
 
-    private boolean isItemRenderType(RenderType renderType) {
-        return renderType.hasBlending() || renderType.toString().contains("item");
+    private boolean isItemQuad(BakedQuad quad) {
+        Identifier atlas = quad.materialInfo().sprite().atlasLocation();
+        return atlas.equals(TextureAtlas.LOCATION_ITEMS) || atlas.equals(TextureAtlas.LOCATION_BLOCKS);
     }
 
     @Override

@@ -64,7 +64,7 @@ public class CustomGraphics implements ICustomGraphics {
         this.pose.scale(-16, -16, 0.0001f);
         this.pose.translate(x - 0.5, y - 0.5, 0);
         this.pose.mulPose(quaternionf);
-        isrs.submit(this.pose, new UnlitSubmitNodeCollector(this.submitNodeCollector), LightCoordsUtil.FULL_BRIGHT, 0, 0);
+        isrs.submit(this.pose, new LightmapSubmitNodeCollector(this.submitNodeCollector), LightCoordsUtil.FULL_BRIGHT, 0, 0);
         this.pose.popPose();
     }
 

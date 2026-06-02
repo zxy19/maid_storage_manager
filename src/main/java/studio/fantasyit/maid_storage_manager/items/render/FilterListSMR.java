@@ -22,7 +22,7 @@ import org.joml.Vector3fc;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
-import studio.fantasyit.maid_storage_manager.render.base.UnlitSubmitNodeCollector;
+import studio.fantasyit.maid_storage_manager.render.base.LightmapSubmitNodeCollector;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -57,7 +57,7 @@ public record FilterListSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
         poseStack.pushPose();
         poseStack.translate(0.52f, 0.50f, 0.54f);
         poseStack.scale(0.7f, 0.7f, 0.0001f);
-        overlayState.submit(poseStack, new UnlitSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
+        overlayState.submit(poseStack, new LightmapSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
         poseStack.popPose();
     }
 

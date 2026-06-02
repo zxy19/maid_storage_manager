@@ -22,7 +22,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideRenderData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
-import studio.fantasyit.maid_storage_manager.render.base.UnlitSubmitNodeCollector;
+import studio.fantasyit.maid_storage_manager.render.base.LightmapSubmitNodeCollector;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -58,7 +58,7 @@ public record CraftGuideSMR(List<BakedQuad> baseQuads,
                 poseStack.pushPose();
                 poseStack.translate(0.52f, 0.50f, 0.54f);
                 poseStack.scale(0.7f, 0.7f, 0.0001f);
-                outputState.submit(poseStack, new UnlitSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
+                outputState.submit(poseStack, new LightmapSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
                 poseStack.popPose();
             }
         }
@@ -72,7 +72,7 @@ public record CraftGuideSMR(List<BakedQuad> baseQuads,
             poseStack.translate(0.8f, 0.2f, 0.54f);
             poseStack.scale(0.40f, 0.4f, 0.0001f);
             poseStack.translate(0, 0, 1.0f);
-            iconState.submit(poseStack, new UnlitSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
+            iconState.submit(poseStack, new LightmapSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
             poseStack.popPose();
         }
     }
