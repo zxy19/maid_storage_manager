@@ -47,9 +47,9 @@ neoForge {
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
         }
 
+
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
-            systemProperty 'terminal.jline', 'true'
             logLevel = org.slf4j.event.Level.DEBUG
         }
     }
@@ -224,14 +224,14 @@ publishMods {
 
     curseforge {
         projectId = "1210244"
-        accessToken = CURSEFORGE_TOKEN
+        accessToken = System.getenv("CURSEFORGE_TOKEN") ?: ""
         minecraftVersions.add("1.21.1")
         optional("applied-energistics-2","ars-nouveau","botania","cloth-config","create","emi","jei","kubejs","mekanism","patchouli","refined-storage")
         requires("touhou-little-maid")
     }
     modrinth {
         projectId = "5sIJPqAj"
-        accessToken = MODRINTH_TOKEN
+        accessToken = System.getenv("MODRINTH_TOKEN") ?: ""
         minecraftVersions.add("1.21.1")
         optional("kubejs","emi","jei","refined-storage","patchouli","cloth-config","ars-nouveau","ae2","create","mekanism")
         requires("touhou-little-maid")
