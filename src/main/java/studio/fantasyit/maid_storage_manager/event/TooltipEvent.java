@@ -7,6 +7,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
@@ -23,7 +24,7 @@ public class TooltipEvent {
         }
 
         if (event.getItemStack().has(DataComponentRegistry.TO_SPAWN_ITEMS)) {
-            List<ItemStack> itemStacks = event.getItemStack().get(DataComponentRegistry.TO_SPAWN_ITEMS);
+            List<ItemStack> itemStacks = event.getItemStack().get(DataComponentRegistry.TO_SPAWN_ITEMS).stream().map(ItemStackData::itemStack).toList();
             toolTip.add(Component.translatable("tooltip.maid_storage_manager.to_spawn_items.desc").withStyle(ChatFormatting.YELLOW));
             if (itemStacks != null) {
                 int totalCount = 0;

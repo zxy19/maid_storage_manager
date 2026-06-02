@@ -29,13 +29,13 @@ import java.util.function.Function;
 
 public enum SlotType {
     ALL(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_all")),
-    HEAD(InventoryMenu.EMPTY_ARMOR_SLOT_HELMET),
-    CHEST(InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE),
-    LEGS(InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS),
-    FEET(InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS),
-    MAIN_HAND(Identifier.fromNamespaceAndPath("minecraft", "item/empty_slot_sword")),
-    OFF_HAND(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD),
-    FLOWER(Identifier.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "slot/empty_back_show_slot")),
+    HEAD(InventoryMenu.EMPTY_ARMOR_SLOT_HELMET.withPrefix("gui/sprites/")),
+    CHEST(InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE.withPrefix("gui/sprites/")),
+    LEGS(InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS.withPrefix("gui/sprites/")),
+    FEET(InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS.withPrefix("gui/sprites/")),
+    MAIN_HAND(Identifier.fromNamespaceAndPath("minecraft", "gui/sprites/container/slot/sword")),
+    OFF_HAND(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD.withPrefix("gui/sprites/")),
+    FLOWER(Identifier.fromNamespaceAndPath(TouhouLittleMaid.MOD_ID, "gui/sprites/container/slot/empty_back_show_slot")),
     ETA(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_slot_eta")),
     BAUBLE(Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "slot/empty_bauble_slot"));
 

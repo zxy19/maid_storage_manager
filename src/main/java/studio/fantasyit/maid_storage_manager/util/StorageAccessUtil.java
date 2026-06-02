@@ -144,7 +144,7 @@ public class StorageAccessUtil {
             }
         }
         if (maid.getMainHandItem().is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-            ItemStack stack = maid.getMainHandItem().getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(level.registryAccess());
+            ItemStack stack = maid.getMainHandItem().getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack();
             if (!stack.isEmpty()) {
                 itemStack.add(stack);
             }

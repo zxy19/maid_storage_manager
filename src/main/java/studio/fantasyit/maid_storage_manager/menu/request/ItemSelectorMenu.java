@@ -58,7 +58,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
                 save();
             }
         };
-        storageHandler.setItem(0, target.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(player.registryAccess()).copy());
+        storageHandler.setItem(0, target.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack().copy());
         addPlayerSlots();
         addFilterSlots();
         addSpecialSlots();
@@ -87,7 +87,7 @@ public class ItemSelectorMenu extends AbstractContainerMenu implements ISaveFilt
         target.set(DataComponentRegistry.REQUEST_MATCHING, matching.ordinal());
         target.set(DataComponentRegistry.REQUEST_CD_UNIT, unitSecond);
         target.set(DataComponentRegistry.REQUEST_INTERVAL, repeat * (unitSecond ? 20 : 1));
-        target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(player.registryAccess(), storageHandler.getItem(0).copy()));
+        target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(storageHandler.getItem(0).copy()));
     }
 
     private void addFilterSlots() {

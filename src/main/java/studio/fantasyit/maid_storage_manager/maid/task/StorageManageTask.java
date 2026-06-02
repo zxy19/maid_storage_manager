@@ -38,8 +38,10 @@ import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.craft.Logis
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.input.LogisticsInputBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.input.LogisticsInputMoveBehavior;
 //import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.LogisticsOutputBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.LogisticsOutputBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.output.LogisticsOutputMoveBehavior;
 //import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleBehavior;
+import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.logistics.recycle.LogisticsRecycleMoveBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.meal.MealBehavior;
 import studio.fantasyit.maid_storage_manager.maid.behavior.meal.MealMoveBehavior;
@@ -162,12 +164,12 @@ public class StorageManageTask implements IMaidTask, ICommunicatable {
         //物流模式
         list.add(Pair.of(5, new LogisticsSwitchTask()));
         list.add(Pair.of(5, new LogisticsOutputMoveBehavior()));
-        //list.add(Pair.of(5, new LogisticsOutputBehavior()));
+        list.add(Pair.of(5, new LogisticsOutputBehavior()));
         list.add(Pair.of(5, new LogisticsInputMoveBehavior()));
         list.add(Pair.of(5, new LogisticsInputBehavior()));
         list.add(Pair.of(5, new LogisticCraftWorkMoveBehavior()));
         list.add(Pair.of(5, new LogisticCraftWorkBehavior()));
-        //list.add(Pair.of(5, new LogisticsRecycleBehavior()));
+        list.add(Pair.of(5, new LogisticsRecycleBehavior()));
         list.add(Pair.of(5, new LogisticsRecycleMoveBehavior()));
         //吃吃吃
         list.add(Pair.of(5, new MealBehavior()));

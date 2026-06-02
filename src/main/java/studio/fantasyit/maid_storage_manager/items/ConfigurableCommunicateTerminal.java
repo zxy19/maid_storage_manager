@@ -26,6 +26,7 @@ import studio.fantasyit.maid_storage_manager.api.communicate.wish.IActionWish;
 import studio.fantasyit.maid_storage_manager.communicate.CommunicateUtil;
 import studio.fantasyit.maid_storage_manager.communicate.data.ConfigurableCommunicateData;
 import studio.fantasyit.maid_storage_manager.communicate.data.TaskDefaultCommunicate;
+import studio.fantasyit.maid_storage_manager.items.data.ItemStackData;
 import studio.fantasyit.maid_storage_manager.menu.communicate.CommunicateMarkMenu;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
 import studio.fantasyit.maid_storage_manager.registry.ItemRegistry;
@@ -137,10 +138,10 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
     public static ItemStack getWorkCardItem(ItemStack item) {
         if (!item.is(ItemRegistry.CONFIGURABLE_COMMUNICATE_MARK))
             return ItemStack.EMPTY;
-        return item.getOrDefault(DataComponentRegistry.COMMUNICATE_WORK_CARD, ItemStack.EMPTY);
+        return item.getOrDefault(DataComponentRegistry.COMMUNICATE_WORK_CARD, ItemStackData.EMPTY).itemStack();
     }
 
     public static void setWorkCardItem(ItemStack item, ItemStack workCard) {
-        item.set(DataComponentRegistry.COMMUNICATE_WORK_CARD, workCard);
+        item.set(DataComponentRegistry.COMMUNICATE_WORK_CARD, ItemStackData.of(workCard));
     }
 }

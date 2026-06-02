@@ -2,45 +2,39 @@ package studio.fantasyit.maid_storage_manager.items.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import net.minecraft.world.item.ItemStackTemplate;
 
-public record ItemStackData(CompoundTag itemStackData) {
-    public static final ItemStackData EMPTY = new ItemStackData(new CompoundTag());
+import java.util.Optional;
+
+public record ItemStackData(Optional<ItemStackTemplate> ist) {
+    public static final ItemStackData EMPTY = new ItemStackData(Optional.empty());
+
+    public static ItemStackData of(ItemStack itemStack) {
+        if (itemStack.isEmpty())
+            return EMPTY;
+        return new ItemStackData(Optional.of(ItemStackTemplate.fromNonEmptyStack(itemStack)));
+    }
+
+    public ItemStackData(ItemStack itemStack) {
+        this(itemStack.isEmpty() ? Optional.empty()
+                : Optional.of(ItemStackTemplate.fromNonEmptyStack(itemStack)));
+    }
+
+    public ItemStack itemStack() {
+        return ist.map(ItemStackTemplate::create).orElse(ItemStack.EMPTY);
+    }
+
     public static Codec<ItemStackData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            CompoundTag.CODEC.fieldOf("itemStack").forGetter(ItemStackData::itemStackData)
+            ItemStackTemplate.CODEC.optionalFieldOf("ist").forGetter(ItemStackData::ist)
     ).apply(instance, ItemStackData::new));
 
     public static StreamCodec<RegistryFriendlyByteBuf, ItemStackData> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.COMPOUND_TAG,
-            ItemStackData::itemStackData,
+            ByteBufCodecs.optional(ItemStackTemplate.STREAM_CODEC),
+            ItemStackData::ist,
             ItemStackData::new
     );
-
-    public ItemStackData(HolderLookup.Provider provider, ItemStack itemStack) {
-        this(itemStack.isEmpty() ? new CompoundTag() : ItemStackUtil.saveStack(provider, itemStack));
-    }
-
-    @Override
-    public int hashCode() {
-        return itemStackData.hashCode();
-    }
-
-    public ItemStack itemStack(HolderLookup.Provider provider) {
-        if (itemStackData.isEmpty())
-            return ItemStack.EMPTY;
-        return ItemStackUtil.parseStack(provider, itemStackData);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ItemStackData(CompoundTag stackData))
-            return stackData.equals(this.itemStackData);
-        return false;
-    }
 }

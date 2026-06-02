@@ -38,7 +38,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
         this.player = player;
         target = player.getMainHandItem();
         container = new SimpleContainer(1);
-        container.setItem(0, target.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(player.registryAccess()).copy());
+        container.setItem(0, target.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack().copy());
         // addListener API changed in MC 26.1
         single_mode = target.getOrDefault(DataComponentRegistry.LOGISTICS_SINGLE, false);
         addPlayerSlots();
@@ -49,7 +49,7 @@ public class LogisticsGuideMenu extends AbstractContainerMenu implements ISaveFi
     public void save() {
         if (player.level().isClientSide()) return;
         target.set(DataComponentRegistry.LOGISTICS_SINGLE, single_mode);
-        target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(player.registryAccess(), container.getItem(0).copy()));
+        target.set(DataComponentRegistry.CONTAIN_ITEM, new ItemStackData(container.getItem(0).copy()));
     }
 
     private void addFilterSlots() {

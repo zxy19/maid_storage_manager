@@ -104,7 +104,7 @@ public class AltarCraftMenu extends AbstractCraftMenu<AltarCraftMenu> {
             ItemStack resultItem = craftingRecipe.value().getResult().create();
             if (resultItem.has(DataComponentRegistry.TO_SPAWN_ITEMS)) {
                 List<ItemStack> ii = new ArrayList<>();
-                resultItem.get(DataComponentRegistry.TO_SPAWN_ITEMS).forEach(itemStack -> ItemStackUtil.addToList(ii, itemStack, ItemStackUtil.MATCH_TYPE.MATCHING));
+                resultItem.get(DataComponentRegistry.TO_SPAWN_ITEMS).forEach(itemStackData -> ItemStackUtil.addToList(ii, itemStackData.itemStack(), ItemStackUtil.MATCH_TYPE.MATCHING));
                 ii.stream().findFirst()
                         .ifPresentOrElse(
                                 itemStack -> {

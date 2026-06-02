@@ -126,10 +126,10 @@ public class LogisticsInputBehavior extends Behavior<EntityMaid> {
 
     private void calculateLayer(ServerLevel level, EntityMaid maid) {
         ItemStack currentLogisticsGuideItem = MemoryUtil.getLogistics(maid).getCurrentLogisticsGuideItem();
-        CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(currentLogisticsGuideItem, level.registryAccess());
+        CraftGuideData craftGuideData = LogisticsGuide.getCraftGuideData(currentLogisticsGuideItem);
         List<ItemCount> itemsAt = MemoryUtil.getViewedInventory(maid).getItemsAt(target)
                 .stream().filter(itemCount -> !itemCount.item().is(ItemRegistry.REQUEST_LIST_ITEM.get()) && !itemCount.item().isEmpty()).toList();
-        ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem, level.registryAccess());
+        ItemStack filterItemStack = LogisticsGuide.getFilterItemStack(currentLogisticsGuideItem);
         if (!filterItemStack.isEmpty()) {
             List<ItemStack> filteredItems = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_ITEMS, FilterListItem.EMPTY).list();
             boolean matchNbt = filterItemStack.getOrDefault(DataComponentRegistry.FILTER_MATCH_TAG, false);

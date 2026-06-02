@@ -135,7 +135,7 @@ public final class BindingRender {
         ItemStack mainStack = mc.player.getMainHandItem();
         if (mainStack.getItem() != ItemRegistry.STORAGE_DEFINE_BAUBLE.get()) {
             if (mainStack.is(ItemRegistry.REQUEST_LIST_ITEM.get())) {
-                mainStack = mainStack.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack(mc.player.registryAccess());
+                mainStack = mainStack.getOrDefault(DataComponentRegistry.CONTAIN_ITEM, ItemStackData.EMPTY).itemStack();
                 if (mainStack.isEmpty())
                     return;
             } else {
@@ -195,7 +195,7 @@ public final class BindingRender {
         boolean noRenderSelecting = false;
         if (mainStack.getItem() != ItemRegistry.CRAFT_GUIDE.get()) {
             if (mainStack.getItem() == ItemRegistry.LOGISTICS_GUIDE.get()) {
-                mainStack = LogisticsGuide.getCraftGuideItemStack(mainStack, mc.player.registryAccess());
+                mainStack = LogisticsGuide.getCraftGuideItemStack(mainStack);
                 noRenderSelecting = true;
                 if (mainStack.isEmpty())
                     return;
