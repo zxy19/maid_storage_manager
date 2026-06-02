@@ -6,6 +6,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -64,7 +65,7 @@ public class CustomGraphics implements ICustomGraphics {
         this.pose.scale(-16, -16, 0.0001f);
         this.pose.translate(x - 0.5, y - 0.5, 0);
         this.pose.mulPose(quaternionf);
-        isrs.submit(this.pose, new LightmapSubmitNodeCollector(this.submitNodeCollector), LightCoordsUtil.FULL_BRIGHT, 0, 0);
+        isrs.submit(this.pose, new LightmapSubmitNodeCollector(this.submitNodeCollector), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
         this.pose.popPose();
     }
 
