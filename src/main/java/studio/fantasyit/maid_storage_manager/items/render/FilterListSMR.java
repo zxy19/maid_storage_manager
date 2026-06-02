@@ -22,6 +22,7 @@ import org.joml.Vector3fc;
 import studio.fantasyit.maid_storage_manager.items.FilterListItem;
 import studio.fantasyit.maid_storage_manager.items.data.FilterItemStackList;
 import studio.fantasyit.maid_storage_manager.registry.DataComponentRegistry;
+import studio.fantasyit.maid_storage_manager.render.base.UnlitSubmitNodeCollector;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -32,7 +33,7 @@ public record FilterListSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
     @Override
     public void submit(@Nullable FilterItemStackList.Immutable filterItems, PoseStack poseStack,
                        SubmitNodeCollector submitNodeCollector, int light, int overlay, boolean hasFoil, int outline) {
-        submitNodeCollector.submitItem(poseStack, ItemDisplayContext.NONE,
+        submitNodeCollector.submitItem(poseStack, ItemDisplayContext.GUI,
                 light, overlay, 0, new int[0], baseQuads,
                 ItemStackRenderState.FoilType.NONE);
 
@@ -51,12 +52,12 @@ public record FilterListSMR(List<BakedQuad> baseQuads) implements SpecialModelRe
 
         ItemModelResolver resolver = mc.getItemModelResolver();
         ItemStackRenderState overlayState = new ItemStackRenderState();
-        resolver.updateForTopItem(overlayState, item, ItemDisplayContext.NONE, mc.level, null, 0);
+        resolver.updateForTopItem(overlayState, item, ItemDisplayContext.GUI, mc.level, null, 0);
 
         poseStack.pushPose();
         poseStack.translate(0.52f, 0.50f, 0.54f);
         poseStack.scale(0.7f, 0.7f, 0.0001f);
-        overlayState.submit(poseStack, submitNodeCollector, light, overlay, outline);
+        overlayState.submit(poseStack, new UnlitSubmitNodeCollector(submitNodeCollector), light, overlay, outline);
         poseStack.popPose();
     }
 
