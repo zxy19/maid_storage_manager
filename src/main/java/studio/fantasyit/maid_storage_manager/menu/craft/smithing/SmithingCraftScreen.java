@@ -4,10 +4,14 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftScreen;
+import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
+@MouseTweaksDisableWheelTweak
+@IPNIgnore
 public class SmithingCraftScreen extends AbstractCraftScreen<SmithingCraftMenu> {
     private static final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/smithing.png");
     private final ImageAsset arrowNeg = new ImageAsset(background, 179, 3, 22, 15);

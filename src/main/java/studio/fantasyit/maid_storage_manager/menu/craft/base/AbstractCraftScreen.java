@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,9 +21,12 @@ import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.util.GuiTools;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.List;
 
+@MouseTweaksDisableWheelTweak
+@IPNIgnore
 abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends AbstractFilterScreen<T> implements ICraftGuiPacketReceiver, IFilterScreen {
     protected boolean enableScroll = false;
     protected final Identifier iBackground;

@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
@@ -40,11 +41,14 @@ import studio.fantasyit.maid_storage_manager.storage.Target;
 import studio.fantasyit.maid_storage_manager.util.GuiTools;
 import studio.fantasyit.maid_storage_manager.util.InventoryListUtil;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@MouseTweaksDisableWheelTweak
+@IPNIgnore
 public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> implements ICraftGuiPacketReceiver, IFilterScreen {
     CommonActionSelectionWidget actionSelector;
     SelectButtonWidget<CraftAction> actionSelectorButton;

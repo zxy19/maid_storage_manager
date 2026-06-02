@@ -133,6 +133,7 @@ dependencies {
 
     compileOnly "curse.maven:applied-energistics-2-223794:8129795"
 //    compileOnly "curse.maven:mouse-tweaks-60089:5637846"
+    compileOnly "curse.maven:mouse-tweaks-60089:7840778"
 //    compileOnly "curse.maven:just-enough-characters-250702:6681787"
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}"
@@ -149,9 +150,9 @@ dependencies {
 //    compileOnly "curse.maven:ars-nouveau-401955:6770346"
 //    compileOnly "curse.maven:geckolib-388172:6659026"
     compileOnly "maven.modrinth:jade:26.1.1+neoforge"
+    compileOnly "maven.modrinth:inventory-profiles-next:neoforge-26.1-2.3.2"
 //    compileOnly "curse.maven:jade-324717:6738687"
-//    compileOnly "curse.maven:sophisticated-storage-619320:6759132"
-//    compileOnly "curse.maven:sophisticated-core-618298:6760141"
+    compileOnly "curse.maven:sophisticated-storage-619320:8185754"
 
 //    runtimeOnly "libs:tacz-neoforge-1.21.1:1.1.6-hotfix-r5"
 

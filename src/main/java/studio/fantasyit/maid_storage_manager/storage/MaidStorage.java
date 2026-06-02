@@ -13,6 +13,7 @@ import net.neoforged.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.data.ItemCount;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
+import studio.fantasyit.maid_storage_manager.integration.sophisticated_storage.SophisticatedStorageMultiBlock;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ChestMultiBlockProcessor;
 import studio.fantasyit.maid_storage_manager.storage.ItemHandler.ItemHandlerStorage;
 import studio.fantasyit.maid_storage_manager.storage.ae2.Ae2Storage;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 //import studio.fantasyit.maid_storage_manager.integration.create.CreateMultiBlockVault;
-//import studio.fantasyit.maid_storage_manager.integration.sophisticated_storage.SophisticatedStorageMultiBlock;
 //import studio.fantasyit.maid_storage_manager.storage.create.place.CreateChainConveyorStorage;
 //import studio.fantasyit.maid_storage_manager.storage.create.stock.CreateStockTickerStorage;
 //import studio.fantasyit.maid_storage_manager.storage.qio.QIOStorage;
@@ -66,9 +66,9 @@ public class MaidStorage {
         /*if (Integrations.create()) {
             processorList.add(new CreateMultiBlockVault());
         }
-        if (Integrations.sophisticatedStorage()) {
+*/        if (Integrations.sophisticatedStorage()) {
             processorList.add(new SophisticatedStorageMultiBlock());
-        }*/
+        }
 
         CollectStorageEvent event = new CollectStorageEvent(list, processorList);
 

@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.anti_ad.mc.ipn.api.IPNIgnore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
@@ -17,10 +18,13 @@ import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
 import studio.fantasyit.maid_storage_manager.menu.craft.base.AbstractCraftScreen;
 import studio.fantasyit.maid_storage_manager.network.CraftGuideGuiPacket;
 import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
+import yalter.mousetweaks.api.MouseTweaksDisableWheelTweak;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@MouseTweaksDisableWheelTweak
+@IPNIgnore
 public class StoneCutterCraftScreen extends AbstractCraftScreen<StoneCutterCraftMenu> {
     private static final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/craft/type/stone_cutter.png");
 
