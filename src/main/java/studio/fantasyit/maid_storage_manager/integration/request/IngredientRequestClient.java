@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
+import studio.fantasyit.maid_storage_manager.Config;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.data.InventoryListDataClient;
 import studio.fantasyit.maid_storage_manager.maid.behavior.ScheduleBehavior;
@@ -178,8 +180,27 @@ public class IngredientRequestClient {
     }
 
     public static void renderGui(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, Screen screen) {
-        // FIXME: MC 26.1 - renderEntityInInventoryFollowsMouse renamed to renderEntityInInventoryFollowsAngle with unknown new signature
-        // Maid entity rendering when JEI request is active needs updating for new rendering API
+        if (!Config.renderMaidWhenIngredientRequest) return;
+        if (hasButtonTick == 0) return;
+        if (maidAnimated == 0) return;
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) return;
+        if (lastAnimatedMaidId != -1 && level.getEntity(lastAnimatedMaidId) instanceof EntityMaid maid) {
+            int x = screen.width / 2;
+            int y = (int) (screen.height + 100 - 75 * maidAnimated);
+            guiGraphics.pose().pushMatrix();
+            InventoryScreen.extractEntityInInventoryFollowsMouse(guiGraphics,
+                    x - 50,
+                    y - 100,
+                    x + 50,
+                    y + 20,
+                    40,
+                    0.1f,
+                    mouseX,
+                    mouseY,
+                    maid);
+            guiGraphics.pose().popMatrix();
+        }
     }
 
     public static void scroll(double scrollDelta) {
