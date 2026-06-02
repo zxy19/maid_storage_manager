@@ -13,6 +13,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import studio.fantasyit.maid_storage_manager.integration.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
 import studio.fantasyit.maid_storage_manager.menu.container.SelectButtonWidget;
@@ -22,7 +23,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 import java.util.List;
 
-abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends AbstractFilterScreen<T> implements ICraftGuiPacketReceiver {
+abstract public class AbstractCraftScreen<T extends AbstractCraftMenu> extends AbstractFilterScreen<T> implements ICraftGuiPacketReceiver, IFilterScreen {
     protected boolean enableScroll = false;
     protected final Identifier iBackground;
 

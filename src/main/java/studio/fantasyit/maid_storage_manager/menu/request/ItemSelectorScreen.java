@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.integration.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.items.data.RequestItemStackList;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
@@ -41,7 +42,7 @@ import java.util.Optional;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
-public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> implements IItemTarget {
+public class ItemSelectorScreen extends AbstractFilterScreen<ItemSelectorMenu> implements IItemTarget, IFilterScreen {
     private final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/item_selector.png");
     AbstractWidget repeatControl;
     InventorySelectButton inventorySelectButton;

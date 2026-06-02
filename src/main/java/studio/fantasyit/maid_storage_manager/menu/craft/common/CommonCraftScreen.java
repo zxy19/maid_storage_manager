@@ -28,6 +28,7 @@ import studio.fantasyit.maid_storage_manager.craft.CraftManager;
 import studio.fantasyit.maid_storage_manager.craft.action.ActionOption;
 import studio.fantasyit.maid_storage_manager.craft.action.CraftAction;
 import studio.fantasyit.maid_storage_manager.craft.data.CraftGuideStepData;
+import studio.fantasyit.maid_storage_manager.integration.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
@@ -44,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> implements ICraftGuiPacketReceiver {
+public class CommonCraftScreen extends AbstractFilterScreen<CommonCraftMenu> implements ICraftGuiPacketReceiver, IFilterScreen {
     CommonActionSelectionWidget actionSelector;
     SelectButtonWidget<CraftAction> actionSelectorButton;
     SelectButtonWidget<?> sortButtonUp, sortButtonDown;

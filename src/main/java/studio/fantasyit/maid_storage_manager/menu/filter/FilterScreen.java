@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import oshi.util.tuples.Pair;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
+import studio.fantasyit.maid_storage_manager.integration.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.IItemTarget;
 import studio.fantasyit.maid_storage_manager.menu.container.ButtonWidget;
@@ -24,7 +25,7 @@ import java.util.List;
 
 import static studio.fantasyit.maid_storage_manager.network.Network.sendItemSelectorSetItemPacket;
 
-public class FilterScreen extends AbstractFilterScreen<FilterMenu> implements IItemTarget {
+public class FilterScreen extends AbstractFilterScreen<FilterMenu> implements IItemTarget, IFilterScreen {
     private static final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/filter_list.png");
     private InventorySelectButton inventorySelectButton;
 

@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import studio.fantasyit.maid_storage_manager.MaidStorageManager;
 import studio.fantasyit.maid_storage_manager.communicate.data.SlotType;
 import studio.fantasyit.maid_storage_manager.communicate.data.TaskDefaultCommunicate;
+import studio.fantasyit.maid_storage_manager.integration.jei.IFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.AbstractFilterScreen;
 import studio.fantasyit.maid_storage_manager.menu.base.ImageAsset;
 import studio.fantasyit.maid_storage_manager.menu.container.FilterSlot;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkMenu> {
+public class CommunicateMarkScreen extends AbstractFilterScreen<CommunicateMarkMenu> implements IFilterScreen {
     private static final Identifier background = Identifier.fromNamespaceAndPath(MaidStorageManager.MODID, "textures/gui/communicate_terminal.png");
 
     List<AbstractWidget> listItems = new ArrayList<>();
