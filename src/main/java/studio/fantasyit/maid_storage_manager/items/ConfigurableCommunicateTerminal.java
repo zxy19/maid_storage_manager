@@ -57,14 +57,14 @@ public class ConfigurableCommunicateTerminal extends MaidInteractItem implements
             if (CommunicateUtil.hasLastResult(maid) && baubleItem.has(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID)) {
                 Pair<UUID, Boolean> lastResult = CommunicateUtil.getLastResult(maid);
                 if (lastResult.getA().equals(baubleItem.get(DataComponentRegistry.COMMUNICATE_LAST_WORK_UUID)) && lastResult.getB()) {
-                    baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, Config.communicateCDFinish);
+                    cd = Config.communicateCDFinish;
                 }
                 CommunicateUtil.clearLastResult(maid);
             }
-            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD,  cd - 1);
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, cd - 1);
             return;
         } else {
-            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD,  Config.communicateCDFail);
+            baubleItem.set(DataComponentRegistry.COMMUNICATE_CD, Config.communicateCDFail);
         }
         ConfigurableCommunicateData data = getDataFrom(baubleItem, maid);
         if (data == null)
