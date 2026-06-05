@@ -1,8 +1,8 @@
 package studio.fantasyit.maid_storage_manager.craft.generator.type.misc;
 
+import com.github.tartaricacid.touhoulittlemaid.blockentity.BlockEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.init.InitRecipes;
-import com.github.tartaricacid.touhoulittlemaid.tileentity.TileEntityAltar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -41,7 +41,7 @@ public class GeneratorAltar extends SimpleGenerator<AltarRecipe, CraftingInput> 
 
     @Override
     public boolean isBlockValid(Level level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof TileEntityAltar;
+        return level.getBlockEntity(pos) instanceof BlockEntityAltar;
     }
 
     @Override

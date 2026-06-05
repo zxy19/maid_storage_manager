@@ -123,8 +123,8 @@ repositories {
 dependencies {
 //    compileOnly "libs:TouhouLittleMaid-26.1:2.0.0-neoforge+mc26.1.2-all"
 //    runtimeOnly "libs:TouhouLittleMaid-26.1:2.0.0-neoforge+mc26.1.2-all"
-    compileOnly 'com.github.TouhouLittleMaid:TouhouLittleMaid-26.1:82fdbe0eaa'
-    runtimeOnly 'com.github.TouhouLittleMaid:TouhouLittleMaid-26.1:82fdbe0eaa'
+    compileOnly 'com.github.TouhouLittleMaid:TouhouLittleMaid-26.1:master-SNAPSHOT'
+    runtimeOnly 'com.github.TouhouLittleMaid:TouhouLittleMaid-26.1:master-SNAPSHOT'
 
 //    runtimeOnly "curse.maven:accelerated-rendering-1314021:6839175"
 

@@ -1,8 +1,8 @@
 package studio.fantasyit.maid_storage_manager.craft.context.special;
 
+import com.github.tartaricacid.touhoulittlemaid.blockentity.BlockEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.crafting.AltarRecipe;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import com.github.tartaricacid.touhoulittlemaid.tileentity.TileEntityAltar;
 import com.github.tartaricacid.touhoulittlemaid.util.PosListData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -36,7 +36,7 @@ public class AltarRecipeAction extends AbstractDynamicAddedAction {
             return Result.FAIL;
         float cost = recipe.get().value().getPower();
         BlockPos target = craftGuideStepData.getStorage().pos;
-        if (maid.level().getBlockEntity(target) instanceof TileEntityAltar tea) {
+        if (maid.level().getBlockEntity(target) instanceof BlockEntityAltar tea) {
             PosListData canPlaceItemPosList = tea.getCanPlaceItemPosList();
             List<BlockPos> data = canPlaceItemPosList.getData();
             List<ItemStack> inputs = craftGuideStepData.getNonEmptyInput();
