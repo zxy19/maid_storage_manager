@@ -1,6 +1,6 @@
 package studio.fantasyit.maid_storage_manager.integration.jei;
 
-import com.github.tartaricacid.touhoulittlemaid.compat.jei.altar.AltarRecipeCategory;
+import com.github.tartaricacid.touhoulittlemaid.compat.jei.category.AltarRecipeCategory;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;

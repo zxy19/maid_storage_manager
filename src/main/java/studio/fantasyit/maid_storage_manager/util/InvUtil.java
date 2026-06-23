@@ -208,7 +208,8 @@ public class InvUtil {
         ItemStack slotItem = ItemUtil.getStack(inv, slot);
         maid.setItemInHand(hand, slotItem);
         try (var tx = Transaction.open(null)) {
-            inv.extract(slot, ItemResource.of(slotItem), slotItem.getCount(), tx);
+            if (!slotItem.isEmpty())
+                inv.extract(slot, ItemResource.of(slotItem), slotItem.getCount(), tx);
             if (!handItem.isEmpty()) {
                 int inserted = inv.insert(slot, ItemResource.of(handItem), handItem.getCount(), tx);
                 if (inserted < handItem.getCount()) {

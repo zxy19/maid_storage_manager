@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_25",
   "plugin": "studio.fantasyit.maid_storage_manager.integration.IntegrationMixinControlPlugin",
   "mixins": [
+    "AltarRecipeMultiOutputMixin",
     "ContainerOpenersCounterPatch",
     "ItemFrameTickMixin",
     "JEIRecipeTransferHook"
