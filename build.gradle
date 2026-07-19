@@ -135,7 +135,7 @@ dependencies {
 
     compileOnly "curse.maven:applied-energistics-2-223794:8129795"
     compileOnly "curse.maven:mouse-tweaks-60089:7840778"
-//    compileOnly "curse.maven:just-enough-characters-250702:6681787"
+    compileOnly "curse.maven:just-enough-characters-250702:8413185"
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}"
 //    compileOnly "curse.maven:create-328085:7149903"
