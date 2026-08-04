@@ -243,16 +243,16 @@ dependencies {
     compileOnly fg.deobf("libs:1.20.1-tour_guide:1.0.2")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-//    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:7884262")
-//    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:7884262")
+    compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:8061847")
+    runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:8061847")
 
 
     runtimeOnly fg.deobf("curse.maven:spark-361579:4738952")
 //    runtimeOnly fg.deobf("curse.maven:oculus-581495:6020952")
 //    runtimeOnly fg.deobf("curse.maven:embeddium-908741:5681725")
 //    runtimeOnly fg.deobf("curse.maven:reforgedplay-mod-1018692:5637596")
-    compileOnly fg.deobf("libs:touhoulittlemaid:1.5.2-forge+mc1.20.1-snapshot")
-    runtimeOnly fg.deobf("libs:touhoulittlemaid:1.5.2-forge+mc1.20.1-snapshot")
+//    compileOnly fg.deobf("libs:touhoulittlemaid:1.5.2-forge+mc1.20.1-snapshot")
+//    runtimeOnly fg.deobf("libs:touhoulittlemaid:1.5.2-forge+mc1.20.1-snapshot")
 
 
     compileOnly fg.deobf("org.anti_ad.mc:InventoryProfilesNext-forge-1.20:1.10.7")
