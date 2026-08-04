@@ -71,8 +71,8 @@ public class InputEvent {
                 );
             }
         } else if (pressingSpecialKey) {
-            event.setCanceled(true);
             if (itemStack.is(ItemRegistry.CRAFT_GUIDE.get()) || itemStack.is(ItemRegistry.PROGRESS_PAD.get())) {
+                event.setCanceled(true);
                 ClientPacketDistributor.sendToServer(
                         new ClientInputPacket(ClientInputPacket.Type.ALT_SCROLL, (int) (event.getScrollDeltaY() * 100))
                 );
