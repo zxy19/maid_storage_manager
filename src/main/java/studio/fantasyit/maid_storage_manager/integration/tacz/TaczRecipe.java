@@ -7,6 +7,7 @@ import com.tacz.guns.config.sync.SyncConfig;
 import com.tacz.guns.crafting.GunSmithTableRecipe;
 import com.tacz.guns.init.ModItems;
 import com.tacz.guns.init.ModRecipe;
+import com.tacz.guns.item.AmmoItem;
 import com.tacz.guns.item.ModernKineticGunItem;
 import com.tacz.guns.resource.filter.RecipeFilter;
 import com.tacz.guns.resource.index.CommonBlockIndex;
@@ -43,6 +44,14 @@ public class TaczRecipe {
         event.addItemStackPredicate(ModItems.MODERN_KINETIC_GUN.asItem(), (stack, target) -> {
             if (stack.getItem() instanceof ModernKineticGunItem gun) {
                 return gun.getGunId(stack).equals(gun.getGunId(target));
+            }
+            return false;
+        });
+        event.addItemStackPredicate(ModItems.AMMO.asItem(), (stack, target) -> {
+            if (stack.getItem() instanceof AmmoItem ai) {
+                ResourceLocation sAmmo = ai.getAmmoId(stack);
+                ResourceLocation tAmmo = ai.getAmmoId(target);
+                return sAmmo.equals(tAmmo);
             }
             return false;
         });
