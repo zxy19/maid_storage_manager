@@ -97,10 +97,13 @@ public class RecipeIngredientCache {
     }
 
     public static UUID cacheIngredient(Ingredient ingredient) {
+        // Custom ingredients may rebuild their candidate stacks on every call.
+        // Resolve once for this lookup, not once per cached node.
+        ItemStack[] items = ingredient.getItems();
         UUID uuid = null;
         LOCK.readLock().lock();
         for (CachedIngredient ingredientNode : cachedNode) {
-            if (ingredientNode.isEqualTo(ingredient)) {
+            if (ingredientNode.isEqualTo(items)) {
                 uuid = ingredientNode.cachedUUID;
                 break;
             }
@@ -109,7 +112,7 @@ public class RecipeIngredientCache {
         if (uuid == null) {
             LOCK.writeLock().lock();
             uuid = UUID.randomUUID();
-            cachedNode.add(new CachedIngredient(ingredient.getItems(), uuid));
+            cachedNode.add(new CachedIngredient(items, uuid));
             LOCK.writeLock().unlock();
         }
         return uuid;
@@ -125,7 +128,10 @@ public class RecipeIngredientCache {
         }
 
         public boolean isEqualTo(Ingredient ingredient) {
-            ItemStack[] items = ingredient.getItems();
+            return isEqualTo(ingredient.getItems());
+        }
+
+        private boolean isEqualTo(ItemStack[] items) {
             if (items.length != possibleItems.length)
                 return false;
             for (int i = 0; i < items.length; i++) {
