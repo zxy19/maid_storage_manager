@@ -1,88 +1,89 @@
 package studio.fantasyit.maid_storage_manager.mixin;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
+import mezz.jei.api.gui.buttons.IButtonState;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
-import mezz.jei.gui.elements.GuiIconToggleButton;
-import mezz.jei.gui.input.UserInput;
-import mezz.jei.gui.recipes.RecipeTransferButton;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.client.renderer.Rect2i;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import studio.fantasyit.maid_storage_manager.api.mixin.IJEIButtonGetter;
 import studio.fantasyit.maid_storage_manager.integration.Integrations;
 import studio.fantasyit.maid_storage_manager.integration.request.IngredientRequestClient;
 import studio.fantasyit.maid_storage_manager.integration.request.JEIClient;
 import studio.fantasyit.maid_storage_manager.integration.request.JEIRequestDisplayError;
 
-@Mixin(RecipeTransferButton.class)
-abstract public class JEIRecipeTransferHook extends GuiIconToggleButton {
+/**
+ * JEI 19.57 removed GuiIconToggleButton and RecipeTransferButton and replaced them with the
+ * IconButton / IIconButtonController pair, so the old widget mixin no longer had a target.
+ * The controller is the new hook point: updateState() runs every tick and decides icon/active/visible,
+ * onPress() handles the click and getTooltips() delegates to the stored recipeTransferError.
+ * Writing our own error into that slot makes JEI draw the highlight and tooltip for us.
+ * targets= is used on purpose so this class keeps no compile time dependency on JEI internals.
+ */
+@Mixin(targets = "mezz.jei.gui.recipes.RecipeTransferButtonController", remap = false)
+public abstract class JEIRecipeTransferHook {
 
-    @Shadow(remap = false)
+    @Shadow
     private @Nullable IRecipeTransferError recipeTransferError;
 
-    @Shadow(remap = false)
+    @Shadow
     @Final
     private IRecipeLayoutDrawable<?> recipeLayout;
 
-    @Shadow(remap = false)
-    @Final
-    private Runnable onClose;
+    private static IDrawable defaultTransferIcon;
 
-    public JEIRecipeTransferHook(IDrawable offIcon, IDrawable onIcon) {
-        super(offIcon, onIcon);
+    /**
+     * Records the icon JEI installs in initState() so the button can be restored to its normal look
+     * once the request key is released. Returning true leaves JEI's own call untouched, and unlike
+     * @Redirect this chains cleanly with other mods targeting the same call.
+     */
+    @WrapWithCondition(method = "initState", remap = false, at = @At(value = "INVOKE",
+            target = "Lmezz/jei/api/gui/buttons/IButtonState;setIcon(Lmezz/jei/api/gui/drawable/IDrawable;)V"))
+    private boolean msm$captureTransferIcon(IButtonState state, IDrawable icon) {
+        defaultTransferIcon = icon;
+        return true;
     }
 
-    @Inject(method = "update", at = @At(value = "RETURN"), remap = false)
-    public void update(AbstractContainerMenu parentContainer, Player player, CallbackInfo ci) {
+    @Inject(method = "updateState", at = @At("RETURN"))
+    public void onUpdateState(IButtonState state, CallbackInfo ci) {
         if (!Integrations.JEIIngredientRequest()) return;
         if (IngredientRequestClient.keyPressed) {
-            if (IngredientRequestClient.preferMaidId != -1)
-                this.recipeTransferError = new JEIRequestDisplayError();
-            else
-                this.recipeTransferError = new JEIRequestDisplayError.NoMaid();
-            this.button.active = true;
-            this.button.visible = true;
+            this.recipeTransferError = IngredientRequestClient.preferMaidId != -1
+                    ? new JEIRequestDisplayError()
+                    : new JEIRequestDisplayError.NoMaid();
+            state.setActive(true);
+            state.setVisible(true);
+            state.setIcon(JEIClient.icon);
+        } else if (defaultTransferIcon != null) {
+            state.setIcon(defaultTransferIcon);
         }
     }
 
-    @Redirect(method = "draw", at = @At(value = "INVOKE", target = "Lmezz/jei/gui/elements/GuiIconToggleButton;draw(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"), remap = false)
-    public void draw(GuiIconToggleButton instance, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
+    public void onOnPress(IJeiUserInput input, CallbackInfoReturnable<Boolean> cir) {
         if (!Integrations.JEIIngredientRequest()) return;
-        IngredientRequestClient.hasButton();
-        if (instance instanceof IJEIButtonGetter ja) {
-            if (ja.getArea().isEmpty())
-                return;
-
-            boolean iconToggledOn = isIconToggledOn();
-            IDrawable icon = iconToggledOn ? ja.getOnIcon() : ja.getOffIcon();
-            if (IngredientRequestClient.keyPressed) {
-                icon = JEIClient.icon;
+        if (!input.isSimulate() && IngredientRequestClient.keyPressed) {
+            if (IngredientRequestClient.preferMaidId != -1) {
+                JEIClient.processRequestNearByClient(this.recipeLayout);
             }
-            this.button.setForcePressed(iconToggledOn);
-            this.button.setIcon(icon);
-            this.button.render(guiGraphics, mouseX, mouseY, partialTicks);
+            cir.setReturnValue(true);
         }
     }
 
-    @Inject(method = "onMouseClicked", at = @At(value = "HEAD"), cancellable = true, remap = false)
-    public void onMouseClicked(UserInput input, CallbackInfoReturnable<Boolean> cir) {
-        if (!Integrations.JEIIngredientRequest()) return;
-        if (!input.isSimulate())
-            if (IngredientRequestClient.keyPressed) {
-                if (IngredientRequestClient.preferMaidId != -1) {
-                    JEIClient.processRequestNearByClient(this.recipeLayout);
-                }
-                cir.setReturnValue(true);
-            }
+    @Inject(method = "drawExtras", at = @At("HEAD"))
+    public void onDrawExtras(GuiGraphics guiGraphics, Rect2i buttonArea, int mouseX, int mouseY,
+                             float partialTicks, CallbackInfo ci) {
+        if (Integrations.JEIIngredientRequest()) {
+            IngredientRequestClient.hasButton();
+        }
     }
 }

@@ -24,9 +24,7 @@ public class IntegrationMixinControlPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (mixinClass("JeiGuiIconToggleButtonAccessor").equals(mixinClassName)) {
-            return Integrations.JEIIngredientRequestLoading();
-        } else if (mixinClass("JEIRecipeTransferHook").equals(mixinClassName)) {
+        if (mixinClass("JEIRecipeTransferHook").equals(mixinClassName)) {
             return Integrations.JEIIngredientRequestLoading();
         } else if (mixinClass("EMIRecipeTransferHook").equals(mixinClassName)) {
             return Integrations.EMIngredientRequestLoading();
