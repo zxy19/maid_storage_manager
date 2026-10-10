@@ -215,7 +215,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
@@ -311,8 +310,6 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:kaleidoscope-cookery-1309203:7473809")
     runtimeOnly fg.deobf("curse.maven:maidsoul-kitchen-1162577:7285798")
 }
-
-tasks.named('test') { useJUnitPlatform() }
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
