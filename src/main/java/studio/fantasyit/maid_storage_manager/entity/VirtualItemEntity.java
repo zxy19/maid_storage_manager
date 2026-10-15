@@ -18,7 +18,7 @@ import studio.fantasyit.maid_storage_manager.util.ItemStackUtil;
 
 public class VirtualItemEntity extends Entity {
 
-    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(VirtualItemEntity.class, EntityDataSerializers.ITEM_STACK);
     private int ttl;
     private int age;
     public final float bobOffs;
