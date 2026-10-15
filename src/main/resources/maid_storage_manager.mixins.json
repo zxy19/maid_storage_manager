@@ -11,7 +11,7 @@
     "CreateStockTickerBEMixin",
     "EMIRecipeTransferHook",
     "ItemFrameTickMixin",
-    "JeiGuiIconToggleButtonAccessor",
+    "JeiGuiIconToggleButtonHook",
     "JEIRecipeTransferHook",
     "TLMFeatureCenterSidePathFinding",
     "WorldRecipeLoaderMixin"

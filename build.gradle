@@ -18,7 +18,8 @@ plugins {
 
 publishMods {
     type = BETA
-    file = layout.buildDirectory.file("libs/${minecraft_version}-${mod_id}-${mod_version}.jar")
+    // The "-all" jar is the jarJar output: it carries the embedded MixinExtras dependency.
+    file = layout.buildDirectory.file("libs/${minecraft_version}-${mod_id}-${mod_version}-all.jar")
     modLoaders.add("forge")
     changelog = file("changelog").text
 
@@ -38,6 +39,9 @@ publishMods {
     }
 }
 apply plugin: 'org.spongepowered.mixin'
+
+// MixinExtras is embedded into the jar because Forge 1.20.1 does not ship it (NeoForge does).
+jarJar.enable()
 
 group = mod_group_id
 version = mod_version
@@ -174,6 +178,7 @@ repositories {
     flatDir {
         dir 'libs'
     }
+    mavenCentral()
     maven {
         url "https://cursemaven.com"
     }
@@ -243,6 +248,12 @@ dependencies {
     compileOnly fg.deobf("libs:1.20.1-tour_guide:1.0.2")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    // MixinExtras: NeoForge ships it, Forge 1.20.1 does not. compileOnly + annotationProcessor
+    // for the @WrapWithCondition annotation, and jarJar so it is present at runtime for users.
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixinextras_version}"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixinextras_version}")) {
+        jarJar.ranged(it, "[${mixinextras_version},)")
+    }
     compileOnly fg.deobf("curse.maven:touhou-little-maid-355044:8061847")
     runtimeOnly fg.deobf("curse.maven:touhou-little-maid-355044:8061847")
 
@@ -261,8 +272,9 @@ dependencies {
     compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     compileOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
     compileOnly fg.deobf("curse.maven:just-enough-characters-250702:5543190")
-    compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}:api")
-    compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
+    // EMI 1.1.22+1.20.1. The EMI maven (maven.terraformersmc.com) now redirects to
+    // repo.sleeping.town which is unreachable, so this comes from CurseForge instead.
+    compileOnly fg.deobf("curse.maven:emi-580555:6420945")
     compileOnly fg.deobf("curse.maven:create-328085:7178761")
     compileOnly fg.deobf("com.tterrag.registrate:Registrate:MC1.20-1.3.11")
     compileOnly fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:1.0.78")
@@ -281,13 +293,17 @@ dependencies {
     compileOnly fg.deobf("curse.maven:sophisticated-core-618298:6266807")
 
     runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
+    // JEI 15.62 declares mezz_config as a mandatory runtime dependency
+    // and mezz_config_gui as an optional client-side one.
+    runtimeOnly fg.deobf("net.mezzdev.config:mezz_config-${minecraft_version}-forge:${mezz_config_version}")
+    runtimeOnly fg.deobf("net.mezzdev.config:mezz_config_gui-${minecraft_version}-forge:${mezz_config_gui_version}")
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:6091401")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:6164575")
     runtimeOnly fg.deobf("curse.maven:sophisticated-storage-619320:6217888")
     runtimeOnly fg.deobf("curse.maven:sophisticated-core-618298:6266807")
     runtimeOnly fg.deobf("curse.maven:mouse-tweaks-60089:5338457")
     runtimeOnly fg.deobf("curse.maven:create-328085:7178761")
-    runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}")
+    runtimeOnly fg.deobf("curse.maven:emi-580555:6420945")
     runtimeOnly fg.deobf("curse.maven:botania-225643:5594997")
     runtimeOnly fg.deobf("curse.maven:curios-309927:6058834")
     runtimeOnly fg.deobf("curse.maven:refined-storage-243076:4844585")

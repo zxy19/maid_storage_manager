@@ -118,3 +118,6 @@ run/
 !gradle-wrapper.jar
 local/
 /local/
+
+# Scratch space used for migration reference sources (safe to delete)
+/temp/
