@@ -1,2 +1,4 @@
-Fix bug of communicate terminal & request list
-Try fix bug with tacz & emi
+Fix a performance issue on recipe cache progress(#53)
+Fix the bug that an entity data was mistakenly added to ItemEntity(#51)
+Add special ingredient for TACZ ammo(#50).
+Fix JEI compatibility.
