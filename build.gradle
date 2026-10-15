@@ -219,7 +219,7 @@ publishing {
 }
 
 publishMods {
-    type = BETA
+    type = ALPHA
     file = jar.archiveFile
     modLoaders.add("neoforge")
     changelog = file("changelog").text
@@ -227,15 +227,15 @@ publishMods {
     curseforge {
         projectId = "1210244"
         accessToken = System.getenv("CURSEFORGE_TOKEN") ?: ""
-        minecraftVersions.add("1.21.1")
-        optional("applied-energistics-2","ars-nouveau","botania","cloth-config","create","emi","jei","kubejs","mekanism","patchouli","refined-storage")
+        minecraftVersions.add("26.1")
+        optional("applied-energistics-2","cloth-config","emi","jei")
         requires("touhou-little-maid")
     }
     modrinth {
         projectId = "5sIJPqAj"
         accessToken = System.getenv("MODRINTH_TOKEN") ?: ""
         minecraftVersions.add("1.21.1")
-        optional("kubejs","emi","jei","refined-storage","patchouli","cloth-config","ars-nouveau","ae2","create","mekanism")
+        optional("emi","jei","cloth-config","ae2")
         requires("touhou-little-maid")
     }
 }
