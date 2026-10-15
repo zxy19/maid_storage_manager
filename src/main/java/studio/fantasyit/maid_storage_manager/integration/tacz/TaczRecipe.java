@@ -12,6 +12,7 @@ import com.tacz.guns.resource.filter.RecipeFilter;
 import com.tacz.guns.resource.index.CommonBlockIndex;
 import com.tacz.guns.resource.pojo.data.block.TabConfig;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
@@ -45,6 +46,17 @@ public class TaczRecipe {
                 return gun.getGunId(stack).equals(gun.getGunId(target));
             }
             return false;
+        });
+        // 弹药通配符匹配: 第三方枪包配方中 "tacz:ammo" 作为原料时不指定 AmmoId,
+        // GunSmithTableIngredient 构建的 ItemStack 无 NBT, 而库存弹药带 {AmmoId:"xxx"},
+        // 严格 NBT 比较会失败。此处当任一方无 AmmoId 时视为通配符匹配。
+        event.addItemStackPredicate(ModItems.AMMO.get(), (stack, target) -> {
+            CompoundTag sTag = stack.getTag();
+            CompoundTag tTag = target.getTag();
+            String sAmmo = sTag != null ? sTag.getString("AmmoId") : "";
+            String tAmmo = tTag != null ? tTag.getString("AmmoId") : "";
+            if (sAmmo.isEmpty() || tAmmo.isEmpty()) return true;
+            return sAmmo.equals(tAmmo);
         });
     }
 
